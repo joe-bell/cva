@@ -1,0 +1,63 @@
+{
+  "name": "class-variance-authority",
+  "version": "0.0.1",
+  "description": "Class Variance Authority 🧬",
+  "author": "Joe Bell (https://joebell.co.uk)",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "typings": "dist/index.d.ts",
+  "funding": "https://joebell.co.uk",
+  "repository": "https://github.com/joe-bell/cva.git",
+  "bugs": "https://github.com/joe-bell/cva/issues",
+  "homepage": "https://github.com/joe-bell/cva#readme",
+  "keywords": [
+    "css",
+    "classes",
+    "classname",
+    "classnames",
+    "variants",
+    "cva",
+    "class-variance-authority",
+    "Class Variance Authority",
+    "stitches",
+    "vanilla-extract"
+  ],
+  "files": [
+    "dist/*.js",
+    "dist/*.js.map",
+    "dist/*.d.ts"
+  ],
+  "scripts": {
+    "build": "npm-run-all build:*",
+    "build:cjs": "npx swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.cjs.js -C module.type=commonjs",
+    "build:esm": "npx swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.esm.js -C module.type=es6 ",
+    "build:tsc": "tsc --project .config/tsconfig.json --emitDeclarationOnly",
+    "check:tsc": "tsc --project .config/tsconfig.json --noEmit",
+    "check:frm": "npx prettier . --check --ignore-unknown --ignore-path .gitignore",
+    "check": "run-p check:*",
+    "test": "run-p test:*",
+    "test:jest": "jest --config .config/jest.config.ts --coverage",
+    "test:size": "run-p build:cjs build:esm && npx bundlesize -f 'dist/*.js' -s 800B",
+    "dev": "jest --config .config/jest.config.ts --watch",
+    "prepare": "husky install",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@swc/cli": "0.1.55",
+    "@swc/core": "1.2.136",
+    "@swc/jest": "0.2.17",
+    "@types/jest": "27.4.0",
+    "@types/react": "17.0.38",
+    "@types/react-dom": "17.0.11",
+    "bundlesize": "0.18.1",
+    "husky": "7.0.4",
+    "jest": "27.4.7",
+    "lint-staged": "12.3.2",
+    "npm-run-all": "4.1.5",
+    "prettier": "2.5.1",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "ts-node": "10.4.0",
+    "typescript": "4.5.5"
+  }
+}
