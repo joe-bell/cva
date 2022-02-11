@@ -48,6 +48,7 @@ Creating variants with the "traditional" CSS approach can become an arduous task
 - [**clb**](https://github.com/crswll/clb) ([Bill Criswell](https://github.com/crswll))  
   This project originally started out with the intention of merging into the wonderful [`clb`](https://github.com/crswll/clb) library, but after some discussion with Bill, we felt it was best to go down the route of a separate project.  
   I'm so grateful to Bill for sharing his work publicly and for getting me excited about building a type-safe variants API for classes. If you have a moment, please go and [star the project on GitHub](https://github.com/crswll/clb). Thank you Bill!
+- [**Vanilla Extract**](http://vanilla-extract.style) ([Seek](https://github.com/seek-oss))
 
 ## Installation
 
@@ -99,6 +100,7 @@ To kick things off, let's build a "basic" `button` component, using `cva` to han
 > **Note:** Use of Tailwind CSS is optional
 
 ```ts
+// components/button.ts
 import { cva } from "class-variance-authority";
 
 const button = cva(["font-semibold", "border", "rounded"], {
@@ -138,30 +140,44 @@ button({ intent: "secondary", size: "small" });
 // => "font-semibold border rounded bg-white text-gray-800 border-gray-400 hover:bg-gray-100 text-sm py-1 px-2"
 ```
 
+### Additional Classes
+
+All `cva` components provide an optional `class` prop, which can be used to pass additional classes to the component.
+
+```ts
+// components/button.ts
+import { cva } from "class-variance-authority";
+
+const button = cva(/* … */);
+
+button({ class: "m-4" });
+// => "…buttonClasses m-4"
+```
+
 ### TypeScript Helpers
 
 `cva` offers the `VariantProps` helper to extract variant types
 
 ```ts
-// styles/components.ts
+// components/button.ts
 import type { VariantProps } from "class-variance-authority";
 import { cva, cx } from "class-variance-authority";
 
 /**
- * YourComponent
+ * Button
  */
-export type YourComponentProps = VariantProps<typeof yourComponent>;
-export const yourComponent = cva(/* ... */);
+export type ButtonProps = VariantProps<typeof button>;
+export const button = cva(/* … */);
 ```
 
-### Composing Classes
+### Composing Components
 
-Whilst `cva` doesn't yet offer a built-in method for composing classes, it does offer the tools to extend components on your own terms…
+Whilst `cva` doesn't yet offer a built-in method for composing components, it does offer the tools to _extend_ components on your own terms…
 
-For example; two `cva` styles, concatenated together with `cx`:
+For example; two `cva` components, concatenated together with `cx`:
 
 ```ts
-// styles/components.ts
+// components/card.ts
 import type { VariantProps } from "class-variance-authority";
 import { cva, cx } from "class-variance-authority";
 
@@ -203,17 +219,23 @@ export const card = ({ margin, padding, shadow }: CardProps = {}) =>
 
 ### `cva`
 
-Builds a class variance authority
+Builds a `cva` component
 
 ```ts
 const component = cva("base", options);
 ```
+
+#### Parameters
 
 1. `base`: the base class name (`string`, `string[]` or `null`)
 1. `options` _(optional)_
    - `variants`: your variants schema
    - `compoundVariants`: variants based on a combination of previously defined variants
    - `defaultVariants`: set default values for previously defined variants
+
+#### Returns
+
+A `cva` component function
 
 ### `cx`
 
@@ -223,7 +245,13 @@ Concatenates class names
 const className = cx(classes);
 ```
 
+#### Parameters
+
 - `classes`: array of classes to be concatenated
+
+#### Returns
+
+`string`
 
 ## Examples
 
