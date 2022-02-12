@@ -16,6 +16,8 @@ export const cx = <T extends CxOptions>(...classes: T): CxReturn =>
 
 /* cva
   ============================================ */
+type Booleans = { true: true; false: false };
+type BoolMapping<T> = Booleans[T & keyof Booleans] | Exclude<T, keyof Booleans>;
 
 interface ClassProp {
   class?: ClassValue;
@@ -24,7 +26,7 @@ interface ClassProp {
 type VariantsSchema = Record<string, Record<string, ClassValue>>;
 
 type VariantsConfig<Variants extends VariantsSchema> = {
-  [Variant in keyof Variants]?: keyof Variants[Variant];
+  [Variant in keyof Variants]?: BoolMapping<keyof Variants[Variant]>;
 };
 
 export const cva =
