@@ -16,8 +16,7 @@ export const cx = <T extends CxOptions>(...classes: T): CxReturn =>
 
 /* cva
   ============================================ */
-type Booleans = { true: true; false: false };
-type BoolMapping<T> = Booleans[T & keyof Booleans] | Exclude<T, keyof Booleans>;
+type BoolMapping<T> = T extends "true" ? true : T extends "false" ? false : T;
 
 interface ClassProp {
   class?: ClassValue;
