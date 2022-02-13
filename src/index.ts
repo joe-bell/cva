@@ -1,6 +1,11 @@
 type ClassValue = string | null | undefined | ClassValue[];
 
 type OmitUndefined<T> = T extends undefined ? never : T;
+type StringToBoolean<T> = T extends "true"
+  ? true
+  : T extends "false"
+  ? false
+  : T;
 
 export type VariantProps<Component extends (...args: any) => any> =
   OmitUndefined<Parameters<Component>[0]>;
@@ -16,7 +21,6 @@ export const cx = <T extends CxOptions>(...classes: T): CxReturn =>
 
 /* cva
   ============================================ */
-type BoolMapping<T> = T extends "true" ? true : T extends "false" ? false : T;
 
 interface ClassProp {
   class?: ClassValue;
@@ -25,7 +29,7 @@ interface ClassProp {
 type VariantsSchema = Record<string, Record<string, ClassValue>>;
 
 type VariantsConfig<Variants extends VariantsSchema> = {
-  [Variant in keyof Variants]?: BoolMapping<keyof Variants[Variant]>;
+  [Variant in keyof Variants]?: StringToBoolean<keyof Variants[Variant]>;
 };
 
 export const cva =
