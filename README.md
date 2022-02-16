@@ -89,6 +89,18 @@ In the meantime, you can always alias the package for your convenience…
 
 </details>
 
+### Tailwind CSS IntelliSense
+
+If you're using the ["Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss), you can enable autocompletion inside `cva` by adding the following to your [`settings.json`](https://code.visualstudio.com/docs/getstarted/settings):
+
+```json
+{
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+  ]
+}
+```
+
 ## Getting Started
 
 > **Disclaimer**: Although `cva` is a [**tiny**](https://bundlephobia.com/package/class-variance-authority) library, it's best to use in a SSR/SSG environment – your user probably doesn't need this JavaScript, especially for static components.
