@@ -22,7 +22,7 @@ export const cx = <T extends CxOptions>(...classes: T): CxReturn =>
 /* cva
   ============================================ */
 
-interface ClassProp {
+export interface ClassProp {
   class?: ClassValue;
 }
 
