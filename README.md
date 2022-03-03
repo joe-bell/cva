@@ -64,19 +64,12 @@ Unfortunately, yes. Originally, the plan was the publish the package as `cva`, b
 
 In the meantime, you can always alias the package for your convenience…
 
-### Aliasing in TypeScript
+### Aliasing
 
-1. Add the alias to your [`tsconfig.json`](https://www.typescriptlang.org/tsconfig#paths) `paths`:
+1. Alias the package [`npm install`](https://docs.npmjs.com/cli/v6/commands/npm-install)
 
-   ```json
-   {
-     "compilerOptions": {
-       "baseUrl": ".",
-       "paths": {
-         "cva": ["node_modules/class-variance-authority"]
-       }
-     }
-   }
+   ```sh
+   npm i cva@npm:class-variance-authority
    ```
 
 2. Then import like so:
