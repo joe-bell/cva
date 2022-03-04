@@ -408,7 +408,6 @@ import {
   primaryMedium,
 } from "./button.css";
 
-// ⚠️ Disclaimer: Use of Tailwind CSS is optional
 const button = cva(base, {
   variants: {
     intent: {
