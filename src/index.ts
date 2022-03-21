@@ -1,11 +1,7 @@
 type ClassValue = string | null | undefined | ClassValue[];
 
 type OmitUndefined<T> = T extends undefined ? never : T;
-type StringToBoolean<T> = T extends "true"
-  ? true
-  : T extends "false"
-  ? false
-  : T;
+type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
 
 export type VariantProps<Component extends (...args: any) => any> =
   OmitUndefined<Parameters<Component>[0]>;
