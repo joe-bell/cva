@@ -546,6 +546,10 @@ describe("cva", () => {
           "button font-semibold border rounded button--small text-sm py-1 px-2",
         ],
         [
+          { disabled: false },
+          "button font-semibold border rounded button--enabled cursor-pointer",
+        ],
+        [
           { disabled: true },
           "button font-semibold border rounded button--disabled opacity-050 cursor-not-allowed",
         ],
@@ -566,8 +570,16 @@ describe("cva", () => {
           "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4",
         ],
         [
+          { intent: "warning", size: "large", disabled: null },
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4",
+        ],
+        [
           { intent: "warning", size: "large", disabled: true },
           "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black",
+        ],
+        [
+          { intent: "warning", size: "large", disabled: false },
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800",
         ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
@@ -729,6 +741,14 @@ describe("cva", () => {
           "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--small text-sm py-1 px-2",
         ],
         [
+          { disabled: null },
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--medium text-base py-2 px-4 button--primary-medium uppercase",
+        ],
+        [
+          { disabled: false },
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
+        ],
+        [
           { disabled: true },
           "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--disabled opacity-050 cursor-not-allowed button--medium text-base py-2 px-4 button--primary-medium uppercase",
         ],
@@ -749,8 +769,16 @@ describe("cva", () => {
           "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800",
         ],
         [
+          { intent: "warning", size: "large", disabled: null },
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4",
+        ],
+        [
           { intent: "warning", size: "large", disabled: true },
           "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black",
+        ],
+        [
+          { intent: "warning", size: "large", disabled: false },
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800",
         ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
