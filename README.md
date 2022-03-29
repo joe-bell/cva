@@ -66,7 +66,7 @@ In the meantime, you can always alias the package for your convenience…
 
 ### Aliasing
 
-1. Alias the package [`npm install`](https://docs.npmjs.com/cli/v6/commands/npm-install)
+1. Alias the package with [`npm install`](https://docs.npmjs.com/cli/v6/commands/npm-install)
 
    ```sh
    npm i cva@npm:class-variance-authority
