@@ -1,6 +1,6 @@
 {
   "name": "class-variance-authority",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Class Variance Authority 🧬",
   "author": "Joe Bell (https://joebell.co.uk)",
   "main": "dist/index.cjs.js",
