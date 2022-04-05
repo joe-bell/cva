@@ -382,7 +382,7 @@ describe("cva", () => {
         ],
         [
           { intent: "secondary", size: null },
-          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4",
+          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer",
         ],
         [
           { intent: "secondary", size: undefined },
@@ -754,7 +754,7 @@ describe("cva", () => {
         ],
         [
           { intent: "secondary", size: null },
-          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4",
+          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer",
         ],
         [
           { intent: "secondary", size: undefined },

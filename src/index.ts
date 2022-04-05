@@ -6,6 +6,9 @@ type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
 export type VariantProps<Component extends (...args: any) => any> =
   OmitUndefined<Parameters<Component>[0]>;
 
+const booleanToString = <T extends unknown>(value: T) =>
+  typeof value === "boolean" ? `${value}` : value;
+
 /* cx
   ============================================ */
 
@@ -53,11 +56,19 @@ export const cva =
     const { variants, defaultVariants } = config;
 
     const getVariantClassNames = Object.keys(variants).map(
-      (variant: keyof typeof variants) =>
-        variants[variant][
-          (props?.[variant as keyof typeof props] ||
-            defaultVariants?.[variant]) as keyof typeof variants[typeof variant]
-        ]
+      (variant: keyof typeof variants) => {
+        const variantProp = props?.[variant as keyof typeof props];
+        const defaultVariantProp = defaultVariants?.[variant];
+
+        if (variantProp === null) return null;
+
+        const variantKey = (booleanToString(variantProp) ||
+          booleanToString(
+            defaultVariantProp
+          )) as keyof typeof variants[typeof variant];
+
+        return variants[variant][variantKey];
+      }
     );
 
     const propsWithoutUndefined =
