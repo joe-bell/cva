@@ -1,7 +1,9 @@
-type ClassValue = string | null | undefined | ClassValue[];
-
-type OmitUndefined<T> = T extends undefined ? never : T;
-type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
+import type {
+  ClassProp,
+  ClassValue,
+  OmitUndefined,
+  StringToBoolean,
+} from "./types";
 
 export type VariantProps<Component extends (...args: any) => any> =
   OmitUndefined<Parameters<Component>[0]>;
@@ -20,10 +22,6 @@ export const cx = <T extends CxOptions>(...classes: T): CxReturn =>
 
 /* cva
   ============================================ */
-
-interface ClassProp {
-  class?: ClassValue;
-}
 
 type VariantsSchema = Record<string, Record<string, ClassValue>>;
 
