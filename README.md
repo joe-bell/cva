@@ -542,45 +542,41 @@ export const Button: React.FC<ButtonProps> = ({ intent, size, ...props }) => (
 
 ```vue
 <!-- button.vue -->
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
+import { cva } from 'class-variance-authority'
+import type { VariantProps } from 'class-variance-authority'
 
-import { cva } from "class-variance-authority";
-import type { VariantProps } from "class-variance-authority";
-
-const button = cva("button", {
+const button = cva('button', {
   variants: {
     intent: {
-      primary: "button--primary",
-      secondary: "button--secondary",
+      primary: 'button--primary',
+      secondary: 'button--secondary',
     },
     size: {
-      small: "button--small",
-      medium: "button--medium",
+      small: 'button--small',
+      medium: 'button--medium',
     },
   },
   compoundVariants: [
-    { intent: "primary", size: "medium", class: "button--primary-medium" },
+    { intent: 'primary', size: 'medium', class: 'button--primary-medium' },
   ],
   defaultVariants: {
-    intent: "primary",
-    size: "medium",
+    intent: 'primary',
+    size: 'medium',
   },
-});
+})
 
-type ButtonProps = VariantProps<typeof button>;
+type ButtonProps = VariantProps<typeof button>
 
-export default defineComponent({
-  props: ["intent" as ButtonProps["intent"], "size" as ButtonProps["size"]],
-  methods: {
-    button,
-  },
-});
+defineProps<{
+  intent: ButtonProps['intent']
+  size: ButtonProps['size']
+}>()
 </script>
 
 <template>
   <button :class="button({ intent, size })">
-    <slot></slot>
+    <slot />
   </button>
 </template>
 
