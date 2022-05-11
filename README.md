@@ -542,9 +542,7 @@ export const Button: React.FC<ButtonProps> = ({ intent, size, ...props }) => (
 
 ```vue
 <!-- button.vue -->
-<script lang="ts">
-import { defineComponent } from "vue";
-
+<script setup lang="ts">
 import { cva } from "class-variance-authority";
 import type { VariantProps } from "class-variance-authority";
 
@@ -570,17 +568,15 @@ const button = cva("button", {
 
 type ButtonProps = VariantProps<typeof button>;
 
-export default defineComponent({
-  props: ["intent" as ButtonProps["intent"], "size" as ButtonProps["size"]],
-  methods: {
-    button,
-  },
-});
+defineProps<{
+  intent: ButtonProps["intent"];
+  size: ButtonProps["size"];
+}>();
 </script>
 
 <template>
   <button :class="button({ intent, size })">
-    <slot></slot>
+    <slot />
   </button>
 </template>
 
