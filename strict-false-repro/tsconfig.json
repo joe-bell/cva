@@ -1,6 +1,0 @@
-{
-  "include": ["./index.ts"],
-  "compilerOptions": {
-    "strict": false
-  }
-}

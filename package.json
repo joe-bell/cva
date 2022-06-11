@@ -32,7 +32,6 @@
     "build:cjs": "npx swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.cjs.js -C module.type=commonjs",
     "build:esm": "npx swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.esm.js -C module.type=es6 ",
     "build:tsc": "tsc --project .config/tsconfig.build.json",
-    "check:strict-false-repro": "tsc --project strict-false-repro/tsconfig.json --noEmit",
     "check:tsc": "tsc --project tsconfig.json --noEmit",
     "check:frm": "npx prettier . --check --ignore-unknown --ignore-path .gitignore",
     "check": "run-p check:*",
