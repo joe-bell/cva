@@ -1,10 +1,7 @@
 {
-  "include": ["../src/**/*.ts"],
-  "exclude": ["../node_modules", "../dist", "../src/**/*.test.ts"],
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"],
   "compilerOptions": {
-    "baseUrl": ".",
-    "outDir": "../dist",
-    "declaration": true,
     "isolatedModules": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
