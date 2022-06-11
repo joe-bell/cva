@@ -37,7 +37,7 @@
     "check": "run-p check:*",
     "test": "run-p test:*",
     "test:jest": "jest --config .config/jest.config.ts --coverage",
-    "test:size": "run-p build:cjs build:esm && npx bundlesize -f 'dist/*.js' -s 800B",
+    "test:size": "run-p build:cjs build:esm && npx bundlesize -f 'dist/*.js' -s 850B",
     "dev": "jest --config .config/jest.config.ts --watch",
     "prepare": "husky install",
     "prepublishOnly": "npm run build"
