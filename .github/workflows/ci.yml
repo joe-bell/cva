@@ -10,8 +10,9 @@ jobs:
   npm:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        script: [check, build, test]
+        script: [lint, build, test]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
