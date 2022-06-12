@@ -10,6 +10,7 @@ jobs:
   npm:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         script: [check, build, test]
     steps:
