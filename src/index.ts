@@ -26,27 +26,27 @@ export const cx = <T extends CxOptions>(...classes: T): CxReturn =>
 
 type ConfigSchema = Record<string, Record<string, ClassValue>>;
 
-type VariantsConfig<Variants extends ConfigSchema> = {
-  [Variant in keyof Variants]?: StringToBoolean<keyof Variants[Variant]> | null;
+type ConfigVariants<T extends ConfigSchema> = {
+  [Variant in keyof T]?: StringToBoolean<keyof T[Variant]> | null;
 };
 
-type Config<Variants> = Variants extends ConfigSchema
+type Config<T> = T extends ConfigSchema
   ? {
-      variants?: Variants;
-      defaultVariants?: VariantsConfig<Variants>;
-      compoundVariants?: (Variants extends ConfigSchema
-        ? VariantsConfig<Variants> & ClassProp
+      variants?: T;
+      defaultVariants?: ConfigVariants<T>;
+      compoundVariants?: (T extends ConfigSchema
+        ? ConfigVariants<T> & ClassProp
         : ClassProp)[];
     }
   : never;
 
-type Props<Variants> = Variants extends ConfigSchema
-  ? VariantsConfig<Variants> & ClassProp
+type Props<T> = T extends ConfigSchema
+  ? ConfigVariants<T> & ClassProp
   : ClassProp;
 
 export const cva =
-  <Variants>(base?: ClassValue, config?: Config<Variants>) =>
-  (props?: Props<Variants>) => {
+  <T>(base?: ClassValue, config?: Config<T>) =>
+  (props?: Props<T>) => {
     const className = props?.class;
 
     if (config?.variants == null) return cx(base, className);
