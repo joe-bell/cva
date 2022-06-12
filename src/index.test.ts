@@ -71,10 +71,7 @@ describe("cva", () => {
     });
 
     describe("without defaults", () => {
-      type ButtonWithStringClassesProps = CVA.VariantProps<
-        typeof buttonWithStringClasses
-      >;
-      const buttonWithStringClasses = cva(null, {
+      const buttonWithoutBaseWithoutDefaultsString = cva(null, {
         variants: {
           intent: {
             primary:
@@ -115,10 +112,7 @@ describe("cva", () => {
         ],
       });
 
-      type ButtonWithArrayClassesProps = CVA.VariantProps<
-        typeof buttonWithArrayClasses
-      >;
-      const buttonWithArrayClasses = cva(null, {
+      const buttonWithoutBaseWithoutDefaultsArray = cva(null, {
         variants: {
           intent: {
             primary: [
@@ -178,16 +172,21 @@ describe("cva", () => {
         ],
       });
 
-      describe.each<
-        [ButtonWithStringClassesProps | ButtonWithArrayClassesProps, string]
-      >([
-        [undefined, ""],
+      type ButtonWithoutDefaultsWithoutBaseProps =
+        | CVA.VariantProps<typeof buttonWithoutBaseWithoutDefaultsString>
+        | CVA.VariantProps<typeof buttonWithoutBaseWithoutDefaultsArray>;
+
+      describe.each<[ButtonWithoutDefaultsWithoutBaseProps, string]>([
+        [
+          // @ts-expect-error
+          undefined,
+          "",
+        ],
         [{}, ""],
         [
           {
-            // @ts-expect-error
             aCheekyInvalidProp: "lol",
-          },
+          } as ButtonWithoutDefaultsWithoutBaseProps,
           "",
         ],
         [
@@ -198,7 +197,10 @@ describe("cva", () => {
         [{ size: "small" }, "button--small text-sm py-1 px-2"],
         [{ disabled: true }, "button--disabled opacity-050 cursor-not-allowed"],
         [
-          { intent: "secondary", size: null },
+          {
+            intent: "secondary",
+            size: null,
+          },
           "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
         ],
         [
@@ -219,17 +221,16 @@ describe("cva", () => {
         ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
-          expect(buttonWithStringClasses(options)).toBe(expected);
-          expect(buttonWithArrayClasses(options)).toBe(expected);
+          expect(buttonWithoutBaseWithoutDefaultsString(options)).toBe(
+            expected
+          );
+          expect(buttonWithoutBaseWithoutDefaultsArray(options)).toBe(expected);
         });
       });
     });
 
     describe("with defaults", () => {
-      type ButtonWithStringClassesProps = CVA.VariantProps<
-        typeof buttonWithStringClasses
-      >;
-      const buttonWithStringClasses = cva(
+      const buttonWithoutBaseWithDefaultsString = cva(
         "button font-semibold border rounded",
         {
           variants: {
@@ -278,10 +279,7 @@ describe("cva", () => {
         }
       );
 
-      type ButtonWithArrayClassesProps = CVA.VariantProps<
-        typeof buttonWithArrayClasses
-      >;
-      const buttonWithArrayClasses = cva(
+      const buttonWithoutBaseWithDefaultsArray = cva(
         ["button", "font-semibold", "border", "rounded"],
         {
           variants: {
@@ -349,10 +347,13 @@ describe("cva", () => {
         }
       );
 
-      describe.each<
-        [ButtonWithStringClassesProps | ButtonWithArrayClassesProps, string]
-      >([
+      type ButtonWithoutBaseWithDefaultsProps =
+        | CVA.VariantProps<typeof buttonWithoutBaseWithDefaultsString>
+        | CVA.VariantProps<typeof buttonWithoutBaseWithDefaultsArray>;
+
+      describe.each<[ButtonWithoutBaseWithDefaultsProps, string]>([
         [
+          // @ts-expect-error
           undefined,
           "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
         ],
@@ -362,9 +363,8 @@ describe("cva", () => {
         ],
         [
           {
-            // @ts-expect-error
             aCheekyInvalidProp: "lol",
-          },
+          } as ButtonWithoutBaseWithDefaultsProps,
           "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
         ],
         [
@@ -381,7 +381,10 @@ describe("cva", () => {
           "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--disabled opacity-050 cursor-not-allowed button--medium text-base py-2 px-4 button--primary-medium uppercase",
         ],
         [
-          { intent: "secondary", size: null },
+          {
+            intent: "secondary",
+            size: null,
+          },
           "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer",
         ],
         [
@@ -402,8 +405,8 @@ describe("cva", () => {
         ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
-          expect(buttonWithStringClasses(options)).toBe(expected);
-          expect(buttonWithArrayClasses(options)).toBe(expected);
+          expect(buttonWithoutBaseWithDefaultsString(options)).toBe(expected);
+          expect(buttonWithoutBaseWithDefaultsArray(options)).toBe(expected);
         });
       });
     });
@@ -411,10 +414,7 @@ describe("cva", () => {
 
   describe("with base", () => {
     describe("without defaults", () => {
-      type ButtonWithStringClassesProps = CVA.VariantProps<
-        typeof buttonWithStringClasses
-      >;
-      const buttonWithStringClasses = cva(
+      const buttonWithBaseWithoutDefaultsString = cva(
         "button font-semibold border rounded",
         {
           variants: {
@@ -458,10 +458,7 @@ describe("cva", () => {
         }
       );
 
-      type ButtonWithArrayClassesProps = CVA.VariantProps<
-        typeof buttonWithArrayClasses
-      >;
-      const buttonWithArrayClasses = cva(
+      const buttonWithBaseWithoutDefaultsArray = cva(
         ["button", "font-semibold", "border", "rounded"],
         {
           variants: {
@@ -524,10 +521,15 @@ describe("cva", () => {
         }
       );
 
-      describe.each<
-        [ButtonWithStringClassesProps | ButtonWithArrayClassesProps, string]
-      >([
-        [undefined, "button font-semibold border rounded"],
+      type ButtonWithBaseWithoutDefaultsProps =
+        | CVA.VariantProps<typeof buttonWithBaseWithoutDefaultsString>
+        | CVA.VariantProps<typeof buttonWithBaseWithoutDefaultsArray>;
+
+      describe.each<[ButtonWithBaseWithoutDefaultsProps, string]>([
+        [
+          undefined as unknown as ButtonWithBaseWithoutDefaultsProps,
+          "button font-semibold border rounded",
+        ],
         [{}, "button font-semibold border rounded"],
         [
           {
@@ -583,17 +585,14 @@ describe("cva", () => {
         ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
-          expect(buttonWithStringClasses(options)).toBe(expected);
-          expect(buttonWithArrayClasses(options)).toBe(expected);
+          expect(buttonWithBaseWithoutDefaultsString(options)).toBe(expected);
+          expect(buttonWithBaseWithoutDefaultsArray(options)).toBe(expected);
         });
       });
     });
 
     describe("with defaults", () => {
-      type ButtonWithStringClassesProps = CVA.VariantProps<
-        typeof buttonWithStringClasses
-      >;
-      const buttonWithStringClasses = cva(
+      const buttonWithBaseWithDefaultsString = cva(
         "button font-semibold border rounded",
         {
           variants: {
@@ -642,10 +641,7 @@ describe("cva", () => {
         }
       );
 
-      type ButtonWithArrayClassesProps = CVA.VariantProps<
-        typeof buttonWithArrayClasses
-      >;
-      const buttonWithArrayClasses = cva(
+      const buttonWithBaseWithDefaultsArray = cva(
         ["button", "font-semibold", "border", "rounded"],
         {
           variants: {
@@ -713,10 +709,13 @@ describe("cva", () => {
         }
       );
 
-      describe.each<
-        [ButtonWithStringClassesProps | ButtonWithArrayClassesProps, string]
-      >([
+      type ButtonWithBaseWithDefaultsProps =
+        | CVA.VariantProps<typeof buttonWithBaseWithDefaultsString>
+        | CVA.VariantProps<typeof buttonWithBaseWithDefaultsArray>;
+
+      describe.each<[ButtonWithBaseWithDefaultsProps, string]>([
         [
+          // @ts-expect-error
           undefined,
           "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
         ],
@@ -726,9 +725,8 @@ describe("cva", () => {
         ],
         [
           {
-            // @ts-expect-error
             aCheekyInvalidProp: "lol",
-          },
+          } as ButtonWithBaseWithDefaultsProps,
           "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
         ],
         [
@@ -769,7 +767,11 @@ describe("cva", () => {
           "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800",
         ],
         [
-          { intent: "warning", size: "large", disabled: null },
+          {
+            intent: "warning",
+            size: "large",
+            disabled: null,
+          },
           "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4",
         ],
         [
@@ -782,8 +784,8 @@ describe("cva", () => {
         ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
-          expect(buttonWithStringClasses(options)).toBe(expected);
-          expect(buttonWithArrayClasses(options)).toBe(expected);
+          expect(buttonWithBaseWithDefaultsString(options)).toBe(expected);
+          expect(buttonWithBaseWithDefaultsArray(options)).toBe(expected);
         });
       });
     });
@@ -822,6 +824,7 @@ describe("cva", () => {
 
     describe.each<[CardProps, string]>([
       [
+        // @ts-expect-error
         undefined,
         "box box-border m-0 p-0 card border-solid border-slate-300 rounded",
       ],

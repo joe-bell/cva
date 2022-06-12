@@ -18,35 +18,35 @@ export type CxOptions = ClassValue[];
 export type CxReturn = string;
 
 export const cx = <T extends CxOptions>(...classes: T): CxReturn =>
+  // @ts-ignore
   classes.flat(Infinity).filter(Boolean).join(" ");
 
 /* cva
   ============================================ */
 
-type VariantsSchema = Record<string, Record<string, ClassValue>>;
+type ConfigSchema = Record<string, Record<string, ClassValue>>;
 
-type VariantsConfig<Variants extends VariantsSchema> = {
-  [Variant in keyof Variants]?: StringToBoolean<keyof Variants[Variant]>;
+type ConfigVariants<T extends ConfigSchema> = {
+  [Variant in keyof T]?: StringToBoolean<keyof T[Variant]> | null;
 };
 
+type Config<T> = T extends ConfigSchema
+  ? {
+      variants?: T;
+      defaultVariants?: ConfigVariants<T>;
+      compoundVariants?: (T extends ConfigSchema
+        ? ConfigVariants<T> & ClassProp
+        : ClassProp)[];
+    }
+  : never;
+
+type Props<T> = T extends ConfigSchema
+  ? ConfigVariants<T> & ClassProp
+  : ClassProp;
+
 export const cva =
-  <Variants>(
-    base?: ClassValue,
-    config?: Variants extends VariantsSchema
-      ? {
-          variants?: Variants;
-          defaultVariants?: VariantsConfig<Variants>;
-          compoundVariants?: (Variants extends VariantsSchema
-            ? VariantsConfig<Variants> & ClassProp
-            : ClassProp)[];
-        }
-      : never
-  ) =>
-  (
-    props?: Variants extends VariantsSchema
-      ? VariantsConfig<Variants> & ClassProp
-      : ClassProp
-  ) => {
+  <T>(base?: ClassValue, config?: Config<T>) =>
+  (props?: Props<T>) => {
     const className = props?.class;
 
     if (config?.variants == null) return cx(base, className);
