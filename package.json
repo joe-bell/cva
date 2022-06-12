@@ -35,6 +35,7 @@
     "lint:tsc": "tsc --project tsconfig.json --noEmit",
     "lint:frm": "npx prettier . --check --ignore-unknown --ignore-path .gitignore",
     "lint": "run-p lint:*",
+    "pre-commit": "npx lint-staged --config .config/lint-staged.config.mjs",
     "test": "run-p test:*",
     "test:jest": "jest --config .config/jest.config.ts --coverage",
     "test:size": "run-p build:cjs build:esm && npx bundlesize -f 'dist/*.js' -s 850B",
