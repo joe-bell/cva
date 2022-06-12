@@ -27,7 +27,7 @@ export const cx = <T extends CxOptions>(...classes: T): CxReturn =>
 type ConfigSchema = Record<string, Record<string, ClassValue>>;
 
 type VariantsConfig<Variants extends ConfigSchema> = {
-  [Variant in keyof Variants]?: StringToBoolean<keyof Variants[Variant]>;
+  [Variant in keyof Variants]?: StringToBoolean<keyof Variants[Variant]> | null;
 };
 
 type Config<Variants> = Variants extends ConfigSchema

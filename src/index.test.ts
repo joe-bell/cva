@@ -71,10 +71,7 @@ describe("cva", () => {
     });
 
     describe("without defaults", () => {
-      type ButtonWithStringClassesProps = CVA.VariantProps<
-        typeof buttonWithStringClasses
-      >;
-      const buttonWithStringClasses = cva(null, {
+      const buttonWithoutBaseWithoutDefaultsString = cva(null, {
         variants: {
           intent: {
             primary:
@@ -115,10 +112,7 @@ describe("cva", () => {
         ],
       });
 
-      type ButtonWithArrayClassesProps = CVA.VariantProps<
-        typeof buttonWithArrayClasses
-      >;
-      const buttonWithArrayClasses = cva(null, {
+      const buttonWithoutBaseWithoutDefaultsArray = cva(null, {
         variants: {
           intent: {
             primary: [
@@ -178,18 +172,23 @@ describe("cva", () => {
         ],
       });
 
-      describe.each<
-        [ButtonWithStringClassesProps | ButtonWithArrayClassesProps, string]
-      >([
-        // [undefined, ""],
+      type ButtonWithoutDefaultsWithoutBaseProps =
+        | CVA.VariantProps<typeof buttonWithoutBaseWithoutDefaultsString>
+        | CVA.VariantProps<typeof buttonWithoutBaseWithoutDefaultsArray>;
+
+      describe.each<[ButtonWithoutDefaultsWithoutBaseProps, string]>([
+        [
+          // @ts-expect-error
+          undefined,
+          "",
+        ],
         [{}, ""],
-        // [
-        //   {
-        //     // @ts-expect-error
-        //     aCheekyInvalidProp: "lol",
-        //   },
-        //   "",
-        // ],
+        [
+          {
+            aCheekyInvalidProp: "lol",
+          } as ButtonWithoutDefaultsWithoutBaseProps,
+          "",
+        ],
         [
           { intent: "secondary" },
           "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
@@ -200,8 +199,6 @@ describe("cva", () => {
         [
           {
             intent: "secondary",
-            // @TODO REMOVE
-            // @ts-expect-error
             size: null,
           },
           "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
@@ -224,17 +221,16 @@ describe("cva", () => {
         ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
-          expect(buttonWithStringClasses(options)).toBe(expected);
-          expect(buttonWithArrayClasses(options)).toBe(expected);
+          expect(buttonWithoutBaseWithoutDefaultsString(options)).toBe(
+            expected
+          );
+          expect(buttonWithoutBaseWithoutDefaultsArray(options)).toBe(expected);
         });
       });
     });
 
     describe("with defaults", () => {
-      type ButtonWithStringClassesProps = CVA.VariantProps<
-        typeof buttonWithStringClasses
-      >;
-      const buttonWithStringClasses = cva(
+      const buttonWithoutBaseWithDefaultsString = cva(
         "button font-semibold border rounded",
         {
           variants: {
@@ -283,10 +279,7 @@ describe("cva", () => {
         }
       );
 
-      type ButtonWithArrayClassesProps = CVA.VariantProps<
-        typeof buttonWithArrayClasses
-      >;
-      const buttonWithArrayClasses = cva(
+      const buttonWithoutBaseWithDefaultsArray = cva(
         ["button", "font-semibold", "border", "rounded"],
         {
           variants: {
@@ -354,24 +347,26 @@ describe("cva", () => {
         }
       );
 
-      describe.each<
-        [ButtonWithStringClassesProps | ButtonWithArrayClassesProps, string]
-      >([
-        // [
-        //   undefined,
-        //   "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
-        // ],
+      type ButtonWithoutBaseWithDefaultsProps =
+        | CVA.VariantProps<typeof buttonWithoutBaseWithDefaultsString>
+        | CVA.VariantProps<typeof buttonWithoutBaseWithDefaultsArray>;
+
+      describe.each<[ButtonWithoutBaseWithDefaultsProps, string]>([
+        [
+          // @ts-expect-error
+          undefined,
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
+        ],
         [
           {},
           "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
         ],
-        // [
-        //   {
-        //     // @ts-expect-error
-        //     aCheekyInvalidProp: "lol",
-        //   },
-        //   "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
-        // ],
+        [
+          {
+            aCheekyInvalidProp: "lol",
+          } as ButtonWithoutBaseWithDefaultsProps,
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
+        ],
         [
           { intent: "secondary" },
           "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4",
@@ -388,8 +383,6 @@ describe("cva", () => {
         [
           {
             intent: "secondary",
-            // @TODO REMOVE
-            // @ts-expect-error
             size: null,
           },
           "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer",
@@ -412,8 +405,8 @@ describe("cva", () => {
         ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
-          expect(buttonWithStringClasses(options)).toBe(expected);
-          expect(buttonWithArrayClasses(options)).toBe(expected);
+          expect(buttonWithoutBaseWithDefaultsString(options)).toBe(expected);
+          expect(buttonWithoutBaseWithDefaultsArray(options)).toBe(expected);
         });
       });
     });
@@ -421,10 +414,7 @@ describe("cva", () => {
 
   describe("with base", () => {
     describe("without defaults", () => {
-      type ButtonWithStringClassesProps = CVA.VariantProps<
-        typeof buttonWithStringClasses
-      >;
-      const buttonWithStringClasses = cva(
+      const buttonWithBaseWithoutDefaultsString = cva(
         "button font-semibold border rounded",
         {
           variants: {
@@ -468,10 +458,7 @@ describe("cva", () => {
         }
       );
 
-      type ButtonWithArrayClassesProps = CVA.VariantProps<
-        typeof buttonWithArrayClasses
-      >;
-      const buttonWithArrayClasses = cva(
+      const buttonWithBaseWithoutDefaultsArray = cva(
         ["button", "font-semibold", "border", "rounded"],
         {
           variants: {
@@ -534,10 +521,15 @@ describe("cva", () => {
         }
       );
 
-      describe.each<
-        [ButtonWithStringClassesProps | ButtonWithArrayClassesProps, string]
-      >([
-        // [undefined, "button font-semibold border rounded"],
+      type ButtonWithBaseWithoutDefaultsProps =
+        | CVA.VariantProps<typeof buttonWithBaseWithoutDefaultsString>
+        | CVA.VariantProps<typeof buttonWithBaseWithoutDefaultsArray>;
+
+      describe.each<[ButtonWithBaseWithoutDefaultsProps, string]>([
+        [
+          undefined as unknown as ButtonWithBaseWithoutDefaultsProps,
+          "button font-semibold border rounded",
+        ],
         [{}, "button font-semibold border rounded"],
         [
           {
@@ -563,10 +555,10 @@ describe("cva", () => {
           { disabled: true },
           "button font-semibold border rounded button--disabled opacity-050 cursor-not-allowed",
         ],
-        // [
-        //   { intent: "secondary", size: null },
-        //   "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-        // ],
+        [
+          { intent: "secondary", size: null },
+          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+        ],
         [
           { intent: "secondary", size: undefined },
           "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
@@ -579,10 +571,10 @@ describe("cva", () => {
           { intent: "warning", size: "large" },
           "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4",
         ],
-        // [
-        //   { intent: "warning", size: "large", disabled: null },
-        //   "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4",
-        // ],
+        [
+          { intent: "warning", size: "large", disabled: null },
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4",
+        ],
         [
           { intent: "warning", size: "large", disabled: true },
           "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black",
@@ -593,17 +585,14 @@ describe("cva", () => {
         ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
-          expect(buttonWithStringClasses(options)).toBe(expected);
-          expect(buttonWithArrayClasses(options)).toBe(expected);
+          expect(buttonWithBaseWithoutDefaultsString(options)).toBe(expected);
+          expect(buttonWithBaseWithoutDefaultsArray(options)).toBe(expected);
         });
       });
     });
 
     describe("with defaults", () => {
-      type ButtonWithStringClassesProps = CVA.VariantProps<
-        typeof buttonWithStringClasses
-      >;
-      const buttonWithStringClasses = cva(
+      const buttonWithBaseWithDefaultsString = cva(
         "button font-semibold border rounded",
         {
           variants: {
@@ -652,10 +641,7 @@ describe("cva", () => {
         }
       );
 
-      type ButtonWithArrayClassesProps = CVA.VariantProps<
-        typeof buttonWithArrayClasses
-      >;
-      const buttonWithArrayClasses = cva(
+      const buttonWithBaseWithDefaultsArray = cva(
         ["button", "font-semibold", "border", "rounded"],
         {
           variants: {
@@ -723,24 +709,26 @@ describe("cva", () => {
         }
       );
 
-      describe.each<
-        [ButtonWithStringClassesProps | ButtonWithArrayClassesProps, string]
-      >([
-        // [
-        //   undefined,
-        //   "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
-        // ],
+      type ButtonWithBaseWithDefaultsProps =
+        | CVA.VariantProps<typeof buttonWithBaseWithDefaultsString>
+        | CVA.VariantProps<typeof buttonWithBaseWithDefaultsArray>;
+
+      describe.each<[ButtonWithBaseWithDefaultsProps, string]>([
+        [
+          // @ts-expect-error
+          undefined,
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
+        ],
         [
           {},
           "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
         ],
-        // [
-        //   {
-        //     // @ts-expect-error
-        //     aCheekyInvalidProp: "lol",
-        //   },
-        //   "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
-        // ],
+        [
+          {
+            aCheekyInvalidProp: "lol",
+          } as ButtonWithBaseWithDefaultsProps,
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
+        ],
         [
           { intent: "secondary" },
           "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4",
@@ -750,10 +738,10 @@ describe("cva", () => {
           { size: "small" },
           "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--small text-sm py-1 px-2",
         ],
-        // [
-        //   { disabled: null },
-        //   "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--medium text-base py-2 px-4 button--primary-medium uppercase",
-        // ],
+        [
+          { disabled: null },
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--medium text-base py-2 px-4 button--primary-medium uppercase",
+        ],
         [
           { disabled: false },
           "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
@@ -762,10 +750,10 @@ describe("cva", () => {
           { disabled: true },
           "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--disabled opacity-050 cursor-not-allowed button--medium text-base py-2 px-4 button--primary-medium uppercase",
         ],
-        // [
-        //   { intent: "secondary", size: null },
-        //   "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer",
-        // ],
+        [
+          { intent: "secondary", size: null },
+          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer",
+        ],
         [
           { intent: "secondary", size: undefined },
           "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4",
@@ -782,8 +770,6 @@ describe("cva", () => {
           {
             intent: "warning",
             size: "large",
-            // @TODO REMOVE
-            // @ts-expect-error
             disabled: null,
           },
           "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4",
@@ -798,8 +784,8 @@ describe("cva", () => {
         ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
-          expect(buttonWithStringClasses(options)).toBe(expected);
-          expect(buttonWithArrayClasses(options)).toBe(expected);
+          expect(buttonWithBaseWithDefaultsString(options)).toBe(expected);
+          expect(buttonWithBaseWithDefaultsArray(options)).toBe(expected);
         });
       });
     });
