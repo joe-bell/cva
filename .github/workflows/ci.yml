@@ -18,6 +18,6 @@ jobs:
         with:
           node-version-file: ".nvmrc"
           cache: "npm"
-      - run: npm i
+      - run: npm ci
       - name: ${{ matrix.script }}
         run: npm run ${{ matrix.script }}
