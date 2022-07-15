@@ -5,8 +5,10 @@ import type {
   StringToBoolean,
 } from "./types";
 
-export type VariantProps<Component extends (...args: any) => any> =
-  OmitUndefined<Parameters<Component>[0]>;
+export type VariantProps<Component extends (...args: any) => any> = Omit<
+  OmitUndefined<Parameters<Component>[0]>,
+  "class"
+>;
 
 const booleanToString = <T extends unknown>(value: T) =>
   typeof value === "boolean" ? `${value}` : value;
