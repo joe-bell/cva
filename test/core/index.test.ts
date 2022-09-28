@@ -1,5 +1,5 @@
-import type * as CVA from "./";
-import { cva, cx } from "./";
+import type * as CVA from "../../src";
+import { cva, cx } from "../../src";
 
 describe("cx", () => {
   describe.each<CVA.CxOptions>([

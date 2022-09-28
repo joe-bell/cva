@@ -1,0 +1,24 @@
+name: "Test"
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: "Install Node"
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+      - name: "Install Deps"
+        run: npm install
+      - name: "Test"
+        run: npm run vitest:coverage
+      - name: "Report Coverage"
+        if: always() # Also generate the report if tests are failing
+        uses: davelosert/vitest-coverage-report-action@v1
+        with:
+          vite-config-path: ./vitest.config.ts

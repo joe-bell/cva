@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*.ts"],
+  "include": ["src", "test"],
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "isolatedModules": true,
@@ -9,6 +9,8 @@
     "target": "ES2019",
     "strict": true,
     "incremental": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "types": ["vitest/globals"]
   }
 }
