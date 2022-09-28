@@ -264,6 +264,53 @@ const className = cx(classes);
 > ⚠️ Warning: The examples below are purely demonstrative and haven't been tested thoroughly (yet)
 
 <details>
+  <summary>Astro</summary>
+
+```astro
+---
+import { cva, type VariantProps } from "class-variance-authority";
+
+const button = cva("button", {
+  variants: {
+    intent: {
+      primary: [
+        "bg-blue-500",
+        "text-white",
+        "border-transparent",
+        "hover:bg-blue-600",
+      ],
+      secondary: [
+        "bg-white",
+        "text-gray-800",
+        "border-gray-400",
+        "hover:bg-gray-100",
+      ],
+    },
+    size: {
+      small: ["text-sm", "py-1", "px-2"],
+      medium: ["text-base", "py-2", "px-4"],
+    },
+  },
+  compoundVariants: [{ intent: "primary", size: "medium", class: "uppercase" }],
+});
+
+interface Props extends VariantProps<typeof button> {}
+
+/**
+ * For Astro components, we recommend setting your defaultVariants within
+ * Astro.props (which are `undefined` by default)
+ */
+const { intent = "primary", size = "medium" } = Astro.props;
+---
+
+<button class={button({ intent, size })}>
+  <slot />
+</button>
+```
+
+</details>
+
+<details>
   <summary>BEM</summary>
 
 ```css
@@ -370,7 +417,7 @@ module.exports = function ({ label, intent, size }) {
     <summary>React (with CSS Modules)</summary>
 
 ```css
-/* button.css */
+/* button.module.css */
 .base {
   /* */
 }
@@ -397,8 +444,7 @@ module.exports = function ({ label, intent, size }) {
 ```tsx
 // button.tsx
 import React from "react";
-import { cva } from "class-variance-authority";
-import type { VariantProps } from "class-variance-authority";
+import { cva, type VariantProps } from "class-variance-authority";
 
 import {
   base,
@@ -407,7 +453,7 @@ import {
   small,
   medium,
   primaryMedium,
-} from "./button.css";
+} from "./button.module.css";
 
 const button = cva(base, {
   variants: {
@@ -429,10 +475,17 @@ const button = cva(base, {
   },
 });
 
-export type ButtonProps = VariantProps<typeof button>;
+export interface ButtonProps
+  extends React.HTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof button> {}
 
-export const Button: React.FC<ButtonProps> = ({ intent, size, ...props }) => (
-  <button className={button({ intent, size })} {...props} />
+export const Button: React.FC<ButtonProps> = ({
+  className,
+  intent,
+  size,
+  ...props
+}) => (
+  <button className={button({ intent, size, class: className })} {...props} />
 );
 ```
 
@@ -444,8 +497,7 @@ export const Button: React.FC<ButtonProps> = ({ intent, size, ...props }) => (
 ```tsx
 // button.tsx
 import React from "react";
-import { cva } from "class-variance-authority";
-import type { VariantProps } from "class-variance-authority";
+import { cva, type VariantProps } from "class-variance-authority";
 
 // ⚠️ Disclaimer: Use of Tailwind CSS is optional
 const button = cva("button", {
@@ -476,10 +528,17 @@ const button = cva("button", {
   },
 });
 
-export type ButtonProps = VariantProps<typeof button>;
+export interface ButtonProps
+  extends React.HTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof button> {}
 
-export const Button: React.FC<ButtonProps> = ({ intent, size, ...props }) => (
-  <button className={button({ intent, size })} {...props} />
+export const Button: React.FC<ButtonProps> = ({
+  className,
+  intent,
+  size,
+  ...props
+}) => (
+  <button className={button({ intent, size, class: className })} {...props} />
 );
 ```
 
@@ -491,8 +550,7 @@ export const Button: React.FC<ButtonProps> = ({ intent, size, ...props }) => (
 ```svelte
 <!-- button.svelte -->
 <script lang="ts">
-  import { cva } from "class-variance-authority";
-  import type {VariantProps} from "class-variance-authority";
+  import { cva, type VariantProps } from "class-variance-authority";
 
   const button = cva("button", {
     variants: {
@@ -543,8 +601,7 @@ export const Button: React.FC<ButtonProps> = ({ intent, size, ...props }) => (
 ```vue
 <!-- button.vue -->
 <script setup lang="ts">
-import { cva } from "class-variance-authority";
-import type { VariantProps } from "class-variance-authority";
+import { cva, type VariantProps } from "class-variance-authority";
 
 const button = cva("button", {
   variants: {
