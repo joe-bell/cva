@@ -11,7 +11,7 @@ export type VariantProps<Component extends (...args: any) => any> = Omit<
 >;
 
 const booleanToString = <T extends unknown>(value: T) =>
-  typeof value === "boolean" ? `${value}` : value;
+  typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
 
 /* cx
   ============================================ */
