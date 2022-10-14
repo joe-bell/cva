@@ -92,6 +92,10 @@ describe("cva", () => {
             medium: "button--medium text-base py-2 px-4",
             large: "button--large text-lg py-2.5 px-4",
           },
+          m: {
+            0: "m-0",
+            1: "m-1",
+          },
         },
         compoundVariants: [
           {
@@ -152,6 +156,10 @@ describe("cva", () => {
             medium: ["button--medium", "text-base", "py-2", "px-4"],
             large: ["button--large", "text-lg", "py-2.5", "px-4"],
           },
+          m: {
+            0: "m-0",
+            1: "m-1",
+          },
         },
         compoundVariants: [
           {
@@ -193,7 +201,6 @@ describe("cva", () => {
           { intent: "secondary" },
           "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
         ],
-
         [{ size: "small" }, "button--small text-sm py-1 px-2"],
         [{ disabled: true }, "button--disabled opacity-050 cursor-not-allowed"],
         [
@@ -218,6 +225,14 @@ describe("cva", () => {
         [
           { intent: "warning", size: "large", disabled: true },
           "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black",
+        ],
+        [
+          { intent: "primary", m: 0 },
+          "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-0",
+        ],
+        [
+          { intent: "primary", m: 1 },
+          "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-1",
         ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
@@ -253,6 +268,10 @@ describe("cva", () => {
               medium: "button--medium text-base py-2 px-4",
               large: "button--large text-lg py-2.5 px-4",
             },
+            m: {
+              0: "m-0",
+              1: "m-1",
+            },
           },
           compoundVariants: [
             {
@@ -272,6 +291,7 @@ describe("cva", () => {
             },
           ],
           defaultVariants: {
+            m: 0,
             disabled: false,
             intent: "primary",
             size: "medium",
@@ -321,6 +341,10 @@ describe("cva", () => {
               medium: ["button--medium", "text-base", "py-2", "px-4"],
               large: ["button--large", "text-lg", "py-2.5", "px-4"],
             },
+            m: {
+              0: "m-0",
+              1: "m-1",
+            },
           },
           compoundVariants: [
             {
@@ -340,6 +364,7 @@ describe("cva", () => {
             },
           ],
           defaultVariants: {
+            m: 0,
             disabled: false,
             intent: "primary",
             size: "medium",
@@ -355,53 +380,61 @@ describe("cva", () => {
         [
           // @ts-expect-error
           undefined,
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
         ],
         [
           {},
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
         ],
         [
           {
             aCheekyInvalidProp: "lol",
           } as ButtonWithoutBaseWithDefaultsProps,
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
         ],
         [
           { intent: "secondary" },
-          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4",
+          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0",
         ],
 
         [
           { size: "small" },
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--small text-sm py-1 px-2",
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--small text-sm py-1 px-2 m-0",
         ],
         [
           { disabled: true },
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--disabled opacity-050 cursor-not-allowed button--medium text-base py-2 px-4 button--primary-medium uppercase",
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--disabled opacity-050 cursor-not-allowed button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
         ],
         [
           {
             intent: "secondary",
             size: null,
           },
-          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer",
+          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer m-0",
         ],
         [
           { intent: "secondary", size: undefined },
-          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4",
+          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0",
         ],
         [
           { intent: "danger", size: "medium" },
-          "button font-semibold border rounded button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--enabled cursor-pointer button--medium text-base py-2 px-4",
+          "button font-semibold border rounded button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0",
         ],
         [
           { intent: "warning", size: "large" },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800",
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 m-0 button--warning-enabled text-gray-800",
         ],
         [
           { intent: "warning", size: "large", disabled: true },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black",
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 m-0 button--warning-disabled text-black",
+        ],
+        [
+          { intent: "primary", m: 0 },
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
+        ],
+        [
+          { intent: "primary", m: 1 },
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-1 button--primary-medium uppercase",
         ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {

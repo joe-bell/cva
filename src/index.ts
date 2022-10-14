@@ -10,7 +10,7 @@ export type VariantProps<Component extends (...args: any) => any> = Omit<
   "class"
 >;
 
-const booleanToString = <T extends unknown>(value: T) =>
+const falsyToString = <T extends unknown>(value: T) =>
   typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
 
 /* cx
@@ -62,8 +62,8 @@ export const cva =
 
         if (variantProp === null) return null;
 
-        const variantKey = (booleanToString(variantProp) ||
-          booleanToString(
+        const variantKey = (falsyToString(variantProp) ||
+          falsyToString(
             defaultVariantProp
           )) as keyof typeof variants[typeof variant];
 
