@@ -692,3 +692,32 @@ greeter({ isLoggedIn: "true" });
 ```
 
 </details>
+
+## FAQs
+
+### Why Don't You Provide a `styled` API?
+
+Long story short: it's unnecessary.
+
+`cva` encourages you to think of components as traditional CSS classes:
+
+- Less JavaScript is better
+- They're framework agnostic; truly reusable
+- Polymorphism is free; just apply the class to your preferred HTML element
+- Less opinionated; you're free to build components with `cva` however you'd like
+
+<details>
+
+  <summary>Example: Polymorphic Components</summary>
+
+There's no `as` prop in `cva`, because HTML is free:
+
+```diff
+-- // A familiar `styled` button as a link
+-- <Button as="a" href="#" variant="primary">Button as a link</Button>
+
+++ // A `cva` button as a link
+++ <a href="#" class={button({variant: "primary"})}>Button as a link</a>
+```
+
+</details>
