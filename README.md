@@ -159,7 +159,9 @@ button({ class: "m-4" });
 // => "…buttonClasses m-4"
 ```
 
-### TypeScript Helpers
+### TypeScript
+
+#### `VariantProps`
 
 `cva` offers the `VariantProps` helper to extract variant types
 
@@ -173,6 +175,43 @@ import { cva, cx } from "class-variance-authority";
  */
 export type ButtonProps = VariantProps<typeof button>;
 export const button = cva(/* … */);
+```
+
+#### Required Variants
+
+To keep the API small and unopionated, `cva` doesn't offer a built-in solution for setting required variants.
+
+Instead, we recommend using TypeScript's [Utility Types](https://www.typescriptlang.org/docs/handbook/utility-types.html):
+
+```ts
+// components/button.ts
+import { cva, type VariantProps } from "class-variance-authority";
+
+export type ButtonVariantProps = VariantProps<typeof button>;
+export const buttonVariants = cva("…", {
+  variants: {
+    optional: { a: "…", b: "…" },
+    required: { a: "…", b: "…" },
+  },
+});
+
+/**
+ * Button
+ */
+export interface ButtonProps
+  extends Omit<ButtonVariantProps, "required">,
+    Required<Pick<ButtonVariantProps, "required">> {}
+
+export const button = (props: ButtonProps) => buttonVariants(props);
+
+// ❌ TypeScript Error:
+// Argument of type "{}": is not assignable to parameter of type "ButtonProps".
+//   Property "required" is missing in type "{}" but required in type
+//   "ButtonProps".
+button({});
+
+// ✅
+button({ required: "a" });
 ```
 
 ### Composing Components
@@ -721,3 +760,37 @@ There's no `as` prop in `cva`, because HTML is free:
 ```
 
 </details>
+
+### How Can I Create [Responsive Variants like Stitches.js](https://stitches.dev/docs/responsive-styles#responsive-variants)?
+
+You can't – at least not yet.
+
+`cva` doesn't know about how you choose to apply CSS clases, and it doesn't want to.
+
+We recommend either:
+
+- Showing/hiding elements with different variants, based on your preferred breakpoint.
+
+  <details>
+    <summary>Example: With Tailwind</summary>
+
+  ```tsx
+  export const Example = () => (
+    <>
+      <div className="hidden sm:inline-flex">
+        <button className={button({ intent: "primary" })}>
+          Hidden until sm
+        </button>
+      </div>
+      <div className="inline-flex sm:hidden">
+        <button className={button({ intent: "secondary" })}>
+          Hidden after sm
+        </button>
+      </div>
+    </>
+  );
+  ```
+
+  </details>
+
+- Create a bespoke variant that changes based on the breakpoint.
