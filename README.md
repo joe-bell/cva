@@ -98,6 +98,10 @@ If you're using the ["Tailwind CSS IntelliSense" Visual Studio Code extension](h
 
 > **Disclaimer**: Although `cva` is a [**tiny**](https://bundlephobia.com/package/class-variance-authority) library, it's best to use in a SSR/SSG environment – your user probably doesn't need this JavaScript, especially for static components.
 
+[Tru Narla](https://twitter.com/trunarla) did a wonderful overview of `cva` at Next.js Conf 2022 – you should check it out before continuing:
+
+[![Building a design system in Next.js with Tailwind](.github/assets/youtube-trunarla.png "Watch on YouTube")](https://www.youtube.com/watch?v=T-Zv73yZ_QI)
+
 ### Your First Component
 
 To kick things off, let's build a "basic" `button` component, using `cva` to handle our variant's classes
