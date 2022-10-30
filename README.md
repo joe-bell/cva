@@ -767,7 +767,7 @@ There's no `as` prop in `cva`, because HTML is free:
 
 ### How Can I Create [Responsive Variants like Stitches.js](https://stitches.dev/docs/responsive-styles#responsive-variants)?
 
-You can't – at least not yet.
+You can't.
 
 `cva` doesn't know about how you choose to apply CSS clases, and it doesn't want to.
 
@@ -798,3 +798,13 @@ We recommend either:
   </details>
 
 - Create a bespoke variant that changes based on the breakpoint.
+
+  _e.g. `button({ intent: "primaryUntilMd" })`_
+
+> **Note**
+>
+> This is something I've been thinking about since the project's inception, and I've gone back and forth many times on the idea of building it. It's a large undertaking and brings all the complexity of supporting many different build tools and frameworks.
+>
+> In my experience, "responsive variants" are typically rare, and hiding/showing different elements is usually good enough to get by.
+>
+> To be frank, I'm probably not going to build/maintain a solution unless someone periodically gives me a thick wad of cash to do so, and even then I'd probably rather spend my free time living my life.
