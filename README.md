@@ -43,8 +43,8 @@ Creating variants with the "traditional" CSS approach can become an arduous task
 
 ## Acknowledgements
 
-- [**Stitches**](https://stitches.dev/) ([Modulz](http://modulz.app))  
-  Huge thanks to the Modulz team for pioneering the `variants` API movement – your open-source contributions are immensely appreciated
+- [**Stitches**](https://stitches.dev/) ([WorkOS](https://workos.com))  
+  Huge thanks to the WorkOS team for pioneering the `variants` API movement – your open-source contributions are immensely appreciated
 - [**clb**](https://github.com/crswll/clb) ([Bill Criswell](https://github.com/crswll))  
   This project originally started out with the intention of merging into the wonderful [`clb`](https://github.com/crswll/clb) library, but after some discussion with Bill, we felt it was best to go down the route of a separate project.  
   I'm so grateful to Bill for sharing his work publicly and for getting me excited about building a type-safe variants API for classes. If you have a moment, please go and [star the project on GitHub](https://github.com/crswll/clb). Thank you Bill!
