@@ -84,6 +84,8 @@ In the meantime, you can always alias the package for your convenience…
 
 ### Tailwind CSS IntelliSense
 
+#### Visual Studio Code
+
 If you're using the ["Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss), you can enable autocompletion inside `cva` by adding the following to your [`settings.json`](https://code.visualstudio.com/docs/getstarted/settings):
 
 ```json
@@ -92,6 +94,24 @@ If you're using the ["Tailwind CSS IntelliSense" Visual Studio Code extension](h
     ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
   ]
 }
+```
+
+#### Neovim
+
+If you're using the [neovim-lspconfig](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#tailwindcss), you can enable autocompletion inside `cva` by adding the following setup:
+```lua
+lspconfig.tailwindcss.setup({
+  settings = {
+    tailwindCSS = {
+      experimental = {
+        classRegex = {
+          "cva\\(([^)]*)\\)",
+          "[\"'`]([^\"'`]*).*?[\"'`]",
+        },
+      },
+    },
+  },
+})
 ```
 
 ## Getting Started
