@@ -45,6 +45,18 @@ describe("cva", () => {
             aCheekyInvalidProp: "lol",
           })
         ).toBe("");
+        expect(example({ class: "adhoc-class" })).toBe("adhoc-class");
+        expect(example({ className: "adhoc-className" })).toBe(
+          "adhoc-className"
+        );
+        expect(
+          example({
+            // @ts-expect-error
+            class: "adhoc-class",
+            // @ts-expect-error
+            className: "adhoc-className",
+          })
+        ).toBe("adhoc-class adhoc-className");
       });
 
       test("undefined", () => {
@@ -56,6 +68,18 @@ describe("cva", () => {
             aCheekyInvalidProp: "lol",
           })
         ).toBe("");
+        expect(example({ class: "adhoc-class" })).toBe("adhoc-class");
+        expect(example({ className: "adhoc-className" })).toBe(
+          "adhoc-className"
+        );
+        expect(
+          example({
+            // @ts-expect-error
+            class: "adhoc-class",
+            // @ts-expect-error
+            className: "adhoc-className",
+          })
+        ).toBe("adhoc-class adhoc-className");
       });
 
       test("null", () => {
@@ -67,6 +91,18 @@ describe("cva", () => {
             aCheekyInvalidProp: "lol",
           })
         ).toBe("");
+        expect(example({ class: "adhoc-class" })).toBe("adhoc-class");
+        expect(example({ className: "adhoc-className" })).toBe(
+          "adhoc-className"
+        );
+        expect(
+          example({
+            // @ts-expect-error
+            class: "adhoc-class",
+            // @ts-expect-error
+            className: "adhoc-className",
+          })
+        ).toBe("adhoc-class adhoc-className");
       });
     });
 
@@ -112,6 +148,50 @@ describe("cva", () => {
             intent: "warning",
             disabled: true,
             class: "button--warning-disabled text-black",
+          },
+        ],
+      });
+      const buttonWithoutBaseWithoutDefaultsWithClassNameString = cva(null, {
+        variants: {
+          intent: {
+            primary:
+              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
+            secondary:
+              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+            warning:
+              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
+            danger:
+              "button--danger bg-red-500 text-white border-transparent hover:bg-red-600",
+          },
+          disabled: {
+            true: "button--disabled opacity-050 cursor-not-allowed",
+            false: "button--enabled cursor-pointer",
+          },
+          size: {
+            small: "button--small text-sm py-1 px-2",
+            medium: "button--medium text-base py-2 px-4",
+            large: "button--large text-lg py-2.5 px-4",
+          },
+          m: {
+            0: "m-0",
+            1: "m-1",
+          },
+        },
+        compoundVariants: [
+          {
+            intent: "primary",
+            size: "medium",
+            className: "button--primary-medium uppercase",
+          },
+          {
+            intent: "warning",
+            disabled: false,
+            className: "button--warning-enabled text-gray-800",
+          },
+          {
+            intent: "warning",
+            disabled: true,
+            className: "button--warning-disabled text-black",
           },
         ],
       });
@@ -179,10 +259,79 @@ describe("cva", () => {
           },
         ],
       });
+      const buttonWithoutBaseWithoutDefaultsWithClassNameArray = cva(null, {
+        variants: {
+          intent: {
+            primary: [
+              "button--primary",
+              "bg-blue-500",
+              "text-white",
+              "border-transparent",
+              "hover:bg-blue-600",
+            ],
+            secondary: [
+              "button--secondary",
+              "bg-white",
+              "text-gray-800",
+              "border-gray-400",
+              "hover:bg-gray-100",
+            ],
+            warning: [
+              "button--warning",
+              "bg-yellow-500",
+              "border-transparent",
+              "hover:bg-yellow-600",
+            ],
+            danger: [
+              "button--danger",
+              "bg-red-500",
+              "text-white",
+              "border-transparent",
+              "hover:bg-red-600",
+            ],
+          },
+          disabled: {
+            true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
+            false: ["button--enabled", "cursor-pointer"],
+          },
+          size: {
+            small: ["button--small", "text-sm", "py-1", "px-2"],
+            medium: ["button--medium", "text-base", "py-2", "px-4"],
+            large: ["button--large", "text-lg", "py-2.5", "px-4"],
+          },
+          m: {
+            0: "m-0",
+            1: "m-1",
+          },
+        },
+        compoundVariants: [
+          {
+            intent: "primary",
+            size: "medium",
+            className: ["button--primary-medium", "uppercase"],
+          },
+          {
+            intent: "warning",
+            disabled: false,
+            className: ["button--warning-enabled", "text-gray-800"],
+          },
+          {
+            intent: "warning",
+            disabled: true,
+            className: ["button--warning-disabled", "text-black"],
+          },
+        ],
+      });
 
       type ButtonWithoutDefaultsWithoutBaseProps =
         | CVA.VariantProps<typeof buttonWithoutBaseWithoutDefaultsString>
-        | CVA.VariantProps<typeof buttonWithoutBaseWithoutDefaultsArray>;
+        | CVA.VariantProps<
+            typeof buttonWithoutBaseWithoutDefaultsWithClassNameString
+          >
+        | CVA.VariantProps<typeof buttonWithoutBaseWithoutDefaultsArray>
+        | CVA.VariantProps<
+            typeof buttonWithoutBaseWithoutDefaultsWithClassNameArray
+          >;
 
       describe.each<[ButtonWithoutDefaultsWithoutBaseProps, string]>([
         [
@@ -234,12 +383,36 @@ describe("cva", () => {
           { intent: "primary", m: 1 },
           "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-1",
         ],
+        // !@TODO Add type "extractor" including class prop
+        [
+          {
+            intent: "primary",
+            m: 1,
+            class: "adhoc-class",
+          } as ButtonWithoutDefaultsWithoutBaseProps,
+          "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-1 adhoc-class",
+        ],
+        [
+          {
+            intent: "primary",
+            m: 1,
+            className: "adhoc-classname",
+          } as ButtonWithoutDefaultsWithoutBaseProps,
+          "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-1 adhoc-classname",
+        ],
+        // typings needed
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
           expect(buttonWithoutBaseWithoutDefaultsString(options)).toBe(
             expected
           );
+          expect(
+            buttonWithoutBaseWithoutDefaultsWithClassNameString(options)
+          ).toBe(expected);
           expect(buttonWithoutBaseWithoutDefaultsArray(options)).toBe(expected);
+          expect(
+            buttonWithoutBaseWithoutDefaultsWithClassNameArray(options)
+          ).toBe(expected);
         });
       });
     });
@@ -288,6 +461,59 @@ describe("cva", () => {
               intent: "warning",
               disabled: true,
               class: "button--warning-disabled text-black",
+            },
+          ],
+          defaultVariants: {
+            m: 0,
+            disabled: false,
+            intent: "primary",
+            size: "medium",
+          },
+        }
+      );
+      const buttonWithoutBaseWithDefaultsWithClassNameString = cva(
+        "button font-semibold border rounded",
+        {
+          variants: {
+            intent: {
+              primary:
+                "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
+              secondary:
+                "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+              warning:
+                "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
+              danger:
+                "button--danger bg-red-500 text-white border-transparent hover:bg-red-600",
+            },
+            disabled: {
+              true: "button--disabled opacity-050 cursor-not-allowed",
+              false: "button--enabled cursor-pointer",
+            },
+            size: {
+              small: "button--small text-sm py-1 px-2",
+              medium: "button--medium text-base py-2 px-4",
+              large: "button--large text-lg py-2.5 px-4",
+            },
+            m: {
+              0: "m-0",
+              1: "m-1",
+            },
+          },
+          compoundVariants: [
+            {
+              intent: "primary",
+              size: "medium",
+              className: "button--primary-medium uppercase",
+            },
+            {
+              intent: "warning",
+              disabled: false,
+              className: "button--warning-enabled text-gray-800",
+            },
+            {
+              intent: "warning",
+              disabled: true,
+              className: "button--warning-disabled text-black",
             },
           ],
           defaultVariants: {
@@ -371,10 +597,88 @@ describe("cva", () => {
           },
         }
       );
+      const buttonWithoutBaseWithDefaultsWithClassNameArray = cva(
+        ["button", "font-semibold", "border", "rounded"],
+        {
+          variants: {
+            intent: {
+              primary: [
+                "button--primary",
+                "bg-blue-500",
+                "text-white",
+                "border-transparent",
+                "hover:bg-blue-600",
+              ],
+              secondary: [
+                "button--secondary",
+                "bg-white",
+                "text-gray-800",
+                "border-gray-400",
+                "hover:bg-gray-100",
+              ],
+              warning: [
+                "button--warning",
+                "bg-yellow-500",
+                "border-transparent",
+                "hover:bg-yellow-600",
+              ],
+              danger: [
+                "button--danger",
+                "bg-red-500",
+                "text-white",
+                "border-transparent",
+                "hover:bg-red-600",
+              ],
+            },
+            disabled: {
+              true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
+              false: ["button--enabled", "cursor-pointer"],
+            },
+            size: {
+              small: ["button--small", "text-sm", "py-1", "px-2"],
+              medium: ["button--medium", "text-base", "py-2", "px-4"],
+              large: ["button--large", "text-lg", "py-2.5", "px-4"],
+            },
+            m: {
+              0: "m-0",
+              1: "m-1",
+            },
+          },
+          compoundVariants: [
+            {
+              intent: "primary",
+              size: "medium",
+              className: ["button--primary-medium", "uppercase"],
+            },
+            {
+              intent: "warning",
+              disabled: false,
+              className: ["button--warning-enabled", "text-gray-800"],
+            },
+            {
+              intent: "warning",
+              disabled: true,
+              className: ["button--warning-disabled", "text-black"],
+            },
+          ],
+          defaultVariants: {
+            m: 0,
+            disabled: false,
+            intent: "primary",
+            size: "medium",
+          },
+        }
+      );
 
       type ButtonWithoutBaseWithDefaultsProps =
         | CVA.VariantProps<typeof buttonWithoutBaseWithDefaultsString>
-        | CVA.VariantProps<typeof buttonWithoutBaseWithDefaultsArray>;
+        | CVA.VariantProps<
+            typeof buttonWithoutBaseWithDefaultsWithClassNameString
+          >
+        | CVA.VariantProps<typeof buttonWithoutBaseWithDefaultsArray>
+        | CVA.VariantProps<
+            typeof buttonWithoutBaseWithDefaultsWithClassNameArray
+          >;
 
       describe.each<[ButtonWithoutBaseWithDefaultsProps, string]>([
         [
@@ -436,10 +740,33 @@ describe("cva", () => {
           { intent: "primary", m: 1 },
           "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-1 button--primary-medium uppercase",
         ],
+        // !@TODO Add type "extractor" including class prop
+        [
+          {
+            intent: "primary",
+            m: 0,
+            class: "adhoc-class",
+          } as ButtonWithoutBaseWithDefaultsProps,
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase adhoc-class",
+        ],
+        [
+          {
+            intent: "primary",
+            m: 1,
+            className: "adhoc-classname",
+          } as ButtonWithoutBaseWithDefaultsProps,
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-1 button--primary-medium uppercase adhoc-classname",
+        ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
           expect(buttonWithoutBaseWithDefaultsString(options)).toBe(expected);
+          expect(
+            buttonWithoutBaseWithDefaultsWithClassNameString(options)
+          ).toBe(expected);
           expect(buttonWithoutBaseWithDefaultsArray(options)).toBe(expected);
+          expect(buttonWithoutBaseWithDefaultsWithClassNameArray(options)).toBe(
+            expected
+          );
         });
       });
     });
@@ -486,6 +813,49 @@ describe("cva", () => {
               intent: "warning",
               disabled: true,
               class: "button--warning-disabled text-black",
+            },
+          ],
+        }
+      );
+      const buttonWithBaseWithoutDefaultsWithClassNameString = cva(
+        "button font-semibold border rounded",
+        {
+          variants: {
+            intent: {
+              primary:
+                "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
+              secondary:
+                "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+              warning:
+                "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
+              danger:
+                "button--danger bg-red-500 text-white border-transparent hover:bg-red-600",
+            },
+            disabled: {
+              true: "button--disabled opacity-050 cursor-not-allowed",
+              false: "button--enabled cursor-pointer",
+            },
+            size: {
+              small: "button--small text-sm py-1 px-2",
+              medium: "button--medium text-base py-2 px-4",
+              large: "button--large text-lg py-2.5 px-4",
+            },
+          },
+          compoundVariants: [
+            {
+              intent: "primary",
+              size: "medium",
+              className: "button--primary-medium uppercase",
+            },
+            {
+              intent: "warning",
+              disabled: false,
+              className: "button--warning-enabled text-gray-800",
+            },
+            {
+              intent: "warning",
+              disabled: true,
+              className: "button--warning-disabled text-black",
             },
           ],
         }
@@ -553,10 +923,78 @@ describe("cva", () => {
           ],
         }
       );
+      const buttonWithBaseWithoutDefaultsWithClassNameArray = cva(
+        ["button", "font-semibold", "border", "rounded"],
+        {
+          variants: {
+            intent: {
+              primary: [
+                "button--primary",
+                "bg-blue-500",
+                "text-white",
+                "border-transparent",
+                "hover:bg-blue-600",
+              ],
+              secondary: [
+                "button--secondary",
+                "bg-white",
+                "text-gray-800",
+                "border-gray-400",
+                "hover:bg-gray-100",
+              ],
+              warning: [
+                "button--warning",
+                "bg-yellow-500",
+                "border-transparent",
+                "hover:bg-yellow-600",
+              ],
+              danger: [
+                "button--danger",
+                "bg-red-500",
+                "text-white",
+                "border-transparent",
+                "hover:bg-red-600",
+              ],
+            },
+            disabled: {
+              true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
+              false: ["button--enabled", "cursor-pointer"],
+            },
+            size: {
+              small: ["button--small", "text-sm", "py-1", "px-2"],
+              medium: ["button--medium", "text-base", "py-2", "px-4"],
+              large: ["button--large", "text-lg", "py-2.5", "px-4"],
+            },
+          },
+          compoundVariants: [
+            {
+              intent: "primary",
+              size: "medium",
+              class: ["button--primary-medium", "uppercase"],
+            },
+            {
+              intent: "warning",
+              disabled: false,
+              class: ["button--warning-enabled", "text-gray-800"],
+            },
+            {
+              intent: "warning",
+              disabled: true,
+              class: ["button--warning-disabled", "text-black"],
+            },
+          ],
+        }
+      );
 
       type ButtonWithBaseWithoutDefaultsProps =
         | CVA.VariantProps<typeof buttonWithBaseWithoutDefaultsString>
-        | CVA.VariantProps<typeof buttonWithBaseWithoutDefaultsArray>;
+        | CVA.VariantProps<
+            typeof buttonWithBaseWithoutDefaultsWithClassNameString
+          >
+        | CVA.VariantProps<typeof buttonWithBaseWithoutDefaultsArray>
+        | CVA.VariantProps<
+            typeof buttonWithBaseWithoutDefaultsWithClassNameArray
+          >;
 
       describe.each<[ButtonWithBaseWithoutDefaultsProps, string]>([
         [
@@ -616,10 +1054,31 @@ describe("cva", () => {
           { intent: "warning", size: "large", disabled: false },
           "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800",
         ],
+        // !@TODO Add type "extractor" including class prop
+        [
+          {
+            intent: "primary",
+            class: "adhoc-class",
+          } as ButtonWithBaseWithoutDefaultsProps,
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 adhoc-class",
+        ],
+        [
+          {
+            intent: "primary",
+            className: "adhoc-className",
+          } as ButtonWithBaseWithoutDefaultsProps,
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 adhoc-className",
+        ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
           expect(buttonWithBaseWithoutDefaultsString(options)).toBe(expected);
+          expect(
+            buttonWithBaseWithoutDefaultsWithClassNameString(options)
+          ).toBe(expected);
           expect(buttonWithBaseWithoutDefaultsArray(options)).toBe(expected);
+          expect(buttonWithBaseWithoutDefaultsWithClassNameArray(options)).toBe(
+            expected
+          );
         });
       });
     });
@@ -664,6 +1123,54 @@ describe("cva", () => {
               intent: "warning",
               disabled: true,
               class: "button--warning-disabled text-black",
+            },
+          ],
+          defaultVariants: {
+            disabled: false,
+            intent: "primary",
+            size: "medium",
+          },
+        }
+      );
+      const buttonWithBaseWithDefaultsWithClassNameString = cva(
+        "button font-semibold border rounded",
+        {
+          variants: {
+            intent: {
+              primary:
+                "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
+              secondary:
+                "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+              warning:
+                "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
+              danger:
+                "button--danger bg-red-500 text-white border-transparent hover:bg-red-600",
+            },
+            disabled: {
+              true: "button--disabled opacity-050 cursor-not-allowed",
+              false: "button--enabled cursor-pointer",
+            },
+            size: {
+              small: "button--small text-sm py-1 px-2",
+              medium: "button--medium text-base py-2 px-4",
+              large: "button--large text-lg py-2.5 px-4",
+            },
+          },
+          compoundVariants: [
+            {
+              intent: "primary",
+              size: "medium",
+              className: "button--primary-medium uppercase",
+            },
+            {
+              intent: "warning",
+              disabled: false,
+              className: "button--warning-enabled text-gray-800",
+            },
+            {
+              intent: "warning",
+              disabled: true,
+              className: "button--warning-disabled text-black",
             },
           ],
           defaultVariants: {
@@ -741,10 +1248,79 @@ describe("cva", () => {
           },
         }
       );
+      const buttonWithBaseWithDefaultsWithClassNameArray = cva(
+        ["button", "font-semibold", "border", "rounded"],
+        {
+          variants: {
+            intent: {
+              primary: [
+                "button--primary",
+                "bg-blue-500",
+                "text-white",
+                "border-transparent",
+                "hover:bg-blue-600",
+              ],
+              secondary: [
+                "button--secondary",
+                "bg-white",
+                "text-gray-800",
+                "border-gray-400",
+                "hover:bg-gray-100",
+              ],
+              warning: [
+                "button--warning",
+                "bg-yellow-500",
+                "border-transparent",
+                "hover:bg-yellow-600",
+              ],
+              danger: [
+                "button--danger",
+                "bg-red-500",
+                "text-white",
+                "border-transparent",
+                "hover:bg-red-600",
+              ],
+            },
+            disabled: {
+              true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
+              false: ["button--enabled", "cursor-pointer"],
+            },
+            size: {
+              small: ["button--small", "text-sm", "py-1", "px-2"],
+              medium: ["button--medium", "text-base", "py-2", "px-4"],
+              large: ["button--large", "text-lg", "py-2.5", "px-4"],
+            },
+          },
+          compoundVariants: [
+            {
+              intent: "primary",
+              size: "medium",
+              class: ["button--primary-medium", "uppercase"],
+            },
+            {
+              intent: "warning",
+              disabled: false,
+              class: ["button--warning-enabled", "text-gray-800"],
+            },
+            {
+              intent: "warning",
+              disabled: true,
+              class: ["button--warning-disabled", "text-black"],
+            },
+          ],
+          defaultVariants: {
+            disabled: false,
+            intent: "primary",
+            size: "medium",
+          },
+        }
+      );
 
       type ButtonWithBaseWithDefaultsProps =
         | CVA.VariantProps<typeof buttonWithBaseWithDefaultsString>
-        | CVA.VariantProps<typeof buttonWithBaseWithDefaultsArray>;
+        | CVA.VariantProps<typeof buttonWithBaseWithDefaultsWithClassNameString>
+        | CVA.VariantProps<typeof buttonWithBaseWithDefaultsArray>
+        | CVA.VariantProps<typeof buttonWithBaseWithDefaultsWithClassNameArray>;
 
       describe.each<[ButtonWithBaseWithDefaultsProps, string]>([
         [
@@ -815,10 +1391,31 @@ describe("cva", () => {
           { intent: "warning", size: "large", disabled: false },
           "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800",
         ],
+        // !@TODO Add type "extractor" including class prop
+        [
+          {
+            intent: "primary",
+            class: "adhoc-class",
+          } as ButtonWithBaseWithDefaultsProps,
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase adhoc-class",
+        ],
+        [
+          {
+            intent: "primary",
+            className: "adhoc-classname",
+          } as ButtonWithBaseWithDefaultsProps,
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase adhoc-classname",
+        ],
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
           expect(buttonWithBaseWithDefaultsString(options)).toBe(expected);
+          expect(buttonWithBaseWithDefaultsWithClassNameString(options)).toBe(
+            expected
+          );
           expect(buttonWithBaseWithDefaultsArray(options)).toBe(expected);
+          expect(buttonWithBaseWithDefaultsWithClassNameArray(options)).toBe(
+            expected
+          );
         });
       });
     });

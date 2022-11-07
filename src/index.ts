@@ -7,7 +7,7 @@ import type {
 
 export type VariantProps<Component extends (...args: any) => any> = Omit<
   OmitUndefined<Parameters<Component>[0]>,
-  "class"
+  "class" | "className"
 >;
 
 const falsyToString = <T extends unknown>(value: T) =>
@@ -49,9 +49,8 @@ type Props<T> = T extends ConfigSchema
 export const cva =
   <T>(base?: ClassValue, config?: Config<T>) =>
   (props?: Props<T>) => {
-    const className = props?.class;
-
-    if (config?.variants == null) return cx(base, className);
+    if (config?.variants == null)
+      return cx(base, props?.class, props?.className);
 
     const { variants, defaultVariants } = config;
 
@@ -83,19 +82,19 @@ export const cva =
       }, {} as Record<string, unknown>);
 
     const getCompoundVariantClassNames = config?.compoundVariants?.reduce(
-      (acc, { class: classNames, ...compoundVariantOptions }) => {
-        if (classNames == null) return acc;
-
-        return Object.entries(compoundVariantOptions).every(
+      (
+        acc,
+        { class: cvClass, className: cvClassName, ...compoundVariantOptions }
+      ) =>
+        Object.entries(compoundVariantOptions).every(
           ([key, value]) =>
             ({
               ...defaultVariants,
               ...propsWithoutUndefined,
             }[key] === value)
         )
-          ? [...acc, classNames]
-          : acc;
-      },
+          ? [...acc, cvClass, cvClassName]
+          : acc,
       [] as ClassValue[]
     );
 
@@ -103,6 +102,7 @@ export const cva =
       base,
       getVariantClassNames,
       getCompoundVariantClassNames,
-      className
+      props?.class,
+      props?.className
     );
   };
