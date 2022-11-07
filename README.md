@@ -135,7 +135,15 @@ const button = cva(["font-semibold", "border", "rounded"], {
       medium: ["text-base", "py-2", "px-4"],
     },
   },
-  compoundVariants: [{ intent: "primary", size: "medium", class: "uppercase" }],
+  compoundVariants: [
+    {
+      intent: "primary",
+      size: "medium",
+      class: "uppercase",
+      // **or** if you're a React.js user, `className` may feel more consistent:
+      // className: "uppercase"
+    },
+  ],
   defaultVariants: {
     intent: "primary",
     size: "medium",
@@ -151,7 +159,7 @@ button({ intent: "secondary", size: "small" });
 
 ### Additional Classes
 
-All `cva` components provide an optional `class` prop, which can be used to pass additional classes to the component.
+All `cva` components provide an optional `class` **or** `className` prop, which can be used to pass additional classes to the component.
 
 ```ts
 // components/button.ts
@@ -160,6 +168,9 @@ import { cva } from "class-variance-authority";
 const button = cva(/* … */);
 
 button({ class: "m-4" });
+// => "…buttonClasses m-4"
+
+button({ className: "m-4" });
 // => "…buttonClasses m-4"
 ```
 
@@ -510,7 +521,7 @@ const button = cva(base, {
     },
   },
   compoundVariants: [
-    { intent: "primary", size: "medium", class: primaryMedium },
+    { intent: "primary", size: "medium", className: primaryMedium },
   ],
   defaultVariants: {
     intent: "primary",
@@ -527,9 +538,7 @@ export const Button: React.FC<ButtonProps> = ({
   intent,
   size,
   ...props
-}) => (
-  <button className={button({ intent, size, class: className })} {...props} />
-);
+}) => <button className={button({ intent, size, className })} {...props} />;
 ```
 
 </details>
@@ -564,7 +573,9 @@ const button = cva("button", {
       medium: ["text-base", "py-2", "px-4"],
     },
   },
-  compoundVariants: [{ intent: "primary", size: "medium", class: "uppercase" }],
+  compoundVariants: [
+    { intent: "primary", size: "medium", className: "uppercase" },
+  ],
   defaultVariants: {
     intent: "primary",
     size: "medium",
@@ -580,9 +591,7 @@ export const Button: React.FC<ButtonProps> = ({
   intent,
   size,
   ...props
-}) => (
-  <button className={button({ intent, size, class: className })} {...props} />
-);
+}) => <button className={button({ intent, size, className })} {...props} />;
 ```
 
 </details>
