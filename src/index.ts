@@ -3,6 +3,7 @@ import type {
   ClassValue,
   OmitUndefined,
   StringToBoolean,
+  AddExclamationMark,
 } from "./types";
 
 export type VariantProps<Component extends (...args: any) => any> = Omit<
@@ -29,7 +30,10 @@ export const cx = <T extends CxOptions>(...classes: T): CxReturn =>
 type ConfigSchema = Record<string, Record<string, ClassValue>>;
 
 type ConfigVariants<T extends ConfigSchema> = {
-  [Variant in keyof T]?: StringToBoolean<keyof T[Variant]> | null;
+  [Variant in keyof T]?:
+    | StringToBoolean<keyof T[Variant] | AddExclamationMark<keyof T[Variant]>>
+    | StringToBoolean<keyof T[Variant]>[]
+    | null;
 };
 
 type Config<T> = T extends ConfigSchema
@@ -81,18 +85,33 @@ export const cva =
         return acc;
       }, {} as Record<string, unknown>);
 
+    const defaultVariantsAndPropsWithoutUndefined = {
+      ...defaultVariants,
+      ...propsWithoutUndefined,
+    };
+
     const getCompoundVariantClassNames = config?.compoundVariants?.reduce(
       (
         acc,
         { class: cvClass, className: cvClassName, ...compoundVariantOptions }
       ) =>
-        Object.entries(compoundVariantOptions).every(
-          ([key, value]) =>
-            ({
-              ...defaultVariants,
-              ...propsWithoutUndefined,
-            }[key] === value)
-        )
+        Object.entries(compoundVariantOptions).every(([key, value]) => {
+          // If compound value is a string starting with an exclamation mark, ensure the prop does NOT equal this value.
+          if (typeof value === "string" && value.startsWith("!")) {
+            return (
+              defaultVariantsAndPropsWithoutUndefined[key] !== value.slice(1)
+            );
+          }
+
+          // If compound value is an array, ensure that the current value of this prop is included in the array.
+          // This array can NEVER include a negatory value, since we can not guess if that would mean 'AND' or 'OR'.
+          if (Array.isArray(value)) {
+            return value.includes(defaultVariantsAndPropsWithoutUndefined[key]);
+          }
+
+          // Default behavior is checking that the value of a prop DOES equal the value set in the compound variant.
+          return defaultVariantsAndPropsWithoutUndefined[key] === value;
+        })
           ? [...acc, cvClass, cvClassName]
           : acc,
       [] as ClassValue[]

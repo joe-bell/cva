@@ -1481,4 +1481,102 @@ describe("cva", () => {
       });
     });
   });
+
+  describe("with negatory compound variants", () => {
+    const button = cva(["button", "font-semibold", "border", "rounded"], {
+      variants: {
+        intent: {
+          primary: ["button--primary", "bg-blue-500"],
+          secondary: ["button--secondary", "bg-white"],
+          warning: ["button--warning", "bg-yellow-500"],
+        },
+        disabled: {
+          true: ["button--disabled"],
+          false: ["button--enabled"],
+        },
+        size: {
+          small: ["text-sm"],
+          medium: ["text-base"],
+          large: ["text-lg"],
+        },
+      },
+      compoundVariants: [
+        {
+          intent: "!primary",
+          disabled: true,
+          className: "text-black",
+        },
+      ],
+    });
+
+    type ButtonProps = CVA.VariantProps<typeof button>;
+
+    describe.each<[ButtonProps, string]>([
+      [
+        { intent: "primary", disabled: true },
+        "button font-semibold border rounded button--primary bg-blue-500 button--disabled",
+      ],
+      [
+        { intent: "secondary", disabled: true, size: "small" },
+        "button font-semibold border rounded button--secondary bg-white button--disabled text-sm text-black",
+      ],
+      [
+        { intent: "warning", disabled: true, size: "small" },
+        "button font-semibold border rounded button--warning bg-yellow-500 button--disabled text-sm text-black",
+      ],
+    ])("button(%o)", (options, expected) => {
+      test(`returns ${expected}`, () => {
+        expect(button(options)).toBe(expected);
+      });
+    });
+  });
+
+  describe("with array compound variants", () => {
+    const button = cva(["button", "font-semibold", "border", "rounded"], {
+      variants: {
+        intent: {
+          primary: ["button--primary", "bg-blue-500"],
+          secondary: ["button--secondary", "bg-white"],
+          warning: ["button--warning", "bg-yellow-500"],
+        },
+        disabled: {
+          true: ["button--disabled"],
+          false: ["button--enabled"],
+        },
+        size: {
+          small: ["text-sm"],
+          medium: ["text-base"],
+          large: ["text-lg"],
+        },
+      },
+      compoundVariants: [
+        {
+          intent: ["secondary", "warning"],
+          disabled: true,
+          className: "text-black",
+        },
+      ],
+    });
+
+    type ButtonProps = CVA.VariantProps<typeof button>;
+
+    describe.each<[ButtonProps, string]>([
+      [
+        { intent: "primary", disabled: true },
+        "button font-semibold border rounded button--primary bg-blue-500 button--disabled",
+      ],
+      [
+        { intent: "secondary", disabled: true, size: "small" },
+        "button font-semibold border rounded button--secondary bg-white button--disabled text-sm text-black",
+      ],
+      [
+        { intent: "warning", disabled: true, size: "small" },
+        "button font-semibold border rounded button--warning bg-yellow-500 button--disabled text-sm text-black",
+      ],
+    ])("button(%o)", (options, expected) => {
+      test(`returns ${expected}`, () => {
+        expect(button(options)).toBe(expected);
+      });
+    });
+  });
 });
