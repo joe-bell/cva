@@ -202,7 +202,7 @@ Instead, we recommend using TypeScript's [Utility Types](https://www.typescriptl
 // components/button.ts
 import { cva, type VariantProps } from "class-variance-authority";
 
-export type ButtonVariantProps = VariantProps<typeof button>;
+export type ButtonVariantProps = VariantProps<typeof buttonVariants>;
 export const buttonVariants = cva("…", {
   variants: {
     optional: { a: "…", b: "…" },
