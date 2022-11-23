@@ -3,7 +3,6 @@ import type {
   ClassValue,
   OmitUndefined,
   StringToBoolean,
-  AddExclamationMark,
 } from "./types";
 
 export type VariantProps<Component extends (...args: any) => any> = Omit<
@@ -31,7 +30,7 @@ type ConfigSchema = Record<string, Record<string, ClassValue>>;
 
 type ConfigVariants<T extends ConfigSchema> = {
   [Variant in keyof T]?:
-    | StringToBoolean<keyof T[Variant] | AddExclamationMark<keyof T[Variant]>>
+    | StringToBoolean<keyof T[Variant]>
     | StringToBoolean<keyof T[Variant]>[]
     | null;
 };
@@ -96,15 +95,7 @@ export const cva =
         { class: cvClass, className: cvClassName, ...compoundVariantOptions }
       ) =>
         Object.entries(compoundVariantOptions).every(([key, value]) => {
-          // If compound value is a string starting with an exclamation mark, ensure the prop does NOT equal this value.
-          if (typeof value === "string" && value.startsWith("!")) {
-            return (
-              defaultVariantsAndPropsWithoutUndefined[key] !== value.slice(1)
-            );
-          }
-
           // If compound value is an array, ensure that the current value of this prop is included in the array.
-          // This array can NEVER include a negatory value, since we can not guess if that would mean 'AND' or 'OR'.
           if (Array.isArray(value)) {
             return value.includes(defaultVariantsAndPropsWithoutUndefined[key]);
           }

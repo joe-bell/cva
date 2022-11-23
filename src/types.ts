@@ -11,13 +11,3 @@ export type ClassProp =
 
 export type OmitUndefined<T> = T extends undefined ? never : T;
 export type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
-
-export type AddExclamationMark<T extends unknown> =
-  // If T is a boolean string, don't add negation to this.
-  T extends "true" | "false"
-    ? T
-    : // If it's a number or string, negation is supported.
-    T extends string | number
-    ? `!${T}`
-    : // Any other type is returned as is.
-      T;
