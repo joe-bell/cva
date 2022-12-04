@@ -81,18 +81,25 @@ export const cva =
         return acc;
       }, {} as Record<string, unknown>);
 
+    const defaultVariantsAndPropsWithoutUndefined = {
+      ...defaultVariants,
+      ...propsWithoutUndefined,
+    };
+
     const getCompoundVariantClassNames = config?.compoundVariants?.reduce(
       (
         acc,
         { class: cvClass, className: cvClassName, ...compoundVariantOptions }
       ) =>
-        Object.entries(compoundVariantOptions).every(
-          ([key, value]) =>
-            ({
-              ...defaultVariants,
-              ...propsWithoutUndefined,
-            }[key] === value)
-        )
+        Object.entries(compoundVariantOptions).every(([key, value]) => {
+          // If compound value is an array, ensure that the current value of this prop is included in the array.
+          if (Array.isArray(value)) {
+            return value.includes(defaultVariantsAndPropsWithoutUndefined[key]);
+          }
+
+          // Default behavior is checking that the value of a prop DOES equal the value set in the compound variant.
+          return defaultVariantsAndPropsWithoutUndefined[key] === value;
+        })
           ? [...acc, cvClass, cvClassName]
           : acc,
       [] as ClassValue[]
