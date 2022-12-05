@@ -867,3 +867,7 @@ We recommend either:
 > In my experience, "responsive variants" are typically rare, and hiding/showing different elements is usually good enough to get by.
 >
 > To be frank, I'm probably not going to build/maintain a solution unless someone periodically gives me a thick wad of cash to do so, and even then I'd probably rather spend my free time living my life.
+
+## License
+
+[Apache-2.0 License](/LICENSE) © [Joe Bell](https://twitter.com/joebell_)
