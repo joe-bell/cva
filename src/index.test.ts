@@ -462,6 +462,15 @@ describe("cva", () => {
               disabled: true,
               class: "button--warning-disabled text-black",
             },
+            {
+              intent: ["warning", "danger"],
+              class: "button--warning-danger !border-red-500",
+            },
+            {
+              intent: ["warning", "danger"],
+              size: "medium",
+              class: "button--warning-danger-medium",
+            },
           ],
           defaultVariants: {
             m: 0,
@@ -514,6 +523,15 @@ describe("cva", () => {
               intent: "warning",
               disabled: true,
               className: "button--warning-disabled text-black",
+            },
+            {
+              intent: ["warning", "danger"],
+              className: "button--warning-danger !border-red-500",
+            },
+            {
+              intent: ["warning", "danger"],
+              size: "medium",
+              className: "button--warning-danger-medium",
             },
           ],
           defaultVariants: {
@@ -588,6 +606,15 @@ describe("cva", () => {
               disabled: true,
               class: ["button--warning-disabled", "text-black"],
             },
+            {
+              intent: ["warning", "danger"],
+              class: ["button--warning-danger", "!border-red-500"],
+            },
+            {
+              intent: ["warning", "danger"],
+              size: "medium",
+              class: ["button--warning-danger-medium"],
+            },
           ],
           defaultVariants: {
             m: 0,
@@ -660,6 +687,15 @@ describe("cva", () => {
               disabled: true,
               className: ["button--warning-disabled", "text-black"],
             },
+            {
+              intent: ["warning", "danger"],
+              className: "button--warning-danger !border-red-500",
+            },
+            {
+              intent: ["warning", "danger"],
+              size: "medium",
+              className: "button--warning-danger-medium",
+            },
           ],
           defaultVariants: {
             m: 0,
@@ -722,15 +758,15 @@ describe("cva", () => {
         ],
         [
           { intent: "danger", size: "medium" },
-          "button font-semibold border rounded button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0",
+          "button font-semibold border rounded button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--warning-danger !border-red-500 button--warning-danger-medium",
         ],
         [
           { intent: "warning", size: "large" },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 m-0 button--warning-enabled text-gray-800",
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 m-0 button--warning-enabled text-gray-800 button--warning-danger !border-red-500",
         ],
         [
           { intent: "warning", size: "large", disabled: true },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 m-0 button--warning-disabled text-black",
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 m-0 button--warning-disabled text-black button--warning-danger !border-red-500",
         ],
         [
           { intent: "primary", m: 0 },
@@ -814,6 +850,15 @@ describe("cva", () => {
               disabled: true,
               class: "button--warning-disabled text-black",
             },
+            {
+              intent: ["warning", "danger"],
+              class: "button--warning-danger !border-red-500",
+            },
+            {
+              intent: ["warning", "danger"],
+              size: "medium",
+              class: "button--warning-danger-medium",
+            },
           ],
         }
       );
@@ -856,6 +901,15 @@ describe("cva", () => {
               intent: "warning",
               disabled: true,
               className: "button--warning-disabled text-black",
+            },
+            {
+              intent: ["warning", "danger"],
+              className: "button--warning-danger !border-red-500",
+            },
+            {
+              intent: ["warning", "danger"],
+              size: "medium",
+              className: "button--warning-danger-medium",
             },
           ],
         }
@@ -920,6 +974,15 @@ describe("cva", () => {
               disabled: true,
               class: ["button--warning-disabled", "text-black"],
             },
+            {
+              intent: ["warning", "danger"],
+              class: ["button--warning-danger", "!border-red-500"],
+            },
+            {
+              intent: ["warning", "danger"],
+              size: "medium",
+              class: ["button--warning-danger-medium"],
+            },
           ],
         }
       );
@@ -970,17 +1033,26 @@ describe("cva", () => {
             {
               intent: "primary",
               size: "medium",
-              class: ["button--primary-medium", "uppercase"],
+              className: ["button--primary-medium", "uppercase"],
             },
             {
               intent: "warning",
               disabled: false,
-              class: ["button--warning-enabled", "text-gray-800"],
+              className: ["button--warning-enabled", "text-gray-800"],
             },
             {
               intent: "warning",
               disabled: true,
-              class: ["button--warning-disabled", "text-black"],
+              className: ["button--warning-disabled", "text-black"],
+            },
+            {
+              intent: ["warning", "danger"],
+              className: ["button--warning-danger", "!border-red-500"],
+            },
+            {
+              intent: ["warning", "danger"],
+              size: "medium",
+              className: ["button--warning-danger-medium"],
             },
           ],
         }
@@ -1036,23 +1108,23 @@ describe("cva", () => {
         ],
         [
           { intent: "danger", size: "medium" },
-          "button font-semibold border rounded button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--medium text-base py-2 px-4",
+          "button font-semibold border rounded button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--medium text-base py-2 px-4 button--warning-danger !border-red-500 button--warning-danger-medium",
         ],
         [
           { intent: "warning", size: "large" },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4",
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4 button--warning-danger !border-red-500",
         ],
         [
           { intent: "warning", size: "large", disabled: null },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4",
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4 button--warning-danger !border-red-500",
         ],
         [
           { intent: "warning", size: "large", disabled: true },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black",
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black button--warning-danger !border-red-500",
         ],
         [
           { intent: "warning", size: "large", disabled: false },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800",
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800 button--warning-danger !border-red-500",
         ],
         // !@TODO Add type "extractor" including class prop
         [
@@ -1124,6 +1196,15 @@ describe("cva", () => {
               disabled: true,
               class: "button--warning-disabled text-black",
             },
+            {
+              intent: ["warning", "danger"],
+              class: "button--warning-danger !border-red-500",
+            },
+            {
+              intent: ["warning", "danger"],
+              size: "medium",
+              class: "button--warning-danger-medium",
+            },
           ],
           defaultVariants: {
             disabled: false,
@@ -1171,6 +1252,15 @@ describe("cva", () => {
               intent: "warning",
               disabled: true,
               className: "button--warning-disabled text-black",
+            },
+            {
+              intent: ["warning", "danger"],
+              className: "button--warning-danger !border-red-500",
+            },
+            {
+              intent: ["warning", "danger"],
+              size: "medium",
+              className: "button--warning-danger-medium",
             },
           ],
           defaultVariants: {
@@ -1240,6 +1330,15 @@ describe("cva", () => {
               disabled: true,
               class: ["button--warning-disabled", "text-black"],
             },
+            {
+              intent: ["warning", "danger"],
+              class: ["button--warning-danger", "!border-red-500"],
+            },
+            {
+              intent: ["warning", "danger"],
+              size: "medium",
+              class: ["button--warning-danger-medium"],
+            },
           ],
           defaultVariants: {
             disabled: false,
@@ -1295,17 +1394,26 @@ describe("cva", () => {
             {
               intent: "primary",
               size: "medium",
-              class: ["button--primary-medium", "uppercase"],
+              className: ["button--primary-medium", "uppercase"],
             },
             {
               intent: "warning",
               disabled: false,
-              class: ["button--warning-enabled", "text-gray-800"],
+              className: ["button--warning-enabled", "text-gray-800"],
             },
             {
               intent: "warning",
               disabled: true,
-              class: ["button--warning-disabled", "text-black"],
+              className: ["button--warning-disabled", "text-black"],
+            },
+            {
+              intent: ["warning", "danger"],
+              className: ["button--warning-danger", "!border-red-500"],
+            },
+            {
+              intent: ["warning", "danger"],
+              size: "medium",
+              className: ["button--warning-danger-medium"],
             },
           ],
           defaultVariants: {
@@ -1369,11 +1477,11 @@ describe("cva", () => {
         ],
         [
           { intent: "danger", size: "medium" },
-          "button font-semibold border rounded button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--enabled cursor-pointer button--medium text-base py-2 px-4",
+          "button font-semibold border rounded button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--warning-danger !border-red-500 button--warning-danger-medium",
         ],
         [
           { intent: "warning", size: "large" },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800",
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800 button--warning-danger !border-red-500",
         ],
         [
           {
@@ -1381,15 +1489,15 @@ describe("cva", () => {
             size: "large",
             disabled: null,
           },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4",
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4 button--warning-danger !border-red-500",
         ],
         [
           { intent: "warning", size: "large", disabled: true },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black",
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black button--warning-danger !border-red-500",
         ],
         [
           { intent: "warning", size: "large", disabled: false },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800",
+          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800 button--warning-danger !border-red-500",
         ],
         // !@TODO Add type "extractor" including class prop
         [

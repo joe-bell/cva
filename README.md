@@ -157,6 +157,56 @@ button({ intent: "secondary", size: "small" });
 // => "font-semibold border rounded bg-white text-gray-800 border-gray-400 hover:bg-gray-100 text-sm py-1 px-2"
 ```
 
+### Compound Variants
+
+Variants that apply when multiple other variant conditions are met.
+
+```ts
+// components/button.ts
+import { cva } from "class-variance-authority";
+
+const button = cva("…", {
+  variants: {
+    intent: { primary: "…", secondary: "…" },
+    size: { small: "…", medium: "…" },
+  },
+  compoundVariants: [
+    // Applied via:
+    //   `button({ intent: "primary", size: "medium" })`
+    {
+      intent: "primary",
+      size: "medium",
+      class: "…",
+    },
+  ],
+});
+```
+
+#### Targeting Multiple Variant Conditions
+
+```ts
+// components/button.ts
+import { cva } from "class-variance-authority";
+
+const button = cva("…", {
+  variants: {
+    intent: { primary: "…", secondary: "…" },
+    size: { small: "…", medium: "…" },
+  },
+  compoundVariants: [
+    // Applied via:
+    //   `button({ intent: "primary", size: "medium" })`
+    //     or
+    //   `button({ intent: "secondary", size: "medium" })`
+    {
+      intent: ["primary", "secondary"],
+      size: "medium",
+      class: "…",
+    },
+  ],
+});
+```
+
 ### Additional Classes
 
 All `cva` components provide an optional `class` **or** `className` prop, which can be used to pass additional classes to the component.

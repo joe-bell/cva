@@ -31,13 +31,18 @@ type ConfigSchema = Record<string, Record<string, ClassValue>>;
 type ConfigVariants<T extends ConfigSchema> = {
   [Variant in keyof T]?: StringToBoolean<keyof T[Variant]> | null;
 };
+type ConfigVariantsMulti<T extends ConfigSchema> = {
+  [Variant in keyof T]?:
+    | StringToBoolean<keyof T[Variant]>
+    | StringToBoolean<keyof T[Variant]>[];
+};
 
 type Config<T> = T extends ConfigSchema
   ? {
       variants?: T;
       defaultVariants?: ConfigVariants<T>;
       compoundVariants?: (T extends ConfigSchema
-        ? ConfigVariants<T> & ClassProp
+        ? (ConfigVariants<T> | ConfigVariantsMulti<T>) & ClassProp
         : ClassProp)[];
     }
   : never;
@@ -86,12 +91,18 @@ export const cva =
         acc,
         { class: cvClass, className: cvClassName, ...compoundVariantOptions }
       ) =>
-        Object.entries(compoundVariantOptions).every(
-          ([key, value]) =>
-            ({
-              ...defaultVariants,
-              ...propsWithoutUndefined,
-            }[key] === value)
+        Object.entries(compoundVariantOptions).every(([key, value]) =>
+          Array.isArray(value)
+            ? value.includes(
+                {
+                  ...defaultVariants,
+                  ...propsWithoutUndefined,
+                }[key]
+              )
+            : {
+                ...defaultVariants,
+                ...propsWithoutUndefined,
+              }[key] === value
         )
           ? [...acc, cvClass, cvClassName]
           : acc,
