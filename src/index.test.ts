@@ -1503,7 +1503,6 @@ describe("with array compound variants", () => {
     },
     compoundVariants: [
       {
-        // @ts-expect-error
         intent: ["secondary", "warning"],
         disabled: true,
         className: "text-black",
