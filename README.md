@@ -580,7 +580,7 @@ const button = cva(base, {
 });
 
 export interface ButtonProps
-  extends React.HTMLAttributes<HTMLButtonElement>,
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof button> {}
 
 export const Button: React.FC<ButtonProps> = ({
@@ -633,7 +633,7 @@ const button = cva("button", {
 });
 
 export interface ButtonProps
-  extends React.HTMLAttributes<HTMLButtonElement>,
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof button> {}
 
 export const Button: React.FC<ButtonProps> = ({
