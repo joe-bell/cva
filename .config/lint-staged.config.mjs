@@ -1,7 +1,13 @@
 export default {
   "*": (filenames) =>
-    `prettier --ignore-unknown --no-error-on-unmatched-pattern --write ${filenames
+    `pnpm run prettier -- --write ${filenames
       .map((filename) => `'${filename}'`)
       .join(" ")}`,
-  "src/**/*.{js,jsx,ts,tsx}": () => "npm run lint:tsc",
+  "**/*.{js,jsx,ts,tsx}": () => "pnpm tsc",
+  "**/package.json": (filenames) => [
+    "pnpm syncpack:list-mismatches",
+    `pnpm syncpack:format -- ${filenames
+      .map((filename) => `--source '${filename}'`)
+      .join(" ")}`,
+  ],
 };

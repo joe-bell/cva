@@ -1,0 +1,67 @@
+{
+  "name": "class-variance-authority",
+  "version": "0.4.0",
+  "description": "Class Variance Authority 🧬",
+  "author": "Joe Bell (https://joebell.co.uk)",
+  "funding": "https://joebell.co.uk",
+  "repository": "https://github.com/joe-bell/cva.git",
+  "bugs": "https://github.com/joe-bell/cva/issues",
+  "homepage": "https://github.com/joe-bell/cva#readme",
+  "keywords": [
+    "Class Variance Authority",
+    "class-variance-authority",
+    "classes",
+    "classname",
+    "classnames",
+    "css",
+    "cva",
+    "stitches",
+    "vanilla-extract",
+    "variants"
+  ],
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist/*.js",
+    "dist/*.js.map",
+    "dist/*.d.ts"
+  ],
+  "scripts": {
+    "build": "npm-run-all build:*",
+    "build:cjs": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.cjs.js -C module.type=commonjs",
+    "build:esm": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.esm.js -C module.type=es6 ",
+    "build:tsc": "tsc --project .config/tsconfig.build.json",
+    "dev": "jest --config .config/jest.config.ts --watch",
+    "prepublishOnly": "npm run build",
+    "test": "run-p test:*",
+    "test:jest": "jest --config .config/jest.config.ts --coverage",
+    "test:size": "run-p build:cjs build:esm && npx bundlesize -f 'dist/*.js' -s 850B",
+    "tsc": "tsc --project tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "typescript": ">= 4.5.5 < 5"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@jest/types": "28.1.1",
+    "@swc/cli": "0.1.57",
+    "@swc/core": "1.2.198",
+    "@swc/jest": "0.2.21",
+    "@types/jest": "28.1.1",
+    "@types/node": "18.11.18",
+    "@types/react": "18.0.12",
+    "@types/react-dom": "18.0.5",
+    "bundlesize": "0.18.1",
+    "jest": "28.1.1",
+    "npm-run-all": "4.1.5",
+    "react": "18.1.0",
+    "react-dom": "18.1.0",
+    "ts-node": "10.8.1",
+    "typescript": "4.7.3"
+  }
+}

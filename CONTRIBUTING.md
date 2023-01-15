@@ -14,19 +14,19 @@ Welcome, and thanks for your interest in contributing! Please take a moment to r
 
 1. [Fork the repo](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) and clone to your machine.
 2. Create a new branch with your contribution.
-3. Install [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) on your machine.
+3. Install [pnpm](https://pnpm.io/installation) on your machine.
 4. In the repo, install dependencies via:
    ```sh
-   npm i
+   pnpm i
    ```
 5. Voilà, you're ready to go!
 
 ### Scripts
 
-- `npm run dev` – runs jest, watching for file changes
-- `npm run build` – production build
-- `npm run check` – type checks
-- `npm run test`
+- `pnpm dev` – runs jest, watching for file changes
+- `pnpm build` – production build
+- `pnpm tsc` – type checks
+- `pnpm test`
 
 ## Releases
 

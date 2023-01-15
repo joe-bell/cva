@@ -1,4 +1,7 @@
 {
+  "extends": "../../tsconfig.json",
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "isolatedModules": true,
     "esModuleInterop": true,

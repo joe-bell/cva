@@ -8,11 +8,14 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
       - uses: actions/setup-node@v3
         with:
+          cache: "pnpm"
           node-version-file: ".nvmrc"
-          cache: "npm"
-      - run: npm ci
+      - run: pnpm i
       - uses: wagoid/commitlint-github-action@v5
         env:
           NODE_PATH: ${{ github.workspace }}/node_modules
