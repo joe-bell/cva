@@ -82,17 +82,60 @@ In the meantime, you can always alias the package for your convenience…
 
 </details>
 
-### Tailwind CSS IntelliSense
+### Tailwind CSS
 
-If you're using the ["Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss), you can enable autocompletion inside `cva` by adding the following to your [`settings.json`](https://code.visualstudio.com/docs/getstarted/settings):
+If you're a Tailwind user, here are some additional (optional) steps to get the most out of `cva`:
 
-```json
-{
-  "tailwindCSS.experimental.classRegex": [
-    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
-  ]
-}
-```
+#### IntelliSense
+
+You can enable autocompletion inside `cva` using the steps below:
+
+<details>
+
+<summary>
+  Visual Studio Code
+</summary>
+
+1. [Install the "Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
+
+2. Add the following to your [`settings.json`](https://code.visualstudio.com/docs/getstarted/settings):
+
+   ```json
+   {
+     "tailwindCSS.experimental.classRegex": [
+       ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+     ]
+   }
+   ```
+
+</details>
+
+<details>
+
+<summary>
+  Neovim
+</summary>
+
+1. [Install the extension](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#tailwindcss)
+
+2. Add the following configuration:
+
+   ```lua
+   lspconfig.tailwindcss.setup({
+     settings = {
+       tailwindCSS = {
+         experimental = {
+           classRegex = {
+             "cva\\(([^)]*)\\)",
+             "[\"'`]([^\"'`]*).*?[\"'`]",
+           },
+         },
+       },
+     },
+   })
+   ```
+
+</details>
 
 ## Getting Started
 
