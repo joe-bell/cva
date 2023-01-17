@@ -7,18 +7,23 @@ on:
     branches: [main]
 
 jobs:
-  npm:
+  pnpm:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        script: [lint, build, test]
+        script: [build, lint, tsc, test]
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
       - uses: actions/setup-node@v3
         with:
+          cache: "pnpm"
           node-version-file: ".nvmrc"
-          cache: "npm"
-      - run: npm ci
+      - run: pnpm i
       - name: ${{ matrix.script }}
-        run: npm run ${{ matrix.script }}
+        run: pnpm ${{ matrix.script }}

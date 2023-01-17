@@ -1,0 +1,30 @@
+{
+  "workspace": false,
+  "peer": false,
+  "sortFirst": [
+    "private",
+    "name",
+    "version",
+    "description",
+    "author",
+    "license",
+    "funding",
+    "repository",
+    "bugs",
+    "homepage",
+    "keywords",
+    "source",
+    "main",
+    "module",
+    "exports",
+    "typings",
+    "typesVersions",
+    "files",
+    "scripts",
+    "browserslist",
+    "peerDependencies",
+    "peerDependenciesMeta",
+    "dependencies",
+    "devDependencies"
+  ]
+}

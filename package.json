@@ -1,72 +1,25 @@
 {
-  "name": "class-variance-authority",
-  "version": "0.4.0",
-  "description": "Class Variance Authority 🧬",
-  "author": "Joe Bell (https://joebell.co.uk)",
-  "main": "dist/index.cjs.js",
-  "module": "dist/index.esm.js",
-  "typings": "dist/index.d.ts",
-  "funding": "https://joebell.co.uk",
-  "repository": "https://github.com/joe-bell/cva.git",
-  "bugs": "https://github.com/joe-bell/cva/issues",
-  "homepage": "https://github.com/joe-bell/cva#readme",
-  "keywords": [
-    "css",
-    "classes",
-    "classname",
-    "classnames",
-    "variants",
-    "cva",
-    "class-variance-authority",
-    "Class Variance Authority",
-    "stitches",
-    "vanilla-extract"
-  ],
-  "files": [
-    "dist/*.js",
-    "dist/*.js.map",
-    "dist/*.d.ts"
-  ],
+  "private": true,
   "scripts": {
-    "build": "npm-run-all build:*",
-    "build:cjs": "npx swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.cjs.js -C module.type=commonjs",
-    "build:esm": "npx swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.esm.js -C module.type=es6 ",
-    "build:tsc": "tsc --project .config/tsconfig.build.json",
-    "lint:tsc": "tsc --project tsconfig.json --noEmit",
-    "lint:frm": "npx prettier . --check --ignore-unknown --ignore-path .gitignore",
+    "build": "pnpm run -r --parallel build",
+    "dev": "pnpm run -r --parallel dev",
     "lint": "run-p lint:*",
-    "pre-commit": "npx lint-staged --config .config/lint-staged.config.mjs",
-    "test": "run-p test:*",
-    "test:jest": "jest --config .config/jest.config.ts --coverage",
-    "test:size": "run-p build:cjs build:esm && npx bundlesize -f 'dist/*.js' -s 850B",
-    "dev": "jest --config .config/jest.config.ts --watch",
+    "lint-staged": "lint-staged --config .config/lint-staged.config.mjs",
+    "lint:packages": "pnpm syncpack:list-mismatches",
+    "lint:prettier": "pnpm run prettier -- --check .",
+    "preinstall": "npx only-allow pnpm",
     "prepare": "husky install",
-    "prepublishOnly": "npm run build"
+    "prettier": "prettier --ignore-unknown --no-error-on-unmatched-pattern",
+    "syncpack:format": "syncpack format --config .config/.syncpackrc",
+    "syncpack:list-mismatches": "syncpack list-mismatches --config .config/.syncpackrc",
+    "test": "pnpm run -r --parallel test",
+    "tsc": "pnpm run -r --parallel tsc"
   },
   "devDependencies": {
-    "@swc/cli": "0.1.57",
-    "@swc/core": "1.2.198",
-    "@swc/jest": "0.2.21",
-    "@types/jest": "28.1.1",
-    "@types/react": "18.0.12",
-    "@types/react-dom": "18.0.5",
-    "bundlesize": "0.18.1",
     "husky": "8.0.1",
-    "jest": "28.1.1",
     "lint-staged": "13.0.1",
     "npm-run-all": "4.1.5",
     "prettier": "2.6.2",
-    "react": "18.1.0",
-    "react-dom": "18.1.0",
-    "ts-node": "10.8.1",
-    "typescript": "4.7.3"
-  },
-  "peerDependencies": {
-    "typescript": ">= 4.5.5 < 5"
-  },
-  "peerDependenciesMeta": {
-    "typescript": {
-      "optional": true
-    }
+    "syncpack": "8.4.11"
   }
 }
