@@ -82,17 +82,97 @@ In the meantime, you can always alias the package for your convenience…
 
 </details>
 
-### Tailwind CSS IntelliSense
+### Tailwind CSS
 
-If you're using the ["Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss), you can enable autocompletion inside `cva` by adding the following to your [`settings.json`](https://code.visualstudio.com/docs/getstarted/settings):
+If you're a Tailwind user, here are some additional (optional) steps to get the most out of `cva`:
 
-```json
-{
-  "tailwindCSS.experimental.classRegex": [
-    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
-  ]
-}
+#### IntelliSense
+
+You can enable autocompletion inside `cva` using the steps below:
+
+<details>
+
+<summary>
+  Visual Studio Code
+</summary>
+
+1. [Install the "Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
+
+2. Add the following to your [`settings.json`](https://code.visualstudio.com/docs/getstarted/settings):
+
+   ```json
+   {
+     "tailwindCSS.experimental.classRegex": [
+       ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+     ]
+   }
+   ```
+
+</details>
+
+<details>
+
+<summary>
+  Neovim
+</summary>
+
+1. [Install the extension](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#tailwindcss)
+
+2. Add the following configuration:
+
+   ```lua
+   lspconfig.tailwindcss.setup({
+     settings = {
+       tailwindCSS = {
+         experimental = {
+           classRegex = {
+             "cva\\(([^)]*)\\)",
+             "[\"'`]([^\"'`]*).*?[\"'`]",
+           },
+         },
+       },
+     },
+   })
+   ```
+
+</details>
+
+#### Handling Style Conflicts
+
+Although `cva`'s API is designed to help you avoid styling conflicts, there's still a small margin of error.
+
+If you're keen to lift that burden altogether, check out the wonderful [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) package.
+
+For bulletproof components, wrap your `cva` component with `twMerge`.
+
+<details>
+
+<summary>
+  Example with <code>tailwind-merge</code>
+</summary>
+
+```ts
+import { cva, type VariantProps } from "class-variance-authority";
+import { twMerge } from "tailwind-merge";
+
+const buttonVariants = cva(["your", "base", "classes"], {
+  variants: {
+    intent: {
+      primary: ["your", "primary", "classes"],
+    },
+  },
+  defaultVariants: {
+    intent: "primary",
+  },
+});
+
+export interface ButtonVariants extends VariantProps<typeof buttonVariants> {}
+
+export const button = (variants: ButtonVariants) =>
+  twMerge(buttonVariants(variants));
 ```
+
+</details>
 
 ## Getting Started
 
