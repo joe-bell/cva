@@ -103,7 +103,10 @@ You can enable autocompletion inside `cva` using the steps below:
    ```json
    {
      "tailwindCSS.experimental.classRegex": [
-       ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+        // enable autocomplete in cx(...)
+        ["cx\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+        // enable autocomplete in cva(...)
+        ["cva\\(((?:[^()]|\\([^()]*\\))*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
      ]
    }
    ```
