@@ -448,7 +448,7 @@ const className = cx(classes);
 > ⚠️ Warning: The examples below are purely demonstrative and haven't been tested thoroughly (yet)
 
 <details>
-  <summary>Astro</summary>
+  <summary>Astro (with Tailwind)</summary>
 
 ```astro
 ---
@@ -727,7 +727,7 @@ export const Button: React.FC<ButtonProps> = ({
 </details>
 
 <details>
-    <summary>Svelte</summary>
+    <summary>Svelte (with BEM)</summary>
 
 ```svelte
 <!-- button.svelte -->
@@ -778,7 +778,7 @@ export const Button: React.FC<ButtonProps> = ({
 </details>
 
 <details>
-    <summary>Vue 3</summary>
+    <summary>Vue 3 (with BEM)</summary>
 
 ```vue
 <!-- button.vue -->
