@@ -1,0 +1,229 @@
+# Getting Started
+
+> **Disclaimer**: Although `cva` is a [**tiny**](https://bundlephobia.com/package/class-variance-authority) library, it's best to use in a SSR/SSG environment – your user probably doesn't need this JavaScript, especially for static components.
+
+[Tru Narla](https://twitter.com/trunarla) did a wonderful overview of `cva` at Next.js Conf 2022 – you should check it out before continuing:
+
+[![Building a design system in Next.js with Tailwind](/assets/img/youtube-trunarla.png "Watch on YouTube")](https://www.youtube.com/watch?v=T-Zv73yZ_QI)
+
+## Your First Component
+
+To kick things off, let's build a "basic" `button` component, using `cva` to handle our variant's classes
+
+> **Note:** Use of Tailwind CSS is optional
+
+```ts
+// components/button.ts
+import { cva } from "class-variance-authority";
+
+const button = cva(["font-semibold", "border", "rounded"], {
+  variants: {
+    intent: {
+      primary: [
+        "bg-blue-500",
+        "text-white",
+        "border-transparent",
+        "hover:bg-blue-600",
+      ],
+      // **or**
+      // primary: "bg-blue-500 text-white border-transparent hover:bg-blue-600",
+      secondary: [
+        "bg-white",
+        "text-gray-800",
+        "border-gray-400",
+        "hover:bg-gray-100",
+      ],
+    },
+    size: {
+      small: ["text-sm", "py-1", "px-2"],
+      medium: ["text-base", "py-2", "px-4"],
+    },
+  },
+  compoundVariants: [
+    {
+      intent: "primary",
+      size: "medium",
+      class: "uppercase",
+      // **or** if you're a React.js user, `className` may feel more consistent:
+      // className: "uppercase"
+    },
+  ],
+  defaultVariants: {
+    intent: "primary",
+    size: "medium",
+  },
+});
+
+button();
+// => "font-semibold border rounded bg-blue-500 text-white border-transparent hover:bg-blue-600 text-base py-2 px-4 uppercase"
+
+button({ intent: "secondary", size: "small" });
+// => "font-semibold border rounded bg-white text-gray-800 border-gray-400 hover:bg-gray-100 text-sm py-1 px-2"
+```
+
+## Compound Variants
+
+Variants that apply when multiple other variant conditions are met.
+
+```ts
+// components/button.ts
+import { cva } from "class-variance-authority";
+
+const button = cva("…", {
+  variants: {
+    intent: { primary: "…", secondary: "…" },
+    size: { small: "…", medium: "…" },
+  },
+  compoundVariants: [
+    // Applied via:
+    //   `button({ intent: "primary", size: "medium" })`
+    {
+      intent: "primary",
+      size: "medium",
+      class: "…",
+    },
+  ],
+});
+```
+
+### Targeting Multiple Variant Conditions
+
+```ts
+// components/button.ts
+import { cva } from "class-variance-authority";
+
+const button = cva("…", {
+  variants: {
+    intent: { primary: "…", secondary: "…" },
+    size: { small: "…", medium: "…" },
+  },
+  compoundVariants: [
+    // Applied via:
+    //   `button({ intent: "primary", size: "medium" })`
+    //     or
+    //   `button({ intent: "secondary", size: "medium" })`
+    {
+      intent: ["primary", "secondary"],
+      size: "medium",
+      class: "…",
+    },
+  ],
+});
+```
+
+## Additional Classes
+
+All `cva` components provide an optional `class` **or** `className` prop, which can be used to pass additional classes to the component.
+
+```ts
+// components/button.ts
+import { cva } from "class-variance-authority";
+
+const button = cva(/* … */);
+
+button({ class: "m-4" });
+// => "…buttonClasses m-4"
+
+button({ className: "m-4" });
+// => "…buttonClasses m-4"
+```
+
+## TypeScript
+
+### `VariantProps`
+
+`cva` offers the `VariantProps` helper to extract variant types
+
+```ts
+// components/button.ts
+import type { VariantProps } from "class-variance-authority";
+import { cva, cx } from "class-variance-authority";
+
+/**
+ * Button
+ */
+export type ButtonProps = VariantProps<typeof button>;
+export const button = cva(/* … */);
+```
+
+### Required Variants
+
+To keep the API small and unopionated, `cva` doesn't offer a built-in solution for setting required variants.
+
+Instead, we recommend using TypeScript's [Utility Types](https://www.typescriptlang.org/docs/handbook/utility-types.html):
+
+```ts
+// components/button.ts
+import { cva, type VariantProps } from "class-variance-authority";
+
+export type ButtonVariantProps = VariantProps<typeof buttonVariants>;
+export const buttonVariants = cva("…", {
+  variants: {
+    optional: { a: "…", b: "…" },
+    required: { a: "…", b: "…" },
+  },
+});
+
+/**
+ * Button
+ */
+export interface ButtonProps
+  extends Omit<ButtonVariantProps, "required">,
+    Required<Pick<ButtonVariantProps, "required">> {}
+
+export const button = (props: ButtonProps) => buttonVariants(props);
+
+// ❌ TypeScript Error:
+// Argument of type "{}": is not assignable to parameter of type "ButtonProps".
+//   Property "required" is missing in type "{}" but required in type
+//   "ButtonProps".
+button({});
+
+// ✅
+button({ required: "a" });
+```
+
+## Composing Components
+
+Whilst `cva` doesn't yet offer a built-in method for composing components, it does offer the tools to _extend_ components on your own terms…
+
+For example; two `cva` components, concatenated together with `cx`:
+
+```ts
+// components/card.ts
+import type { VariantProps } from "class-variance-authority";
+import { cva, cx } from "class-variance-authority";
+
+/**
+ * Box
+ */
+export type BoxProps = VariantProps<typeof box>;
+export const box = cva(["box", "box-border"], {
+  variants: {
+    margin: { 0: "m-0", 2: "m-2", 4: "m-4", 8: "m-8" },
+    padding: { 0: "p-0", 2: "p-2", 4: "p-4", 8: "p-8" },
+  },
+  defaultVariants: {
+    margin: 0,
+    padding: 0,
+  },
+});
+
+/**
+ * Card
+ */
+type CardBaseProps = VariantProps<typeof cardBase>;
+const cardBase = cva(["card", "border-solid", "border-slate-300", "rounded"], {
+  variants: {
+    shadow: {
+      md: "drop-shadow-md",
+      lg: "drop-shadow-lg",
+      xl: "drop-shadow-xl",
+    },
+  },
+});
+
+export interface CardProps extends BoxProps, CardBaseProps {}
+export const card = ({ margin, padding, shadow }: CardProps = {}) =>
+  cx(box({ margin, padding }), cardBase({ shadow }));
+```

@@ -1,0 +1,21 @@
+{
+  "name": "docs",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "next": "pnpm next"
+  },
+  "dependencies": {
+    "class-variance-authority": "workspace:*",
+    "next": "^13.1.6",
+    "nextra": "^2.2.14",
+    "nextra-theme-docs": "^2.2.14",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "18.11.18",
+    "@types/react": "18.0.12",
+    "typescript": "4.7.3"
+  }
+}

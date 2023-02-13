@@ -1,6 +1,7 @@
 {
   "private": true,
   "scripts": {
+    "docs": "pnpm run --filter docs dev",
     "build": "pnpm run -r --parallel build",
     "dev": "pnpm run -r --parallel dev",
     "lint": "run-p lint:*",
