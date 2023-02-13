@@ -2,11 +2,6 @@
   "name": "class-variance-authority",
   "version": "0.4.0",
   "description": "Class Variance Authority 🧬",
-  "author": "Joe Bell (https://joebell.co.uk)",
-  "funding": "https://joebell.co.uk",
-  "repository": "https://github.com/joe-bell/cva.git",
-  "bugs": "https://github.com/joe-bell/cva/issues",
-  "homepage": "https://github.com/joe-bell/cva#readme",
   "keywords": [
     "Class Variance Authority",
     "class-variance-authority",
@@ -19,33 +14,54 @@
     "vanilla-extract",
     "variants"
   ],
-  "main": "dist/index.cjs.js",
-  "module": "dist/index.esm.js",
-  "typings": "dist/index.d.ts",
+  "homepage": "https://github.com/joe-bell/cva#readme",
+  "bugs": "https://github.com/joe-bell/cva/issues",
+  "repository": "https://github.com/joe-bell/cva.git",
+  "funding": "https://joebell.co.uk",
+  "author": "Joe Bell (https://joebell.co.uk)",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js"
+    },
+    "./experimental": {
+      "import": "./dist/experimental/index.esm.js",
+      "require": "./dist/experimental/index.cjs.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/index.d.ts"
+      ],
+      "experimental": [
+        "./dist/experimental/index.d.ts"
+      ]
+    }
+  },
   "files": [
     "dist/*.js",
     "dist/*.js.map",
-    "dist/*.d.ts"
+    "dist/*.d.ts",
+    "dist/experimental/*.js",
+    "dist/experimental/*.js.map",
+    "dist/experimental/*.d.ts"
   ],
   "scripts": {
-    "build": "npm-run-all build:*",
-    "build:cjs": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.cjs.js -C module.type=commonjs",
-    "build:esm": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.esm.js -C module.type=es6 ",
+    "build": "run-p build:**",
+    "build:cjs:stable": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.cjs.js -C module.type=commonjs",
+    "build:esm:stable": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.esm.js -C module.type=es6 ",
+    "build:cjs:experimental": "swc ./src/experimental/index.ts --config-file ./.config/.swcrc -o dist/experimental/index.cjs.js -C module.type=commonjs",
+    "build:esm:experimental": "swc ./src/experimental/index.ts --config-file ./.config/.swcrc -o dist/experimental/index.esm.js -C module.type=es6 ",
     "build:tsc": "tsc --project .config/tsconfig.build.json",
     "dev": "jest --config .config/jest.config.ts --watch",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "pnpm build",
     "test": "run-p test:*",
     "test:jest": "jest --config .config/jest.config.ts --coverage",
-    "test:size": "run-p build:cjs build:esm && npx bundlesize -f 'dist/*.js' -s 850B",
+    "test:size": "pnpm build && run-p test:size:*",
+    "test:size:stable": "pnpx bundlesize -f 'dist/*.js' -s 850B",
+    "test:size:experimental": "pnpx bundlesize -f 'dist/experimental/*.js' -s 880B",
     "tsc": "tsc --project tsconfig.json --noEmit"
-  },
-  "peerDependencies": {
-    "typescript": ">= 4.5.5 < 5"
-  },
-  "peerDependenciesMeta": {
-    "typescript": {
-      "optional": true
-    }
   },
   "devDependencies": {
     "@jest/types": "28.1.1",
@@ -63,5 +79,13 @@
     "react-dom": "18.1.0",
     "ts-node": "10.8.1",
     "typescript": "4.7.3"
+  },
+  "peerDependencies": {
+    "typescript": ">= 4.5.5 < 5"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
   }
 }
