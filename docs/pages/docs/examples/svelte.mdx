@@ -1,0 +1,49 @@
+# Svelte
+
+## BEM
+
+```svelte
+<!-- button.svelte -->
+<script lang="ts">
+  import { cva, type VariantProps } from "class-variance-authority";
+
+  const button = cva("button", {
+    variants: {
+      intent: {
+        primary: "button--primary",
+        secondary: "button--secondary",
+      },
+      size: {
+        small: "button--small",
+        medium: "button--medium",
+      },
+    },
+    compoundVariants: [
+      { intent: "primary", size: "medium", class: "button--primary-medium" },
+    ],
+    defaultVariants: {
+      intent: "primary",
+      size: "medium",
+    },
+  });
+
+  type ButtonProps = VariantProps<typeof button>;
+
+  export let intent: ButtonProps["intent"];
+  export let size: ButtonProps["size"];
+</script>
+
+<button class={button({ intent, size })}><slot /></button>
+
+<style>
+  .button { /* … */ }
+
+  .button--primary { /* … */ }
+  .button--secondary { /* … */ }
+
+  .button--small { /* … */ }
+  .button--medium { /* … */ }
+
+  .button--primary-medium { /* … */ }
+</style>
+```

@@ -1,20 +1,38 @@
+import { Tab, Tabs } from "nextra-theme-docs";
+
 # Installation
 
-```sh
-npm i class-variance-authority
-```
+<Tabs items={["pnpm", "npm", "yarn"]}>
+  <Tab>
+
+    ```sh
+    pnpm i class-variance-authority
+    ```
+
+  </Tab>
+  <Tab>
+
+    ```sh
+    npm i class-variance-authority
+    ```
+
+  </Tab>
+  <Tab>
+  
+    ```sh
+    yarn add class-variance-authority
+    ```
+  
+  </Tab>
+</Tabs>
 
 <details>
 
-<summary>
-  "Do I really have to write such a long package name for every import?"
-</summary>
+<summary>Do I really have to write such a long package name?</summary>
 
 Unfortunately, yes. Originally, the plan was the publish the package as `cva`, but this name [has been taken and marked as a "placeholder"](https://www.npmjs.com/package/cva). I've reached out to the author and NPM support, but have yet to hear back.
 
 In the meantime, you can always alias the package for your convenience…
-
-## Aliasing
 
 1. Alias the package with [`npm install`](https://docs.npmjs.com/cli/v6/commands/npm-install)
 
@@ -93,9 +111,7 @@ For bulletproof components, wrap your `cva` component with `twMerge`.
 
 <details>
 
-<summary>
-  Example with <code>tailwind-merge</code>
-</summary>
+<summary>Example with tailwind-merge</summary>
 
 ```ts
 import { cva, type VariantProps } from "class-variance-authority";
