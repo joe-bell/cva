@@ -432,7 +432,7 @@ const component = cva("base", options);
    - `variants`: your variants schema
    - `compoundVariants`: variants based on a combination of previously defined variants
    - `defaultVariants`: set default values for previously defined variants.  
-     _note: these default values can be removed completely by setting the variant as `null`_
+     _note: these default values can be removed completely by setting the variant as `"unset"`_
 
 </details>
 
