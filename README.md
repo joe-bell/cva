@@ -423,6 +423,19 @@ const component = cva("base", options);
    - `defaultVariants`: set default values for previously defined variants.  
      _note: these default values can be removed completely by setting the variant as `null`_
 
+<details>
+
+<summary><code>class-variance-authority/experimental</code></summary>
+
+1. `options`
+   - `base`: the base class name (`string`, `string[]` or `null`)
+   - `variants`: your variants schema
+   - `compoundVariants`: variants based on a combination of previously defined variants
+   - `defaultVariants`: set default values for previously defined variants.  
+     _note: these default values can be removed completely by setting the variant as `null`_
+
+</details>
+
 #### Returns
 
 A `cva` component function
