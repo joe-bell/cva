@@ -5,13 +5,13 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "preview": "vite preview",
-    "tsc": "svelte-check --tsconfig ./tsconfig.json"
+    "lint": "svelte-check --tsconfig ./tsconfig.json",
+    "preview": "vite preview"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.2",
     "@tsconfig/svelte": "^3.0.0",
-    "class-variance-authority": "*",
+    "class-variance-authority": "latest",
     "svelte": "^3.55.1",
     "svelte-check": "^2.10.3",
     "tslib": "^2.5.0",
