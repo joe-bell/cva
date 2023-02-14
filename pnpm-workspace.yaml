@@ -1,4 +1,5 @@
 packages:
   - "docs"
+  - "examples/*"
   - "packages/*"
 enable-pre-post-scripts: true

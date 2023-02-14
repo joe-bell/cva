@@ -1,6 +1,12 @@
+import { Callout } from "nextra-theme-docs";
+
 # Getting Started
 
-> **Disclaimer**: Although `cva` is a [**tiny**](https://bundlephobia.com/package/class-variance-authority) library, it's best to use in a SSR/SSG environment – your user probably doesn't need this JavaScript, especially for static components.
+<Callout type="info">
+
+Although `cva` is a [**tiny**](https://bundlephobia.com/package/class-variance-authority) library, it's best to use in a SSR/SSG environment – your user probably doesn't need this JavaScript, especially for static components.
+
+</Callout>
 
 [Tru Narla](https://twitter.com/trunarla) did a wonderful overview of `cva` at Next.js Conf 2022 – you should check it out before continuing:
 
@@ -10,7 +16,11 @@
 
 To kick things off, let's build a "basic" `button` component, using `cva` to handle our variant's classes
 
-> **Note:** Use of Tailwind CSS is optional
+<Callout type="info">
+
+Use of Tailwind CSS is optional
+
+</Callout>
 
 ```ts
 // components/button.ts
