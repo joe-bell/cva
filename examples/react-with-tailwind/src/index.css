@@ -1,0 +1,14 @@
+@tailwind base;
+
+:where(html, body, #root) {
+  width: 100%;
+  height: 100%;
+}
+
+:where(#root) {
+  @apply grid p-6;
+}
+
+@tailwind components;
+
+@tailwind utilities;
