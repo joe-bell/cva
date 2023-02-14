@@ -20,7 +20,6 @@ const config: DocsThemeConfig = {
     ),
   },
   docsRepositoryBase: `${project}/tree/${branch}/docs`,
-  gitTimestamp: true,
   logo: "cva",
   project: {
     link: project,
