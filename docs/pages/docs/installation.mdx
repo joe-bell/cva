@@ -58,48 +58,45 @@ If you're a Tailwind user, here are some additional (optional) steps to get the 
 
 You can enable autocompletion inside `cva` using the steps below:
 
-<details>
+<Tabs items={["Visual Studio Code", "Neovim"]}>
+  <Tab>
 
-<summary>Visual Studio Code</summary>
+    1. [Install the "Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
 
-1. [Install the "Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
+    2. Add the following to your [`settings.json`](https://code.visualstudio.com/docs/getstarted/settings):
 
-2. Add the following to your [`settings.json`](https://code.visualstudio.com/docs/getstarted/settings):
+    ```json
+    {
+      "tailwindCSS.experimental.classRegex": [
+        ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+      ]
+    }
+    ```
 
-   ```json
-   {
-     "tailwindCSS.experimental.classRegex": [
-       ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
-     ]
-   }
-   ```
+  </Tab>
+  <Tab>
 
-</details>
+    1. [Install the extension](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#tailwindcss)
 
-<details>
+    2. Add the following configuration:
 
-<summary>Neovim</summary>
+    ```lua
+    lspconfig.tailwindcss.setup({
+      settings = {
+        tailwindCSS = {
+          experimental = {
+            classRegex = {
+              "cva\\(([^)]*)\\)",
+              "[\"'`]([^\"'`]*).*?[\"'`]",
+            },
+          },
+        },
+      },
+    })
+    ```
 
-1. [Install the extension](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#tailwindcss)
-
-2. Add the following configuration:
-
-   ```lua
-   lspconfig.tailwindcss.setup({
-     settings = {
-       tailwindCSS = {
-         experimental = {
-           classRegex = {
-             "cva\\(([^)]*)\\)",
-             "[\"'`]([^\"'`]*).*?[\"'`]",
-           },
-         },
-       },
-     },
-   })
-   ```
-
-</details>
+  </Tab>
+</Tabs>
 
 ### Handling Style Conflicts
 
