@@ -68,7 +68,7 @@ importers:
     specifiers:
       '@types/react': 18.0.12
       '@types/react-dom': 18.0.5
-      '@vitejs/plugin-react-swc': ^3.0.0
+      '@vitejs/plugin-react': ^3.1.0
       class-variance-authority: '*'
       react: 18.2.0
       react-dom: 18.2.0
@@ -81,7 +81,7 @@ importers:
     devDependencies:
       '@types/react': 18.0.12
       '@types/react-dom': 18.0.5
-      '@vitejs/plugin-react-swc': 3.1.0_vite@4.1.1
+      '@vitejs/plugin-react': 3.1.0_vite@4.1.1
       typescript: 4.7.3
       vite: 4.1.1
 
@@ -511,6 +511,26 @@ packages:
 
   /@babel/plugin-syntax-typescript/7.20.0_@babel+core@7.20.12:
     resolution: {integrity: sha512-rd9TkG+u1CExzS4SM1BlMEhMXwFLKVjOAFFCDx9PbX5ycJWDoWMcwdJH9RhkPu1dOgn5TrxLot/Gx6lWFuAUNQ==}
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0-0
+    dependencies:
+      '@babel/core': 7.20.12
+      '@babel/helper-plugin-utils': 7.20.2
+    dev: true
+
+  /@babel/plugin-transform-react-jsx-self/7.18.6_@babel+core@7.20.12:
+    resolution: {integrity: sha512-A0LQGx4+4Jv7u/tWzoJF7alZwnBDQd6cGLh9P+Ttk4dpiL+J5p7NSNv/9tlEFFJDq3kjxOavWmbm6t0Gk+A3Ig==}
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0-0
+    dependencies:
+      '@babel/core': 7.20.12
+      '@babel/helper-plugin-utils': 7.20.2
+    dev: true
+
+  /@babel/plugin-transform-react-jsx-source/7.19.6_@babel+core@7.20.12:
+    resolution: {integrity: sha512-RpAi004QyMNisst/pvSanoRdJ4q+jMCWyk9zdw/CyLB9j8RXEahodR6l2GyttDRyEVWZtbN+TpLiHJ3t34LbsQ==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0-0
@@ -1463,26 +1483,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core-darwin-arm64/1.3.35:
-    resolution: {integrity: sha512-zQUFkHx4gZpu0uo2IspvPnKsz8bsdXd5bC33xwjtoAI1cpLerDyqo4v2zIahEp+FdKZjyVsLHtfJiQiA1Qka3A==}
-    engines: {node: '>=10'}
-    cpu: [arm64]
-    os: [darwin]
-    requiresBuild: true
-    dev: true
-    optional: true
-
   /@swc/core-darwin-x64/1.2.199:
     resolution: {integrity: sha512-sNDqBFjSqbJF7JIg+0J1KYsOaO2/93WGU/nEdMl8XisXu8jwi0jn5iwxwWGOV7ZNsWcB6ZaNcEhtSMkRocxwzA==}
-    engines: {node: '>=10'}
-    cpu: [x64]
-    os: [darwin]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@swc/core-darwin-x64/1.3.35:
-    resolution: {integrity: sha512-oOSkSGWtALovaw22lNevKD434OQTPf8X+dVPvPMrJXJpJ34dWDlFWpLntoc+arvKLNZ7LQmTuk8rR1hkrAY7cw==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [darwin]
@@ -1508,26 +1510,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core-linux-arm-gnueabihf/1.3.35:
-    resolution: {integrity: sha512-Yie8k00O6O8BCATS/xeKStquV4OYSskUGRDXBQVDw1FrE23PHaSeHCgg4q6iNZjJzXCOJbaTCKnYoIDn9DMf7A==}
-    engines: {node: '>=10'}
-    cpu: [arm]
-    os: [linux]
-    requiresBuild: true
-    dev: true
-    optional: true
-
   /@swc/core-linux-arm64-gnu/1.2.199:
     resolution: {integrity: sha512-wOlecCRPP09RhqJEfyFFuwvJDeNdSAlKp3YzTTWvpfH8wMeVSBlEOiHrLSfNCXRsHoqJZAGdk/4McjIISQgqmw==}
-    engines: {node: '>=10'}
-    cpu: [arm64]
-    os: [linux]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@swc/core-linux-arm64-gnu/1.3.35:
-    resolution: {integrity: sha512-Zlv3WHa/4x2p51HSvjUWXHfSe1Gl2prqImUZJc8NZOlj75BFzVuR0auhQ+LbwvIQ3gaA1LODX9lyS9wXL3yjxA==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [linux]
@@ -1544,26 +1528,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core-linux-arm64-musl/1.3.35:
-    resolution: {integrity: sha512-u6tCYsrSyZ8U+4jLMA/O82veBfLy2aUpn51WxQaeH7wqZGy9TGSJXoO8vWxARQ6b72vjsnKDJHP4MD8hFwcctg==}
-    engines: {node: '>=10'}
-    cpu: [arm64]
-    os: [linux]
-    requiresBuild: true
-    dev: true
-    optional: true
-
   /@swc/core-linux-x64-gnu/1.2.199:
     resolution: {integrity: sha512-7K9ZjGj+0FWHYes1QI3d7XhCzolm/W2E/WHuAL/nZuTHQ0/VRTCjdgA6ilJozUBDjj1xKmJp3rdWwNzveRDilQ==}
-    engines: {node: '>=10'}
-    cpu: [x64]
-    os: [linux]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@swc/core-linux-x64-gnu/1.3.35:
-    resolution: {integrity: sha512-Dtxf2IbeH7XlNhP1Qt2/MvUPkpEbn7hhGfpSRs4ot8D3Vf5QEX4S/QtC1OsFWuciiYgHAT1Ybjt4xZic9DSkmA==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [linux]
@@ -1580,26 +1546,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core-linux-x64-musl/1.3.35:
-    resolution: {integrity: sha512-4XavNJ60GprjpTiESCu5daJUnmErixPAqDitJSMu4TV32LNIE8G00S9pDLXinDTW1rgcGtQdq1NLkNRmwwovtg==}
-    engines: {node: '>=10'}
-    cpu: [x64]
-    os: [linux]
-    requiresBuild: true
-    dev: true
-    optional: true
-
   /@swc/core-win32-arm64-msvc/1.2.199:
     resolution: {integrity: sha512-ACXzDkYnrJQbU5Ll+vkwMxV/shpiw2pAT5Br5FGsoGo0QVGjEJWa6EVPsvZDMhu0c0IzbFKJgvqqOQKC6cAcDw==}
-    engines: {node: '>=10'}
-    cpu: [arm64]
-    os: [win32]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@swc/core-win32-arm64-msvc/1.3.35:
-    resolution: {integrity: sha512-dNGfKCUSX2M4qVyaS80Lyos0FkXyHRCvrdQ2Y4Hrg3FVokiuw3yY6fLohpUfQ5ws3n2A39dh7jGDeh34+l0sGA==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [win32]
@@ -1616,26 +1564,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core-win32-ia32-msvc/1.3.35:
-    resolution: {integrity: sha512-ChuPSrDR+JBf7S7dEKPicnG8A3bM0uWPsW2vG+V2wH4iNfNxKVemESHosmYVeEZXqMpomNMvLyeHep1rjRsc0Q==}
-    engines: {node: '>=10'}
-    cpu: [ia32]
-    os: [win32]
-    requiresBuild: true
-    dev: true
-    optional: true
-
   /@swc/core-win32-x64-msvc/1.2.199:
     resolution: {integrity: sha512-PCd5Zau6uL++vYqxpYR1anYJcHG81nFJsTfZ6fYwhRARcYyPExNENKJbJgSycaBrPcylApCtUR8wVWWWp35cPQ==}
-    engines: {node: '>=10'}
-    cpu: [x64]
-    os: [win32]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@swc/core-win32-x64-msvc/1.3.35:
-    resolution: {integrity: sha512-/RvphT4WfuGfIK84Ha0dovdPrKB1bW/mc+dtdmhv2E3EGkNc5FoueNwYmXWRimxnU7X0X7IkcRhyKB4G5DeAmg==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [win32]
@@ -1661,23 +1591,6 @@ packages:
       '@swc/core-win32-arm64-msvc': 1.2.199
       '@swc/core-win32-ia32-msvc': 1.2.199
       '@swc/core-win32-x64-msvc': 1.2.199
-    dev: true
-
-  /@swc/core/1.3.35:
-    resolution: {integrity: sha512-KmiBin0XSVzJhzX19zTiCqmLslZ40Cl7zqskJcTDeIrRhfgKdiAsxzYUanJgMJIRjYtl9Kcg1V/Ip2o2wL8v3w==}
-    engines: {node: '>=10'}
-    requiresBuild: true
-    optionalDependencies:
-      '@swc/core-darwin-arm64': 1.3.35
-      '@swc/core-darwin-x64': 1.3.35
-      '@swc/core-linux-arm-gnueabihf': 1.3.35
-      '@swc/core-linux-arm64-gnu': 1.3.35
-      '@swc/core-linux-arm64-musl': 1.3.35
-      '@swc/core-linux-x64-gnu': 1.3.35
-      '@swc/core-linux-x64-musl': 1.3.35
-      '@swc/core-win32-arm64-msvc': 1.3.35
-      '@swc/core-win32-ia32-msvc': 1.3.35
-      '@swc/core-win32-x64-msvc': 1.3.35
     dev: true
 
   /@swc/helpers/0.4.14:
@@ -1896,13 +1809,20 @@ packages:
       '@types/yargs-parser': 21.0.0
     dev: true
 
-  /@vitejs/plugin-react-swc/3.1.0_vite@4.1.1:
-    resolution: {integrity: sha512-xnDULNrkEbtTtRNnMPp+RsuIuIbk1JJV0xY7irchYyv9JJS4uvmc1EYip+qyrnkcX7TQ9c8vCS3AmkQqADI0Fw==}
+  /@vitejs/plugin-react/3.1.0_vite@4.1.1:
+    resolution: {integrity: sha512-AfgcRL8ZBhAlc3BFdigClmTUMISmmzHn7sB2h9U1odvc5U/MjWXsAaz18b/WoppUTDBzxOJwo2VdClfUcItu9g==}
+    engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
-      vite: ^4
+      vite: ^4.1.0-beta.0
     dependencies:
-      '@swc/core': 1.3.35
+      '@babel/core': 7.20.12
+      '@babel/plugin-transform-react-jsx-self': 7.18.6_@babel+core@7.20.12
+      '@babel/plugin-transform-react-jsx-source': 7.19.6_@babel+core@7.20.12
+      magic-string: 0.27.0
+      react-refresh: 0.14.0
       vite: 4.1.1
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /@vscode/emmet-helper/2.8.6:
@@ -4703,7 +4623,6 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.14
-    dev: false
 
   /make-dir/3.1.0:
     resolution: {integrity: sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==}
@@ -6180,6 +6099,11 @@ packages:
 
   /react-is/18.2.0:
     resolution: {integrity: sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==}
+    dev: true
+
+  /react-refresh/0.14.0:
+    resolution: {integrity: sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==}
+    engines: {node: '>=0.10.0'}
     dev: true
 
   /react/18.2.0:
