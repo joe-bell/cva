@@ -1,5 +1,6 @@
 {
   "name": "example-astro-with-tailwind",
+  "private": true,
   "type": "module",
   "scripts": {
     "astro": "astro",
