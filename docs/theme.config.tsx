@@ -1,8 +1,10 @@
 import { useConfig, type DocsThemeConfig } from "nextra-theme-docs";
 import { useRouter } from "next/router";
 
+export const branch = "feat/docs";
+export const repo = "joe-bell/cva";
 const author = "https://joebell.co.uk";
-const project = "https://github.com/joe-bell/cva";
+const project = `https://github.com/${repo}`;
 const twitter = "https://joebell.co.uk/twitter";
 
 const config: DocsThemeConfig = {
@@ -17,7 +19,7 @@ const config: DocsThemeConfig = {
       </svg>
     ),
   },
-  docsRepositoryBase: `${project}/tree/main/docs`,
+  docsRepositoryBase: `${project}/tree/${branch}/docs`,
   gitTimestamp: true,
   logo: "cva",
   project: {

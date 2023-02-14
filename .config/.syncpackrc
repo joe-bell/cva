@@ -1,4 +1,14 @@
 {
   "workspace": false,
-  "peer": false
+  "peer": false,
+  "versionGroups": [
+    {
+      "dependencies": [
+        "class-variance-authority"
+      ],
+      "packages": [
+        "example-*"
+      ]
+    }
+  ]
 }

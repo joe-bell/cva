@@ -32,6 +32,7 @@ importers:
       nextra-theme-docs: ^2.2.14
       react: 18.2.0
       react-dom: 18.2.0
+      tiny-invariant: 1.3.1
       typescript: 4.7.3
     dependencies:
       class-variance-authority: link:../packages/class-variance-authority
@@ -40,6 +41,7 @@ importers:
       nextra-theme-docs: 2.2.14_u6qwm625rg3t7ll2t4ybomvrai
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
+      tiny-invariant: 1.3.1
     devDependencies:
       '@types/node': 18.11.18
       '@types/react': 18.0.12
@@ -47,7 +49,7 @@ importers:
 
   examples/11ty-with-tailwind:
     specifiers:
-      class-variance-authority: workspace:*
+      class-variance-authority: latest
     dependencies:
       class-variance-authority: link:../../packages/class-variance-authority
 
@@ -55,7 +57,7 @@ importers:
     specifiers:
       '@astrojs/tailwind': ^3.0.1
       astro: ^2.0.4
-      class-variance-authority: workspace:*
+      class-variance-authority: latest
       npm-run-all: 4.1.5
       tailwindcss: ^3.0.24
       typescript: 4.7.3
@@ -6966,6 +6968,10 @@ packages:
     dependencies:
       globalyzer: 0.1.0
       globrex: 0.1.2
+
+  /tiny-invariant/1.3.1:
+    resolution: {integrity: sha512-AD5ih2NlSssTCwsMznbvwMZpJ1cbhkGd2uueNxzv2jDlEeZdU04JQfRnggJQ8DrcVBGjAsCKwFBbDlVNtEMlzw==}
+    dev: false
 
   /title/3.5.3:
     resolution: {integrity: sha512-20JyowYglSEeCvZv3EZ0nZ046vLarO37prvV0mbtQV7C8DJPGgN967r8SJkqd3XK3K3lD3/Iyfp3avjfil8Q2Q==}
