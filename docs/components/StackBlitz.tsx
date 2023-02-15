@@ -1,5 +1,5 @@
 import invariant from "tiny-invariant";
-import { branch, repo } from "../theme.config";
+import { config } from "../theme.config";
 
 interface StackBlitzProps {
   dir?: string;
@@ -14,7 +14,7 @@ export const StackBlitz: React.FC<StackBlitzProps> = ({ dir, file }) => {
   return (
     <iframe
       style={{ aspectRatio: 1 / 1, width: "100%" }}
-      src={`https://stackblitz.com/github/${repo}/tree/${branch}/${dir}?embed=1&file=${file}&hideNavigation=1&view=preview`}
+      src={`https://stackblitz.com/github/${config.repo}/tree/${config.branch}/${dir}?embed=1&file=${file}&hideNavigation=1&view=preview`}
     ></iframe>
   );
 };

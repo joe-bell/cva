@@ -1,9 +1,9 @@
 import { useConfig, type DocsThemeConfig } from "nextra-theme-docs";
 import { useRouter } from "next/router";
 
-const config = {
+export const config = {
   title: "cva",
-  branch: "feat/docs",
+  branch: "main",
   repo: "joe-bell/cva",
   domain: "cva.style",
   description: "Class Variance Authority",
