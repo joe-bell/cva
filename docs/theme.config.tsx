@@ -102,8 +102,6 @@ const nextraConfig: DocsThemeConfig = {
 
     return (
       <>
-        <meta property="og:title" content={config.title} />
-
         <meta property="og:url" content={canonical} />
         <link rel="canonical" href={canonical} />
 
@@ -145,8 +143,8 @@ const nextraConfig: DocsThemeConfig = {
       },
     };
 
-    if (asPath === "/") {
-      return { ...shared, title: config.title };
+    if (["/", "/docs"].includes(asPath)) {
+      return { ...shared, titleTemplate: config.title };
     }
 
     return { ...shared, titleTemplate: `%s | ${config.title}` };

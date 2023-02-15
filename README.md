@@ -1,4 +1,4 @@
-![CVA](/.github/assets/meta.png)
+![CVA](/docs/public/assets/img/wallpaper-hd.jpg)
 
 <h1 align="center">cva</h1>
 
@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://cva.style"><strong>Read the Docs ↗</strong></a>
+  <a href="https://cva.style"><strong>Read the Docs 📖</strong></a>
 </p>
 
 <p align="center">
