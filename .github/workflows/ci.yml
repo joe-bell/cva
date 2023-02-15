@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        script: [build, lint, tsc, test]
+        script: [format, lint, tsc, test]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -25,5 +25,6 @@ jobs:
           cache: "pnpm"
           node-version-file: ".nvmrc"
       - run: pnpm i
+      - run: pnpm build
       - name: ${{ matrix.script }}
         run: pnpm ${{ matrix.script }}

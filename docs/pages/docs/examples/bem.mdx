@@ -1,0 +1,56 @@
+# BEM
+
+```css
+/* styles.css */
+.button {
+  /* */
+}
+
+.button--primary {
+  /* */
+}
+.button--secondary {
+  /* */
+}
+
+.button--small {
+  /* */
+}
+.button--medium {
+  /* */
+}
+
+.button--primary-small {
+  /* */
+}
+```
+
+```ts
+import { cva } from "class-variance-authority";
+
+const button = cva("button", {
+  variants: {
+    intent: {
+      primary: "button--primary",
+      secondary: "button--secondary",
+    },
+    size: {
+      small: "button--small",
+      medium: "button--medium",
+    },
+  },
+  compoundVariants: [
+    { intent: "primary", size: "medium", class: "button--primary-small" },
+  ],
+  defaultVariants: {
+    intent: "primary",
+    size: "medium",
+  },
+});
+
+button();
+// => "button button--primary button--medium"
+
+button({ intent: "secondary", size: "small" });
+// => "button button--secondary button--small"
+```
