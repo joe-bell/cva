@@ -14,7 +14,7 @@ export const config = {
   },
   og: "/assets/img/og.png",
   favicon: "/assets/img/favicon.png",
-};
+} as const;
 
 const PROJECT = `https://github.com/${config.repo}`;
 const SITE = `https://${config.domain}`;
@@ -102,6 +102,8 @@ const nextraConfig: DocsThemeConfig = {
 
     return (
       <>
+        <meta property="og:title" content={config.title} />
+
         <meta property="og:url" content={canonical} />
         <link rel="canonical" href={canonical} />
 
