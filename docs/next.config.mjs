@@ -6,4 +6,19 @@ const withNextra = nextra({
   staticImage: true,
 });
 
-export default withNextra();
+/**
+ * @type {import('next').NextConfig}
+ */
+const nextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/docs",
+        permanent: false,
+      },
+    ];
+  },
+};
+
+export default withNextra(nextConfig);

@@ -1,134 +1,33 @@
-import { Tab, Tabs } from "nextra-theme-docs";
+![CVA Logo](/assets/img/wallpaper-hd.jpg)
 
-# Installation
+<br />
+<br />
 
-<Tabs items={["pnpm", "npm", "yarn"]}>
-  <Tab>
+# Class Variance Authority
 
-    ```sh
-    pnpm i class-variance-authority
-    ```
+CSS-in-TS libraries such as [Stitches](https://stitches.dev/docs/variants) and [Vanilla Extract](https://vanilla-extract.style/documentation/) are **fantastic** options for building type-safe UI components; taking away all the worries of class names and StyleSheet composition.
 
-  </Tab>
-  <Tab>
+…but CSS-in-TS (or CSS-in-JS) isn't for everyone.
 
-    ```sh
-    npm i class-variance-authority
-    ```
+You may need full control over your StyleSheet output. Your job might require you to use a framework such as Tailwind CSS. You might just prefer writing your own CSS.
 
-  </Tab>
-  <Tab>
-  
-    ```sh
-    yarn add class-variance-authority
-    ```
-  
-  </Tab>
-</Tabs>
+Creating variants with the "traditional" CSS approach can become an arduous task; manually matching classes to props and manually adding types.
 
-<details>
+`cva` aims to take those pain points away, allowing you to focus on the more fun aspects of UI development.
 
-<summary>Do I really have to write such a long package name?</summary>
+## Acknowledgements
 
-Unfortunately, yes. Originally, the plan was the publish the package as `cva`, but this name [has been taken and marked as a "placeholder"](https://www.npmjs.com/package/cva). I've reached out to the author and NPM support, but have yet to hear back.
+- [**Stitches**](https://stitches.dev/) ([WorkOS](https://workos.com))  
+  Huge thanks to the WorkOS team for pioneering the `variants` API movement – your open-source contributions are immensely appreciated
+- [**clb**](https://github.com/crswll/clb) ([Bill Criswell](https://github.com/crswll))  
+  This project originally started out with the intention of merging into the wonderful [`clb`](https://github.com/crswll/clb) library, but after some discussion with Bill, we felt it was best to go down the route of a separate project.  
+  I'm so grateful to Bill for sharing his work publicly and for getting me excited about building a type-safe variants API for classes. If you have a moment, please go and [star the project on GitHub](https://github.com/crswll/clb). Thank you Bill!
+- [**Vanilla Extract**](http://vanilla-extract.style) ([Seek](https://github.com/seek-oss))
 
-In the meantime, you can always alias the package for your convenience…
+## Downloads
 
-1. Alias the package with [`npm install`](https://docs.npmjs.com/cli/v6/commands/npm-install)
+- [Wallpaper (4K)](/assets/img/wallpaper-4k.png)
 
-   ```sh
-   npm i cva@npm:class-variance-authority
-   ```
+## License
 
-2. Then import like so:
-
-   ```ts
-   import { cva } from "cva";
-
-   // …
-   ```
-
-</details>
-
-## Tailwind CSS
-
-If you're a Tailwind user, here are some additional (optional) steps to get the most out of `cva`:
-
-### IntelliSense
-
-You can enable autocompletion inside `cva` using the steps below:
-
-<Tabs items={["Visual Studio Code", "Neovim"]}>
-  <Tab>
-
-    1. [Install the "Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
-
-    2. Add the following to your [`settings.json`](https://code.visualstudio.com/docs/getstarted/settings):
-
-    ```json
-    {
-      "tailwindCSS.experimental.classRegex": [
-        ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
-      ]
-    }
-    ```
-
-  </Tab>
-  <Tab>
-
-    1. [Install the extension](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#tailwindcss)
-
-    2. Add the following configuration:
-
-    ```lua
-    lspconfig.tailwindcss.setup({
-      settings = {
-        tailwindCSS = {
-          experimental = {
-            classRegex = {
-              "cva\\(([^)]*)\\)",
-              "[\"'`]([^\"'`]*).*?[\"'`]",
-            },
-          },
-        },
-      },
-    })
-    ```
-
-  </Tab>
-</Tabs>
-
-### Handling Style Conflicts
-
-Although `cva`'s API is designed to help you avoid styling conflicts, there's still a small margin of error.
-
-If you're keen to lift that burden altogether, check out the wonderful [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) package.
-
-For bulletproof components, wrap your `cva` component with `twMerge`.
-
-<details>
-
-<summary>Example with tailwind-merge</summary>
-
-```ts
-import { cva, type VariantProps } from "class-variance-authority";
-import { twMerge } from "tailwind-merge";
-
-const buttonVariants = cva(["your", "base", "classes"], {
-  variants: {
-    intent: {
-      primary: ["your", "primary", "classes"],
-    },
-  },
-  defaultVariants: {
-    intent: "primary",
-  },
-});
-
-export interface ButtonVariants extends VariantProps<typeof buttonVariants> {}
-
-export const button = (variants: ButtonVariants) =>
-  twMerge(buttonVariants(variants));
-```
-
-</details>
+[Apache-2.0 License](/LICENSE) © [Joe Bell](https://twitter.com/joebell_)
