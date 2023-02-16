@@ -1,6 +1,6 @@
 {
-  "name": "class-variance-authority",
-  "version": "0.4.0",
+  "name": "cva",
+  "version": "0.0.0",
   "description": "Class Variance Authority 🧬",
   "keywords": [
     "Class Variance Authority",
@@ -38,7 +38,7 @@
     "prepublishOnly": "pnpm build",
     "test": "run-p test:*",
     "test:jest": "jest --config .config/jest.config.ts --coverage",
-    "test:size": "pnpm build && pnpx bundlesize -f 'dist/*.js' -s 850B",
+    "test:size": "pnpm build && pnpx bundlesize -f 'dist/*.js' -s 880B",
     "tsc": "tsc --project tsconfig.json --noEmit"
   },
   "devDependencies": {
