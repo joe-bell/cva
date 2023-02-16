@@ -16,9 +16,9 @@ export const config = {
   favicon: "/assets/img/favicon.png",
 } as const;
 
-const PROJECT = `https://github.com/${config.repo}`;
-const SITE = `https://${config.domain}`;
-const TWITTER = `https://twitter.com/${config.author.twitter}`;
+export const PROJECT = `https://github.com/${config.repo}`;
+export const SITE = `https://${config.domain}`;
+export const TWITTER = `https://twitter.com/${config.author.twitter}`;
 
 const nextraConfig: DocsThemeConfig = {
   chat: {
