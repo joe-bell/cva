@@ -12,6 +12,34 @@ For documentation, visit [cva.style](https://cva.style).
 
 ## `class-variance-authority` → `cva`
 
+### Changelog
+
+1. **`cva` accepts a single parameter**
+
+   Base styles (whether `string` or `string[]`) are now applied via the named `base` property
+
+   - _Before_
+
+     ```ts
+     import { cva } from "class-variance-authority";
+
+     const before = cva("your-base-class");
+     ```
+
+   - _After_
+
+     ```ts
+     import { cva } from "cva";
+
+     const after = cva({ base: "your-base-class" });
+     ```
+
+2. **Use `"unset"` to disable a variant completely**
+
+   Previously, passing `null` to a variant would provide the same behaviour – to match Stitches.js – however this caused some [concern and confusion](https://github.com/joe-bell/cva/discussions/97).
+
+   Instead, a more explicit `"unset"` option ([similar to the CSS keyword](https://developer.mozilla.org/en-US/docs/Web/CSS/unset)) is now available for use.
+
 ### API Reference
 
 #### `cva`
