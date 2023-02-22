@@ -1,4 +1,6 @@
 {
+  "$schema": "https://json.schemastore.org/swcrc",
+  "minify": true,
   "jsc": {
     "parser": {
       "syntax": "typescript"
@@ -6,5 +8,6 @@
   },
   "env": {
     "targets": ["defaults", "not IE 11", "maintained node versions"]
-  }
+  },
+  "sourceMaps": true
 }

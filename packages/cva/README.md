@@ -40,6 +40,12 @@ For documentation, visit [cva.style](https://cva.style).
 
    Instead, a more explicit `"unset"` option ([similar to the CSS keyword](https://developer.mozilla.org/en-US/docs/Web/CSS/unset)) is now available for use.
 
+3. Utilize `swc` minification to improve bundlesize
+
+   > **Warning**
+   >
+   > Size may differ before stable release
+
 ### API Reference
 
 #### `cva`

@@ -38,7 +38,7 @@
     "prepublishOnly": "pnpm build",
     "test": "run-p test:*",
     "test:jest": "jest --config .config/jest.config.ts --coverage",
-    "test:size": "pnpm build && pnpx bundlesize -f 'dist/*.js' -s 850B",
+    "test:size": "pnpm build && bundlesize -f 'dist/*.js' -s 850B",
     "tsc": "tsc --project tsconfig.json --noEmit"
   },
   "devDependencies": {
