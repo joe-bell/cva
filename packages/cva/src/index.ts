@@ -76,35 +76,27 @@ export const cva =
       }
     );
 
-    const propsWithoutUndefined =
-      props &&
-      Object.entries(props).reduce((acc, [key, value]) => {
-        if (value === undefined) {
-          return acc;
-        }
-
-        acc[key] = value;
-        return acc;
-      }, {} as Record<string, unknown>);
+    const defaultsAndProps = {
+      ...defaultVariants,
+      // remove `undefined` props
+      ...(props &&
+        Object.entries(props).reduce<typeof props>(
+          (acc, [key, value]) =>
+            typeof value === "undefined" ? acc : { ...acc, [key]: value },
+          {} as typeof props
+        )),
+    };
 
     const getCompoundVariantClassNames = config?.compoundVariants?.reduce(
-      (
-        acc,
-        { class: cvClass, className: cvClassName, ...compoundVariantOptions }
-      ) =>
-        Object.entries(compoundVariantOptions).every(([key, value]) =>
-          Array.isArray(value)
-            ? value.includes(
-                {
-                  ...defaultVariants,
-                  ...propsWithoutUndefined,
-                }[key]
-              )
-            : {
-                ...defaultVariants,
-                ...propsWithoutUndefined,
-              }[key] === value
-        )
+      (acc, { class: cvClass, className: cvClassName, ...cvConfig }) =>
+        Object.entries(cvConfig).every(([cvKey, cvSelector]) => {
+          const selector =
+            defaultsAndProps[cvKey as keyof typeof defaultsAndProps];
+
+          return Array.isArray(cvSelector)
+            ? cvSelector.includes(selector)
+            : selector === cvSelector;
+        })
           ? [...acc, cvClass, cvClassName]
           : acc,
       [] as ClassValue[]
