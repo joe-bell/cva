@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "build": "pnpm check && vite build",
+    "check": "tsc",
     "dev": "vite",
-    "preview": "vite preview",
-    "tsc": "tsc"
+    "preview": "vite preview"
   },
   "dependencies": {
     "class-variance-authority": "latest",

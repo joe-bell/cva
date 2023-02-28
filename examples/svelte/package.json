@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "build": "pnpm check && vite build",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
     "dev": "vite",
-    "lint": "svelte-check --tsconfig ./tsconfig.json",
     "preview": "vite preview"
   },
   "devDependencies": {

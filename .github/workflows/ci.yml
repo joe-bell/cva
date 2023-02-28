@@ -1,4 +1,4 @@
-name: CI
+name: ci
 
 on:
   push:
@@ -7,12 +7,12 @@ on:
     branches: [main]
 
 jobs:
-  pnpm:
+  packages:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        script: [lint, tsc, test]
+        script: [build, lint, check, test]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -26,4 +26,29 @@ jobs:
           node-version-file: ".nvmrc"
       - run: pnpm i
       - name: ${{ matrix.script }}
+        run: pnpm ${{ matrix.script }}
+  housekeeping:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        script: [commitlint, syncpack, format]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
+      - uses: actions/setup-node@v3
+        with:
+          cache: "pnpm"
+          node-version-file: ".nvmrc"
+      - run: pnpm i
+      - if: ${{ matrix.script == 'commitlint' }}
+        uses: wagoid/commitlint-github-action@v5
+        env:
+          NODE_PATH: ${{ github.workspace }}/node_modules
+      - if: ${{ matrix.script != 'commitlint' }}
+        name: ${{ matrix.script }}
         run: pnpm ${{ matrix.script }}

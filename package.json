@@ -1,21 +1,20 @@
 {
   "private": true,
   "scripts": {
-    "docs": "pnpm run --filter docs dev",
+    "check": "pnpm run --filter './packages/*' --parallel check",
     "build": "pnpm run --filter './packages/*' build",
-    "dev": "pnpm run -r --parallel dev",
-    "lint": "run-p lint:*",
+    "dev": "pnpm run --filter './packages/*' --parallel dev",
+    "docs": "pnpm run --filter docs dev",
+    "format": "pnpm prettier -- --check .",
+    "lint": "pnpm run --filter './packages/*' --parallel lint",
     "lint-staged": "lint-staged --config .config/lint-staged.config.mjs",
-    "lint:script": "pnpm run -r --parallel lint",
-    "lint:deps": "syncpack list-mismatches --config .config/.syncpackrc",
-    "lint:format": "pnpm run prettier -- --check .",
     "preinstall": "npx only-allow pnpm && corepack enable",
     "prepare": "run-p -s prepare:*",
     "prepare:husky": "if-env VERCEL=1 && echo 'Skipping prepare' || husky install",
     "prepare:packages": "pnpm build",
     "prettier": "prettier --ignore-unknown --no-error-on-unmatched-pattern",
-    "test": "pnpm run -r --parallel test",
-    "tsc": "pnpm run -r --parallel tsc"
+    "syncpack": "syncpack list-mismatches --config .config/.syncpackrc",
+    "test": "pnpm run --filter './packages/*' --parallel test"
   },
   "devDependencies": {
     "husky": "8.0.1",

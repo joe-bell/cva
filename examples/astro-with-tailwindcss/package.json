@@ -4,12 +4,11 @@
   "type": "module",
   "scripts": {
     "astro": "astro",
-    "build": "astro build",
+    "build": "pnpm check && astro check && astro build",
+    "check": "tsc",
     "dev": "astro dev",
-    "lint": "astro check",
     "preview": "astro preview",
-    "start": "astro dev",
-    "tsc": "tsc"
+    "start": "astro dev"
   },
   "dependencies": {
     "@astrojs/tailwind": "^3.0.1",
