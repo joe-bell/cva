@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "build": "pnpm check && vite build",
+    "check": "vue-tsc",
     "dev": "vite",
-    "lint": "vue-tsc",
     "preview": "vite preview"
   },
   "dependencies": {
