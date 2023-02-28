@@ -1,4 +1,4 @@
-name: CI
+name: ci
 
 on:
   push:
@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        script: [syncpack, format]
+        script: [commitlint, syncpack, format]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -45,5 +45,10 @@ jobs:
           cache: "pnpm"
           node-version-file: ".nvmrc"
       - run: pnpm i
-      - name: ${{ matrix.script }}
+      - if: ${{ matrix.script == 'commitlint' }}
+        uses: wagoid/commitlint-github-action@v5
+        env:
+          NODE_PATH: ${{ github.workspace }}/node_modules
+      - if: ${{ matrix.script != 'commitlint' }}
+        name: ${{ matrix.script }}
         run: pnpm ${{ matrix.script }}
