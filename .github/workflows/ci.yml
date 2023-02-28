@@ -1,4 +1,4 @@
-name: packages
+name: CI
 
 on:
   push:
@@ -7,12 +7,32 @@ on:
     branches: [main]
 
 jobs:
-  pnpm:
+  packages:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         script: [build, lint, check, test]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
+      - uses: actions/setup-node@v3
+        with:
+          cache: "pnpm"
+          node-version-file: ".nvmrc"
+      - run: pnpm i
+      - name: ${{ matrix.script }}
+        run: pnpm ${{ matrix.script }}
+  housekeeping:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        script: [syncpack, format]
     steps:
       - uses: actions/checkout@v3
         with:
