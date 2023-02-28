@@ -1,12 +1,13 @@
 {
   "private": true,
   "scripts": {
-    "check": "pnpm run --filter './packages/*' --parallel tsc",
+    "check": "pnpm run --filter './packages/*' --parallel check",
     "build": "pnpm run --filter './packages/*' build",
     "dev": "pnpm run --filter './packages/*' --parallel dev",
     "docs": "pnpm run --filter docs dev",
-    "format": "pnpm run prettier -- --check .",
+    "format": "pnpm prettier -- --check .",
     "lint": "pnpm run --filter './packages/*' --parallel lint",
+    "lint-staged": "lint-staged --config .config/lint-staged.config.mjs",
     "preinstall": "npx only-allow pnpm && corepack enable",
     "prepare": "run-p -s prepare:*",
     "prepare:husky": "if-env VERCEL=1 && echo 'Skipping prepare' || husky install",

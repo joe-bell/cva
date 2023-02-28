@@ -3,6 +3,7 @@ export default {
     `pnpm run prettier -- --write ${filenames
       .map((filename) => `'${filename}'`)
       .join(" ")}`,
-  "**/*.{js,jsx,ts,tsx}": () => "pnpm tsc",
+  "**/*.{astro,js,jsx,svelte,ts,tsx,vue}": () =>
+    "pnpm run --filter '*' --parallel check",
   "**/package.json": () => "pnpm syncpack",
 };

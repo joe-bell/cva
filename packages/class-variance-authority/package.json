@@ -34,12 +34,12 @@
     "build:cjs": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.cjs.js -C module.type=commonjs",
     "build:esm": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.esm.js -C module.type=es6 ",
     "build:tsc": "tsc --project .config/tsconfig.build.json",
+    "check": "tsc --project tsconfig.json --noEmit",
     "dev": "jest --config .config/jest.config.ts --watch",
     "prepublishOnly": "pnpm build",
     "test": "run-p test:*",
     "test:jest": "jest --config .config/jest.config.ts --coverage",
-    "test:size": "pnpm build && bundlesize -f 'dist/*.js' -s 850B",
-    "tsc": "tsc --project tsconfig.json --noEmit"
+    "test:size": "pnpm build && bundlesize -f 'dist/*.js' -s 850B"
   },
   "devDependencies": {
     "@jest/types": "28.1.1",
