@@ -3,10 +3,10 @@
   "scripts": {
     "docs": "pnpm run --filter docs dev",
     "build": "pnpm run --filter './packages/*' build",
-    "dev": "pnpm run -r --parallel dev",
+    "dev": "pnpm run --filter './packages/*' --parallel dev",
     "lint": "run-p lint:*",
     "lint-staged": "lint-staged --config .config/lint-staged.config.mjs",
-    "lint:script": "pnpm run -r --parallel lint",
+    "lint:script": "pnpm run --filter './packages/*' --parallel lint",
     "lint:deps": "syncpack list-mismatches --config .config/.syncpackrc",
     "lint:format": "pnpm run prettier -- --check .",
     "preinstall": "npx only-allow pnpm && corepack enable",
@@ -14,8 +14,8 @@
     "prepare:husky": "if-env VERCEL=1 && echo 'Skipping prepare' || husky install",
     "prepare:packages": "pnpm build",
     "prettier": "prettier --ignore-unknown --no-error-on-unmatched-pattern",
-    "test": "pnpm run -r --parallel test",
-    "tsc": "pnpm run -r --parallel tsc"
+    "test": "pnpm run --filter './packages/*' --parallel test",
+    "check": "pnpm run --filter './packages/*' --parallel tsc"
   },
   "devDependencies": {
     "husky": "8.0.1",
