@@ -4,5 +4,5 @@ export default {
       .map((filename) => `'${filename}'`)
       .join(" ")}`,
   "**/*.{js,jsx,ts,tsx}": () => "pnpm tsc",
-  "**/package.json": () => "pnpm lint:deps",
+  "**/package.json": () => "pnpm syncpack",
 };
