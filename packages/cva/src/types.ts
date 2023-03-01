@@ -1,6 +1,6 @@
 export type ClassPropKey = "class" | "className";
 
-export type ClassValue = string | null | undefined | ClassValue[];
+export type ClassValue = string | null | boolean | undefined | ClassValue[];
 
 export type ClassProp =
   | {

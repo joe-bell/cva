@@ -6,6 +6,8 @@ describe("cx", () => {
     [null, ""],
     [undefined, ""],
     [["foo", null, "bar", undefined, "baz"], "foo bar baz"],
+    [false && "false-foo", ""],
+    [true && "true-foo", "true-foo"],
     [
       [
         "foo",
