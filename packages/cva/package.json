@@ -20,19 +20,22 @@
   "funding": "https://joebell.co.uk",
   "author": "Joe Bell (https://joebell.co.uk)",
   "exports": {
-    "import": "./dist/index.esm.js",
-    "require": "./dist/index.cjs.js"
+    "import": "./dist/index.mjs",
+    "require": "./dist/index.js"
   },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
+    "dist/*.mjs",
     "dist/*.js",
     "dist/*.js.map",
     "dist/*.d.ts"
   ],
   "scripts": {
     "build": "run-p build:**",
-    "build:cjs": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.cjs.js -C module.type=commonjs",
-    "build:esm": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.esm.js -C module.type=es6 ",
+    "build:cjs": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.js -C module.type=commonjs",
+    "build:esm": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.mjs -C module.type=es6 ",
     "build:tsc": "tsc --project .config/tsconfig.build.json",
     "check": "tsc --project tsconfig.json --noEmit",
     "dev": "jest --config .config/jest.config.ts --watch",
@@ -56,10 +59,10 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "ts-node": "10.8.1",
-    "typescript": "4.7.3"
+    "typescript": "5.0.3"
   },
   "peerDependencies": {
-    "typescript": ">= 4.5.5 < 5"
+    "typescript": ">= 4.5.5 < 6"
   },
   "peerDependenciesMeta": {
     "typescript": {
