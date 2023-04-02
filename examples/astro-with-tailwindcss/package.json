@@ -11,13 +11,13 @@
     "start": "astro dev"
   },
   "dependencies": {
-    "@astrojs/tailwind": "^3.0.1",
-    "astro": "^2.0.4",
+    "@astrojs/tailwind": "^3.1.1",
+    "astro": "^2.1.9",
     "class-variance-authority": "latest",
     "npm-run-all": "4.1.5",
     "tailwindcss": "^3.0.24"
   },
   "devDependencies": {
-    "typescript": "4.7.3"
+    "typescript": "5.0.3"
   }
 }
