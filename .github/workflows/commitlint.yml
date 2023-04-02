@@ -10,7 +10,8 @@ jobs:
           fetch-depth: 0
       - uses: pnpm/action-setup@v2
         with:
-          version: 7
+          version: 8
+          run_install: false
       - uses: actions/setup-node@v3
         with:
           cache: "pnpm"
