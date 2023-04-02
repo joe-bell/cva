@@ -26,5 +26,9 @@
     "prettier-plugin-packagejson": "2.4.2",
     "prettier-plugin-tailwindcss": "0.2.2",
     "syncpack": "8.4.11"
+  },
+  "engines": {
+    "node": "18",
+    "pnpm": "8"
   }
 }
