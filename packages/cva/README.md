@@ -46,6 +46,8 @@ For documentation, visit [cva.style](https://cva.style).
    >
    > Size may differ before stable release
 
+4. Warns against passing generic type parameters into `cva`. This wasn't supported originally, but the API wasn't exactly clear.
+
 ### API Reference
 
 #### `cva`

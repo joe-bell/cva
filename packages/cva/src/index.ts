@@ -53,8 +53,13 @@ type Props<T> = T extends ConfigSchema
   : ClassProp;
 
 export const cva =
-  <T>(config: Config<T>) =>
-  (props?: Props<T>) => {
+  <
+    _ extends "cva's generic parameters are restricted to internal use only.",
+    V
+  >(
+    config: Config<V>
+  ) =>
+  (props?: Props<V>) => {
     if (config?.variants == null)
       return cx(config?.base, props?.class, props?.className);
 
