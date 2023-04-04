@@ -26,35 +26,46 @@ export const cx = <T extends CxOptions>(...classes: T): CxReturn =>
 /* cva
   ============================================ */
 
-type ConfigSchema = Record<string, Record<string, ClassValue>>;
+type VariantShape = Record<string, Record<string, ClassValue>>;
 
-type ConfigVariants<T extends ConfigSchema> = {
-  [Variant in keyof T]?: StringToBoolean<keyof T[Variant]> | "unset";
-};
-type ConfigVariantsMulti<T extends ConfigSchema> = {
-  [Variant in keyof T]?:
-    | StringToBoolean<keyof T[Variant]>
-    | StringToBoolean<keyof T[Variant]>[];
+type VariantSchema<V extends VariantShape> = {
+  [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | "unset";
 };
 
-type Config<T> = T extends ConfigSchema
-  ? {
-      base?: ClassValue;
-      variants?: T;
-      defaultVariants?: ConfigVariants<T>;
-      compoundVariants?: (T extends ConfigSchema
-        ? (ConfigVariants<T> | ConfigVariantsMulti<T>) & ClassProp
+type VariantSchemaMultiple<V extends VariantShape> = {
+  [Variant in keyof V]?:
+    | StringToBoolean<keyof V[Variant]>
+    | StringToBoolean<keyof V[Variant]>[];
+};
+
+type ConfigBase = { base?: ClassValue };
+
+type Config<V> = V extends VariantShape
+  ? ConfigBase & {
+      variants?: V;
+      compoundVariants?: (V extends VariantShape
+        ? (VariantSchema<V> | VariantSchemaMultiple<V>) & ClassProp
         : ClassProp)[];
+      defaultVariants?: VariantSchema<V>;
     }
-  : never;
+  : ConfigBase & {
+      variants?: never;
+      compoundVariants?: never;
+      defaultVariants?: never;
+    };
 
-type Props<T> = T extends ConfigSchema
-  ? ConfigVariants<T> & ClassProp
+type Props<V> = V extends VariantShape
+  ? VariantSchema<V> & ClassProp
   : ClassProp;
 
 export const cva =
-  <T>(config: Config<T>) =>
-  (props?: Props<T>) => {
+  <
+    _ extends "cva's generic parameters are restricted to internal use only.",
+    V
+  >(
+    config: Config<V>
+  ) =>
+  (props?: Props<V>) => {
     if (config?.variants == null)
       return cx(config?.base, props?.class, props?.className);
 
