@@ -21,7 +21,8 @@
   "author": "Joe Bell (https://joebell.co.uk)",
   "exports": {
     "import": "./dist/index.mjs",
-    "require": "./dist/index.js"
+    "require": "./dist/index.js",
+    "types": "./dist/index.d.ts"
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
