@@ -6,7 +6,6 @@
     "next": "pnpm next"
   },
   "dependencies": {
-    "@vercel/analytics": "^0.1.8",
     "class-variance-authority": "workspace:*",
     "next": "^13.1.6",
     "nextra": "^2.2.14",

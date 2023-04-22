@@ -34,9 +34,6 @@ importers:
 
   docs:
     dependencies:
-      '@vercel/analytics':
-        specifier: ^0.1.8
-        version: 0.1.8(react@18.2.0)
       class-variance-authority:
         specifier: workspace:*
         version: link:../packages/class-variance-authority
@@ -2216,14 +2213,6 @@ packages:
     dependencies:
       '@types/yargs-parser': 21.0.0
     dev: true
-
-  /@vercel/analytics@0.1.8(react@18.2.0):
-    resolution: {integrity: sha512-PQrOI8BJ9qUiVJuQfnKiJd15eDjDJH9TBKsNeMrtelT4NAk7d9mBVz1CoZkvoFnHQ0OW7Xnqmr1F2nScfAnznQ==}
-    peerDependencies:
-      react: ^16.8||^17||^18
-    dependencies:
-      react: 18.2.0
-    dev: false
 
   /@vitejs/plugin-react@3.1.0(vite@4.1.0):
     resolution: {integrity: sha512-AfgcRL8ZBhAlc3BFdigClmTUMISmmzHn7sB2h9U1odvc5U/MjWXsAaz18b/WoppUTDBzxOJwo2VdClfUcItu9g==}
