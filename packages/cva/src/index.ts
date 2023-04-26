@@ -29,13 +29,17 @@ export const cx = <T extends CxOptions>(...classes: T): CxReturn =>
 type VariantShape = Record<string, Record<string, ClassValue>>;
 
 type VariantSchema<V extends VariantShape> = {
-  [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | "unset";
+  [Variant in keyof V]?:
+    | StringToBoolean<keyof V[Variant]>
+    | "unset"
+    | undefined;
 };
 
 type VariantSchemaMultiple<V extends VariantShape> = {
   [Variant in keyof V]?:
     | StringToBoolean<keyof V[Variant]>
-    | StringToBoolean<keyof V[Variant]>[];
+    | StringToBoolean<keyof V[Variant]>[]
+    | undefined;
 };
 
 type ConfigBase = { base?: ClassValue };

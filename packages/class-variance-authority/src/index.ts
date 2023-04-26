@@ -29,12 +29,13 @@ export const cx = <T extends CxOptions>(...classes: T): CxReturn =>
 type ConfigSchema = Record<string, Record<string, ClassValue>>;
 
 type ConfigVariants<T extends ConfigSchema> = {
-  [Variant in keyof T]?: StringToBoolean<keyof T[Variant]> | null;
+  [Variant in keyof T]?: StringToBoolean<keyof T[Variant]> | null | undefined;
 };
 type ConfigVariantsMulti<T extends ConfigSchema> = {
   [Variant in keyof T]?:
     | StringToBoolean<keyof T[Variant]>
-    | StringToBoolean<keyof T[Variant]>[];
+    | StringToBoolean<keyof T[Variant]>[]
+    | undefined;
 };
 
 type Config<T> = T extends ConfigSchema
