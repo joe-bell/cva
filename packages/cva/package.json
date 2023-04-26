@@ -29,6 +29,7 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist/*.mjs",
+    "dist/*.mjs.map",
     "dist/*.js",
     "dist/*.js.map",
     "dist/*.d.ts"
