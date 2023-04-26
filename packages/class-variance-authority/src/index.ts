@@ -37,7 +37,7 @@ type ConfigVariantsMulti<T extends ConfigSchema> = {
     | StringToBoolean<keyof T[Variant]>[];
 };
 
-type Config<T> = T extends ConfigSchema
+export type Config<T> = T extends ConfigSchema
   ? {
       variants?: T;
       defaultVariants?: ConfigVariants<T>;
@@ -47,7 +47,7 @@ type Config<T> = T extends ConfigSchema
     }
   : never;
 
-type Props<T> = T extends ConfigSchema
+export type Props<T> = T extends ConfigSchema
   ? ConfigVariants<T> & ClassProp
   : ClassProp;
 
