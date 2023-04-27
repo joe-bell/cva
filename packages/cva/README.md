@@ -61,7 +61,7 @@ const component = cva(options);
 ##### Parameters
 
 1. `options`
-   - `base`: the base class name (`string`, `string[]` or `null`)
+   - `base`: the base class name (`string`, `string[]` or other [`clsx` value](https://github.com/lukeed/clsx#input))
    - `variants`: your variants schema
    - `compoundVariants`: variants based on a combination of previously defined variants
    - `defaultVariants`: set default values for previously defined variants.  

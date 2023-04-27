@@ -1,3 +1,5 @@
+import clsx from "clsx";
+
 import type {
   ClassProp,
   ClassValue,
@@ -16,12 +18,10 @@ const falsyToString = <T extends unknown>(value: T) =>
 /* cx
   ============================================ */
 
-export type CxOptions = ClassValue[];
-export type CxReturn = string;
+export type CxOptions = Parameters<typeof clsx>;
+export type CxReturn = ReturnType<typeof clsx>;
 
-export const cx = <T extends CxOptions>(...classes: T): CxReturn =>
-  // @ts-ignore
-  classes.flat(Infinity).filter(Boolean).join(" ");
+export const cx = clsx;
 
 /* cva
   ============================================ */

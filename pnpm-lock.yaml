@@ -203,6 +203,10 @@ importers:
         version: 1.0.24(typescript@5.0.3)
 
   packages/class-variance-authority:
+    dependencies:
+      clsx:
+        specifier: 1.2.1
+        version: 1.2.1
     devDependencies:
       '@jest/types':
         specifier: 28.1.1
@@ -251,6 +255,10 @@ importers:
         version: 5.0.3
 
   packages/cva:
+    dependencies:
+      clsx:
+        specifier: 1.2.1
+        version: 1.2.1
     devDependencies:
       '@jest/types':
         specifier: 28.1.1

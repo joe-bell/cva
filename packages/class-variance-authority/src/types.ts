@@ -1,5 +1,8 @@
+import type * as CLSX from "clsx";
+
 export type ClassPropKey = "class" | "className";
-export type ClassValue = string | null | undefined | ClassValue[];
+
+export type ClassValue = CLSX.ClassValue;
 
 export type ClassProp =
   | {
