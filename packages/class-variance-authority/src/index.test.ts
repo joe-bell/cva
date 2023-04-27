@@ -5,6 +5,8 @@ describe("cx", () => {
   describe.each<CVA.CxOptions>([
     [null, ""],
     [undefined, ""],
+    [false && "foo", ""],
+    [true && "foo", "foo"],
     [["foo", null, "bar", undefined, "baz"], "foo bar baz"],
     [
       [
@@ -25,6 +27,14 @@ describe("cx", () => {
         ],
       ],
       "foo bar baz qux quux quuz corge grault garply",
+    ],
+    [
+      [
+        "foo",
+        [1 && "bar", { baz: false, bat: null }, ["hello", ["world"]]],
+        "cya",
+      ],
+      "foo bar hello world cya",
     ],
   ])("cx(%o)", (options, expected) => {
     test(`returns ${expected}`, () => {
@@ -116,8 +126,15 @@ describe("cva", () => {
               "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
             warning:
               "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-            danger:
-              "button--danger bg-red-500 text-white border-transparent hover:bg-red-600",
+            danger: [
+              "button--danger",
+              [
+                1 && "bg-red-500",
+                { baz: false, bat: null },
+                ["text-white", ["border-transparent"]],
+              ],
+              "hover:bg-red-600",
+            ],
           },
           disabled: {
             true: "button--disabled opacity-050 cursor-not-allowed",
@@ -147,7 +164,10 @@ describe("cva", () => {
           {
             intent: "warning",
             disabled: true,
-            class: "button--warning-disabled text-black",
+            class: [
+              "button--warning-disabled",
+              [1 && "text-black", { baz: false, bat: null }],
+            ],
           },
         ],
       });
@@ -160,8 +180,15 @@ describe("cva", () => {
               "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
             warning:
               "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-            danger:
-              "button--danger bg-red-500 text-white border-transparent hover:bg-red-600",
+            danger: [
+              "button--danger",
+              [
+                1 && "bg-red-500",
+                { baz: false, bat: null },
+                ["text-white", ["border-transparent"]],
+              ],
+              "hover:bg-red-600",
+            ],
           },
           disabled: {
             true: "button--disabled opacity-050 cursor-not-allowed",
@@ -191,7 +218,10 @@ describe("cva", () => {
           {
             intent: "warning",
             disabled: true,
-            className: "button--warning-disabled text-black",
+            className: [
+              "button--warning-disabled",
+              [1 && "text-black", { baz: false, bat: null }],
+            ],
           },
         ],
       });
@@ -221,9 +251,11 @@ describe("cva", () => {
             ],
             danger: [
               "button--danger",
-              "bg-red-500",
-              "text-white",
-              "border-transparent",
+              [
+                1 && "bg-red-500",
+                { baz: false, bat: null },
+                ["text-white", ["border-transparent"]],
+              ],
               "hover:bg-red-600",
             ],
           },
@@ -255,7 +287,10 @@ describe("cva", () => {
           {
             intent: "warning",
             disabled: true,
-            class: ["button--warning-disabled", "text-black"],
+            class: [
+              "button--warning-disabled",
+              [1 && "text-black", { baz: false, bat: null }],
+            ],
           },
         ],
       });
@@ -284,9 +319,11 @@ describe("cva", () => {
             ],
             danger: [
               "button--danger",
-              "bg-red-500",
-              "text-white",
-              "border-transparent",
+              [
+                1 && "bg-red-500",
+                { baz: false, bat: null },
+                ["text-white", ["border-transparent"]],
+              ],
               "hover:bg-red-600",
             ],
           },
@@ -318,7 +355,10 @@ describe("cva", () => {
           {
             intent: "warning",
             disabled: true,
-            className: ["button--warning-disabled", "text-black"],
+            className: [
+              "button--warning-disabled",
+              [1 && "text-black", { baz: false, bat: null }],
+            ],
           },
         ],
       });
@@ -429,8 +469,15 @@ describe("cva", () => {
                 "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
               warning:
                 "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-              danger:
-                "button--danger bg-red-500 text-white border-transparent hover:bg-red-600",
+              danger: [
+                "button--danger",
+                [
+                  1 && "bg-red-500",
+                  { baz: false, bat: null },
+                  ["text-white", ["border-transparent"]],
+                ],
+                "hover:bg-red-600",
+              ],
             },
             disabled: {
               true: "button--disabled opacity-050 cursor-not-allowed",
@@ -460,7 +507,10 @@ describe("cva", () => {
             {
               intent: "warning",
               disabled: true,
-              class: "button--warning-disabled text-black",
+              class: [
+                "button--warning-disabled",
+                [1 && "text-black", { baz: false, bat: null }],
+              ],
             },
             {
               intent: ["warning", "danger"],
@@ -491,8 +541,15 @@ describe("cva", () => {
                 "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
               warning:
                 "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-              danger:
-                "button--danger bg-red-500 text-white border-transparent hover:bg-red-600",
+              danger: [
+                "button--danger",
+                [
+                  1 && "bg-red-500",
+                  { baz: false, bat: null },
+                  ["text-white", ["border-transparent"]],
+                ],
+                "hover:bg-red-600",
+              ],
             },
             disabled: {
               true: "button--disabled opacity-050 cursor-not-allowed",
@@ -522,7 +579,10 @@ describe("cva", () => {
             {
               intent: "warning",
               disabled: true,
-              className: "button--warning-disabled text-black",
+              className: [
+                "button--warning-disabled",
+                [1 && "text-black", { baz: false, bat: null }],
+              ],
             },
             {
               intent: ["warning", "danger"],
@@ -570,9 +630,11 @@ describe("cva", () => {
               ],
               danger: [
                 "button--danger",
-                "bg-red-500",
-                "text-white",
-                "border-transparent",
+                [
+                  1 && "bg-red-500",
+                  { baz: false, bat: null },
+                  ["text-white", ["border-transparent"]],
+                ],
                 "hover:bg-red-600",
               ],
             },
@@ -604,7 +666,10 @@ describe("cva", () => {
             {
               intent: "warning",
               disabled: true,
-              class: ["button--warning-disabled", "text-black"],
+              class: [
+                "button--warning-disabled",
+                [1 && "text-black", { baz: false, bat: null }],
+              ],
             },
             {
               intent: ["warning", "danger"],
@@ -651,9 +716,11 @@ describe("cva", () => {
               ],
               danger: [
                 "button--danger",
-                "bg-red-500",
-                "text-white",
-                "border-transparent",
+                [
+                  1 && "bg-red-500",
+                  { baz: false, bat: null },
+                  ["text-white", ["border-transparent"]],
+                ],
                 "hover:bg-red-600",
               ],
             },
@@ -685,7 +752,10 @@ describe("cva", () => {
             {
               intent: "warning",
               disabled: true,
-              className: ["button--warning-disabled", "text-black"],
+              className: [
+                "button--warning-disabled",
+                [1 && "text-black", { baz: false, bat: null }],
+              ],
             },
             {
               intent: ["warning", "danger"],
@@ -821,8 +891,15 @@ describe("cva", () => {
                 "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
               warning:
                 "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-              danger:
-                "button--danger bg-red-500 text-white border-transparent hover:bg-red-600",
+              danger: [
+                "button--danger",
+                [
+                  1 && "bg-red-500",
+                  { baz: false, bat: null },
+                  ["text-white", ["border-transparent"]],
+                ],
+                "hover:bg-red-600",
+              ],
             },
             disabled: {
               true: "button--disabled opacity-050 cursor-not-allowed",
@@ -848,7 +925,10 @@ describe("cva", () => {
             {
               intent: "warning",
               disabled: true,
-              class: "button--warning-disabled text-black",
+              class: [
+                "button--warning-disabled",
+                [1 && "text-black", { baz: false, bat: null }],
+              ],
             },
             {
               intent: ["warning", "danger"],
@@ -873,8 +953,15 @@ describe("cva", () => {
                 "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
               warning:
                 "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-              danger:
-                "button--danger bg-red-500 text-white border-transparent hover:bg-red-600",
+              danger: [
+                "button--danger",
+                [
+                  1 && "bg-red-500",
+                  { baz: false, bat: null },
+                  ["text-white", ["border-transparent"]],
+                ],
+                "hover:bg-red-600",
+              ],
             },
             disabled: {
               true: "button--disabled opacity-050 cursor-not-allowed",
@@ -900,7 +987,10 @@ describe("cva", () => {
             {
               intent: "warning",
               disabled: true,
-              className: "button--warning-disabled text-black",
+              className: [
+                "button--warning-disabled",
+                [1 && "text-black", { baz: false, bat: null }],
+              ],
             },
             {
               intent: ["warning", "danger"],
@@ -942,9 +1032,11 @@ describe("cva", () => {
               ],
               danger: [
                 "button--danger",
-                "bg-red-500",
-                "text-white",
-                "border-transparent",
+                [
+                  1 && "bg-red-500",
+                  { baz: false, bat: null },
+                  ["text-white", ["border-transparent"]],
+                ],
                 "hover:bg-red-600",
               ],
             },
@@ -972,7 +1064,10 @@ describe("cva", () => {
             {
               intent: "warning",
               disabled: true,
-              class: ["button--warning-disabled", "text-black"],
+              class: [
+                "button--warning-disabled",
+                [1 && "text-black", { baz: false, bat: null }],
+              ],
             },
             {
               intent: ["warning", "danger"],
@@ -1013,9 +1108,11 @@ describe("cva", () => {
               ],
               danger: [
                 "button--danger",
-                "bg-red-500",
-                "text-white",
-                "border-transparent",
+                [
+                  1 && "bg-red-500",
+                  { baz: false, bat: null },
+                  ["text-white", ["border-transparent"]],
+                ],
                 "hover:bg-red-600",
               ],
             },
@@ -1043,7 +1140,10 @@ describe("cva", () => {
             {
               intent: "warning",
               disabled: true,
-              className: ["button--warning-disabled", "text-black"],
+              className: [
+                "button--warning-disabled",
+                [1 && "text-black", { baz: false, bat: null }],
+              ],
             },
             {
               intent: ["warning", "danger"],
@@ -1167,8 +1267,15 @@ describe("cva", () => {
                 "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
               warning:
                 "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-              danger:
-                "button--danger bg-red-500 text-white border-transparent hover:bg-red-600",
+              danger: [
+                "button--danger",
+                [
+                  1 && "bg-red-500",
+                  { baz: false, bat: null },
+                  ["text-white", ["border-transparent"]],
+                ],
+                "hover:bg-red-600",
+              ],
             },
             disabled: {
               true: "button--disabled opacity-050 cursor-not-allowed",
@@ -1194,7 +1301,10 @@ describe("cva", () => {
             {
               intent: "warning",
               disabled: true,
-              class: "button--warning-disabled text-black",
+              class: [
+                "button--warning-disabled",
+                [1 && "text-black", { baz: false, bat: null }],
+              ],
             },
             {
               intent: ["warning", "danger"],
@@ -1224,8 +1334,15 @@ describe("cva", () => {
                 "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
               warning:
                 "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-              danger:
-                "button--danger bg-red-500 text-white border-transparent hover:bg-red-600",
+              danger: [
+                "button--danger",
+                [
+                  1 && "bg-red-500",
+                  { baz: false, bat: null },
+                  ["text-white", ["border-transparent"]],
+                ],
+                "hover:bg-red-600",
+              ],
             },
             disabled: {
               true: "button--disabled opacity-050 cursor-not-allowed",
@@ -1251,7 +1368,10 @@ describe("cva", () => {
             {
               intent: "warning",
               disabled: true,
-              className: "button--warning-disabled text-black",
+              className: [
+                "button--warning-disabled",
+                [1 && "text-black", { baz: false, bat: null }],
+              ],
             },
             {
               intent: ["warning", "danger"],
@@ -1298,9 +1418,11 @@ describe("cva", () => {
               ],
               danger: [
                 "button--danger",
-                "bg-red-500",
-                "text-white",
-                "border-transparent",
+                [
+                  1 && "bg-red-500",
+                  { baz: false, bat: null },
+                  ["text-white", ["border-transparent"]],
+                ],
                 "hover:bg-red-600",
               ],
             },
@@ -1328,7 +1450,10 @@ describe("cva", () => {
             {
               intent: "warning",
               disabled: true,
-              class: ["button--warning-disabled", "text-black"],
+              class: [
+                "button--warning-disabled",
+                [1 && "text-black", { baz: false, bat: null }],
+              ],
             },
             {
               intent: ["warning", "danger"],
@@ -1374,9 +1499,11 @@ describe("cva", () => {
               ],
               danger: [
                 "button--danger",
-                "bg-red-500",
-                "text-white",
-                "border-transparent",
+                [
+                  1 && "bg-red-500",
+                  { baz: false, bat: null },
+                  ["text-white", ["border-transparent"]],
+                ],
                 "hover:bg-red-600",
               ],
             },
@@ -1404,7 +1531,10 @@ describe("cva", () => {
             {
               intent: "warning",
               disabled: true,
-              className: ["button--warning-disabled", "text-black"],
+              className: [
+                "button--warning-disabled",
+                [1 && "text-black", { baz: false, bat: null }],
+              ],
             },
             {
               intent: ["warning", "danger"],
