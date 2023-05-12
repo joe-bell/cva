@@ -29,7 +29,7 @@ export const cx = clsx;
 type ConfigSchema = Record<string, Record<string, ClassValue>>;
 
 type ConfigVariants<T extends ConfigSchema> = {
-  [Variant in keyof T]?: StringToBoolean<keyof T[Variant]> | null | undefined;
+  [Variant in keyof T]?: StringToBoolean<keyof T[Variant]> | StringToBoolean<keyof T[Variant]>[] | null | undefined;
 };
 type ConfigVariantsMulti<T extends ConfigSchema> = {
   [Variant in keyof T]?:
@@ -38,9 +38,12 @@ type ConfigVariantsMulti<T extends ConfigSchema> = {
     | undefined;
 };
 
+type breakpointsType = string | number | undefined | null
+
 type Config<T> = T extends ConfigSchema
   ? {
       variants?: T;
+      breakpoints?: breakpointsType[];
       defaultVariants?: ConfigVariants<T>;
       compoundVariants?: (T extends ConfigSchema
         ? (ConfigVariants<T> | ConfigVariantsMulti<T>) & ClassProp
@@ -58,7 +61,7 @@ export const cva =
     if (config?.variants == null)
       return cx(base, props?.class, props?.className);
 
-    const { variants, defaultVariants } = config;
+    const { variants, breakpoints, defaultVariants } = config;
 
     const getVariantClassNames = Object.keys(variants).map(
       (variant: keyof typeof variants) => {
@@ -66,6 +69,21 @@ export const cva =
         const defaultVariantProp = defaultVariants?.[variant];
 
         if (variantProp === null) return null;
+
+        if (Array.isArray(variantProp)) {
+          const variantClasses = variantProp.reduce(
+            (classes, currentValue, currentIndex) => {
+              const variantKey = falsyToString(currentValue)
+              const variantValue = variants[variant][variantKey]
+              const breakpointValue = breakpoints && breakpoints[currentIndex] 
+              if (!breakpointValue) return cx(classes, variantValue)
+              return cx(classes, `${breakpointValue}:${variantValue}`);
+            },
+            ""
+          );
+
+          return variantClasses
+        }
 
         const variantKey = (falsyToString(variantProp) ||
           falsyToString(
