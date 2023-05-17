@@ -62,7 +62,12 @@ type Props<V> = V extends VariantShape
   ? VariantSchema<V> & ClassProp
   : ClassProp;
 
-export const cva =
+type ConfigWrapperProps = {
+  cx: (...inputs: CxOptions) => CxReturn;
+};
+
+export const config =
+  ({ cx }: ConfigWrapperProps) =>
   <
     _ extends "cva's generic parameters are restricted to internal use only.",
     V
@@ -85,7 +90,7 @@ export const cva =
         const variantKey = (falsyToString(variantProp) ||
           falsyToString(
             defaultVariantProp
-          )) as keyof typeof variants[typeof variant];
+          )) as keyof (typeof variants)[typeof variant];
 
         return variants[variant][variantKey];
       }
@@ -125,3 +130,5 @@ export const cva =
       props?.className
     );
   };
+
+export const cva = config({ cx });
