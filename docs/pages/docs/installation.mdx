@@ -134,3 +134,34 @@ export const button = (variants: ButtonVariants) =>
 ```
 
 </details>
+
+<details>
+
+<summary>Example extending cva with tailwind-merge</summary>
+
+```ts
+import { config, cx, type CxOptions, type VariantProps } from "class-variance-authority";
+import { twMerge } from "tailwind-merge";
+
+export const cva = config({
+  cx: (...inputs: CxOptions) => twMerge(cx(inputs)),
+});
+
+const buttonVariants = cva(["your", "base", "classes"], {
+  variants: {
+    intent: {
+      primary: ["your", "primary", "classes"],
+    },
+  },
+  defaultVariants: {
+    intent: "primary",
+  },
+});
+
+export interface ButtonVariants extends VariantProps<typeof buttonVariants> {}
+
+export const button = (variants: ButtonVariants) => buttonVariants(variants);
+
+```
+
+</details>

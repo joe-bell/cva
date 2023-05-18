@@ -36,3 +36,22 @@ const className = cx(classes);
 ### Returns
 
 `string`
+
+
+## `config`
+
+Builds a custom `cva` instance which extends/replaces the default `cx` functionality
+
+```ts
+const cva = config({
+  cx: (...inputs: CxOptions) => customCx(inputs)
+});
+```
+
+### Parameters
+
+- `cx`: a function that acts as CL ([see `clsx` usage](https://github.com/lukeed/clsx))
+
+### Returns
+
+A `cva` instance
