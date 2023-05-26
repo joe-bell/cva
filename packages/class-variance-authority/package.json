@@ -20,9 +20,14 @@
   "funding": "https://joebell.co.uk",
   "author": "Joe Bell (https://joebell.co.uk)",
   "exports": {
-    "import": "./dist/index.mjs",
-    "require": "./dist/index.js",
-    "types": "./dist/index.d.ts"
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts"
+    }
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -65,13 +70,5 @@
     "react-dom": "18.2.0",
     "ts-node": "10.8.1",
     "typescript": "5.0.3"
-  },
-  "peerDependencies": {
-    "typescript": ">= 4.5.5 < 6"
-  },
-  "peerDependenciesMeta": {
-    "typescript": {
-      "optional": true
-    }
   }
 }

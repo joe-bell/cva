@@ -1,12 +1,12 @@
 {
   "private": true,
   "scripts": {
-    "check": "pnpm run --filter './packages/*' --parallel check",
-    "build": "pnpm run --filter './packages/*' build",
-    "dev": "pnpm run --filter './packages/*' --parallel dev",
+    "check": "pnpm run --filter './packages/**' --parallel check",
+    "build": "pnpm run --filter './packages/**' build",
+    "dev": "pnpm run --filter './packages/**' --parallel dev",
     "docs": "pnpm run --filter docs dev",
     "format": "pnpm prettier -- --check .",
-    "lint": "pnpm run --filter './packages/*' --parallel lint",
+    "lint": "pnpm run --filter './packages/**' --parallel lint",
     "lint-staged": "lint-staged --config .config/lint-staged.config.mjs",
     "preinstall": "npx only-allow pnpm && corepack enable",
     "prepare": "run-p -s prepare:*",
@@ -14,7 +14,7 @@
     "prepare:packages": "pnpm build",
     "prettier": "prettier --ignore-unknown --no-error-on-unmatched-pattern",
     "syncpack": "syncpack list-mismatches --config .config/.syncpackrc",
-    "test": "pnpm run --filter './packages/*' --parallel test"
+    "test": "pnpm run --filter './packages/**' --parallel test"
   },
   "devDependencies": {
     "husky": "8.0.1",
