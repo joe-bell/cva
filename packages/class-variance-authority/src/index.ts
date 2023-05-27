@@ -1,11 +1,5 @@
 import clsx from "clsx";
 
-/* Utils
-  ============================================ */
-
-const falsyToString = <T extends unknown>(value: T) =>
-  typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
-
 /* Types
   ============================================ */
 
@@ -27,33 +21,21 @@ type ClassValue =
 type ClassDictionary = Record<string, any>;
 type ClassArray = ClassValue[];
 
-type ClassProp =
-  | {
-      class: ClassValue;
-      className?: never;
-    }
-  | { class?: never; className: ClassValue }
-  | { class?: never; className?: never };
-
-/* Internal
+/* Utils
   ---------------------------------- */
 
-type ClassPropKey = "class" | "className";
 type OmitUndefined<T> = T extends undefined ? never : T;
 type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
 
-/* Public Utilities
-  ---------------------------------- */
-
 export type VariantProps<Component extends (...args: any) => any> = Omit<
   OmitUndefined<Parameters<Component>[0]>,
-  ClassPropKey
+  "class" | "className"
 >;
 
 /* cx
   ---------------------------------- */
 
-interface CX {
+export interface CX {
   (...inputs: ClassValue[]): string;
 }
 
@@ -72,46 +54,56 @@ export type CxReturn = CXReturn;
 /* cva
   ---------------------------------- */
 
-interface CVA {
-  <T>(base?: ClassValue, config?: Config<T>): (props?: Props<T>) => string;
-}
-
-type ConfigSchema = Record<string, Record<string, ClassValue>>;
-
-type ConfigVariants<T extends ConfigSchema> = {
+type CVAConfigSchema = Record<string, Record<string, ClassValue>>;
+type CVAConfigVariants<T extends CVAConfigSchema> = {
   [Variant in keyof T]?: StringToBoolean<keyof T[Variant]> | null | undefined;
 };
-type ConfigVariantsMulti<T extends ConfigSchema> = {
-  [Variant in keyof T]?:
-    | StringToBoolean<keyof T[Variant]>
-    | StringToBoolean<keyof T[Variant]>[]
-    | undefined;
-};
-
-type Config<T> = T extends ConfigSchema
-  ? {
-      variants?: T;
-      defaultVariants?: ConfigVariants<T>;
-      compoundVariants?: (T extends ConfigSchema
-        ? (ConfigVariants<T> | ConfigVariantsMulti<T>) & ClassProp
-        : ClassProp)[];
+type CVAClassProp =
+  | {
+      class: ClassValue;
+      className?: never;
     }
-  : never;
+  | { class?: never; className: ClassValue }
+  | { class?: never; className?: never };
 
-type Props<T> = T extends ConfigSchema
-  ? ConfigVariants<T> & ClassProp
-  : ClassProp;
+export interface CVA {
+  <T>(
+    base?: ClassValue,
+    config?: T extends CVAConfigSchema
+      ? {
+          variants?: T;
+          defaultVariants?: CVAConfigVariants<T>;
+          compoundVariants?: (T extends CVAConfigSchema
+            ? (
+                | CVAConfigVariants<T>
+                | {
+                    [Variant in keyof T]?:
+                      | StringToBoolean<keyof T[Variant]>
+                      | StringToBoolean<keyof T[Variant]>[]
+                      | undefined;
+                  }
+              ) &
+                CVAClassProp
+            : CVAClassProp)[];
+        }
+      : never
+  ): (
+    props?: T extends CVAConfigSchema
+      ? CVAConfigVariants<T> & CVAClassProp
+      : CVAClassProp
+  ) => string;
+}
 
 /* create
   ---------------------------------- */
 
-interface CreateOptions {
+export interface CreateOptions {
   hooks?: {
     "cx:done"?: (className: string) => string;
   };
 }
 
-interface Create {
+export interface Create {
   (options?: CreateOptions): {
     cx: CX;
     cva: CVA;
@@ -120,6 +112,9 @@ interface Create {
 
 /* Exports
   ============================================ */
+
+const falsyToString = <T extends unknown>(value: T) =>
+  typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
 
 export const create: Create = (options) => {
   const cx: CX = (...inputs) =>
@@ -197,8 +192,5 @@ export const create: Create = (options) => {
     cx,
   };
 };
-
-/* Default `cva()` and `cx()`
-  ============================================ */
 
 export const { cva, cx } = create();
