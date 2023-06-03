@@ -206,11 +206,7 @@ importers:
         specifier: ^1.0.24
         version: 1.0.24(typescript@5.0.3)
 
-  packages/@class-variance-authority/tailwindcss:
-    dependencies:
-      tailwind-merge:
-        specifier: 1.12.0
-        version: 1.12.0
+  packages/@cva/tailwindcss:
     devDependencies:
       '@jest/types':
         specifier: 28.1.1
@@ -239,9 +235,9 @@ importers:
       bundlesize:
         specifier: 0.18.1
         version: 0.18.1
-      class-variance-authority:
+      cva:
         specifier: workspace:*
-        version: link:../../class-variance-authority
+        version: link:../../cva
       jest:
         specifier: 28.1.1
         version: 28.1.1(@types/node@18.11.18)(ts-node@10.8.1)
@@ -254,6 +250,9 @@ importers:
       react-dom:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
+      tailwind-merge:
+        specifier: 1.12.0
+        version: 1.12.0
       ts-node:
         specifier: 10.8.1
         version: 10.8.1(@swc/core@1.2.198)(@types/node@18.11.18)(typescript@5.0.3)
@@ -7784,7 +7783,7 @@ packages:
 
   /tailwind-merge@1.12.0:
     resolution: {integrity: sha512-Y17eDp7FtN1+JJ4OY0Bqv9OA41O+MS8c1Iyr3T6JFLnOgLg3EvcyMKZAnQ8AGyvB5Nxm3t9Xb5Mhe139m8QT/g==}
-    dev: false
+    dev: true
 
   /tailwindcss@3.0.24(postcss@8.4.21):
     resolution: {integrity: sha512-H3uMmZNWzG6aqmg9q07ZIRNIawoiEcNFKDfL+YzOPuPsXuDXxJxB9icqzLgdzKNwjG3SAro2h9SYav8ewXNgig==}
