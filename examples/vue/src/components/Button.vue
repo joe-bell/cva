@@ -15,15 +15,14 @@ const button = cva("button", {
   compoundVariants: [
     { intent: "primary", size: "medium", class: "primaryMedium" },
   ],
-  defaultVariants: {
-    intent: "primary",
-    size: "medium",
-  },
 });
 
 type ButtonProps = VariantProps<typeof button>;
 
-defineProps<{ intent: ButtonProps["intent"]; size: ButtonProps["size"] }>();
+withDefaults(defineProps<{ intent: ButtonProps["intent"]; size: ButtonProps["size"] }>(), {
+  intent: "primary",
+  size: "medium",
+});
 </script>
 
 <template>
