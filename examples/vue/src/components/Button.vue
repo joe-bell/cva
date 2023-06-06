@@ -21,7 +21,7 @@ const button = cva("button", {
   },
 });
 
-type ButtonProps = Required<VariantProps<typeof button>>;
+type ButtonProps = VariantProps<typeof button>;
 
 defineProps<{ intent: ButtonProps["intent"]; size: ButtonProps["size"] }>();
 </script>
