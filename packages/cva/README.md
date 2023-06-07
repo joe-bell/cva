@@ -1,6 +1,8 @@
 > **Warning**
 >
-> This package is experimental, please use `class-variance-authority` until stable.
+> This package is experimental, and not ready for use.
+>
+> Please use `class-variance-authority` until stable.
 
 ---
 
@@ -48,6 +50,10 @@ For documentation, visit [cva.style](https://cva.style).
 
 4. Warns against passing generic type parameters into `cva`. This wasn't supported originally, but the API wasn't exactly clear.
 
+5. New `defineConfig` API
+
+6. New `@cva/tailwindcss` package
+
 ### API Reference
 
 #### `cva`
@@ -66,3 +72,18 @@ const component = cva(options);
    - `compoundVariants`: variants based on a combination of previously defined variants
    - `defaultVariants`: set default values for previously defined variants.  
      _note: these default values can be removed completely by setting the variant as `"unset"`_
+
+#### `defineConfig`
+
+Generate `cx` and `cva` functions based on your preferred configuration.
+
+Store in a `cva.config.ts` file, and import across your project.
+
+```ts
+// cva.config.ts
+export const { cva, cx } = defineConfig(options);
+```
+
+1. `options`
+   - `hooks`
+     - `cx:done`: returns a concatenated class string of all `cx` contents (also used internally by `cva`)

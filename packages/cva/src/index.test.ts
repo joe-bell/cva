@@ -2,7 +2,7 @@ import type * as CVA from "./";
 import { cva, cx } from "./";
 
 describe("cx", () => {
-  describe.each<CVA.CxOptions>([
+  describe.each<CVA.CXOptions>([
     [null, ""],
     [undefined, ""],
     [false && "foo", ""],
