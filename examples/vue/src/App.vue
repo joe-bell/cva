@@ -21,16 +21,8 @@ const sizes = [undefined, "medium", "small"] as const;
 
         <td v-for="intent in intents">
           <Button
-            :intent="
-              // I'm not a Vue expert and you should definitely avoid this.
-              // Just showcasing all buttons in a single place.
-              // (hoping someone with a bigger brain can fix)
-              intent as any
-            "
-            :size="
-              // Same as above
-              size as any
-            "
+            :intent="intent"
+            :size="size"
             >{{ intent || "default" }} button
           </Button>
         </td>
