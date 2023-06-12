@@ -18,6 +18,7 @@
   "bugs": "https://github.com/joe-bell/cva/issues",
   "repository": "https://github.com/joe-bell/cva.git",
   "funding": "https://joebell.co.uk",
+  "license": "Apache-2.0",
   "author": "Joe Bell (https://joebell.co.uk)",
   "exports": {
     ".": {
