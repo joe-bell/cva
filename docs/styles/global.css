@@ -34,6 +34,11 @@ html[class~="dark"] .nextra-nav-container {
   border-width: 0;
 }
 
+.nextra-content iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
 .nextra-content h3 + iframe,
 .nextra-content iframe + iframe {
   margin-top: 1rem;
