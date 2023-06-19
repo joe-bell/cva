@@ -60,7 +60,7 @@ If you're a Tailwind user, here are some additional (optional) steps to get the 
 
 You can enable autocompletion inside `cva` using the steps below:
 
-<Tabs items={["Visual Studio Code", "Neovim"]}>
+<Tabs items={["Visual Studio Code", "Neovim", "WebStorm"]}>
   <Tab>
 
     1. [Install the "Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
@@ -95,6 +95,23 @@ You can enable autocompletion inside `cva` using the steps below:
         },
       },
     })
+    ```
+
+  </Tab>
+  <Tab>
+
+    1. Check the version. Available for [WebStorm 2023.1](https://www.jetbrains.com/webstorm/whatsnew/#version-2023-1-tailwind-css-configuration) and later
+
+    2. Open the settings. Go to [Languages and Frameworks | Style Sheets | Tailwind CSS](https://www.jetbrains.com/help/webstorm/tailwind-css.html#ws_css_tailwind_configuration)
+
+    3. Add the following to your tailwind configuration
+
+    ```json
+    {
+      "experimental": {
+        "classRegex": ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+      }
+    }
     ```
 
   </Tab>
