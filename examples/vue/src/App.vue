@@ -20,9 +20,7 @@ const sizes = [undefined, "medium", "small"] as const;
         <th scope="row">{{ size || "default" }}</th>
 
         <td v-for="intent in intents">
-          <Button
-            :intent="intent"
-            :size="size"
+          <Button :intent="intent" :size="size"
             >{{ intent || "default" }} button
           </Button>
         </td>

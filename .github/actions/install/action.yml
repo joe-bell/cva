@@ -1,0 +1,22 @@
+name: "Setup Node.js with PNPM"
+description: "Common installation for Node.js and PNPM"
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v2
+      with:
+        run_install: false
+
+    - uses: actions/setup-node@v3
+      with:
+        cache: "pnpm"
+        node-version-file: ".nvmrc"
+
+    - name: Preinstallation steps
+      shell: bash
+      run: corepack enable
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm i --frozen-lockfile
