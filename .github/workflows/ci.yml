@@ -7,45 +7,51 @@ on:
     branches: [main]
 
 jobs:
-  packages:
+  build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        script: [build, lint, check, test]
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
-          run_install: false
-      - uses: actions/setup-node@v3
-        with:
-          cache: "pnpm"
-          node-version-file: ".nvmrc"
-      - run: pnpm i
-      - name: ${{ matrix.script }}
-        run: pnpm ${{ matrix.script }}
-  housekeeping:
+      - uses: ./.github/actions/install
+      - run: pnpm build
+  check:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        script: [syncpack, format]
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v2
+      - uses: ./.github/actions/install
+      - run: pnpm check
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
         with:
-          version: 8
-          run_install: false
-      - uses: actions/setup-node@v3
+          fetch-depth: 0
+      - uses: ./.github/actions/install
+      - run: pnpm lint
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
         with:
-          cache: "pnpm"
-          node-version-file: ".nvmrc"
-      - run: pnpm i
-      - name: ${{ matrix.script }}
-        run: pnpm ${{ matrix.script }}
+          fetch-depth: 0
+      - uses: ./.github/actions/install
+      - run: pnpm prettier --check .
+  syncpack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/install
+      - run: pnpm syncpack
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/install
+      - run: pnpm test

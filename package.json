@@ -5,7 +5,6 @@
     "build": "pnpm run --filter './packages/**' build",
     "dev": "pnpm run --filter './packages/**' --parallel dev",
     "docs": "pnpm run --filter docs dev",
-    "format": "pnpm prettier -- --check .",
     "lint": "pnpm run --filter './packages/**' --parallel lint",
     "lint-staged": "lint-staged --config .config/lint-staged.config.mjs",
     "preinstall": "npx only-allow pnpm && corepack enable",
@@ -27,9 +26,8 @@
     "prettier-plugin-tailwindcss": "0.2.2",
     "syncpack": "8.4.11"
   },
-  "packageManager": "pnpm@8.1.1",
+  "packageManager": "pnpm@8.6.3",
   "engines": {
-    "node": "18",
-    "pnpm": "8"
+    "node": "18"
   }
 }
