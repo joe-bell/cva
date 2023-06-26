@@ -1,6 +1,6 @@
 export default {
   "*": (filenames) =>
-    `pnpm run prettier --write ${filenames
+    `pnpm prettier --write ${filenames
       .map((filename) => `'${filename}'`)
       .join(" ")}`,
   "**/*.{astro,js,jsx,svelte,ts,tsx,vue}": () =>

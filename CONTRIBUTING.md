@@ -14,8 +14,11 @@ Welcome, and thanks for your interest in contributing! Please take a moment to r
 
 1. [Fork the repo](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) and clone to your machine.
 2. Create a new branch with your contribution.
-3. Install [pnpm](https://pnpm.io/installation) on your machine.
-4. In the repo, install dependencies via:
+3. In the repo, prior to any other installation steps, run:
+   ```sh
+   corepack enable
+   ```
+4. Install dependencies:
    ```sh
    pnpm i
    ```
