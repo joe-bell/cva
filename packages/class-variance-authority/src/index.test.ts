@@ -61,7 +61,6 @@ describe("cva", () => {
         );
         expect(
           example({
-            // @ts-expect-error
             class: "adhoc-class",
             // @ts-expect-error
             className: "adhoc-className",
@@ -84,7 +83,6 @@ describe("cva", () => {
         );
         expect(
           example({
-            // @ts-expect-error
             class: "adhoc-class",
             // @ts-expect-error
             className: "adhoc-className",
@@ -107,7 +105,6 @@ describe("cva", () => {
         );
         expect(
           example({
-            // @ts-expect-error
             class: "adhoc-class",
             // @ts-expect-error
             className: "adhoc-className",
