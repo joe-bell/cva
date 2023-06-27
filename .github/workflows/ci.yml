@@ -14,7 +14,10 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/install
-      - run: pnpm build
+      - name: Packages
+        run: pnpm build
+      - name: Examples
+        run: pnpm --filter "./examples/**" --parallel build
   check:
     runs-on: ubuntu-latest
     steps:
