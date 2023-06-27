@@ -1,7 +1,8 @@
 {
   "installation": "",
   "variants": "",
-  "extending-components": "",
+  "compound-components": "",
   "typescript": "TypeScript",
-  "composing-components": ""
+  "extending-components": "",
+  "mixing-components": ""
 }
