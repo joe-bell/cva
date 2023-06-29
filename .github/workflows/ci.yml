@@ -26,6 +26,33 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/install
       - run: pnpm check
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/install
+      - run: pnpm -rc --filter="./examples/**" exec -- pwd | awk -F/ '{print $NF}' > TMP_EXAMPLES.txt
+      - name: Generate Examples Comment
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: >
+          {
+            echo "**The latest updates to examples.**";
+            echo "";
+            echo "| Name     | StackBlitz  |";
+            echo "|:---------|:------------|";
+            while IFS= read -r id || [[ -n "$id" ]]; 
+              do echo "| **$id** | [Visit StackBlitz](https://stackblitz.com/github/joe-bell/cva/tree/${BRANCH}/examples/${id}) |";
+            done;
+          } < TMP_EXAMPLES.txt > TMP_EXAMPLES.md
+      - uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          header: "Examples"
+          recreate: true
+          path: TMP_EXAMPLES.md
   lint:
     runs-on: ubuntu-latest
     steps:

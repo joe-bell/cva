@@ -9,7 +9,7 @@
     "lint-staged": "lint-staged --config .config/lint-staged.config.mjs",
     "preinstall": "npx only-allow pnpm",
     "prepare": "run-p -s prepare:*",
-    "prepare:husky": "if-env VERCEL=1 && echo 'Skipping prepare' || husky install",
+    "prepare:husky": "if-env SKIP_INSTALL_HUSKY=1 && echo 'Skipping husky install' || husky install",
     "prepare:packages": "pnpm build",
     "prettier": "prettier --config .prettierrc.cjs --ignore-unknown --no-error-on-unmatched-pattern",
     "syncpack": "syncpack list-mismatches --config .config/.syncpackrc",
