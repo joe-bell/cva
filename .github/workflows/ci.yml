@@ -39,7 +39,7 @@ jobs:
           BRANCH: ${{ github.event.pull_request.head.ref }}
         run: >
           {
-            echo "**The latest updates for \`examples/*\`.**";
+            echo "**The latest updates to examples.**";
             echo "";
             echo "| Name     | StackBlitz  |";
             echo "|:---------|:------------|";
