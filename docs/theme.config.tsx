@@ -3,8 +3,6 @@ import { useRouter } from "next/router";
 
 export const config = {
   title: "cva",
-  branch: "main",
-  repo: "joe-bell/cva",
   domain: "cva.style",
   description: "Class Variance Authority",
   author: {
@@ -14,6 +12,11 @@ export const config = {
   },
   og: "/assets/img/og.png",
   favicon: "/assets/img/favicon.png",
+  branch: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF || "main",
+  repo: [
+    process.env.NEXT_PUBLIC_VERCEL_GIT_REPO_OWNER || "joe-bell",
+    process.env.NEXT_PUBLIC_VERCEL_GIT_REPO_SLUG || "cva",
+  ].join("/"),
 } as const;
 
 export const PROJECT = `https://github.com/${config.repo}`;
