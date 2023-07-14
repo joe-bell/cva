@@ -1,16 +1,6 @@
 import React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
-// note: `data-*`  attributes not required, but useful.
-// <Nav.Root>
-//   <Nav.Item>
-//     <Nav.Link href="#">Home</Nav.Link>
-//   </Nav.Item>
-//   <Nav.Item>
-//     <Nav.Link href="#">Home</Nav.Link>
-//   </Nav.Item>
-// </Nav.Root>;
-
 /* Root
   ============================================ */
 
@@ -51,6 +41,7 @@ export interface RootProps
 
 export const Root: React.FC<RootProps> = ({ className, density, ...props }) => (
   <ul
+    // note: `data-*`  attributes not required, but useful.
     data-id="nav-root"
     data-density={density}
     className={root({ className, density })}
