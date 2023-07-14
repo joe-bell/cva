@@ -13,6 +13,10 @@ const button = cva(styles.base, {
       small: styles.small,
       medium: styles.medium,
     },
+    disabled: {
+      false: styles.enabled,
+      true: styles.disabled,
+    },
   },
   compoundVariants: [
     { intent: "primary", size: "medium", className: styles.primaryMedium },
@@ -20,16 +24,24 @@ const button = cva(styles.base, {
   defaultVariants: {
     intent: "primary",
     size: "medium",
+    disabled: false,
   },
 });
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "disabled">,
     VariantProps<typeof button> {}
 
 export const Button: React.FC<ButtonProps> = ({
   className,
   intent,
   size,
+  disabled,
   ...props
-}) => <button className={button({ intent, size, className })} {...props} />;
+}) => (
+  <button
+    className={button({ intent, size, disabled, className })}
+    disabled={disabled || undefined}
+    {...props}
+  />
+);
