@@ -53,7 +53,7 @@
     "test:size": "pnpm build && bundlesize -f 'dist/*.js' -s 850B"
   },
   "dependencies": {
-    "clsx": "1.2.1"
+    "clsx": "2.0.0"
   },
   "devDependencies": {
     "@jest/types": "28.1.1",

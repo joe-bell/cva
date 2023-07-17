@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { clsx } from "clsx";
 
 /* Types
   ============================================ */
@@ -11,7 +11,6 @@ import clsx from "clsx";
 // Should this project move to JSDoc, this workaround would no longer be needed.
 
 type ClassValue =
-  | "test"
   | ClassArray
   | ClassDictionary
   | string
