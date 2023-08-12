@@ -48,10 +48,7 @@ export type CXReturn = ReturnType<CX>;
 type CVAConfigBase = { base?: ClassValue };
 type CVAVariantShape = Record<string, Record<string, ClassValue>>;
 type CVAVariantSchema<V extends CVAVariantShape> = {
-  [Variant in keyof V]?:
-    | StringToBoolean<keyof V[Variant]>
-    | "unset"
-    | undefined;
+  [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
 };
 type CVAClassProp =
   | {
@@ -133,8 +130,6 @@ export const defineConfig: DefineConfig = (options) => {
       (variant: keyof typeof variants) => {
         const variantProp = props?.[variant as keyof typeof props];
         const defaultVariantProp = defaultVariants?.[variant];
-
-        if (variantProp === "unset") return undefined;
 
         const variantKey = (falsyToString(variantProp) ||
           falsyToString(

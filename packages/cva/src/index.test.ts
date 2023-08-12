@@ -122,6 +122,7 @@ describe("cva", () => {
       const buttonWithoutBaseWithoutDefaultsString = cva({
         variants: {
           intent: {
+            unset: null,
             primary:
               "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
@@ -139,15 +140,18 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: "button--disabled opacity-050 cursor-not-allowed",
             false: "button--enabled cursor-pointer",
           },
           size: {
+            unset: null,
             small: "button--small text-sm py-1 px-2",
             medium: "button--medium text-base py-2 px-4",
             large: "button--large text-lg py-2.5 px-4",
           },
           m: {
+            unset: null,
             0: "m-0",
             1: "m-1",
           },
@@ -176,6 +180,7 @@ describe("cva", () => {
       const buttonWithoutBaseWithoutDefaultsWithClassNameString = cva({
         variants: {
           intent: {
+            unset: null,
             primary:
               "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
@@ -193,15 +198,18 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: "button--disabled opacity-050 cursor-not-allowed",
             false: "button--enabled cursor-pointer",
           },
           size: {
+            unset: null,
             small: "button--small text-sm py-1 px-2",
             medium: "button--medium text-base py-2 px-4",
             large: "button--large text-lg py-2.5 px-4",
           },
           m: {
+            unset: null,
             0: "m-0",
             1: "m-1",
           },
@@ -231,6 +239,7 @@ describe("cva", () => {
       const buttonWithoutBaseWithoutDefaultsArray = cva({
         variants: {
           intent: {
+            unset: null,
             primary: [
               "button--primary",
               "bg-blue-500",
@@ -262,15 +271,18 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
             false: ["button--enabled", "cursor-pointer"],
           },
           size: {
+            unset: null,
             small: ["button--small", "text-sm", "py-1", "px-2"],
             medium: ["button--medium", "text-base", "py-2", "px-4"],
             large: ["button--large", "text-lg", "py-2.5", "px-4"],
           },
           m: {
+            unset: null,
             0: "m-0",
             1: "m-1",
           },
@@ -299,6 +311,7 @@ describe("cva", () => {
       const buttonWithoutBaseWithoutDefaultsWithClassNameArray = cva({
         variants: {
           intent: {
+            unset: null,
             primary: [
               "button--primary",
               "bg-blue-500",
@@ -330,15 +343,18 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
             false: ["button--enabled", "cursor-pointer"],
           },
           size: {
+            unset: null,
             small: ["button--small", "text-sm", "py-1", "px-2"],
             medium: ["button--medium", "text-base", "py-2", "px-4"],
             large: ["button--large", "text-lg", "py-2.5", "px-4"],
           },
           m: {
+            unset: null,
             0: "m-0",
             1: "m-1",
           },
@@ -464,6 +480,7 @@ describe("cva", () => {
         base: "button font-semibold border rounded",
         variants: {
           intent: {
+            unset: null,
             primary:
               "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
@@ -481,15 +498,18 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: "button--disabled opacity-050 cursor-not-allowed",
             false: "button--enabled cursor-pointer",
           },
           size: {
+            unset: null,
             small: "button--small text-sm py-1 px-2",
             medium: "button--medium text-base py-2 px-4",
             large: "button--large text-lg py-2.5 px-4",
           },
           m: {
+            unset: null,
             0: "m-0",
             1: "m-1",
           },
@@ -534,6 +554,7 @@ describe("cva", () => {
         base: "button font-semibold border rounded",
         variants: {
           intent: {
+            unset: null,
             primary:
               "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
@@ -551,15 +572,18 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: "button--disabled opacity-050 cursor-not-allowed",
             false: "button--enabled cursor-pointer",
           },
           size: {
+            unset: null,
             small: "button--small text-sm py-1 px-2",
             medium: "button--medium text-base py-2 px-4",
             large: "button--large text-lg py-2.5 px-4",
           },
           m: {
+            unset: null,
             0: "m-0",
             1: "m-1",
           },
@@ -605,6 +629,7 @@ describe("cva", () => {
         base: ["button", "font-semibold", "border", "rounded"],
         variants: {
           intent: {
+            unset: null,
             primary: [
               "button--primary",
               "bg-blue-500",
@@ -636,15 +661,18 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
             false: ["button--enabled", "cursor-pointer"],
           },
           size: {
+            unset: null,
             small: ["button--small", "text-sm", "py-1", "px-2"],
             medium: ["button--medium", "text-base", "py-2", "px-4"],
             large: ["button--large", "text-lg", "py-2.5", "px-4"],
           },
           m: {
+            unset: null,
             0: "m-0",
             1: "m-1",
           },
@@ -689,6 +717,7 @@ describe("cva", () => {
         base: ["button", "font-semibold", "border", "rounded"],
         variants: {
           intent: {
+            unset: null,
             primary: [
               "button--primary",
               "bg-blue-500",
@@ -720,15 +749,18 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
             false: ["button--enabled", "cursor-pointer"],
           },
           size: {
+            unset: null,
             small: ["button--small", "text-sm", "py-1", "px-2"],
             medium: ["button--medium", "text-base", "py-2", "px-4"],
             large: ["button--large", "text-lg", "py-2.5", "px-4"],
           },
           m: {
+            unset: null,
             0: "m-0",
             1: "m-1",
           },
@@ -878,6 +910,7 @@ describe("cva", () => {
         base: "button font-semibold border rounded",
         variants: {
           intent: {
+            unset: null,
             primary:
               "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
@@ -895,10 +928,12 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: "button--disabled opacity-050 cursor-not-allowed",
             false: "button--enabled cursor-pointer",
           },
           size: {
+            unset: null,
             small: "button--small text-sm py-1 px-2",
             medium: "button--medium text-base py-2 px-4",
             large: "button--large text-lg py-2.5 px-4",
@@ -938,6 +973,7 @@ describe("cva", () => {
         base: "button font-semibold border rounded",
         variants: {
           intent: {
+            unset: null,
             primary:
               "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
@@ -955,10 +991,12 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: "button--disabled opacity-050 cursor-not-allowed",
             false: "button--enabled cursor-pointer",
           },
           size: {
+            unset: null,
             small: "button--small text-sm py-1 px-2",
             medium: "button--medium text-base py-2 px-4",
             large: "button--large text-lg py-2.5 px-4",
@@ -999,6 +1037,7 @@ describe("cva", () => {
         base: ["button", "font-semibold", "border", "rounded"],
         variants: {
           intent: {
+            unset: null,
             primary: [
               "button--primary",
               "bg-blue-500",
@@ -1030,10 +1069,12 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
             false: ["button--enabled", "cursor-pointer"],
           },
           size: {
+            unset: null,
             small: ["button--small", "text-sm", "py-1", "px-2"],
             medium: ["button--medium", "text-base", "py-2", "px-4"],
             large: ["button--large", "text-lg", "py-2.5", "px-4"],
@@ -1073,6 +1114,7 @@ describe("cva", () => {
         base: ["button", "font-semibold", "border", "rounded"],
         variants: {
           intent: {
+            unset: null,
             primary: [
               "button--primary",
               "bg-blue-500",
@@ -1104,10 +1146,12 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
             false: ["button--enabled", "cursor-pointer"],
           },
           size: {
+            unset: null,
             small: ["button--small", "text-sm", "py-1", "px-2"],
             medium: ["button--medium", "text-base", "py-2", "px-4"],
             large: ["button--large", "text-lg", "py-2.5", "px-4"],
@@ -1246,6 +1290,7 @@ describe("cva", () => {
         base: "button font-semibold border rounded",
         variants: {
           intent: {
+            unset: null,
             primary:
               "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
@@ -1263,10 +1308,12 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: "button--disabled opacity-050 cursor-not-allowed",
             false: "button--enabled cursor-pointer",
           },
           size: {
+            unset: null,
             small: "button--small text-sm py-1 px-2",
             medium: "button--medium text-base py-2 px-4",
             large: "button--large text-lg py-2.5 px-4",
@@ -1311,6 +1358,7 @@ describe("cva", () => {
         base: "button font-semibold border rounded",
         variants: {
           intent: {
+            unset: null,
             primary:
               "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
@@ -1328,10 +1376,12 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: "button--disabled opacity-050 cursor-not-allowed",
             false: "button--enabled cursor-pointer",
           },
           size: {
+            unset: null,
             small: "button--small text-sm py-1 px-2",
             medium: "button--medium text-base py-2 px-4",
             large: "button--large text-lg py-2.5 px-4",
@@ -1377,6 +1427,7 @@ describe("cva", () => {
         base: ["button", "font-semibold", "border", "rounded"],
         variants: {
           intent: {
+            unset: null,
             primary: [
               "button--primary",
               "bg-blue-500",
@@ -1408,10 +1459,12 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
             false: ["button--enabled", "cursor-pointer"],
           },
           size: {
+            unset: null,
             small: ["button--small", "text-sm", "py-1", "px-2"],
             medium: ["button--medium", "text-base", "py-2", "px-4"],
             large: ["button--large", "text-lg", "py-2.5", "px-4"],
@@ -1456,6 +1509,7 @@ describe("cva", () => {
         base: ["button", "font-semibold", "border", "rounded"],
         variants: {
           intent: {
+            unset: null,
             primary: [
               "button--primary",
               "bg-blue-500",
@@ -1487,10 +1541,12 @@ describe("cva", () => {
             ],
           },
           disabled: {
+            unset: null,
             true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
             false: ["button--enabled", "cursor-pointer"],
           },
           size: {
+            unset: null,
             small: ["button--small", "text-sm", "py-1", "px-2"],
             medium: ["button--medium", "text-base", "py-2", "px-4"],
             large: ["button--large", "text-lg", "py-2.5", "px-4"],
