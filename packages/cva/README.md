@@ -36,11 +36,29 @@ For documentation, visit [cva.style](https://cva.style).
      const after = cva({ base: "your-base-class" });
      ```
 
-2. **Use `"unset"` to disable a variant completely**
+2. **Roll-your-own `"unset"` to disable a variant completely**
 
-   Previously, passing `null` to a variant would provide the same behaviour – to match Stitches.js – however this caused some [concern and confusion](https://github.com/joe-bell/cva/discussions/97).
+   Previously, passing `null` to a variant would disable a variant completely – to match Stitches.js – however this caused some [concern and confusion](https://github.com/joe-bell/cva/discussions/97).
 
-   Instead, a more explicit `"unset"` option ([similar to the CSS keyword](https://developer.mozilla.org/en-US/docs/Web/CSS/unset)) is now available for use.
+   Instead, we recommend setting an explicit `"unset"` option ([similar to the CSS keyword](https://developer.mozilla.org/en-US/docs/Web/CSS/unset)) within your variant:
+
+   ```ts
+   import { cva } from "cva";
+
+   const button = cva({
+     base: "button",
+     variants: {
+       intent: {
+         unset: null,
+         primary: "button--primary",
+         secondary: "button--secondary",
+       },
+     },
+   });
+
+   button({ intent: "unset" });
+   // => "button"
+   ```
 
 3. Utilize `swc` minification to improve bundlesize
 
@@ -61,6 +79,8 @@ For documentation, visit [cva.style](https://cva.style).
 Builds a `cva` component
 
 ```ts
+import { cva } from "cva";
+
 const component = cva(options);
 ```
 
@@ -80,6 +100,8 @@ Generate `cx` and `cva` functions based on your preferred configuration.
 Store in a `cva.config.ts` file, and import across your project.
 
 ```ts
+import { cva } from "cva";
+
 // cva.config.ts
 export const { cva, cx } = defineConfig(options);
 ```
