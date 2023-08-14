@@ -32,6 +32,17 @@ export type VariantProps<Component extends (...args: any) => any> = Omit<
   "class" | "className"
 >;
 
+/* compose
+  ---------------------------------- */
+
+export interface Compose {
+  <T extends ReturnType<CVA>[]>(...components: [...T]): (
+    props: {
+      [K in keyof T]: Parameters<T[K]>[0];
+    }[number]
+  ) => string;
+}
+
 /* cx
   ---------------------------------- */
 
@@ -103,6 +114,7 @@ export interface DefineConfigOptions {
 
 export interface DefineConfig {
   (options?: DefineConfigOptions): {
+    compose: Compose;
     cx: CX;
     cva: CVA;
   };
@@ -175,10 +187,27 @@ export const defineConfig: DefineConfig = (options) => {
     );
   };
 
+  const compose: Compose =
+    (...components) =>
+    (props) => {
+      const propsWithoutClass = Object.fromEntries(
+        Object.entries(props || {}).filter(
+          ([key]) => !["class", "className"].includes(key)
+        )
+      );
+
+      return cx(
+        components.map((component) => component(propsWithoutClass)),
+        props?.class,
+        props?.className
+      );
+    };
+
   return {
+    compose,
     cva,
     cx,
   };
 };
 
-export const { cva, cx } = defineConfig();
+export const { compose, cva, cx } = defineConfig();

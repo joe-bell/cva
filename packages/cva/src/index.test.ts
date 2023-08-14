@@ -1,5 +1,5 @@
 import type * as CVA from "./";
-import { cva, cx } from "./";
+import { compose, cva, cx } from "./";
 
 describe("cx", () => {
   describe.each<CVA.CXOptions>([
@@ -39,6 +39,51 @@ describe("cx", () => {
   ])("cx(%o)", (options, expected) => {
     test(`returns ${expected}`, () => {
       expect(cx(options)).toBe(expected);
+    });
+  });
+});
+
+describe("compose", () => {
+  describe("simple", () => {
+    test("", () => {
+      const box = cva({
+        variants: {
+          shadow: {
+            sm: "shadow-sm",
+            md: "shadow-md",
+          },
+        },
+        defaultVariants: {
+          shadow: "sm",
+        },
+      });
+
+      const stack = cva({
+        variants: {
+          gap: {
+            unset: null,
+            1: "gap-1",
+            2: "gap-2",
+            3: "gap-3",
+          },
+        },
+        defaultVariants: {
+          gap: "unset",
+        },
+      });
+
+      const card = compose(box, stack);
+
+      expect(card({ class: "adhoc-class" })).toBe("shadow-sm adhoc-class");
+      expect(card({ className: "adhoc-class" })).toBe("shadow-sm adhoc-class");
+      expect(card({ shadow: "md" })).toBe("shadow-md");
+      expect(card({ gap: 2 })).toBe("shadow-sm gap-2");
+      expect(card({ shadow: "md", gap: 3, class: "adhoc-class" })).toBe(
+        "shadow-md gap-3 adhoc-class"
+      );
+      expect(card({ shadow: "md", gap: 3, className: "adhoc-class" })).toBe(
+        "shadow-md gap-3 adhoc-class"
+      );
     });
   });
 });
