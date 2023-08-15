@@ -126,7 +126,7 @@ export const { cva, cx } = defineConfig(options);
 
 ### Composing Components
 
-Any number of `cva` components can be merged into a single component via the `compose` method:
+Any number of `cva` components can be shallow merged into a single component via the `compose` method:
 
 ```ts
 // components/card.ts
