@@ -26,6 +26,11 @@ type ClassArray = ClassValue[];
 
 type OmitUndefined<T> = T extends undefined ? never : T;
 type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I
+) => void
+  ? I
+  : never;
 
 export type VariantProps<Component extends (...args: any) => any> = Omit<
   OmitUndefined<Parameters<Component>[0]>,
@@ -37,9 +42,15 @@ export type VariantProps<Component extends (...args: any) => any> = Omit<
 
 export interface Compose {
   <T extends ReturnType<CVA>[]>(...components: [...T]): (
-    props: {
-      [K in keyof T]: Parameters<T[K]>[0];
-    }[number]
+    props: (
+      | UnionToIntersection<
+          {
+            [K in keyof T]: VariantProps<T[K]>;
+          }[number]
+        >
+      | undefined
+    ) &
+      CVAClassProp
   ) => string;
 }
 
