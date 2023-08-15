@@ -93,6 +93,20 @@ const component = cva(options);
    - `defaultVariants`: set default values for previously defined variants.  
      _note: these default values can be removed completely by setting the variant as `"unset"`_
 
+#### `compose`
+
+Shallow merges any number of `cva` components into a single component.
+
+```ts
+import { compose } from "cva";
+
+const composedComponent = compose(options);
+```
+
+##### Parameters
+
+`options`: array of `cva` components
+
 #### `defineConfig`
 
 Generate `cx` and `cva` functions based on your preferred configuration.
@@ -109,3 +123,43 @@ export const { cva, cx } = defineConfig(options);
 1. `options`
    - `hooks`
      - `cx:done`: returns a concatenated class string of all `cx` contents (also used internally by `cva`)
+
+### Composing Components
+
+Any number of `cva` components can be shallow merged into a single component via the `compose` method:
+
+```ts
+// components/card.ts
+import { cva, compose } from "cva";
+
+const box = cva({
+  base: ["box", "box-border"],
+  variants: {
+    margin: { 0: "m-0", 2: "m-2", 4: "m-4", 8: "m-8" },
+    padding: { 0: "p-0", 2: "p-2", 4: "p-4", 8: "p-8" },
+  },
+  defaultVariants: {
+    margin: 0,
+    padding: 0,
+  },
+});
+
+const root = cva({
+  base: ["card", "border-solid", "border-slate-300", "rounded"],
+  variants: {
+    shadow: {
+      md: "drop-shadow-md",
+      lg: "drop-shadow-lg",
+      xl: "drop-shadow-xl",
+    },
+  },
+});
+
+export interface CardProps extends VariantProps<typeof card> {}
+export const card = compose(box, root);
+
+card({ margin: 2, shadow: "md" });
+// => "box box-border m-2 card border-solid border-slate-300 rounded drop-shadow-md"
+card({ margin: 2, shadow: "md", class: "adhoc-class" });
+// => "box box-border m-2 card border-solid border-slate-300 rounded drop-shadow-md adhoc-class"
+```

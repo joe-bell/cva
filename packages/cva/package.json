@@ -45,7 +45,7 @@
     "prepublishOnly": "pnpm build",
     "test": "run-p test:*",
     "test:jest": "jest --config .config/jest.config.ts --coverage",
-    "test:size": "pnpm build && bundlesize -f 'dist/*.js' -s 900B"
+    "test:size": "pnpm build && bundlesize -f 'dist/*.js' -s 1.2KB"
   },
   "dependencies": {
     "clsx": "2.0.0"
