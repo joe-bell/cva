@@ -60,7 +60,7 @@ For documentation, visit [cva.style](https://cva.style).
    // => "button"
    ```
 
-3. Utilize `swc` minification to improve bundlesize
+3. **Utilize `swc` minification to improve bundlesize**
 
    > **Warning**
    >
@@ -68,9 +68,11 @@ For documentation, visit [cva.style](https://cva.style).
 
 4. Warns against passing generic type parameters into `cva`. This wasn't supported originally, but the API wasn't exactly clear.
 
-5. New `defineConfig` API
+5. **New `defineConfig` API**
 
-6. New `@cva/tailwindcss` package
+6. **New `@cva/tailwindcss` package**
+
+7. **New `compose` API**
 
 ### API Reference
 
