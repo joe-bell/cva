@@ -35,6 +35,7 @@ type ConfigVariantsMulti<T extends ConfigSchema> = {
   [Variant in keyof T]?:
     | StringToBoolean<keyof T[Variant]>
     | StringToBoolean<keyof T[Variant]>[]
+    | ReadonlyArray<StringToBoolean<keyof T[Variant]>>
     | undefined;
 };
 
