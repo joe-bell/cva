@@ -46,7 +46,6 @@
     "build:esm": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.mjs -C module.type=es6 ",
     "build:tsc": "tsc --project .config/tsconfig.build.json",
     "check": "tsc --project tsconfig.json --noEmit",
-    "dev": "jest --config .config/jest.config.ts --watch",
     "prepublishOnly": "pnpm build",
     "bundlesize": "pnpm build && bundlesize -f 'dist/*.js' -s 850B"
   },
@@ -54,16 +53,12 @@
     "clsx": "2.0.0"
   },
   "devDependencies": {
-    "@jest/types": "28.1.1",
     "@swc/cli": "0.1.57",
     "@swc/core": "1.2.198",
-    "@swc/jest": "0.2.21",
-    "@types/jest": "28.1.1",
     "@types/node": "18.11.18",
     "@types/react": "18.0.12",
     "@types/react-dom": "18.0.5",
     "bundlesize": "0.18.1",
-    "jest": "28.1.1",
     "npm-run-all": "4.1.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",

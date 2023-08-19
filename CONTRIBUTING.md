@@ -26,7 +26,7 @@ Welcome, and thanks for your interest in contributing! Please take a moment to r
 
 ### Scripts
 
-- `pnpm dev` – runs jest, watching for file changes
+- `pnpm dev` – runs vitest, watching for file changes
 - `pnpm build` – production build
 - `pnpm tsc` – type checks
 - `pnpm test`
