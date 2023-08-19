@@ -48,9 +48,7 @@
     "check": "tsc --project tsconfig.json --noEmit",
     "dev": "jest --config .config/jest.config.ts --watch",
     "prepublishOnly": "pnpm build",
-    "test": "run-p test:*",
-    "test:jest": "jest --config .config/jest.config.ts --coverage",
-    "test:size": "pnpm build && bundlesize -f 'dist/*.js' -s 850B"
+    "bundlesize": "pnpm build && bundlesize -f 'dist/*.js' -s 850B"
   },
   "dependencies": {
     "clsx": "2.0.0"
