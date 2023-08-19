@@ -20,13 +20,13 @@
   "license": "Apache-2.0",
   "author": "Joe Bell (https://joebell.co.uk)",
   "exports": {
-    "import": "./dist/index.mjs",
-    "require": "./dist/index.js",
-    "types": "./dist/index.d.ts"
+    "import": "./src/index.ts",
+    "require": "./src/index.ts",
+    "types": "./src/index.ts"
   },
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
   "files": [
     "dist/*.mjs",
     "dist/*.mjs.map",
@@ -61,5 +61,15 @@
   "peerDependencies": {
     "cva": "workspace:*",
     "tailwind-merge": ">= 1.12.0"
+  },
+  "publishConfig": {
+    "exports": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts"
   }
 }
