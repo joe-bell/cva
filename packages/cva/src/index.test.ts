@@ -73,6 +73,12 @@ describe("compose", () => {
 
     const card = compose(box, stack);
 
+    expectTypeOf(card).toBeFunction();
+    expectTypeOf(card).parameter(0).toMatchTypeOf<{
+      shadow?: "sm" | "md" | undefined;
+      gap?: "unset" | 1 | 2 | 3 | undefined;
+    }>();
+
     expect(card({ class: "adhoc-class" })).toBe("shadow-sm adhoc-class");
     expect(card({ className: "adhoc-class" })).toBe("shadow-sm adhoc-class");
     expect(card({ shadow: "md" })).toBe("shadow-md");
