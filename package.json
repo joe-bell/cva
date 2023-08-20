@@ -3,7 +3,7 @@
   "scripts": {
     "check": "pnpm run --filter './packages/**' --parallel check",
     "build": "pnpm run --filter './packages/**' build",
-    "dev": "pnpm run --filter './packages/**' --parallel dev",
+    "dev": "vitest --config .config/vitest.config.ts",
     "docs": "pnpm run --filter docs dev",
     "lint": "pnpm run --filter './packages/**' --parallel lint",
     "lint-staged": "lint-staged --config .config/lint-staged.config.mjs",
@@ -13,9 +13,11 @@
     "prepare:packages": "pnpm build",
     "prettier": "prettier --config .prettierrc.cjs --ignore-unknown --no-error-on-unmatched-pattern",
     "syncpack": "syncpack list-mismatches --config .config/.syncpackrc",
-    "test": "pnpm run --filter './packages/**' --parallel test"
+    "test": "vitest --config .config/vitest.config.ts run --coverage",
+    "bundlesize": "pnpm run --filter './packages/**' --parallel bundlesize"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "0.34.2",
     "husky": "8.0.1",
     "if-env": "1.0.4",
     "lint-staged": "13.0.1",
@@ -24,7 +26,8 @@
     "prettier-plugin-astro": "0.8.0",
     "prettier-plugin-packagejson": "2.4.2",
     "prettier-plugin-tailwindcss": "0.2.2",
-    "syncpack": "8.4.11"
+    "syncpack": "8.4.11",
+    "vitest": "0.34.2"
   },
   "packageManager": "pnpm@8.6.3",
   "engines": {
