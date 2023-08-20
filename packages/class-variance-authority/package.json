@@ -29,9 +29,9 @@
       "types": "./src/types.ts"
     }
   },
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
   "files": [
     "dist/*.mjs",
     "dist/*.mjs.map",
@@ -75,8 +75,8 @@
         "types": "./dist/types.d.ts"
       }
     },
-    "main": "./dist/index.js",
-    "module": "./dist/index.mjs",
-    "types": "./dist/index.d.ts"
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts"
   }
 }
