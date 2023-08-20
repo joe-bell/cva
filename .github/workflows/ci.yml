@@ -92,4 +92,4 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/install
-      - run: pnpm test -- run --coverage
+      - run: pnpm test

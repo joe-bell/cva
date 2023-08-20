@@ -7,7 +7,6 @@
     "target": "ES2019",
     "strict": true,
     "incremental": true,
-    "skipLibCheck": true,
-    "types": ["vitest/globals"]
+    "skipLibCheck": true
   }
 }

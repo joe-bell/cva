@@ -3,7 +3,7 @@
   "scripts": {
     "check": "pnpm run --filter './packages/**' --parallel check",
     "build": "pnpm run --filter './packages/**' build",
-    "dev": "pnpm run --filter './packages/**' --parallel dev",
+    "dev": "vitest --config .config/vitest.config.ts",
     "docs": "pnpm run --filter docs dev",
     "lint": "pnpm run --filter './packages/**' --parallel lint",
     "lint-staged": "lint-staged --config .config/lint-staged.config.mjs",
@@ -13,7 +13,7 @@
     "prepare:packages": "pnpm build",
     "prettier": "prettier --config .prettierrc.cjs --ignore-unknown --no-error-on-unmatched-pattern",
     "syncpack": "syncpack list-mismatches --config .config/.syncpackrc",
-    "test": "vitest --config .config/vitest.config.ts",
+    "test": "vitest --config .config/vitest.config.ts run --coverage",
     "bundlesize": "pnpm run --filter './packages/**' --parallel bundlesize"
   },
   "devDependencies": {
