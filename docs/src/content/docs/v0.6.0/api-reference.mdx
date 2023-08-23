@@ -1,0 +1,42 @@
+---
+layout: ../../../layouts/root.astro
+---
+
+# API Reference
+
+## `cva`
+
+Builds a `cva` component
+
+```ts
+const component = cva("base", options);
+```
+
+### Parameters
+
+1. `base`: the base class name (`string`, `string[]` or other [`clsx` value](https://github.com/lukeed/clsx#input))
+1. `options` _(optional)_
+   - `variants`: your variants schema
+   - `compoundVariants`: variants based on a combination of previously defined variants
+   - `defaultVariants`: set default values for previously defined variants  
+     _note: these default values can be removed completely by setting the variant as `null`_
+
+### Returns
+
+A `cva` component function
+
+## `cx`
+
+Concatenates class names (an alias of [`clsx`](https://github.com/lukeed/clsx))
+
+```ts
+const className = cx(classes);
+```
+
+### Parameters
+
+- `classes`: array of classes to be concatenated ([see `clsx` usage](https://github.com/lukeed/clsx#input))
+
+### Returns
+
+`string`

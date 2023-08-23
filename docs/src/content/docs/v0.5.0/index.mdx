@@ -1,0 +1,39 @@
+---
+layout: ../../../layouts/root.astro
+---
+
+![CVA Logo](/assets/img/wallpaper-hd.jpg)
+
+<br />
+<br />
+
+# Class Variance Authority
+
+CSS-in-TS libraries such as [Stitches](https://stitches.dev/docs/variants) and [Vanilla Extract](https://vanilla-extract.style/documentation/api/style-variants/) are **fantastic** options for building type-safe UI components; taking away all the worries of class names and StyleSheet composition.
+
+…but CSS-in-TS (or CSS-in-JS) isn't for everyone.
+
+You may need full control over your StyleSheet output. Your job might require you to use a framework such as Tailwind CSS. You might just prefer writing your own CSS.
+
+Creating variants with the "traditional" CSS approach can become an arduous task; manually matching classes to props and manually adding types.
+
+`cva` aims to take those pain points away, allowing you to focus on the more fun aspects of UI development.
+
+## Acknowledgements
+
+- [**Stitches**](https://stitches.dev/) ([WorkOS](https://workos.com))  
+  Huge thanks to the WorkOS team for pioneering the `variants` API movement – your open-source contributions are immensely appreciated
+- [**clb**](https://github.com/crswll/clb) ([Bill Criswell](https://github.com/crswll))  
+  This project originally started out with the intention of merging into the wonderful [`clb`](https://github.com/crswll/clb) library, but after some discussion with Bill, we felt it was best to go down the route of a separate project.  
+  I'm so grateful to Bill for sharing his work publicly and for getting me excited about building a type-safe variants API for classes. If you have a moment, please go and [star the project on GitHub](https://github.com/crswll/clb). Thank you Bill!
+- [**clsx**](https://github.com/lukeed/clsx) ([Luke Edwards](https://github.com/lukeed))  
+  Previously, this project surfaced a custom `cx` utility for flattening classes, but it lacked the ability to handle variadic arguments or objects. [clsx](https://github.com/lukeed/clsx) provided those extra features with quite literally zero increase to the bundle size – a no-brainer to switch!
+- [**Vanilla Extract**](http://vanilla-extract.style) ([Seek](https://github.com/seek-oss))
+
+## Downloads
+
+- [Wallpaper](/assets/img/wallpaper-4k.png)
+
+## License
+
+[Apache-2.0 License](/LICENSE) © [Joe Bell](https://twitter.com/joebell_)

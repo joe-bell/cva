@@ -25,6 +25,10 @@
       "import": "./src/index.ts",
       "types": "./src/index.ts"
     },
+    "./package.json": {
+      "import": "./package.json",
+      "types": "./package.json"
+    },
     "./types": {
       "types": "./src/types.ts"
     }

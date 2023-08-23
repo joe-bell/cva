@@ -27,6 +27,7 @@
     "prettier-plugin-packagejson": "2.4.2",
     "prettier-plugin-tailwindcss": "0.2.2",
     "syncpack": "8.4.11",
+    "typescript": "5.1.3",
     "vitest": "0.34.2"
   },
   "packageManager": "pnpm@8.6.3",

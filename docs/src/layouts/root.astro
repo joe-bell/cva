@@ -1,0 +1,94 @@
+---
+import { config } from "@/config";
+import { COLLECTION, getDocs, getDocsVersionFromPathname } from "@/lib/docs";
+import TailwindCSS from "@/components/tailwindcss.astro";
+
+const { title } = Astro.props;
+
+const docs = await getDocs();
+
+const version = {
+  active: getDocsVersionFromPathname(Astro.url.pathname),
+  latest: config.npm.latest.version,
+};
+
+const nav = docs.content.filter((e) => e.version === version.active);
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- <robots no index if not current version?> -->
+
+    <TailwindCSS />
+  </head>
+  <body>
+    <header>
+      <div>CVA</div>
+
+      <div>
+        <select data-id="version-select">
+          <optgroup label="Stable">
+            {
+              docs.versions.stable.map((v) => (
+                <option selected={v === version.active}>{v}</option>
+              ))
+            }
+          </optgroup>
+          <optgroup label="Experimental">
+            {
+              docs.versions.experimental.map((v) => (
+                <option selected={v === version.active}>{v}</option>
+              ))
+            }
+          </optgroup>
+        </select>
+      </div>
+    </header>
+
+    <main></main>
+
+    <footer></footer>
+    <aside>
+      <ul>
+        {
+          nav.map((c) => (
+            <li>
+              <a
+                href={[
+                  null,
+                  ...[c.collection, c.slug === "index" ? null : c.slug].filter(
+                    Boolean
+                  ),
+                ].join("/")}
+              >
+                {c.slug}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </aside>
+    <h1>{title}</h1>
+    <article>
+      <slot />
+      <!-- your content is injected here -->
+    </article>
+    <script define:vars={{ COLLECTION, version }}>
+      const inputs = document.querySelectorAll("[data-id=version-select]");
+
+      inputs.forEach((input) => {
+        input.addEventListener("change", (e) => {
+          if (e.target.value) {
+            window.location.href =
+              e.target.value === version.latest
+                ? `/${COLLECTION}`
+                : `/${COLLECTION}/${e.target.value}`;
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

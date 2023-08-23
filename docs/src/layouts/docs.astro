@@ -1,0 +1,44 @@
+---
+import { config } from "@/config";
+import { COLLECTION, getDocs, getDocsVersionFromPathname } from "@/lib/docs";
+import TailwindCSS from "@/components/tailwindcss.astro";
+
+const { title } = Astro.props;
+
+const docs = await getDocs();
+
+const version = {
+  active: getDocsVersionFromPathname(Astro.url.pathname),
+  latest: config.npm.latest.version,
+};
+
+const nav = docs.content.filter((e) => e.version === version.active);
+---
+
+<div>
+  <aside>
+    <ul>
+      {
+        nav.map((c) => (
+          <li>
+            <a
+              href={[
+                null,
+                ...[c.collection, c.slug === "index" ? null : c.slug].filter(
+                  Boolean
+                ),
+              ].join("/")}
+            >
+              {c.slug}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </aside>
+  <h1>{title}</h1>
+  <article>
+    <slot />
+    <!-- your content is injected here -->
+  </article>
+</div>

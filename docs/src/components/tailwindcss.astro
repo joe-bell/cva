@@ -1,0 +1,13 @@
+---
+const { default: styles } = await import(
+  import.meta.env.DEV ? "@/styles/main.css?url" : ".build/styles/main.css?raw"
+);
+---
+
+{
+  import.meta.env.DEV ? (
+    <link rel="stylesheet" href={styles} />
+  ) : (
+    <style is:inline set:html={styles} />
+  )
+}

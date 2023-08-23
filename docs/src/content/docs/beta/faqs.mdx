@@ -1,0 +1,75 @@
+---
+layout: ../../../layouts/root.astro
+---
+
+# FAQs
+
+## Why Don't You Provide a `styled` API?
+
+Long story short: it's unnecessary.
+
+`cva` encourages you to think of components as traditional CSS classes:
+
+- Less JavaScript is better
+- They're framework agnostic; truly reusable
+- Polymorphism is free; just apply the class to your preferred HTML element
+- Less opinionated; you're free to build components with `cva` however you'd like
+
+<details>
+
+<summary>Example: Polymorphic Components</summary>
+
+There's no `as` prop in `cva`, because HTML is free:
+
+```diff
+-- // A familiar `styled` button as a link
+-- <Button as="a" href="#" variant="primary">Button as a link</Button>
+
+++ // A `cva` button as a link
+++ <a href="#" class={button({variant: "primary"})}>Button as a link</a>
+```
+
+</details>
+
+## How Can I Create [Responsive Variants like Stitches.js](https://stitches.dev/docs/responsive-styles#responsive-variants)?
+
+You can't.
+
+`cva` doesn't know about how you choose to apply CSS clases, and it doesn't want to.
+
+We recommend either:
+
+- Showing/hiding elements with different variants, based on your preferred breakpoint.
+
+<details>
+
+<summary>Example: With Tailwind</summary>
+
+```tsx
+export const Example = () => (
+  <>
+    <div className="hidden sm:inline-flex">
+      <button className={button({ intent: "primary" })}>Hidden until sm</button>
+    </div>
+    <div className="inline-flex sm:hidden">
+      <button className={button({ intent: "secondary" })}>
+        Hidden after sm
+      </button>
+    </div>
+  </>
+);
+```
+
+</details>
+
+- Create a bespoke variant that changes based on the breakpoint.
+
+  _e.g. `button({ intent: "primaryUntilMd" })`_
+
+> **Note**
+>
+> This is something I've been thinking about since the project's inception, and I've gone back and forth many times on the idea of building it. It's a large undertaking and brings all the complexity of supporting many different build tools and frameworks.
+>
+> In my experience, "responsive variants" are typically rare, and hiding/showing different elements is usually good enough to get by.
+>
+> To be frank, I'm probably not going to build/maintain a solution unless someone periodically gives me a thick wad of cash to do so, and even then I'd probably rather spend my free time living my life.

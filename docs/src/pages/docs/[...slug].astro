@@ -1,0 +1,22 @@
+---
+import { getDocs } from "@/lib/docs";
+import type { InferGetStaticPropsType } from "astro";
+
+export const getStaticPaths = async () => {
+  const docs = await getDocs();
+
+  return docs.content.map((entry) => {
+    return {
+      params: { slug: entry.slug === "index" ? undefined : entry.slug },
+      props: { entry },
+    };
+  });
+};
+
+interface Props extends InferGetStaticPropsType<typeof getStaticPaths> {}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<Content components={{}} />
