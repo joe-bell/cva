@@ -42,11 +42,11 @@ importers:
         specifier: 0.34.2
         version: 0.34.2
 
-  docs:
+  docs/latest:
     dependencies:
       class-variance-authority:
         specifier: workspace:*
-        version: link:../packages/class-variance-authority
+        version: link:../../packages/class-variance-authority
       next:
         specifier: ^13.1.6
         version: 13.1.6(react-dom@18.2.0)(react@18.2.0)

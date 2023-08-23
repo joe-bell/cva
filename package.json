@@ -4,7 +4,7 @@
     "check": "pnpm run --filter './packages/**' --parallel check",
     "build": "pnpm run --filter './packages/**' build",
     "dev": "vitest --config .config/vitest.config.ts",
-    "docs": "pnpm run --filter docs dev",
+    "docs": "pnpm run --filter './docs/latest' dev",
     "lint": "pnpm run --filter './packages/**' --parallel lint",
     "lint-staged": "lint-staged --config .config/lint-staged.config.mjs",
     "preinstall": "npx only-allow pnpm",
