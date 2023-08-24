@@ -89,13 +89,7 @@ const nextraConfig: DocsThemeConfig = {
   },
   feedback: {
     useLink() {
-      const config = useConfig();
-
-      return `${
-        config.project.link
-      }/discussions/new?category=feedback&title=${encodeURIComponent(
-        `Feedback for "${config.title}"`
-      )}`;
+      return `https://github.com/joe-bell/cva/discussions/205`;
     },
   },
   head: () => {
