@@ -1,0 +1,83 @@
+import { Callout } from "nextra-theme-docs";
+
+# API Reference
+
+<Callout type="warning">
+
+**You are currently viewing the docs for `cva@beta`**  
+For stable documentation, please visit [cva.style](https://cva.style).
+
+</Callout>
+
+## `cva`
+
+Builds a `cva` component
+
+```ts
+import { cva } from "cva";
+
+const component = cva(options);
+```
+
+### Parameters
+
+1. `options`
+   - `base`: the base class name (`string`, `string[]` or other [`clsx` value](https://github.com/lukeed/clsx#input))
+   - `variants`: your variants schema
+   - `compoundVariants`: variants based on a combination of previously defined variants
+   - `defaultVariants`: set default values for previously defined variants.
+
+### Returns
+
+A `cva` component function
+
+## `cx`
+
+Concatenates class names (an alias of [`clsx`](https://github.com/lukeed/clsx))
+
+```ts
+const className = cx(classes);
+```
+
+### Parameters
+
+- `classes`: array of classes to be concatenated ([see `clsx` usage](https://github.com/lukeed/clsx#input))
+
+### Returns
+
+`string`
+
+## `compose`
+
+Shallow merges any number of `cva` components into a single component.
+
+```ts
+import { compose } from "cva";
+
+const composedComponent = compose(options);
+```
+
+### Parameters
+
+`options`: array of `cva` components
+
+### Returns
+
+A `cva` component function
+
+## `defineConfig`
+
+Generate `cva`, `cx` and `compose` functions based on your preferred configuration.
+
+Store in a `cva.config.ts` file, and import across your project.
+
+```ts
+import { cva } from "cva";
+
+// cva.config.ts
+export const { cva, cx, compose } = defineConfig(options);
+```
+
+1. `options`
+   - `hooks`
+     - `cx:done`: returns a concatenated class string of all `cx` contents (also used internally by `cva`)

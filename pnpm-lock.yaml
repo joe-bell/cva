@@ -42,6 +42,40 @@ importers:
         specifier: 0.34.2
         version: 0.34.2
 
+  docs/beta:
+    dependencies:
+      cva:
+        specifier: workspace:*
+        version: link:../../packages/cva
+      next:
+        specifier: ^13.1.6
+        version: 13.1.6(react-dom@18.2.0)(react@18.2.0)
+      nextra:
+        specifier: ^2.2.14
+        version: 2.2.14(next@13.1.6)(react-dom@18.2.0)(react@18.2.0)
+      nextra-theme-docs:
+        specifier: ^2.2.14
+        version: 2.2.14(next@13.1.6)(nextra@2.2.14)(react-dom@18.2.0)(react@18.2.0)
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+      tiny-invariant:
+        specifier: 1.3.1
+        version: 1.3.1
+    devDependencies:
+      '@types/node':
+        specifier: 18.11.18
+        version: 18.11.18
+      '@types/react':
+        specifier: 18.0.12
+        version: 18.0.12
+      typescript:
+        specifier: 5.1.3
+        version: 5.1.3
+
   docs/latest:
     dependencies:
       class-variance-authority:
@@ -211,48 +245,6 @@ importers:
       vue-tsc:
         specifier: ^1.0.24
         version: 1.0.24(typescript@5.1.3)
-
-  packages/@cva/tailwindcss:
-    devDependencies:
-      '@swc/cli':
-        specifier: 0.1.57
-        version: 0.1.57(@swc/core@1.2.198)
-      '@swc/core':
-        specifier: 1.2.198
-        version: 1.2.198
-      '@types/node':
-        specifier: 18.11.18
-        version: 18.11.18
-      '@types/react':
-        specifier: 18.0.12
-        version: 18.0.12
-      '@types/react-dom':
-        specifier: 18.0.5
-        version: 18.0.5
-      bundlesize:
-        specifier: 0.18.1
-        version: 0.18.1
-      cva:
-        specifier: workspace:*
-        version: link:../../cva
-      npm-run-all:
-        specifier: 4.1.5
-        version: 4.1.5
-      react:
-        specifier: 18.2.0
-        version: 18.2.0
-      react-dom:
-        specifier: 18.2.0
-        version: 18.2.0(react@18.2.0)
-      tailwind-merge:
-        specifier: 1.12.0
-        version: 1.12.0
-      ts-node:
-        specifier: 10.8.1
-        version: 10.8.1(@swc/core@1.2.198)(@types/node@18.11.18)(typescript@5.1.3)
-      typescript:
-        specifier: 5.1.3
-        version: 5.1.3
 
   packages/class-variance-authority:
     dependencies:
@@ -6720,10 +6712,6 @@ packages:
       minimatch: 5.1.0
       read-yaml-file: 2.1.0
       semver: 7.3.8
-    dev: true
-
-  /tailwind-merge@1.12.0:
-    resolution: {integrity: sha512-Y17eDp7FtN1+JJ4OY0Bqv9OA41O+MS8c1Iyr3T6JFLnOgLg3EvcyMKZAnQ8AGyvB5Nxm3t9Xb5Mhe139m8QT/g==}
     dev: true
 
   /tailwindcss@3.0.24(postcss@8.4.21):

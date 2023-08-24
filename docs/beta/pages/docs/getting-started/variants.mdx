@@ -1,0 +1,152 @@
+import { Callout } from "nextra-theme-docs";
+
+# Variants
+
+<Callout type="warning">
+
+**You are currently viewing the docs for `cva@beta`**  
+For stable documentation, please visit [cva.style](https://cva.style).
+
+</Callout>
+
+## Creating Variants
+
+<Callout type="info">
+
+Although `cva` is a [**tiny**](https://bundlephobia.com/package/cva) library, it's best to use in a SSR/SSG environment – your user probably doesn't need this JavaScript, especially for static components.
+
+</Callout>
+
+To kick things off, let's build a "basic" `button` component, using `cva` to handle our variant's classes
+
+<Callout type="info">
+
+Use of Tailwind CSS is optional
+
+</Callout>
+
+```ts
+// components/button.ts
+import { cva } from "cva";
+
+const button = cva({
+  base: ["font-semibold", "border", "rounded"],
+  variants: {
+    intent: {
+      primary: [
+        "bg-blue-500",
+        "text-white",
+        "border-transparent",
+        "hover:bg-blue-600",
+      ],
+      // **or**
+      // primary: "bg-blue-500 text-white border-transparent hover:bg-blue-600",
+      secondary: [
+        "bg-white",
+        "text-gray-800",
+        "border-gray-400",
+        "hover:bg-gray-100",
+      ],
+    },
+    size: {
+      small: ["text-sm", "py-1", "px-2"],
+      medium: ["text-base", "py-2", "px-4"],
+    },
+  },
+  compoundVariants: [
+    {
+      intent: "primary",
+      size: "medium",
+      class: "uppercase",
+      // **or** if you're a React.js user, `className` may feel more consistent:
+      // className: "uppercase"
+    },
+  ],
+  defaultVariants: {
+    intent: "primary",
+    size: "medium",
+  },
+});
+
+button();
+// => "font-semibold border rounded bg-blue-500 text-white border-transparent hover:bg-blue-600 text-base py-2 px-4 uppercase"
+
+button({ intent: "secondary", size: "small" });
+// => "font-semibold border rounded bg-white text-gray-800 border-gray-400 hover:bg-gray-100 text-sm py-1 px-2"
+```
+
+## Compound Variants
+
+Variants that apply when multiple other variant conditions are met.
+
+```ts
+// components/button.ts
+import { cva } from "cva";
+
+const button = cva({
+  base: "…",
+  variants: {
+    intent: { primary: "…", secondary: "…" },
+    size: { small: "…", medium: "…" },
+  },
+  compoundVariants: [
+    // Applied via:
+    //   `button({ intent: "primary", size: "medium" })`
+    {
+      intent: "primary",
+      size: "medium",
+      class: "…",
+    },
+  ],
+});
+```
+
+### Targeting Multiple Variant Conditions
+
+```ts
+// components/button.ts
+import { cva } from "cva";
+
+const button = cva({
+  base: "…",
+  variants: {
+    intent: { primary: "…", secondary: "…" },
+    size: { small: "…", medium: "…" },
+  },
+  compoundVariants: [
+    // Applied via:
+    //   `button({ intent: "primary", size: "medium" })`
+    //     or
+    //   `button({ intent: "secondary", size: "medium" })`
+    {
+      intent: ["primary", "secondary"],
+      size: "medium",
+      class: "…",
+    },
+  ],
+});
+```
+
+## Disabling Variants
+
+Want to disable a variant completely? Provide an option with a value of `null`.
+
+If you're stuck on naming, we recommend setting an explicit `"unset"` option ([similar to the CSS keyword](https://developer.mozilla.org/en-US/docs/Web/CSS/unset)).
+
+```ts
+import { cva } from "cva";
+
+const button = cva({
+  base: "button",
+  variants: {
+    intent: {
+      unset: null,
+      primary: "button--primary",
+      secondary: "button--secondary",
+    },
+  },
+});
+
+button({ intent: "unset" });
+// => "button"
+```

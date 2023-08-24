@@ -1,0 +1,148 @@
+import { Callout, Tab, Tabs } from "nextra-theme-docs";
+
+# Installation
+
+<Callout type="warning">
+
+**You are currently viewing the docs for `cva@beta`**  
+For stable documentation, please visit [cva.style](https://cva.style).
+
+</Callout>
+
+<Tabs items={["pnpm", "npm", "yarn"]}>
+  <Tab>
+
+    ```sh
+    pnpm i cva@beta
+    ```
+
+  </Tab>
+  <Tab>
+
+    ```sh
+    npm i cva@beta
+    ```
+
+  </Tab>
+  <Tab>
+  
+    ```sh
+    yarn add cva@beta
+    ```
+  
+  </Tab>
+</Tabs>
+
+## Tailwind CSS
+
+If you're a Tailwind user, here are some additional (optional) steps to get the most out of `cva`:
+
+### IntelliSense
+
+You can enable autocompletion inside `cva` using the steps below:
+
+<Tabs items={["Visual Studio Code", "Neovim", "WebStorm"]}>
+  <Tab>
+
+    1. [Install the "Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
+
+    2. Add the following to your [`settings.json`](https://code.visualstudio.com/docs/getstarted/settings):
+
+    ```json
+    {
+      "tailwindCSS.experimental.classRegex": [
+        ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+        ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+      ]
+    }
+    ```
+
+  </Tab>
+  <Tab>
+
+    1. [Install the extension](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#tailwindcss)
+
+    2. Add the following configuration:
+
+    ```lua
+    lspconfig.tailwindcss.setup({
+      settings = {
+        tailwindCSS = {
+          experimental = {
+            classRegex = {
+              ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+              ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+            },
+          },
+        },
+      },
+    })
+    ```
+
+  </Tab>
+  <Tab>
+
+    1. Check the version. Available for [WebStorm 2023.1](https://www.jetbrains.com/webstorm/whatsnew/#version-2023-1-tailwind-css-configuration) and later
+
+    2. Open the settings. Go to [Languages and Frameworks | Style Sheets | Tailwind CSS](https://www.jetbrains.com/help/webstorm/tailwind-css.html#ws_css_tailwind_configuration)
+
+    3. Add the following to your tailwind configuration
+
+    ```json
+    {
+      "experimental": {
+        "classRegex": ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+      }
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+### Handling Style Conflicts
+
+Although `cva`'s API is designed to help you avoid styling conflicts, there's still a small margin of error.
+
+If you're keen to lift that burden altogether, check out the wonderful [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) package.
+
+For bulletproof components, extend `cva` with `twMerge`.
+
+<details>
+
+<summary>Example with tailwind-merge</summary>
+
+```ts filename="cva.config.ts"
+import { defineConfig } from "cva";
+import { twMerge } from "tailwind-merge";
+
+export const { cva, cx, compose } = defineConfig({
+  hooks: {
+    "cx:done": (className) => twMerge(className),
+  },
+});
+```
+
+```ts filename="components/button.ts"
+import { cx, cva } from "../cva.config";
+
+export const button = cva({
+  // 1. `twMerge` strips out `bg-gray-200`…
+  base: "font-semibold bg-gray-200 border rounded",
+  variants: {
+    // 2. …as variant `bg-*` values take precedence
+    primary: "bg-blue-500 text-white border-transparent hover:bg-blue-600",
+    secondary: "bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+  },
+  defaultVariants: {
+    intent: "primary",
+  },
+});
+
+button();
+// => "font-semibold border rounded bg-blue-500 text-white border-transparent hover:bg-blue-600 text-base py-2 px-4 uppercase"
+
+cx("bg-gray-200", "bg-blue-500");
+// => "bg-blue-500"
+```
+
+</details>
