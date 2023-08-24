@@ -1,0 +1,53 @@
+# What's New?
+
+`class-variance-authority` has moved to **`cva`**
+
+## Changelog
+
+### Enhancements
+
+1. `class-variance-authority` → `cva`
+
+1. **`cva` now accepts a single parameter**
+
+   Base styles (whether `string` or `string[]`) are now applied via the named `base` property
+
+   - _Before_
+
+     ```ts
+     import { cva } from "class-variance-authority";
+
+     const before = cva("your-base-class");
+     ```
+
+   - _After_
+
+     ```ts
+     import { cva } from "cva";
+
+     const after = cva({ base: "your-base-class" });
+     ```
+
+1. **No more `null`**
+
+   Previously, passing `null` to a variant would disable a variant completely – to match Stitches.js – however this caused some [concern and confusion](https://github.com/joe-bell/cva/discussions/97).
+
+   Instead, we now recommend [rolling your own `unset` variant](/docs/getting-started/variants#disabling-variants).
+
+1. **Utilize `swc` minification to improve bundlesize**
+
+   > **Warning**
+   >
+   > Size may differ before stable release
+
+1. Warns against passing generic type parameters into `cva`. This wasn't supported originally, but the API wasn't exactly clear.
+
+### Features
+
+1. **New `compose` API**
+
+1. **New `defineConfig` API**
+
+   - [`twMerge`](/docs/getting-started/installation#handling-style-conflicts)
+
+## Upgrade Guide

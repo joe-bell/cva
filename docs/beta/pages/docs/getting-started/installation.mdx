@@ -98,32 +98,44 @@ Although `cva`'s API is designed to help you avoid styling conflicts, there's st
 
 If you're keen to lift that burden altogether, check out the wonderful [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) package.
 
-For bulletproof components, wrap your `cva` component with `twMerge`.
+For bulletproof components, extend `cva` with `twMerge`.
 
 <details>
 
 <summary>Example with tailwind-merge</summary>
 
-```ts
-import { cva, type VariantProps } from "cva";
+```ts filename="cva.config.ts"
+import { defineConfig } from "cva";
 import { twMerge } from "tailwind-merge";
 
-const buttonVariants = cva({
-  base: ["your", "base", "classes"],
+export const { cva, cx, compose } = defineConfig({
+  hooks: {
+    "cx:done": (className) => twMerge(className),
+  },
+});
+```
+
+```ts filename="components/button.ts"
+import { cx, cva } from "../cva.config";
+
+export const button = cva({
+  // 1. `twMerge` strips out `bg-gray-200`…
+  base: "font-semibold bg-gray-200 border rounded",
   variants: {
-    intent: {
-      primary: ["your", "primary", "classes"],
-    },
+    // 2. …as variant `bg-*` values take precedence
+    primary: "bg-blue-500 text-white border-transparent hover:bg-blue-600",
+    secondary: "bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
   },
   defaultVariants: {
     intent: "primary",
   },
 });
 
-export interface ButtonVariants extends VariantProps<typeof buttonVariants> {}
+button();
+// => "font-semibold border rounded bg-blue-500 text-white border-transparent hover:bg-blue-600 text-base py-2 px-4 uppercase"
 
-export const button = (variants: ButtonVariants) =>
-  twMerge(buttonVariants(variants));
+cx("bg-gray-200", "bg-blue-500");
+// => "bg-blue-500"
 ```
 
 </details>

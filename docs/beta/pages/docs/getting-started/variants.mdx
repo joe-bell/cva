@@ -119,3 +119,27 @@ const button = cva({
   ],
 });
 ```
+
+## Disabling Variants
+
+Want to disable a variant completely? Provide an option with a value of `null`.
+
+If you're stuck on naming, we recommend setting an explicit `"unset"` option ([similar to the CSS keyword](https://developer.mozilla.org/en-US/docs/Web/CSS/unset)).
+
+```ts
+import { cva } from "cva";
+
+const button = cva({
+  base: "button",
+  variants: {
+    intent: {
+      unset: null,
+      primary: "button--primary",
+      secondary: "button--secondary",
+    },
+  },
+});
+
+button({ intent: "unset" });
+// => "button"
+```
