@@ -1,0 +1,129 @@
+import { Tab, Tabs } from "nextra-theme-docs";
+
+# Installation
+
+<Tabs items={["pnpm", "npm", "yarn"]}>
+  <Tab>
+
+    ```sh
+    pnpm i cva
+    ```
+
+  </Tab>
+  <Tab>
+
+    ```sh
+    npm i cva
+    ```
+
+  </Tab>
+  <Tab>
+  
+    ```sh
+    yarn add cva
+    ```
+  
+  </Tab>
+</Tabs>
+
+## Tailwind CSS
+
+If you're a Tailwind user, here are some additional (optional) steps to get the most out of `cva`:
+
+### IntelliSense
+
+You can enable autocompletion inside `cva` using the steps below:
+
+<Tabs items={["Visual Studio Code", "Neovim", "WebStorm"]}>
+  <Tab>
+
+    1. [Install the "Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
+
+    2. Add the following to your [`settings.json`](https://code.visualstudio.com/docs/getstarted/settings):
+
+    ```json
+    {
+      "tailwindCSS.experimental.classRegex": [
+        ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+        ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+      ]
+    }
+    ```
+
+  </Tab>
+  <Tab>
+
+    1. [Install the extension](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#tailwindcss)
+
+    2. Add the following configuration:
+
+    ```lua
+    lspconfig.tailwindcss.setup({
+      settings = {
+        tailwindCSS = {
+          experimental = {
+            classRegex = {
+              ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+              ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+            },
+          },
+        },
+      },
+    })
+    ```
+
+  </Tab>
+  <Tab>
+
+    1. Check the version. Available for [WebStorm 2023.1](https://www.jetbrains.com/webstorm/whatsnew/#version-2023-1-tailwind-css-configuration) and later
+
+    2. Open the settings. Go to [Languages and Frameworks | Style Sheets | Tailwind CSS](https://www.jetbrains.com/help/webstorm/tailwind-css.html#ws_css_tailwind_configuration)
+
+    3. Add the following to your tailwind configuration
+
+    ```json
+    {
+      "experimental": {
+        "classRegex": ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+      }
+    }
+    ```
+
+  </Tab>
+</Tabs>
+
+### Handling Style Conflicts
+
+Although `cva`'s API is designed to help you avoid styling conflicts, there's still a small margin of error.
+
+If you're keen to lift that burden altogether, check out the wonderful [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) package.
+
+For bulletproof components, wrap your `cva` component with `twMerge`.
+
+<details>
+
+<summary>Example with tailwind-merge</summary>
+
+```ts
+import { cva, type VariantProps } from "cva";
+import { twMerge } from "tailwind-merge";
+
+const buttonVariants = cva({
+  base: ["your", "base", "classes"],
+  variants: {
+    intent: {
+      primary: ["your", "primary", "classes"],
+    },
+  },
+  defaultVariants: {
+    intent: "primary",
+  },
+});
+
+export interface ButtonVariants extends VariantProps<typeof buttonVariants> {}
+
+export const button = (variants: ButtonVariants) =>
+  twMerge(buttonVariants(variants));
+```
+
+</details>

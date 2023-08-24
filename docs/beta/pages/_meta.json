@@ -1,0 +1,17 @@
+{
+  "index": {
+    "type": "page",
+    "title": "Introduction",
+    "display": "hidden"
+  },
+  "docs": {
+    "type": "page",
+    "title": "Documentation"
+  },
+  "sponsors": {
+    "type": "page",
+    "title": "Sponsors",
+    "href": "https://joebell.co.uk/sponsors",
+    "newWindow": true
+  }
+}
