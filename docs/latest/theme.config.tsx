@@ -35,7 +35,7 @@ const nextraConfig: DocsThemeConfig = {
       </svg>
     ),
   },
-  docsRepositoryBase: `${PROJECT}/tree/${config.branch}/docs`,
+  docsRepositoryBase: `${PROJECT}/tree/${config.branch}/docs/latest`,
   logo: (
     <>
       <svg
