@@ -74,11 +74,13 @@ type CVAVariantSchema<V extends CVAVariantShape> = {
 };
 type CVAClassProp =
   | {
-      class: ClassValue;
+      class?: ClassValue;
       className?: never;
     }
-  | { class?: never; className: ClassValue }
-  | { class?: never; className?: never };
+  | {
+      class?: never;
+      className?: ClassValue;
+    };
 
 export interface CVA {
   <
