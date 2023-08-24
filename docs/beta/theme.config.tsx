@@ -2,7 +2,7 @@ import { useConfig, type DocsThemeConfig } from "nextra-theme-docs";
 import { useRouter } from "next/router";
 
 export const config = {
-  title: "cva",
+  title: "cva@beta",
   domain: "cva.style",
   description: "Class Variance Authority",
   author: {
@@ -133,7 +133,9 @@ const nextraConfig: DocsThemeConfig = {
   useNextSeoProps() {
     const { asPath } = useRouter();
 
-    const shared = {
+    const shared: ReturnType<DocsThemeConfig["useNextSeoProps"]> = {
+      noindex: true,
+      nofollow: true,
       openGraph: {
         images: [
           {
