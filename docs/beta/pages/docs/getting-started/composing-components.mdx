@@ -16,7 +16,7 @@ Any number of `cva` components can be shallow merged into a single component via
 import { cva, compose } from "cva";
 
 const box = cva({
-  base: ["box", "box-border"],
+  base: "box box-border",
   variants: {
     margin: { 0: "m-0", 2: "m-2", 4: "m-4", 8: "m-8" },
     padding: { 0: "p-0", 2: "p-2", 4: "p-4", 8: "p-8" },
@@ -28,7 +28,7 @@ const box = cva({
 });
 
 const root = cva({
-  base: ["card", "border-solid", "border-slate-300", "rounded"],
+  base: "card border-solid border-slate-300 rounded",
   variants: {
     shadow: {
       md: "drop-shadow-md",

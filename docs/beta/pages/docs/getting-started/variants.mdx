@@ -30,27 +30,24 @@ Use of Tailwind CSS is optional
 import { cva } from "cva";
 
 const button = cva({
-  base: ["font-semibold", "border", "rounded"],
+  base: "font-semibold border rounded",
+  // **or**
+  // base: ["font-semibold", "border", "rounded"],
   variants: {
     intent: {
-      primary: [
-        "bg-blue-500",
-        "text-white",
-        "border-transparent",
-        "hover:bg-blue-600",
-      ],
+      primary: "bg-blue-500 text-white border-transparent hover:bg-blue-600",
       // **or**
-      // primary: "bg-blue-500 text-white border-transparent hover:bg-blue-600",
-      secondary: [
-        "bg-white",
-        "text-gray-800",
-        "border-gray-400",
-        "hover:bg-gray-100",
-      ],
+      // primary: [
+      //   "bg-blue-500",
+      //   "text-white",
+      //   "border-transparent",
+      //   "hover:bg-blue-600",
+      // ],
+      secondary: "bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
     },
     size: {
-      small: ["text-sm", "py-1", "px-2"],
-      medium: ["text-base", "py-2", "px-4"],
+      small: "text-sm py-1 px-2",
+      medium: "text-base py-2 px-4",
     },
   },
   compoundVariants: [
