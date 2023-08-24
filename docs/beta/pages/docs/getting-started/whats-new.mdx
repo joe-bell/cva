@@ -15,13 +15,13 @@ What's changed since `class-variance-authority@0.*`?
 
 ### 1. `compose`
 
-Merge any number of cva components can be shallow merged into a single component via the new [`compose` method](/docs/getting-started/composing-components).
+Shallow merge any number of cva components into a single component via the new [`compose` method](/docs/getting-started/composing-components).
 
 ### 2. `defineConfig`
 
 Extend `cva` via the new [`defineConfig` API](/docs/api-reference#defineconfig).
 
-Want to use `cva`/`cx` with `twMerge`? [No problem](/docs/getting-started/installation#handling-style-conflicts)!
+Want to use `cva`/`cx` with `tailwind-merge`? [No problem](/docs/getting-started/installation#handling-style-conflicts)!
 
 ## Enhancements
 
@@ -33,7 +33,7 @@ Shout-out to GitHub for transferring `npm` ownership of `cva`!
 
 ### 2. `cva` now accepts a single parameter
 
-Base styles (whether `string` or `string[]`) are now applied via the named `base` property
+Base styles are now applied via the named `base` property.
 
 - _Before_
 
@@ -61,7 +61,7 @@ Instead, we now recommend explicitly [rolling your own `unset` variant](/docs/ge
 
 `cva` uses generic type parameters to infer variant types, but this was often confused as something that could be customized.
 
-If you attempt to pass a generic type parameter, `cva` will now throw an error
+If you attempt to pass a generic type parameter, `cva` will now throw an error.
 
 ### 5. Minification
 
