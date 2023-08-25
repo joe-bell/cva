@@ -1,5 +1,5 @@
 import type * as CVA from "./";
-import { compose, cva, cx } from "./";
+import { compose, cva, cx, defineConfig } from "./";
 
 describe("cx", () => {
   describe.each<CVA.CXOptions>([
@@ -74,11 +74,15 @@ describe("compose", () => {
     const card = compose(box, stack);
 
     expectTypeOf(card).toBeFunction();
-    expectTypeOf(card).parameter(0).toMatchTypeOf<{
-      shadow?: "sm" | "md" | undefined;
-      gap?: "unset" | 1 | 2 | 3 | undefined;
-    }>();
+    expectTypeOf(card).parameter(0).toMatchTypeOf<
+      | {
+          shadow?: "sm" | "md" | undefined;
+          gap?: "unset" | 1 | 2 | 3 | undefined;
+        }
+      | undefined
+    >();
 
+    expect(card()).toBe("shadow-sm");
     expect(card({ class: "adhoc-class" })).toBe("shadow-sm adhoc-class");
     expect(card({ className: "adhoc-class" })).toBe("shadow-sm adhoc-class");
     expect(card({ shadow: "md" })).toBe("shadow-md");
@@ -1741,63 +1745,99 @@ describe("cva", () => {
       });
     });
   });
+});
 
-  describe("composing classes", () => {
-    type BoxProps = CVA.VariantProps<typeof box>;
-    const box = cva({
-      base: ["box", "box-border"],
-      variants: {
-        margin: { 0: "m-0", 2: "m-2", 4: "m-4", 8: "m-8" },
-        padding: { 0: "p-0", 2: "p-2", 4: "p-4", 8: "p-8" },
-      },
-      defaultVariants: {
-        margin: 0,
-        padding: 0,
-      },
-    });
+describe("defineConfig", () => {
+  describe("hooks", () => {
+    describe("onComplete", () => {
+      const PREFIX = "never-gonna-give-you-up";
+      const SUFFIX = "never-gonna-let-you-down";
 
-    type CardBaseProps = CVA.VariantProps<typeof cardBase>;
-    const cardBase = cva({
-      base: ["card", "border-solid", "border-slate-300", "rounded"],
-      variants: {
-        shadow: {
-          md: "drop-shadow-md",
-          lg: "drop-shadow-lg",
-          xl: "drop-shadow-xl",
-        },
-      },
-    });
+      const onCompleteHandler = (className: string) =>
+        [PREFIX, className, SUFFIX].join(" ");
 
-    interface CardProps extends BoxProps, CardBaseProps {}
-    const card = ({ margin, padding, shadow }: CardProps = {}) =>
-      cx(box({ margin, padding }), cardBase({ shadow }));
+      test("should extend compose", () => {
+        const { compose: composeExtended } = defineConfig({
+          hooks: {
+            onComplete: onCompleteHandler,
+          },
+        });
 
-    describe.each<[CardProps, string]>([
-      [
-        // @ts-expect-error
-        undefined,
-        "box box-border m-0 p-0 card border-solid border-slate-300 rounded",
-      ],
-      [{}, "box box-border m-0 p-0 card border-solid border-slate-300 rounded"],
-      [
-        { margin: 4 },
-        "box box-border m-4 p-0 card border-solid border-slate-300 rounded",
-      ],
-      [
-        { padding: 4 },
-        "box box-border m-0 p-4 card border-solid border-slate-300 rounded",
-      ],
-      [
-        { margin: 2, padding: 4 },
-        "box box-border m-2 p-4 card border-solid border-slate-300 rounded",
-      ],
-      [
-        { shadow: "md" },
-        "box box-border m-0 p-0 card border-solid border-slate-300 rounded drop-shadow-md",
-      ],
-    ])("card(%o)", (options, expected) => {
-      test(`returns ${expected}`, () => {
-        expect(card(options)).toBe(expected);
+        const box = cva({
+          variants: {
+            shadow: {
+              sm: "shadow-sm",
+              md: "shadow-md",
+            },
+          },
+          defaultVariants: {
+            shadow: "sm",
+          },
+        });
+        const stack = cva({
+          variants: {
+            gap: {
+              unset: null,
+              1: "gap-1",
+              2: "gap-2",
+              3: "gap-3",
+            },
+          },
+          defaultVariants: {
+            gap: "unset",
+          },
+        });
+        const card = composeExtended(box, stack);
+
+        expectTypeOf(card).toBeFunction();
+
+        const cardClassList = card();
+        const cardClassListSplit = cardClassList.split(" ");
+        expect(cardClassListSplit[0]).toBe(PREFIX);
+        expect(cardClassListSplit[cardClassListSplit.length - 1]).toBe(SUFFIX);
+
+        const cardShadowGapClassList = card({ shadow: "md", gap: 3 });
+        const cardShadowGapClassListSplit = cardShadowGapClassList.split(" ");
+        expect(cardShadowGapClassListSplit[0]).toBe(PREFIX);
+        expect(
+          cardShadowGapClassListSplit[cardShadowGapClassListSplit.length - 1]
+        ).toBe(SUFFIX);
+      });
+
+      test("should extend cva", () => {
+        const { cva: cvaExtended } = defineConfig({
+          hooks: {
+            onComplete: onCompleteHandler,
+          },
+        });
+
+        const component = cvaExtended({
+          base: "foo",
+          variants: { intent: { primary: "bar" } },
+        });
+        const componentClassList = component({ intent: "primary" });
+        const componentClassListSplit = componentClassList.split(" ");
+
+        expectTypeOf(component).toBeFunction();
+        expect(componentClassListSplit[0]).toBe(PREFIX);
+        expect(
+          componentClassListSplit[componentClassListSplit.length - 1]
+        ).toBe(SUFFIX);
+      });
+
+      test("should extend cx", () => {
+        const { cx: cxExtended } = defineConfig({
+          hooks: {
+            onComplete: onCompleteHandler,
+          },
+        });
+
+        const classList = cxExtended("foo", "bar");
+        const classListSplit = classList.split(" ");
+
+        expectTypeOf(classList).toBeString();
+        expect(classListSplit[0]).toBe(PREFIX);
+        expect(classListSplit[classListSplit.length - 1]).toBe(SUFFIX);
       });
     });
   });
