@@ -121,7 +121,14 @@ export interface CVA {
 
 export interface DefineConfigOptions {
   hooks?: {
+    /**
+     * @deprecated please use `onComplete`
+     */
     "cx:done"?: (className: string) => string;
+    /**
+     * Returns the completed string of concatenated classes/classNames.
+     */
+    onComplete?: (className: string) => string;
   };
 }
 
@@ -140,10 +147,15 @@ const falsyToString = <T extends unknown>(value: T) =>
   typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
 
 export const defineConfig: DefineConfig = (options) => {
-  const cx: CX = (...inputs) =>
-    typeof options?.hooks?.["cx:done"] !== "undefined"
-      ? options?.hooks["cx:done"](clsx(inputs))
-      : clsx(inputs);
+  const cx: CX = (...inputs) => {
+    if (typeof options?.hooks?.["cx:done"] !== "undefined")
+      return options?.hooks["cx:done"](clsx(inputs));
+
+    if (typeof options?.hooks?.onComplete !== "undefined")
+      return options?.hooks.onComplete(clsx(inputs));
+
+    return clsx(inputs);
+  };
 
   const cva: CVA = (config) => (props) => {
     if (config?.variants == null)
