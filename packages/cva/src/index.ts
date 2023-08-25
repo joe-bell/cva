@@ -42,7 +42,7 @@ export type VariantProps<Component extends (...args: any) => any> = Omit<
 
 export interface Compose {
   <T extends ReturnType<CVA>[]>(...components: [...T]): (
-    props: (
+    props?: (
       | UnionToIntersection<
           {
             [K in keyof T]: VariantProps<T[K]>;

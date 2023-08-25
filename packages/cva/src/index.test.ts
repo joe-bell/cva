@@ -74,11 +74,15 @@ describe("compose", () => {
     const card = compose(box, stack);
 
     expectTypeOf(card).toBeFunction();
-    expectTypeOf(card).parameter(0).toMatchTypeOf<{
-      shadow?: "sm" | "md" | undefined;
-      gap?: "unset" | 1 | 2 | 3 | undefined;
-    }>();
+    expectTypeOf(card).parameter(0).toMatchTypeOf<
+      | {
+          shadow?: "sm" | "md" | undefined;
+          gap?: "unset" | 1 | 2 | 3 | undefined;
+        }
+      | undefined
+    >();
 
+    expect(card()).toBe("shadow-sm");
     expect(card({ class: "adhoc-class" })).toBe("shadow-sm adhoc-class");
     expect(card({ className: "adhoc-class" })).toBe("shadow-sm adhoc-class");
     expect(card({ shadow: "md" })).toBe("shadow-md");
@@ -1787,7 +1791,7 @@ describe("defineConfig", () => {
 
         expectTypeOf(card).toBeFunction();
 
-        const cardClassList = card({});
+        const cardClassList = card();
         const cardClassListSplit = cardClassList.split(" ");
         expect(cardClassListSplit[0]).toBe(PREFIX);
         expect(cardClassListSplit[cardClassListSplit.length - 1]).toBe(SUFFIX);
