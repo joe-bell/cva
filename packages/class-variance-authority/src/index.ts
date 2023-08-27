@@ -76,39 +76,44 @@ export const cva =
       }
     );
 
-    const propsWithoutUndefined =
-      props &&
-      Object.entries(props).reduce((acc, [key, value]) => {
-        if (value === undefined) {
-          return acc;
-        }
+    let getCompoundVariantClassNames;
+    if (config?.compoundVariants) {
+      const combinedProps = props
+        ? Object.entries(props).reduce(
+            (acc, [key, value]) => {
+              if (value === undefined) {
+                return acc;
+              }
 
-        acc[key] = value;
-        return acc;
-      }, {} as Record<string, unknown>);
+              acc[key] = value;
+              return acc;
+            },
+            { ...defaultVariants } as Record<string, unknown>
+          )
+        : defaultVariants;
 
-    const getCompoundVariantClassNames = config?.compoundVariants?.reduce(
-      (
-        acc,
-        { class: cvClass, className: cvClassName, ...compoundVariantOptions }
-      ) =>
-        Object.entries(compoundVariantOptions).every(([key, value]) =>
-          Array.isArray(value)
-            ? value.includes(
-                {
-                  ...defaultVariants,
-                  ...propsWithoutUndefined,
-                }[key]
-              )
-            : {
-                ...defaultVariants,
-                ...propsWithoutUndefined,
-              }[key] === value
-        )
-          ? [...acc, cvClass, cvClassName]
-          : acc,
-      [] as ClassValue[]
-    );
+      getCompoundVariantClassNames =
+        combinedProps &&
+        config.compoundVariants.reduce(
+          (
+            acc,
+            {
+              class: cvClass,
+              className: cvClassName,
+              ...compoundVariantOptions
+            }
+          ) =>
+            Object.entries(compoundVariantOptions).every(([key, value]) => {
+              const propVal = combinedProps[key];
+              return Array.isArray(value)
+                ? value.includes(propVal)
+                : propVal === value;
+            })
+              ? [...acc, cvClass, cvClassName]
+              : acc,
+          [] as ClassValue[]
+        );
+    }
 
     return cx(
       base,
