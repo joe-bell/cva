@@ -1,36 +1,36 @@
-import { Callout, Tab, Tabs } from "nextra-theme-docs";
+---
+title: Installation
+---
 
-# Installation
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
-<Callout type="warning">
-
+:::caution
 **You are currently viewing the docs for `cva@beta`**  
 For stable documentation, please visit [cva.style](https://cva.style).
+:::
 
-</Callout>
-
-<Tabs items={["pnpm", "npm", "yarn"]}>
-  <Tab>
+<Tabs>
+  <TabItem label="pnpm">
 
     ```sh
     pnpm i cva@beta
     ```
 
-  </Tab>
-  <Tab>
+  </TabItem>
+  <TabItem label="npm">
 
     ```sh
     npm i cva@beta
     ```
 
-  </Tab>
-  <Tab>
+  </TabItem>
+  <TabItem label="yarn">
   
     ```sh
     yarn add cva@beta
     ```
   
-  </Tab>
+  </TabItem>
 </Tabs>
 
 ## Tailwind CSS
@@ -41,8 +41,8 @@ If you're a Tailwind user, here are some additional (optional) steps to get the 
 
 You can enable autocompletion inside `cva` using the steps below:
 
-<Tabs items={["Visual Studio Code", "Neovim", "WebStorm"]}>
-  <Tab>
+<Tabs>
+  <TabItem label="Visual Studio Code">
 
     1. [Install the "Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
 
@@ -57,8 +57,8 @@ You can enable autocompletion inside `cva` using the steps below:
     }
     ```
 
-  </Tab>
-  <Tab>
+  </TabItem>
+  <TabItem label="Neovim">
 
     1. [Install the extension](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#tailwindcss)
 
@@ -79,8 +79,8 @@ You can enable autocompletion inside `cva` using the steps below:
     })
     ```
 
-  </Tab>
-  <Tab>
+  </TabItem>
+  <TabItem label="WebStorm">
 
     1. Check the version. Available for [WebStorm 2023.1](https://www.jetbrains.com/webstorm/whatsnew/#version-2023-1-tailwind-css-configuration) and later
 
@@ -96,7 +96,7 @@ You can enable autocompletion inside `cva` using the steps below:
     }
     ```
 
-  </Tab>
+  </TabItem>
 </Tabs>
 
 ### Handling Style Conflicts
