@@ -1,8 +1,0 @@
-.root {
-  display: block;
-  margin-top: 1rem;
-}
-
-.root > * + * {
-  margin-top: 1rem;
-}

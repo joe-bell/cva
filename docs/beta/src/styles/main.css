@@ -1,0 +1,33 @@
+@import "./fonts.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --astro-code-color-background: theme(colors.gray.50);
+}
+
+[data-theme="dark"] {
+  --astro-code-color-background: theme(colors.gray.800);
+}
+
+header.header {
+  @apply bg-gradient-to-t from-gray-50 to-gray-300 dark:from-gray-700 dark:to-gray-950;
+}
+
+.site-title {
+  @apply relative
+  after:rounded-md
+  after:border
+  after:border-gray-400/40
+  after:bg-gray-200/50
+  after:px-1.5
+  after:py-0.5
+  after:font-mono
+  after:text-sm
+  after:font-normal
+  after:content-['beta']
+  hover:opacity-80 dark:after:border-gray-500/50
+  dark:after:bg-gray-700/50;
+}

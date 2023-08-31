@@ -70,7 +70,7 @@ export const cva =
         const variantKey = (falsyToString(variantProp) ||
           falsyToString(
             defaultVariantProp
-          )) as keyof typeof variants[typeof variant];
+          )) as keyof (typeof variants)[typeof variant];
 
         return variants[variant][variantKey];
       }

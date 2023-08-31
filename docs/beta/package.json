@@ -1,22 +1,23 @@
 {
   "name": "docs-beta",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "build": "next build",
-    "dev": "next dev",
-    "next": "pnpm next"
+    "astro": "astro",
+    "build": "astro check && astro build",
+    "check": "tsc",
+    "dev": "astro dev",
+    "preview": "astro preview",
+    "start": "astro dev"
   },
   "dependencies": {
-    "cva": "workspace:*",
-    "next": "^13.1.6",
-    "nextra": "^2.2.14",
-    "nextra-theme-docs": "^2.2.14",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "tiny-invariant": "1.3.1"
-  },
-  "devDependencies": {
-    "@types/node": "18.11.18",
-    "@types/react": "18.0.12",
+    "@astrojs/starlight": "^0.8.0",
+    "@astrojs/starlight-tailwind": "^1.0.2",
+    "@astrojs/tailwind": "^4.0.0",
+    "@astrojs/vercel": "^3.8.2",
+    "astro": "^2.10.3",
+    "sharp": "^0.32.3",
+    "tailwindcss": "^3.3.3",
     "typescript": "5.1.3"
   }
 }
