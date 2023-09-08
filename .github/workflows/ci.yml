@@ -36,6 +36,8 @@ jobs:
       - run: pnpm check
   examples:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v3
