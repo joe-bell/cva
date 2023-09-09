@@ -1,0 +1,39 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+
+const tutorials = await getCollection("tutorials").then((tutorials) =>
+  tutorials.sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+);
+
+export interface Props {
+  format: CollectionEntry<"tutorials">["data"]["format"];
+}
+---
+
+<ul>
+  {
+    tutorials
+      .filter(({ data }) => data.format === Astro.props.format)
+      .map(({ data: tutorial }) => (
+        <li>
+          {tutorial.title}
+          {tutorial.author}
+          {tutorial.date.toLocaleDateString()}
+
+          {tutorial.format === "Article" && <a href={tutorial.url}>Read</a>}
+
+          {tutorial.format === "Audio" && <a href={tutorial.url}>Listen</a>}
+
+          {tutorial.format === "YouTube" && (
+            <iframe
+              src={`https://www.youtube.com/embed/${tutorial.youtubeId}`}
+              title={tutorial.title}
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+            />
+          )}
+        </li>
+      ))
+  }
+</ul>

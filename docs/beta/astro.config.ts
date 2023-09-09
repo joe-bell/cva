@@ -59,8 +59,8 @@ export default defineConfig({
           link: "/api-reference",
         },
         {
-          label: "Tutorials ↗",
-          link: "https://cva.style/docs/tutorials",
+          label: "Tutorials",
+          link: "/tutorials",
         },
         {
           label: "FAQs ↗",
