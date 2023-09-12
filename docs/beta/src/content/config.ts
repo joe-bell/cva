@@ -1,5 +1,6 @@
 import { defineCollection, z } from "astro:content";
 import { docsSchema } from "@astrojs/starlight/schema";
+import { format } from "date-fns";
 
 export const collections = {
   docs: defineCollection({ schema: docsSchema() }),
@@ -9,7 +10,14 @@ export const collections = {
       const common = z.object({
         title: z.string(),
         author: z.string(),
-        date: z.string().transform((str) => new Date(str)),
+        date: z.string().transform((string) => {
+          const date = new Date(string);
+          return {
+            string,
+            localeString: format(date, "do MMMM y"),
+            object: date,
+          };
+        }),
         language: z.enum(["en"]),
         package: z.enum(["class-variance-authority", "cva"]),
       });

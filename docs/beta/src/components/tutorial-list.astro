@@ -2,38 +2,133 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 
 const tutorials = await getCollection("tutorials").then((tutorials) =>
-  tutorials.sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  tutorials.sort(
+    (a, b) => b.data.date.object.getTime() - a.data.date.object.getTime()
+  )
 );
 
 export interface Props {
   format: CollectionEntry<"tutorials">["data"]["format"];
 }
+
+const { format } = Astro.props;
 ---
 
-<ul>
-  {
-    tutorials
-      .filter(({ data }) => data.format === Astro.props.format)
-      .map(({ data: tutorial }) => (
-        <li>
-          {tutorial.title}
-          {tutorial.author}
-          {tutorial.date.toLocaleDateString()}
+{
+  format === "YouTube" ? (
+    <ul class:list={["grid", "gap-4", "list-none", "pl-0", "sm:grid-cols-2"]}>
+      {tutorials
+        .map(({ data: tutorial }) => {
+          if (tutorial.format === "YouTube")
+            return (
+              <li class:list={"!mt-0"}>
+                <article
+                  class:list={[
+                    "relative",
+                    "!mb-0",
+                    "flex",
+                    "flex-col",
+                    "h-full",
+                    "rounded-lg",
+                    "bg-gray-100",
+                    "border",
+                    "border-gray-200",
+                    "overflow-hidden",
+                    "hover:border-gray-300",
+                    "transition-colors",
+                  ]}
+                >
+                  <img
+                    src={`http://img.youtube.com/vi/${tutorial.youtubeId}/sddefault.jpg`}
+                    class:list={[
+                      "bg-gray-200",
+                      "aspect-[16/9]",
+                      "object-cover",
+                      "w-full",
+                    ]}
+                  />
 
-          {tutorial.format === "Article" && <a href={tutorial.url}>Read</a>}
+                  <div
+                    class:list={["flex", "flex-col", "gap-1", "p-3", "!mt-0"]}
+                  >
+                    <h1 class="!mt-0 !text-base !leading-tight">
+                      <a
+                        href={`https://www.youtube.com/watch?v=${tutorial.youtubeId}`}
+                        class:list={[
+                          "no-underline",
+                          "static",
+                          "before:content-['']",
+                          "cursor-pointer",
+                          "before:cursor-pointer",
+                          "before:block",
+                          "before:absolute",
+                          "before:top-0",
+                          "before:left-0",
+                          "before:w-full",
+                          "before:h-full",
+                        ]}
+                      >
+                        {tutorial.title}
+                      </a>
+                    </h1>
+                    <p class="!mt-0 inline-flex flex-wrap items-center gap-1.5 !text-xs text-gray-800">
+                      <span>{tutorial.author}</span>
+                      <span class="!text-[0.75em] text-gray-600">•</span>
+                      <time
+                        class="!mt-0"
+                        datetime={
+                          tutorial.date.object.toISOString().split("T")[0]
+                        }
+                      >
+                        {tutorial.date.localeString}
+                      </time>
+                    </p>
+                  </div>
+                </article>
+              </li>
+            );
 
-          {tutorial.format === "Audio" && <a href={tutorial.url}>Listen</a>}
+          return null;
+        })
+        .filter(Boolean)}
+    </ul>
+  ) : (
+    <ul>
+      {tutorials
+        .filter(({ data }) => data.format === Astro.props.format)
+        .map(({ data: tutorial }) => {
+          if (tutorial.format === "Audio") {
+            return (
+              <li>
+                <a href={tutorial?.url}>
+                  <span>{tutorial.author} –</span>
 
-          {tutorial.format === "YouTube" && (
-            <iframe
-              src={`https://www.youtube.com/embed/${tutorial.youtubeId}`}
-              title={tutorial.title}
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen
-            />
-          )}
-        </li>
-      ))
-  }
-</ul>
+                  <span class="font-semibold">{tutorial.title}</span>
+                </a>
+
+                <span>({tutorial.date.localeString})</span>
+              </li>
+            );
+          }
+
+          if (tutorial.format === "Article") {
+            return (
+              <li>
+                <span>
+                  <a
+                    href={tutorial?.url}
+                    class="font-semibold"
+                  >{`"${tutorial.title}"`}</a>
+                </span>
+                <span>by {tutorial.author}</span>
+                <span>({tutorial.date.localeString})</span>
+              </li>
+            );
+          }
+
+          return;
+        })
+        .filter(Boolean)}
+    </ul>
+  )
+}
