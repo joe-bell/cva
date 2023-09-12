@@ -4,6 +4,8 @@ title: Tutorials
 
 import TutorialList from "../../components/tutorial-list.astro";
 
+import { config } from "../../../astro.config.ts";
+
 ## YouTube
 
 <TutorialList format="YouTube" />
@@ -15,3 +17,18 @@ import TutorialList from "../../components/tutorial-list.astro";
 ## Articles
 
 <TutorialList format="Article" />
+
+<br />
+
+:::tip[Created a tutorial?]
+
+<span>
+  <a
+    href={`${config.editLink.baseUrl}src/content/tutorials`}
+    class="edit-page-link"
+  >
+    Feel free to add your content here
+  </a>
+</span>
+
+:::

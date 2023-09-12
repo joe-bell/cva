@@ -5,9 +5,12 @@ import vercel from "@astrojs/vercel/static";
 
 const site = "https://beta.cva.style";
 
-const config = {
+export const config = {
   title: "cva@beta",
   favicon: "/assets/img/favicon.png",
+  editLink: {
+    baseUrl: "https://github.com/joe-bell/cva/tree/main/docs/beta/",
+  },
 };
 
 // https://astro.build/config
@@ -20,9 +23,6 @@ export default defineConfig({
       ...config,
       description: "Class Variance Authority",
       logo: { src: "./src/assets/logo.svg", replacesTitle: true },
-      editLink: {
-        baseUrl: "https://github.com/joe-bell/cva/tree/main/docs/beta/",
-      },
       social: {
         github: "https://github.com/joe-bell/cva",
         twitter: "https://joebell.co.uk/twitter",
