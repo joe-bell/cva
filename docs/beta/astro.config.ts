@@ -5,7 +5,7 @@ import vercel from "@astrojs/vercel/static";
 
 const site = "https://beta.cva.style";
 
-export const config = {
+const config = {
   title: "cva@beta",
   favicon: "/assets/img/favicon.png",
   editLink: {
