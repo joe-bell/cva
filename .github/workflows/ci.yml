@@ -37,6 +37,7 @@ jobs:
   examples:
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pull-requests: write
     if: github.event_name == 'pull_request'
     steps:
@@ -63,6 +64,7 @@ jobs:
           header: "Examples"
           recreate: true
           path: TMP_EXAMPLES.md
+          GITHUB_TOKEN: ${{ secrets.STICKY_PR_COMMENT_PAT }}
   lint:
     runs-on: ubuntu-latest
     steps:
