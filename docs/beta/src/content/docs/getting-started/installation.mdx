@@ -65,13 +65,13 @@ You can enable autocompletion inside `cva` using the steps below:
     2. Add the following configuration:
 
     ```lua
-    lspconfig.tailwindcss.setup({
+    require 'lspconfig'.tailwindcss.setup({
       settings = {
         tailwindCSS = {
           experimental = {
             classRegex = {
-              ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
-              ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+              { "cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]" },
+              { "cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)" }
             },
           },
         },
