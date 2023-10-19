@@ -118,3 +118,8 @@ export const cva =
       props?.className
     );
   };
+
+export {
+  ClassProp,
+  ClassValue,
+}
