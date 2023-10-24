@@ -106,7 +106,7 @@ const nextraConfig: DocsThemeConfig = {
       return `${
         config.project.link
       }/discussions/new?category=feedback&title=${encodeURIComponent(
-        `Feedback for "${config.title}"`
+        `Feedback for "${config.title}"`,
       )}`;
     },
   },

@@ -27,7 +27,7 @@ type ClassArray = ClassValue[];
 type OmitUndefined<T> = T extends undefined ? never : T;
 type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I
+  k: infer I,
 ) => void
   ? I
   : never;
@@ -41,7 +41,9 @@ export type VariantProps<Component extends (...args: any) => any> = Omit<
   ---------------------------------- */
 
 export interface Compose {
-  <T extends ReturnType<CVA>[]>(...components: [...T]): (
+  <T extends ReturnType<CVA>[]>(
+    ...components: [...T]
+  ): (
     props?: (
       | UnionToIntersection<
           {
@@ -50,7 +52,7 @@ export interface Compose {
         >
       | undefined
     ) &
-      CVAClassProp
+      CVAClassProp,
   ) => string;
 }
 
@@ -85,7 +87,7 @@ type CVAClassProp =
 export interface CVA {
   <
     _ extends "cva's generic parameters are restricted to internal use only.",
-    V
+    V,
   >(
     config: V extends CVAVariantShape
       ? CVAConfigBase & {
@@ -108,11 +110,11 @@ export interface CVA {
           variants?: never;
           compoundVariants?: never;
           defaultVariants?: never;
-        }
+        },
   ): (
     props?: V extends CVAVariantShape
       ? CVAVariantSchema<V> & CVAClassProp
-      : CVAClassProp
+      : CVAClassProp,
   ) => string;
 }
 
@@ -170,11 +172,11 @@ export const defineConfig: DefineConfig = (options) => {
 
         const variantKey = (falsyToString(variantProp) ||
           falsyToString(
-            defaultVariantProp
+            defaultVariantProp,
           )) as keyof (typeof variants)[typeof variant];
 
         return variants[variant][variantKey];
-      }
+      },
     );
 
     const defaultsAndProps = {
@@ -184,7 +186,7 @@ export const defineConfig: DefineConfig = (options) => {
         Object.entries(props).reduce<typeof props>(
           (acc, [key, value]) =>
             typeof value === "undefined" ? acc : { ...acc, [key]: value },
-          {} as typeof props
+          {} as typeof props,
         )),
     };
 
@@ -200,7 +202,7 @@ export const defineConfig: DefineConfig = (options) => {
         })
           ? [...acc, cvClass, cvClassName]
           : acc,
-      [] as ClassValue[]
+      [] as ClassValue[],
     );
 
     return cx(
@@ -208,7 +210,7 @@ export const defineConfig: DefineConfig = (options) => {
       getVariantClassNames,
       getCompoundVariantClassNames,
       props?.class,
-      props?.className
+      props?.className,
     );
   };
 
@@ -217,14 +219,14 @@ export const defineConfig: DefineConfig = (options) => {
     (props) => {
       const propsWithoutClass = Object.fromEntries(
         Object.entries(props || {}).filter(
-          ([key]) => !["class", "className"].includes(key)
-        )
+          ([key]) => !["class", "className"].includes(key),
+        ),
       );
 
       return cx(
         components.map((component) => component(propsWithoutClass)),
         props?.class,
-        props?.className
+        props?.className,
       );
     };
 

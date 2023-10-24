@@ -69,28 +69,31 @@ export const cva =
 
         const variantKey = (falsyToString(variantProp) ||
           falsyToString(
-            defaultVariantProp
+            defaultVariantProp,
           )) as keyof (typeof variants)[typeof variant];
 
         return variants[variant][variantKey];
-      }
+      },
     );
 
     const propsWithoutUndefined =
       props &&
-      Object.entries(props).reduce((acc, [key, value]) => {
-        if (value === undefined) {
-          return acc;
-        }
+      Object.entries(props).reduce(
+        (acc, [key, value]) => {
+          if (value === undefined) {
+            return acc;
+          }
 
-        acc[key] = value;
-        return acc;
-      }, {} as Record<string, unknown>);
+          acc[key] = value;
+          return acc;
+        },
+        {} as Record<string, unknown>,
+      );
 
     const getCompoundVariantClassNames = config?.compoundVariants?.reduce(
       (
         acc,
-        { class: cvClass, className: cvClassName, ...compoundVariantOptions }
+        { class: cvClass, className: cvClassName, ...compoundVariantOptions },
       ) =>
         Object.entries(compoundVariantOptions).every(([key, value]) =>
           Array.isArray(value)
@@ -98,16 +101,16 @@ export const cva =
                 {
                   ...defaultVariants,
                   ...propsWithoutUndefined,
-                }[key]
+                }[key],
               )
             : {
                 ...defaultVariants,
                 ...propsWithoutUndefined,
-              }[key] === value
+              }[key] === value,
         )
           ? [...acc, cvClass, cvClassName]
           : acc,
-      [] as ClassValue[]
+      [] as ClassValue[],
     );
 
     return cx(
@@ -115,6 +118,6 @@ export const cva =
       getVariantClassNames,
       getCompoundVariantClassNames,
       props?.class,
-      props?.className
+      props?.className,
     );
   };

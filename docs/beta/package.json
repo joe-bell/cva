@@ -11,11 +11,12 @@
     "start": "astro dev"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.8.0",
-    "@astrojs/starlight-tailwind": "^1.0.2",
-    "@astrojs/tailwind": "^4.0.0",
-    "@astrojs/vercel": "^3.8.2",
-    "astro": "^2.10.3",
+    "@astrojs/check": "^0.2.1",
+    "@astrojs/starlight": "^0.11.1",
+    "@astrojs/starlight-tailwind": "^2.0.0",
+    "@astrojs/tailwind": "^5.0.2",
+    "@astrojs/vercel": "^5.0.2",
+    "astro": "^3.3.3",
     "cva": "workspace:*",
     "date-fns": "2.30.0",
     "sharp": "^0.32.3",

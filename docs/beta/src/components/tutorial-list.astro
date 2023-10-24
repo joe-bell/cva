@@ -3,8 +3,8 @@ import { getCollection, type CollectionEntry } from "astro:content";
 
 const tutorials = await getCollection("tutorials").then((tutorials) =>
   tutorials.sort(
-    (a, b) => b.data.date.object.getTime() - a.data.date.object.getTime()
-  )
+    (a, b) => b.data.date.object.getTime() - a.data.date.object.getTime(),
+  ),
 );
 
 export interface Props {
@@ -30,11 +30,11 @@ const { format } = Astro.props;
                     "flex-col",
                     "h-full",
                     "rounded-lg",
-                    "bg-gray-100",
+                    ["bg-gray-100", "dark:bg-gray-800"],
                     "border",
-                    "border-gray-200",
+                    ["border-gray-200", "dark:border-gray-700"],
                     "overflow-hidden",
-                    "hover:border-gray-300",
+                    ["hover:border-gray-300", "dark:hover:border-gray-600"],
                     "transition-colors",
                   ]}
                 >
@@ -71,9 +71,21 @@ const { format } = Astro.props;
                         {tutorial.title}
                       </a>
                     </h1>
-                    <p class="!mt-0 inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 !text-xs text-gray-800">
+                    <p
+                      class:list={[
+                        "!mt-0 inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 !text-xs",
+                        ["text-gray-800", "dark:text-gray-300"],
+                      ]}
+                    >
                       <span>{tutorial.author}</span>
-                      <span class="!text-[0.75em] text-gray-600">•</span>
+                      <span
+                        class:list={[
+                          "!text-[0.75em]",
+                          ["text-gray-600", "dark:text-gray-400"],
+                        ]}
+                      >
+                        •
+                      </span>
                       <time
                         class="!mt-0"
                         datetime={
@@ -101,12 +113,12 @@ const { format } = Astro.props;
             return (
               <li>
                 <a href={tutorial?.url}>
-                  <span>{tutorial.author} –</span>
+                  <span>{tutorial.author} – </span>
 
                   <span class="font-semibold">{tutorial.title}</span>
                 </a>
 
-                <span>({tutorial.date.localeString})</span>
+                <span> ({tutorial.date.localeString})</span>
               </li>
             );
           }
@@ -120,7 +132,7 @@ const { format } = Astro.props;
                     class="font-semibold"
                   >{`"${tutorial.title}"`}</a>
                 </span>
-                <span>by {tutorial.author}</span>
+                <span> by {tutorial.author}</span>
                 <span>({tutorial.date.localeString})</span>
               </li>
             );

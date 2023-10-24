@@ -11,7 +11,7 @@ function App() {
         "relative",
         "h-max w-max",
         "self-center justify-self-center",
-        "[&_:where(th,td)]:p-2"
+        "[&_:where(th,td)]:p-2",
       )}
     >
       <thead>
