@@ -88,10 +88,10 @@ describe("compose", () => {
     expect(card({ shadow: "md" })).toBe("shadow-md");
     expect(card({ gap: 2 })).toBe("shadow-sm gap-2");
     expect(card({ shadow: "md", gap: 3, class: "adhoc-class" })).toBe(
-      "shadow-md gap-3 adhoc-class"
+      "shadow-md gap-3 adhoc-class",
     );
     expect(card({ shadow: "md", gap: 3, className: "adhoc-class" })).toBe(
-      "shadow-md gap-3 adhoc-class"
+      "shadow-md gap-3 adhoc-class",
     );
   });
 });
@@ -107,18 +107,18 @@ describe("cva", () => {
           example({
             // @ts-expect-error
             aCheekyInvalidProp: "lol",
-          })
+          }),
         ).toBe("");
         expect(example({ class: "adhoc-class" })).toBe("adhoc-class");
         expect(example({ className: "adhoc-className" })).toBe(
-          "adhoc-className"
+          "adhoc-className",
         );
         expect(
           example({
             class: "adhoc-class",
             // @ts-expect-error
             className: "adhoc-className",
-          })
+          }),
         ).toBe("adhoc-class adhoc-className");
       });
 
@@ -130,43 +130,43 @@ describe("cva", () => {
           example({
             // @ts-expect-error
             aCheekyInvalidProp: "lol",
-          })
+          }),
         ).toBe("");
         expect(example({ class: "adhoc-class" })).toBe("adhoc-class");
         expect(example({ className: "adhoc-className" })).toBe(
-          "adhoc-className"
+          "adhoc-className",
         );
         expect(
           example({
             class: "adhoc-class",
             // @ts-expect-error
             className: "adhoc-className",
-          })
+          }),
         ).toBe("adhoc-class adhoc-className");
       });
 
       test("null", () => {
         const example = cva(
           // @ts-expect-error
-          null
+          null,
         );
         expect(example()).toBe("");
         expect(
           example({
             // @ts-expect-error
             aCheekyInvalidProp: "lol",
-          })
+          }),
         ).toBe("");
         expect(example({ class: "adhoc-class" })).toBe("adhoc-class");
         expect(example({ className: "adhoc-className" })).toBe(
-          "adhoc-className"
+          "adhoc-className",
         );
         expect(
           example({
             class: "adhoc-class",
             // @ts-expect-error
             className: "adhoc-className",
-          })
+          }),
         ).toBe("adhoc-class adhoc-className");
       });
     });
@@ -515,14 +515,14 @@ describe("cva", () => {
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
           expect(buttonWithoutBaseWithoutDefaultsString(options)).toBe(
-            expected
+            expected,
           );
           expect(
-            buttonWithoutBaseWithoutDefaultsWithClassNameString(options)
+            buttonWithoutBaseWithoutDefaultsWithClassNameString(options),
           ).toBe(expected);
           expect(buttonWithoutBaseWithoutDefaultsArray(options)).toBe(expected);
           expect(
-            buttonWithoutBaseWithoutDefaultsWithClassNameArray(options)
+            buttonWithoutBaseWithoutDefaultsWithClassNameArray(options),
           ).toBe(expected);
         });
       });
@@ -946,11 +946,11 @@ describe("cva", () => {
         test(`returns ${expected}`, () => {
           expect(buttonWithoutBaseWithDefaultsString(options)).toBe(expected);
           expect(
-            buttonWithoutBaseWithDefaultsWithClassNameString(options)
+            buttonWithoutBaseWithDefaultsWithClassNameString(options),
           ).toBe(expected);
           expect(buttonWithoutBaseWithDefaultsArray(options)).toBe(expected);
           expect(buttonWithoutBaseWithDefaultsWithClassNameArray(options)).toBe(
-            expected
+            expected,
           );
         });
       });
@@ -1328,11 +1328,11 @@ describe("cva", () => {
         test(`returns ${expected}`, () => {
           expect(buttonWithBaseWithoutDefaultsString(options)).toBe(expected);
           expect(
-            buttonWithBaseWithoutDefaultsWithClassNameString(options)
+            buttonWithBaseWithoutDefaultsWithClassNameString(options),
           ).toBe(expected);
           expect(buttonWithBaseWithoutDefaultsArray(options)).toBe(expected);
           expect(buttonWithBaseWithoutDefaultsWithClassNameArray(options)).toBe(
-            expected
+            expected,
           );
         });
       });
@@ -1735,11 +1735,11 @@ describe("cva", () => {
         test(`returns ${expected}`, () => {
           expect(buttonWithBaseWithDefaultsString(options)).toBe(expected);
           expect(buttonWithBaseWithDefaultsWithClassNameString(options)).toBe(
-            expected
+            expected,
           );
           expect(buttonWithBaseWithDefaultsArray(options)).toBe(expected);
           expect(buttonWithBaseWithDefaultsWithClassNameArray(options)).toBe(
-            expected
+            expected,
           );
         });
       });
@@ -1800,7 +1800,7 @@ describe("defineConfig", () => {
         const cardShadowGapClassListSplit = cardShadowGapClassList.split(" ");
         expect(cardShadowGapClassListSplit[0]).toBe(PREFIX);
         expect(
-          cardShadowGapClassListSplit[cardShadowGapClassListSplit.length - 1]
+          cardShadowGapClassListSplit[cardShadowGapClassListSplit.length - 1],
         ).toBe(SUFFIX);
       });
 
@@ -1821,7 +1821,7 @@ describe("defineConfig", () => {
         expectTypeOf(component).toBeFunction();
         expect(componentClassListSplit[0]).toBe(PREFIX);
         expect(
-          componentClassListSplit[componentClassListSplit.length - 1]
+          componentClassListSplit[componentClassListSplit.length - 1],
         ).toBe(SUFFIX);
       });
 

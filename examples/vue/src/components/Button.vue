@@ -24,7 +24,7 @@ withDefaults(
   {
     intent: "primary",
     size: "medium",
-  }
+  },
 );
 </script>
 

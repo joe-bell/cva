@@ -53,18 +53,18 @@ describe("cva", () => {
           example({
             // @ts-expect-error
             aCheekyInvalidProp: "lol",
-          })
+          }),
         ).toBe("");
         expect(example({ class: "adhoc-class" })).toBe("adhoc-class");
         expect(example({ className: "adhoc-className" })).toBe(
-          "adhoc-className"
+          "adhoc-className",
         );
         expect(
           example({
             class: "adhoc-class",
             // @ts-expect-error
             className: "adhoc-className",
-          })
+          }),
         ).toBe("adhoc-class adhoc-className");
       });
 
@@ -75,18 +75,18 @@ describe("cva", () => {
           example({
             // @ts-expect-error
             aCheekyInvalidProp: "lol",
-          })
+          }),
         ).toBe("");
         expect(example({ class: "adhoc-class" })).toBe("adhoc-class");
         expect(example({ className: "adhoc-className" })).toBe(
-          "adhoc-className"
+          "adhoc-className",
         );
         expect(
           example({
             class: "adhoc-class",
             // @ts-expect-error
             className: "adhoc-className",
-          })
+          }),
         ).toBe("adhoc-class adhoc-className");
       });
 
@@ -97,18 +97,18 @@ describe("cva", () => {
           example({
             // @ts-expect-error
             aCheekyInvalidProp: "lol",
-          })
+          }),
         ).toBe("");
         expect(example({ class: "adhoc-class" })).toBe("adhoc-class");
         expect(example({ className: "adhoc-className" })).toBe(
-          "adhoc-className"
+          "adhoc-className",
         );
         expect(
           example({
             class: "adhoc-class",
             // @ts-expect-error
             className: "adhoc-className",
-          })
+          }),
         ).toBe("adhoc-class adhoc-className");
       });
     });
@@ -441,14 +441,14 @@ describe("cva", () => {
       ])("button(%o)", (options, expected) => {
         test(`returns ${expected}`, () => {
           expect(buttonWithoutBaseWithoutDefaultsString(options)).toBe(
-            expected
+            expected,
           );
           expect(
-            buttonWithoutBaseWithoutDefaultsWithClassNameString(options)
+            buttonWithoutBaseWithoutDefaultsWithClassNameString(options),
           ).toBe(expected);
           expect(buttonWithoutBaseWithoutDefaultsArray(options)).toBe(expected);
           expect(
-            buttonWithoutBaseWithoutDefaultsWithClassNameArray(options)
+            buttonWithoutBaseWithoutDefaultsWithClassNameArray(options),
           ).toBe(expected);
         });
       });
@@ -525,7 +525,7 @@ describe("cva", () => {
             intent: "primary",
             size: "medium",
           },
-        }
+        },
       );
       const buttonWithoutBaseWithDefaultsWithClassNameString = cva(
         "button font-semibold border rounded",
@@ -597,7 +597,7 @@ describe("cva", () => {
             intent: "primary",
             size: "medium",
           },
-        }
+        },
       );
 
       const buttonWithoutBaseWithDefaultsArray = cva(
@@ -684,7 +684,7 @@ describe("cva", () => {
             intent: "primary",
             size: "medium",
           },
-        }
+        },
       );
       const buttonWithoutBaseWithDefaultsWithClassNameArray = cva(
         ["button", "font-semibold", "border", "rounded"],
@@ -770,7 +770,7 @@ describe("cva", () => {
             intent: "primary",
             size: "medium",
           },
-        }
+        },
       );
 
       type ButtonWithoutBaseWithDefaultsProps =
@@ -864,11 +864,11 @@ describe("cva", () => {
         test(`returns ${expected}`, () => {
           expect(buttonWithoutBaseWithDefaultsString(options)).toBe(expected);
           expect(
-            buttonWithoutBaseWithDefaultsWithClassNameString(options)
+            buttonWithoutBaseWithDefaultsWithClassNameString(options),
           ).toBe(expected);
           expect(buttonWithoutBaseWithDefaultsArray(options)).toBe(expected);
           expect(buttonWithoutBaseWithDefaultsWithClassNameArray(options)).toBe(
-            expected
+            expected,
           );
         });
       });
@@ -937,7 +937,7 @@ describe("cva", () => {
               class: "button--warning-danger-medium",
             },
           ],
-        }
+        },
       );
       const buttonWithBaseWithoutDefaultsWithClassNameString = cva(
         "button font-semibold border rounded",
@@ -999,7 +999,7 @@ describe("cva", () => {
               className: "button--warning-danger-medium",
             },
           ],
-        }
+        },
       );
 
       const buttonWithBaseWithoutDefaultsArray = cva(
@@ -1076,7 +1076,7 @@ describe("cva", () => {
               class: ["button--warning-danger-medium"],
             },
           ],
-        }
+        },
       );
       const buttonWithBaseWithoutDefaultsWithClassNameArray = cva(
         ["button", "font-semibold", "border", "rounded"],
@@ -1152,7 +1152,7 @@ describe("cva", () => {
               className: ["button--warning-danger-medium"],
             },
           ],
-        }
+        },
       );
 
       type ButtonWithBaseWithoutDefaultsProps =
@@ -1242,11 +1242,11 @@ describe("cva", () => {
         test(`returns ${expected}`, () => {
           expect(buttonWithBaseWithoutDefaultsString(options)).toBe(expected);
           expect(
-            buttonWithBaseWithoutDefaultsWithClassNameString(options)
+            buttonWithBaseWithoutDefaultsWithClassNameString(options),
           ).toBe(expected);
           expect(buttonWithBaseWithoutDefaultsArray(options)).toBe(expected);
           expect(buttonWithBaseWithoutDefaultsWithClassNameArray(options)).toBe(
-            expected
+            expected,
           );
         });
       });
@@ -1318,7 +1318,7 @@ describe("cva", () => {
             intent: "primary",
             size: "medium",
           },
-        }
+        },
       );
       const buttonWithBaseWithDefaultsWithClassNameString = cva(
         "button font-semibold border rounded",
@@ -1385,7 +1385,7 @@ describe("cva", () => {
             intent: "primary",
             size: "medium",
           },
-        }
+        },
       );
 
       const buttonWithBaseWithDefaultsArray = cva(
@@ -1467,7 +1467,7 @@ describe("cva", () => {
             intent: "primary",
             size: "medium",
           },
-        }
+        },
       );
       const buttonWithBaseWithDefaultsWithClassNameArray = cva(
         ["button", "font-semibold", "border", "rounded"],
@@ -1548,7 +1548,7 @@ describe("cva", () => {
             intent: "primary",
             size: "medium",
           },
-        }
+        },
       );
 
       type ButtonWithBaseWithDefaultsProps =
@@ -1645,11 +1645,11 @@ describe("cva", () => {
         test(`returns ${expected}`, () => {
           expect(buttonWithBaseWithDefaultsString(options)).toBe(expected);
           expect(buttonWithBaseWithDefaultsWithClassNameString(options)).toBe(
-            expected
+            expected,
           );
           expect(buttonWithBaseWithDefaultsArray(options)).toBe(expected);
           expect(buttonWithBaseWithDefaultsWithClassNameArray(options)).toBe(
-            expected
+            expected,
           );
         });
       });
@@ -1680,7 +1680,7 @@ describe("cva", () => {
             xl: "drop-shadow-xl",
           },
         },
-      }
+      },
     );
 
     interface CardProps extends BoxProps, CardBaseProps {}
