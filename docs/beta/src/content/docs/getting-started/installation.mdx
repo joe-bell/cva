@@ -5,7 +5,7 @@ title: Installation
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 :::caution
-**You are currently viewing the docs for `cva@beta`**  
+**You are currently viewing the docs for `cva@beta`**
 For stable documentation, please visit [cva.style](https://cva.style).
 :::
 
@@ -25,11 +25,11 @@ For stable documentation, please visit [cva.style](https://cva.style).
 
   </TabItem>
   <TabItem label="yarn">
-  
+
     ```sh
     yarn add cva@beta
     ```
-  
+
   </TabItem>
 </Tabs>
 
@@ -129,10 +129,12 @@ export const button = cva({
   // 1. `twMerge` strips out `bg-gray-200`…
   base: "font-semibold bg-gray-200 border rounded",
   variants: {
-    // 2. …as variant `bg-*` values take precedence
-    primary: "bg-blue-500 text-white border-transparent hover:bg-blue-600",
-    secondary: "bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-  },
+    intent: {
+      // 2. …as variant `bg-*` values take precedence
+      primary: "bg-blue-500 text-white border-transparent hover:bg-blue-600",
+      secondary: "bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+    },
+  }
   defaultVariants: {
     intent: "primary",
   },
