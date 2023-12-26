@@ -34,6 +34,8 @@ A `cva` component function
 Concatenates class names (an alias of [`clsx`](https://github.com/lukeed/clsx))
 
 ```ts
+import { cx } from "cva";
+
 const className = cx(classes);
 ```
 
@@ -70,7 +72,7 @@ Generate `cva`, `cx` and `compose` functions based on your preferred configurati
 Store in a `cva.config.ts` file, and import across your project.
 
 ```ts
-import { cva } from "cva";
+import { defineConfig } from "cva";
 
 // cva.config.ts
 export const { cva, cx, compose } = defineConfig(options);
