@@ -89,6 +89,9 @@ importers:
       next:
         specifier: ^13.1.6
         version: 13.1.6(react-dom@18.2.0)(react@18.2.0)
+      nextjs-google-analytics:
+        specifier: 2.3.3
+        version: 2.3.3(next@13.1.6)(react@18.2.0)
       nextra:
         specifier: ^2.2.14
         version: 2.2.14(next@13.1.6)(react-dom@18.2.0)(react@18.2.0)
@@ -6590,6 +6593,18 @@ packages:
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
+    dev: false
+
+  /nextjs-google-analytics@2.3.3(next@13.1.6)(react@18.2.0):
+    resolution: {integrity: sha512-Y6sI6A7wt5dji8hYBnVkOh9LTyImSLFZXx3FpyQgVW7W4b4qEFHjH2u3fhDJsrRZeLlUGM8/RuHD/mhHc2Axfg==}
+    peerDependencies:
+      next: '>=11.0.0'
+      react: '>=17.0.0'
+    dependencies:
+      next: 13.1.6(react-dom@18.2.0)(react@18.2.0)
+      react: 18.2.0
+    optionalDependencies:
+      fsevents: 2.3.2
     dev: false
 
   /nextra-theme-docs@2.2.14(next@13.1.6)(nextra@2.2.14)(react-dom@18.2.0)(react@18.2.0):

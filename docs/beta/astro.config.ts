@@ -4,6 +4,7 @@ import tailwind from "@astrojs/tailwind";
 import vercel from "@astrojs/vercel/static";
 
 const site = "https://beta.cva.style";
+const googleAnalyticsId = "G-E8Z8HL9WXF";
 
 const config = {
   title: "cva@beta",
@@ -136,10 +137,19 @@ export default defineConfig({
         {
           tag: "script",
           attrs: {
-            src: "https://static.cloudflareinsights.com/beacon.min.js",
-            "data-cf-beacon": '{"token": "9fc900940cb247dca4285a49a580282b"}',
-            defer: true,
+            src: `https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`,
+            async: true,
           },
+        },
+        {
+          tag: "script",
+          content: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+                
+              gtag('config', '${googleAnalyticsId}');
+            `,
         },
       ],
     }),
