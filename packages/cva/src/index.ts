@@ -24,6 +24,13 @@ type ClassArray = ClassValue[];
 /* Utils
   ---------------------------------- */
 
+type ExclusiveProperties<T extends Record<string, unknown>> = {
+  [K in keyof T]: {
+    [P in Exclude<keyof T, K>]?: undefined;
+  } & {
+    [key in K]: T[key];
+  };
+}[keyof T];
 type OmitUndefined<T> = T extends undefined ? never : T;
 type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
@@ -71,9 +78,15 @@ export type CXReturn = ReturnType<CX>;
 
 type CVAConfigBase = { base?: ClassValue };
 type CVAVariantShape = Record<string, Record<string, ClassValue>>;
+type CVAVariantWiThPrefixOnly<
+  V extends CVAVariantShape,
+  Variant extends keyof V,
+> = Variant extends `_${infer R}` ? keyof V[Variant] : never;
 type CVAVariantSchema<V extends CVAVariantShape> = {
   [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
-};
+} & ExclusiveProperties<{
+  [Variant in keyof V as CVAVariantWiThPrefixOnly<V, Variant>]?: true;
+}>;
 type CVAClassProp =
   | {
       class?: ClassValue;
@@ -170,10 +183,20 @@ export const defineConfig: DefineConfig = (options) => {
         const variantProp = props?.[variant as keyof typeof props];
         const defaultVariantProp = defaultVariants?.[variant];
 
-        const variantKey = (falsyToString(variantProp) ||
+        let variantKey = (falsyToString(variantProp) ||
           falsyToString(
             defaultVariantProp,
           )) as keyof (typeof variants)[typeof variant];
+
+        if (typeof variant === "string" && variant.startsWith("_")) {
+          Object.keys(variants[variant]).find((key) => {
+            let val = props?.[key as keyof typeof props];
+            if (val === true) {
+              variantKey = key;
+              return true;
+            }
+          });
+        }
 
         return variants[variant][variantKey];
       },

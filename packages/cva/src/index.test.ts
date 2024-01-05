@@ -1336,6 +1336,44 @@ describe("cva", () => {
           );
         });
       });
+      test("boolean variant alias", () => {
+        const example = cva({
+          variants: {
+            _color: { primary: "class-a", secondary: "class-b" },
+            size: { sm: "class-s", md: "class-m", lg: "class-l" },
+          },
+        });
+        expect(example({ primary: true, size: "md" })).toBe("class-a class-m");
+      });
+      test("boolean variant alias - error: not aliased", () => {
+        const example = cva({
+          variants: {
+            _color: { primary: "class-a", secondary: "class-b" },
+            size: { sm: "class-s", md: "class-m", lg: "class-l" },
+          },
+        });
+        // @ts-expect-error
+        expect(example({ primary: true, md: true })).toBe("class-a");
+      });
+      test("boolean variant alias - error: override", () => {
+        const example = cva({
+          variants: {
+            _color: { primary: "class-a", secondary: "class-b" },
+            size: { sm: "class-s", md: "class-m", lg: "class-l" },
+          },
+        });
+        // @ts-expect-error
+        expect(example({ primary: true, secondary: true })).toBe("class-a");
+      });
+      test("boolean variant alias without alias", () => {
+        const example = cva({
+          variants: {
+            _color: { primary: "class-a", secondary: "class-b" },
+            size: { sm: "class-s", md: "class-m", lg: "class-l" },
+          },
+        });
+        expect(example({ _color: "primary" })).toBe("class-a");
+      });
     });
 
     describe("with defaults", () => {
