@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.repository_owner_id == '7349341'
     steps:
       - uses: actions/checkout@v3
         with:
