@@ -1,8 +1,9 @@
 name: ci
 
 on:
-  pull_request_target:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
 
 jobs:
@@ -35,6 +36,8 @@ jobs:
       - run: pnpm check
   examples:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
     permissions:
       pull-requests: write
     if: github.event_name == 'pull_request'
