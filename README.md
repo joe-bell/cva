@@ -1,6 +1,6 @@
 ![CVA](/docs/latest/public/assets/img/wallpaper-hd.jpg)
 
-<h1 align="center">cva</h1>
+<h1 align="center">cva tweak</h1>
 
 <p align="center">
   <strong>C</strong>lass <strong>V</strong>ariance <strong>A</strong>uthority
