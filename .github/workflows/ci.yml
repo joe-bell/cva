@@ -37,7 +37,7 @@ jobs:
   examples:
     runs-on: ubuntu-latest
     env:
-      GITHUB_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ secrets.STICKY_COMMENT_TOKEN }}
     permissions:
       pull-requests: write
     if: github.event_name == 'pull_request' && github.repository_owner_id == '7349341'
