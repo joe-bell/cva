@@ -1,9 +1,8 @@
 name: ci
 
 on:
+  pull_request_target:
   push:
-    branches: [main]
-  pull_request:
     branches: [main]
 
 jobs:
@@ -63,7 +62,6 @@ jobs:
           header: "Examples"
           recreate: true
           path: TMP_EXAMPLES.md
-          GITHUB_TOKEN: ${{ secrets.STICKY_COMMENT_TOKEN }}
   lint:
     runs-on: ubuntu-latest
     steps:
