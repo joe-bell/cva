@@ -10,7 +10,7 @@
   border: transparent;
 }
 
-.primary:hover {
+.primary.enabled:hover {
   background-color: rgb(37 99 235);
 }
 
@@ -20,7 +20,7 @@
   border-color: rgb(156 163 175);
 }
 
-.secondary:hover {
+.secondary.enabled:hover {
   background-color: rgb(243 244 246);
 }
 
@@ -38,4 +38,9 @@
 
 .primaryMedium {
   text-transform: uppercase;
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
