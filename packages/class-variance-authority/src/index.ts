@@ -12,7 +12,7 @@ export type VariantProps<Component extends (...args: any) => any> = Omit<
   "class" | "className"
 >;
 
-const falsyToString = <T extends unknown>(value: T) =>
+const falsyToString = <T>(value: T) =>
   typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
 
 /* cx
@@ -38,25 +38,23 @@ type ConfigVariantsMulti<T extends ConfigSchema> = {
     | undefined;
 };
 
-type Config<T> = T extends ConfigSchema
-  ? {
-      variants?: T;
-      defaultVariants?: ConfigVariants<T>;
-      compoundVariants?: (T extends ConfigSchema
-        ? (ConfigVariants<T> | ConfigVariantsMulti<T>) & ClassProp
-        : ClassProp)[];
-    }
-  : never;
+type Config<T extends ConfigSchema> = {
+  variants?: T;
+  defaultVariants?: ConfigVariants<T>;
+  compoundVariants?:
+    (T extends ConfigSchema
+      ? (ConfigVariants<T> | ConfigVariantsMulti<T>) & ClassProp
+      : ClassProp)[];
+};
 
-type Props<T> = T extends ConfigSchema
-  ? ConfigVariants<T> & ClassProp
+type Props<T> = T extends ConfigSchema ? ConfigVariants<T> & ClassProp
   : ClassProp;
 
 export const cva =
-  <T>(base?: ClassValue, config?: Config<T>) =>
-  (props?: Props<T>) => {
-    if (config?.variants == null)
+  <T extends ConfigSchema>(base?: ClassValue, config?: Config<T>) => (props?: Props<T>) => {
+    if (config?.variants == null) {
       return cx(base, props?.class, props?.className);
+    }
 
     const { variants, defaultVariants } = config;
 
@@ -76,8 +74,7 @@ export const cva =
       },
     );
 
-    const propsWithoutUndefined =
-      props &&
+    const propsWithoutUndefined = props &&
       Object.entries(props).reduce(
         (acc, [key, value]) => {
           if (value === undefined) {
@@ -96,18 +93,18 @@ export const cva =
         { class: cvClass, className: cvClassName, ...compoundVariantOptions },
       ) =>
         Object.entries(compoundVariantOptions).every(([key, value]) =>
-          Array.isArray(value)
-            ? value.includes(
+            Array.isArray(value)
+              ? value.includes(
                 {
                   ...defaultVariants,
                   ...propsWithoutUndefined,
                 }[key],
               )
-            : {
+              : {
                 ...defaultVariants,
                 ...propsWithoutUndefined,
-              }[key] === value,
-        )
+              }[key] === value
+          )
           ? [...acc, cvClass, cvClassName]
           : acc,
       [] as ClassValue[],
