@@ -73,7 +73,7 @@ export const cva =
     );
 
     const propsWithoutUndefined = props &&
-      Object.entries(props).reduce(
+      Object.entries(props).reduce<Record<string, unknown>>(
         (acc, [key, value]) => {
           if (value === undefined) {
             return acc;
@@ -82,10 +82,10 @@ export const cva =
           acc[key] = value;
           return acc;
         },
-        {} as Record<string, unknown>,
+        {},
       );
 
-    const getCompoundVariantClassNames = config?.compoundVariants?.reduce(
+    const getCompoundVariantClassNames = config?.compoundVariants?.reduce<ClassValue[]>(
       (
         acc,
         { class: cvClass, className: cvClassName, ...compoundVariantOptions },
@@ -105,7 +105,7 @@ export const cva =
           )
           ? [...acc, cvClass, cvClassName]
           : acc,
-      [] as ClassValue[],
+      [],
     );
 
     return cx(
