@@ -42,16 +42,14 @@ type Config<T extends ConfigSchema> = {
   variants?: T;
   defaultVariants?: ConfigVariants<T>;
   compoundVariants?:
-    (T extends ConfigSchema
-      ? (ConfigVariants<T> | ConfigVariantsMulti<T>) & ClassProp
-      : ClassProp)[];
+    ((ConfigVariants<T> | ConfigVariantsMulti<T>) & ClassProp)[];
 };
 
-type Props<T> = T extends ConfigSchema ? ConfigVariants<T> & ClassProp
-  : ClassProp;
+type Props<T extends ConfigSchema> = ConfigVariants<T> & ClassProp;
 
 export const cva =
-  <T extends ConfigSchema>(base?: ClassValue, config?: Config<T>) => (props?: Props<T>) => {
+  <T extends ConfigSchema>(base?: ClassValue, config?: Config<T>) =>
+  (props?: Props<T>) => {
     if (config?.variants == null) {
       return cx(base, props?.class, props?.className);
     }
