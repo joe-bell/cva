@@ -94,6 +94,42 @@ describe("compose", () => {
       "shadow-md gap-3 adhoc-class",
     );
   });
+  test("should correctly merge variant props", () => {
+    const A = cva({
+      base: "A",
+      variants: {
+        intent: {
+          primary: "primary-A",
+        },
+      },
+    });
+
+    const B = cva({
+      base: "B",
+      variants: {
+        intent: {
+          primary: "primary-B",
+          secondary: "secondary-B",
+        },
+      },
+    });
+
+    const C = cva({
+      base: "C",
+      variants: {
+        intent: {
+          tertiary: "tertiary-C",
+        },
+      },
+    });
+
+    const composedABC = compose(A, B, C);
+
+    expectTypeOf(composedABC).toBeFunction();
+    expectTypeOf(composedABC).parameter(0).toMatchTypeOf<{
+      intent?: "primary" | "secondary" | "tertiary";
+    }>();
+  });
 });
 
 describe("cva", () => {

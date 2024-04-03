@@ -18,7 +18,7 @@ type ClassValue =
   | null
   | boolean
   | undefined;
-type ClassDictionary = Record<string, any>;
+type ClassDictionary = Record<string, unknown>;
 type ClassArray = ClassValue[];
 
 /* Utils
@@ -26,13 +26,28 @@ type ClassArray = ClassValue[];
 
 type OmitUndefined<T> = T extends undefined ? never : T;
 type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I,
-) => void
-  ? I
-  : never;
+type MergeVariantProps<Types extends object[]> = Types extends [
+  infer First,
+  ...infer Rest,
+]
+  ? First extends object
+    ? Rest extends object[]
+      ? {
+          [K in
+            | keyof First
+            | keyof MergeVariantProps<Rest>]: K extends keyof First
+            ? K extends keyof MergeVariantProps<Rest>
+              ? First[K] | Exclude<MergeVariantProps<Rest>[K], First[K]>
+              : First[K]
+            : K extends keyof MergeVariantProps<Rest>
+            ? MergeVariantProps<Rest>[K]
+            : never;
+        }
+      : never
+    : never
+  : object;
 
-export type VariantProps<Component extends (...args: any) => any> = Omit<
+export type VariantProps<Component extends (...args: any[]) => unknown> = Omit<
   OmitUndefined<Parameters<Component>[0]>,
   "class" | "className"
 >;
@@ -42,16 +57,9 @@ export type VariantProps<Component extends (...args: any) => any> = Omit<
 
 export interface Compose {
   <T extends ReturnType<CVA>[]>(
-    ...components: [...T]
+    ...components: T
   ): (
-    props?: (
-      | UnionToIntersection<
-          {
-            [K in keyof T]: VariantProps<T[K]>;
-          }[number]
-        >
-      | undefined
-    ) &
+    props?: Partial<MergeVariantProps<{ [K in keyof T]: VariantProps<T[K]> }>> &
       CVAClassProp,
   ) => string;
 }
@@ -145,7 +153,7 @@ export interface DefineConfig {
 /* Exports
   ============================================ */
 
-const falsyToString = <T extends unknown>(value: T) =>
+const falsyToString = (value: unknown) =>
   typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
 
 export const defineConfig: DefineConfig = (options) => {
