@@ -126,9 +126,19 @@ describe("compose", () => {
     const composedABC = compose(A, B, C);
 
     expectTypeOf(composedABC).toBeFunction();
-    expectTypeOf(composedABC).parameter(0).toMatchTypeOf<{
-      intent?: "primary" | "secondary" | "tertiary";
-    }>();
+    expectTypeOf(composedABC).parameter(0).toMatchTypeOf<
+      | {
+          intent?: "primary" | "secondary" | "tertiary";
+        }
+      | undefined
+    >();
+
+    expect(composedABC()).toBe("A B C");
+    expect(composedABC({ intent: "primary" })).toBe(
+      "A primary-A B primary-B C",
+    );
+    expect(composedABC({ intent: "secondary" })).toBe("A B secondary-B C");
+    expect(composedABC({ intent: "tertiary" })).toBe("A B C tertiary-C");
   });
 });
 
