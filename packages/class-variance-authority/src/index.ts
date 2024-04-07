@@ -38,7 +38,7 @@ type ConfigVariantsMulti<T extends ConfigSchema> = {
     | undefined;
 };
 
-type Config<T> = T extends ConfigSchema
+export type Config<T> = T extends ConfigSchema
   ? {
       variants?: T;
       defaultVariants?: ConfigVariants<T>;
