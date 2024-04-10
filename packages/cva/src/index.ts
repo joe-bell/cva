@@ -237,4 +237,7 @@ export const defineConfig: DefineConfig = (options) => {
   };
 };
 
-export const { compose, cva, cx } = defineConfig();
+const config = defineConfig();
+export const compose: Compose = config.compose;
+export const cva: CVA = config.cva;
+export const cx: CX = config.cx;

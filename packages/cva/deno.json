@@ -1,0 +1,12 @@
+{
+    "name": "@bureaudouble/cva",
+    "version": "0.0.1",
+    "exclude": ["**/package.json", "**/*.test.ts", "**/.config/"],
+    "imports": {
+      "clsx": "jsr:@bureaudouble/clsx@0.0.2"
+    },
+    "exports": {
+      ".": "./src/index.ts"
+    }
+  }
+  

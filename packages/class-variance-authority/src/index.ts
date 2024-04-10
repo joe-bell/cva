@@ -5,7 +5,7 @@ import type {
   ClassValue,
   OmitUndefined,
   StringToBoolean,
-} from "./types";
+} from "./types.ts";
 
 export type VariantProps<Component extends (...args: any) => any> = Omit<
   OmitUndefined<Parameters<Component>[0]>,
@@ -53,7 +53,7 @@ type Props<T> = T extends ConfigSchema
   : ClassProp;
 
 export const cva =
-  <T>(base?: ClassValue, config?: Config<T>) =>
+  <T>(base?: ClassValue, config?: Config<T>): (props?: Props<T> | undefined) => any =>
   (props?: Props<T>) => {
     if (config?.variants == null)
       return cx(base, props?.class, props?.className);

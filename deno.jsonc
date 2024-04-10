@@ -1,0 +1,18 @@
+{
+    "name": "@bureaudouble/cva",
+    "version": "0.0.1",
+    "exclude": ["**/package.json", "**/*.test.tsx", "**/*.stories.tsx"],
+    "compilerOptions": {
+      "lib": [
+        "es2022",
+        "dom",
+        "dom.iterable",
+        "dom.asynciterable"
+      ]
+    },
+    "workspaces": [
+      "./packages/class-variance-authority",
+      "./packages/cva"
+    ]
+  }
+  
