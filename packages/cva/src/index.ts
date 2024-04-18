@@ -84,6 +84,18 @@ type CVAClassProp =
       className?: ClassValue;
     };
 
+type CVACompoundVariants<V> = (V extends CVAVariantShape
+  ? (
+      | CVAVariantSchema<V>
+      | {
+          [Variant in keyof V]?:
+            | StringToBoolean<keyof V[Variant]>
+            | StringToBoolean<keyof V[Variant]>[]
+            | undefined;
+        }
+    ) &
+      CVAClassProp
+  : CVAClassProp)[];
 export interface CVA {
   <
     _ extends "cva's generic parameters are restricted to internal use only.",
@@ -92,18 +104,7 @@ export interface CVA {
     config: V extends CVAVariantShape
       ? CVAConfigBase & {
           variants?: V;
-          compoundVariants?: (V extends CVAVariantShape
-            ? (
-                | CVAVariantSchema<V>
-                | {
-                    [Variant in keyof V]?:
-                      | StringToBoolean<keyof V[Variant]>
-                      | StringToBoolean<keyof V[Variant]>[]
-                      | undefined;
-                  }
-              ) &
-                CVAClassProp
-            : CVAClassProp)[];
+          compoundVariants?: CVACompoundVariants<V>;
           defaultVariants?: CVAVariantSchema<V>;
         }
       : CVAConfigBase & {
