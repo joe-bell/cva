@@ -271,11 +271,11 @@ export const defineConfig: DefineConfig = (options) => {
     } = config ?? {};
 
     return (props) => {
-      if (config?.variants == null)
+      if (variants == null)
         return cx(config?.base, props?.class, props?.className);
 
       const variantClassNames = getVariantClassNames(
-        config.variants,
+        variants,
         props,
         defaultVariants,
       );
