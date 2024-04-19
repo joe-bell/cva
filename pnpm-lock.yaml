@@ -330,6 +330,9 @@ importers:
       react-dom:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
+      tinybench:
+        specifier: ^2.7.0
+        version: 2.7.0
       ts-node:
         specifier: 10.8.1
         version: 10.8.1(@swc/core@1.2.198)(@types/node@18.11.18)(typescript@5.1.3)
@@ -8642,8 +8645,8 @@ packages:
     resolution: {integrity: sha512-AD5ih2NlSssTCwsMznbvwMZpJ1cbhkGd2uueNxzv2jDlEeZdU04JQfRnggJQ8DrcVBGjAsCKwFBbDlVNtEMlzw==}
     dev: false
 
-  /tinybench@2.5.0:
-    resolution: {integrity: sha512-kRwSG8Zx4tjF9ZiyH4bhaebu+EDz1BOx9hOigYHlUW4xxI/wKIUQUqo018UlU4ar6ATPBsaMrdbKZ+tmPdohFA==}
+  /tinybench@2.7.0:
+    resolution: {integrity: sha512-Qgayeb106x2o4hNzNjsZEfFziw8IbKqtbXBjVh7VIZfBxfD5M4gWtpyx5+YTae2gJ6Y6Dz/KLepiv16RFeQWNA==}
     dev: true
 
   /tinypool@0.7.0:
@@ -9252,7 +9255,7 @@ packages:
       picocolors: 1.0.0
       std-env: 3.4.0
       strip-literal: 1.3.0
-      tinybench: 2.5.0
+      tinybench: 2.7.0
       tinypool: 0.7.0
       vite: 4.2.1(@types/node@18.11.18)
       vite-node: 0.34.2(@types/node@18.11.18)
