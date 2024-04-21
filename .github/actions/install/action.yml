@@ -4,11 +4,11 @@ description: "Common installation for Node.js and PNPM"
 runs:
   using: composite
   steps:
-    - uses: pnpm/action-setup@v2
+    - uses: pnpm/action-setup@v3
       with:
         run_install: false
 
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@v4
       with:
         cache: "pnpm"
         node-version-file: ".nvmrc"
