@@ -11,6 +11,10 @@ const button = cva("button", {
       small: "small",
       medium: "medium",
     },
+    disabled: {
+      true: "disabled",
+      false: "enabled",
+    },
   },
   compoundVariants: [
     { intent: "primary", size: "medium", class: "primaryMedium" },
@@ -20,16 +24,33 @@ const button = cva("button", {
 type ButtonProps = VariantProps<typeof button>;
 
 withDefaults(
-  defineProps<{ intent: ButtonProps["intent"]; size: ButtonProps["size"] }>(),
+  defineProps<{
+    intent: ButtonProps["intent"];
+    size: ButtonProps["size"];
+  }>(),
   {
     intent: "primary",
     size: "medium",
+    // Within Vue, `disabled` is defined and included by default.
+    disabled: false,
   },
 );
 </script>
 
 <template>
-  <button :class="button({ intent, size })">
+  <button
+    :class="
+      button({
+        intent,
+        size,
+        // Within Vue, `boolean` attributes will be passed through if they have
+        // **truthy** values.
+        // https://vuejs.org/guide/essentials/template-syntax.html#boolean-attributes
+        disabled: typeof $attrs['disabled'] !== 'undefined',
+      })
+    "
+    :disabled="typeof $attrs['disabled'] !== 'undefined'"
+  >
     <slot />
   </button>
 </template>
@@ -47,7 +68,7 @@ withDefaults(
   border: transparent;
 }
 
-.primary:hover {
+.primary.enabled:hover {
   background-color: rgb(37 99 235);
 }
 
@@ -57,7 +78,7 @@ withDefaults(
   border-color: rgb(156 163 175);
 }
 
-.secondary:hover {
+.secondary.enabled:hover {
   background-color: rgb(243 244 246);
 }
 
@@ -71,6 +92,11 @@ withDefaults(
   font-size: 1rem /* 16px */;
   line-height: 1.5rem /* 24px */;
   padding: 0.5rem 1rem;
+}
+
+.disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
 }
 
 .primaryMedium {
