@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/swcrc",
-  "minify": true,
+  "minify": false,
   "jsc": {
     "parser": {
       "syntax": "typescript"
