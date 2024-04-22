@@ -19,6 +19,4 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      env:
-        SKIP_INSTALL_HUSKY: 1
       run: pnpm i --frozen-lockfile
