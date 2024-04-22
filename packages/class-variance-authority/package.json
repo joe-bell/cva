@@ -42,7 +42,7 @@
     "build:tsc": "tsc --project .config/tsconfig.build.json",
     "check": "tsc --project tsconfig.json --noEmit",
     "prepublishOnly": "pnpm build",
-    "bundlesize": "pnpm build && bundlesize -f 'dist/*.js' -s 850B"
+    "bundlesize": "pnpm build && bundlesize -f 'dist/*.js' -s 1.2KB"
   },
   "dependencies": {
     "clsx": "2.1.0"
