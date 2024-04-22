@@ -177,11 +177,11 @@ describe("cva", () => {
           intent: {
             unset: null,
             primary:
-              "button--primary border-transparent bg-blue-500 text-white hover:bg-blue-600",
+              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
-              "button--secondary border-gray-400 bg-white text-gray-800 hover:bg-gray-100",
+              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
             warning:
-              "button--warning border-transparent bg-yellow-500 hover:bg-yellow-600",
+              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
             danger: [
               "button--danger",
               [
@@ -199,9 +199,9 @@ describe("cva", () => {
           },
           size: {
             unset: null,
-            small: "button--small px-2 py-1 text-sm",
-            medium: "button--medium px-4 py-2 text-base",
-            large: "button--large px-4 py-2.5 text-lg",
+            small: "button--small text-sm py-1 px-2",
+            medium: "button--medium text-base py-2 px-4",
+            large: "button--large text-lg py-2.5 px-4",
           },
           m: {
             unset: null,
@@ -235,11 +235,11 @@ describe("cva", () => {
           intent: {
             unset: null,
             primary:
-              "button--primary border-transparent bg-blue-500 text-white hover:bg-blue-600",
+              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
-              "button--secondary border-gray-400 bg-white text-gray-800 hover:bg-gray-100",
+              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
             warning:
-              "button--warning border-transparent bg-yellow-500 hover:bg-yellow-600",
+              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
             danger: [
               "button--danger",
               [
@@ -257,9 +257,9 @@ describe("cva", () => {
           },
           size: {
             unset: null,
-            small: "button--small px-2 py-1 text-sm",
-            medium: "button--medium px-4 py-2 text-base",
-            large: "button--large px-4 py-2.5 text-lg",
+            small: "button--small text-sm py-1 px-2",
+            medium: "button--medium text-base py-2 px-4",
+            large: "button--large text-lg py-2.5 px-4",
           },
           m: {
             unset: null,
@@ -530,16 +530,16 @@ describe("cva", () => {
 
     describe("with defaults", () => {
       const buttonWithoutBaseWithDefaultsString = cva({
-        base: "button rounded border font-semibold",
+        base: "button font-semibold border rounded",
         variants: {
           intent: {
             unset: null,
             primary:
-              "button--primary border-transparent bg-blue-500 text-white hover:bg-blue-600",
+              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
-              "button--secondary border-gray-400 bg-white text-gray-800 hover:bg-gray-100",
+              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
             warning:
-              "button--warning border-transparent bg-yellow-500 hover:bg-yellow-600",
+              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
             danger: [
               "button--danger",
               [
@@ -557,9 +557,9 @@ describe("cva", () => {
           },
           size: {
             unset: null,
-            small: "button--small px-2 py-1 text-sm",
-            medium: "button--medium px-4 py-2 text-base",
-            large: "button--large px-4 py-2.5 text-lg",
+            small: "button--small text-sm py-1 px-2",
+            medium: "button--medium text-base py-2 px-4",
+            large: "button--large text-lg py-2.5 px-4",
           },
           m: {
             unset: null,
@@ -604,16 +604,16 @@ describe("cva", () => {
         },
       });
       const buttonWithoutBaseWithDefaultsWithClassNameString = cva({
-        base: "button rounded border font-semibold",
+        base: "button font-semibold border rounded",
         variants: {
           intent: {
             unset: null,
             primary:
-              "button--primary border-transparent bg-blue-500 text-white hover:bg-blue-600",
+              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
-              "button--secondary border-gray-400 bg-white text-gray-800 hover:bg-gray-100",
+              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
             warning:
-              "button--warning border-transparent bg-yellow-500 hover:bg-yellow-600",
+              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
             danger: [
               "button--danger",
               [
@@ -631,9 +631,9 @@ describe("cva", () => {
           },
           size: {
             unset: null,
-            small: "button--small px-2 py-1 text-sm",
-            medium: "button--medium px-4 py-2 text-base",
-            large: "button--large px-4 py-2.5 text-lg",
+            small: "button--small text-sm py-1 px-2",
+            medium: "button--medium text-base py-2 px-4",
+            large: "button--large text-lg py-2.5 px-4",
           },
           m: {
             unset: null,
@@ -960,16 +960,16 @@ describe("cva", () => {
   describe("with base", () => {
     describe("without defaults", () => {
       const buttonWithBaseWithoutDefaultsString = cva({
-        base: "button rounded border font-semibold",
+        base: "button font-semibold border rounded",
         variants: {
           intent: {
             unset: null,
             primary:
-              "button--primary border-transparent bg-blue-500 text-white hover:bg-blue-600",
+              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
-              "button--secondary border-gray-400 bg-white text-gray-800 hover:bg-gray-100",
+              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
             warning:
-              "button--warning border-transparent bg-yellow-500 hover:bg-yellow-600",
+              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
             danger: [
               "button--danger",
               [
@@ -987,9 +987,9 @@ describe("cva", () => {
           },
           size: {
             unset: null,
-            small: "button--small px-2 py-1 text-sm",
-            medium: "button--medium px-4 py-2 text-base",
-            large: "button--large px-4 py-2.5 text-lg",
+            small: "button--small text-sm py-1 px-2",
+            medium: "button--medium text-base py-2 px-4",
+            large: "button--large text-lg py-2.5 px-4",
           },
         },
         compoundVariants: [
@@ -1023,16 +1023,16 @@ describe("cva", () => {
         ],
       });
       const buttonWithBaseWithoutDefaultsWithClassNameString = cva({
-        base: "button rounded border font-semibold",
+        base: "button font-semibold border rounded",
         variants: {
           intent: {
             unset: null,
             primary:
-              "button--primary border-transparent bg-blue-500 text-white hover:bg-blue-600",
+              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
-              "button--secondary border-gray-400 bg-white text-gray-800 hover:bg-gray-100",
+              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
             warning:
-              "button--warning border-transparent bg-yellow-500 hover:bg-yellow-600",
+              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
             danger: [
               "button--danger",
               [
@@ -1050,9 +1050,9 @@ describe("cva", () => {
           },
           size: {
             unset: null,
-            small: "button--small px-2 py-1 text-sm",
-            medium: "button--medium px-4 py-2 text-base",
-            large: "button--large px-4 py-2.5 text-lg",
+            small: "button--small text-sm py-1 px-2",
+            medium: "button--medium text-base py-2 px-4",
+            large: "button--large text-lg py-2.5 px-4",
           },
         },
         compoundVariants: [
@@ -1340,16 +1340,16 @@ describe("cva", () => {
 
     describe("with defaults", () => {
       const buttonWithBaseWithDefaultsString = cva({
-        base: "button rounded border font-semibold",
+        base: "button font-semibold border rounded",
         variants: {
           intent: {
             unset: null,
             primary:
-              "button--primary border-transparent bg-blue-500 text-white hover:bg-blue-600",
+              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
-              "button--secondary border-gray-400 bg-white text-gray-800 hover:bg-gray-100",
+              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
             warning:
-              "button--warning border-transparent bg-yellow-500 hover:bg-yellow-600",
+              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
             danger: [
               "button--danger",
               [
@@ -1367,9 +1367,9 @@ describe("cva", () => {
           },
           size: {
             unset: null,
-            small: "button--small px-2 py-1 text-sm",
-            medium: "button--medium px-4 py-2 text-base",
-            large: "button--large px-4 py-2.5 text-lg",
+            small: "button--small text-sm py-1 px-2",
+            medium: "button--medium text-base py-2 px-4",
+            large: "button--large text-lg py-2.5 px-4",
           },
         },
         compoundVariants: [
@@ -1408,16 +1408,16 @@ describe("cva", () => {
         },
       });
       const buttonWithBaseWithDefaultsWithClassNameString = cva({
-        base: "button rounded border font-semibold",
+        base: "button font-semibold border rounded",
         variants: {
           intent: {
             unset: null,
             primary:
-              "button--primary border-transparent bg-blue-500 text-white hover:bg-blue-600",
+              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
             secondary:
-              "button--secondary border-gray-400 bg-white text-gray-800 hover:bg-gray-100",
+              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
             warning:
-              "button--warning border-transparent bg-yellow-500 hover:bg-yellow-600",
+              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
             danger: [
               "button--danger",
               [
@@ -1435,9 +1435,9 @@ describe("cva", () => {
           },
           size: {
             unset: null,
-            small: "button--small px-2 py-1 text-sm",
-            medium: "button--medium px-4 py-2 text-base",
-            large: "button--large px-4 py-2.5 text-lg",
+            small: "button--small text-sm py-1 px-2",
+            medium: "button--medium text-base py-2 px-4",
+            large: "button--large text-lg py-2.5 px-4",
           },
         },
         compoundVariants: [
