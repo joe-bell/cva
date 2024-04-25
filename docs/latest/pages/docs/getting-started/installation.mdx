@@ -71,6 +71,7 @@ You can enable autocompletion inside `cva` using the steps below:
     {
       "tailwindCSS.experimental.classRegex": [
         ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+        ["cva<[^>]*>\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
         ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
       ]
     }
@@ -90,6 +91,7 @@ You can enable autocompletion inside `cva` using the steps below:
           experimental = {
             classRegex = {
               { "cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]" },
+              { "cva<[^>]*>\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]" },
               { "cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)" }
             },
           },
