@@ -285,10 +285,10 @@ export const defineConfig: DefineConfig = (options) => {
       compoundVariants = [],
     } = config ?? {};
 
-    return (props) => {
-      if (variants == null)
-        return cx(config?.base, props?.class, props?.className);
+    if (variants == null)
+      return (props) => cx(base, props?.class, props?.className);
 
+    return (props) => {
       const variantClassNames = getVariantClassNames(
         variants,
         props,
@@ -301,7 +301,7 @@ export const defineConfig: DefineConfig = (options) => {
       );
 
       return cx(
-        config?.base,
+        base,
         variantClassNames,
         compoundVariantClassNames,
         props?.class,
