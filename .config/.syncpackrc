@@ -1,13 +1,46 @@
 {
-  "workspace": false,
-  "peer": false,
+  "$schema": "https://unpkg.com/syncpack@12.3.1/dist/schema.json",
+  "lintFormatting": false,
+  "lintSemverRanges": false,
   "versionGroups": [
     {
+      "label": "Use `workspace:*` protocol for local packages",
+      "packages": [
+        "docs-*",
+        "cva",
+        "class-variance-authority",
+        "@cva/**"
+      ],
       "dependencies": [
+        "cva",
         "class-variance-authority"
       ],
+      "dependencyTypes": [
+        "!local"
+      ],
+      "pinVersion": "workspace:*"
+    },
+    {
+      "label": "Use `latest` for examples",
       "packages": [
         "example-*"
+      ],
+      "dependencies": [
+        "cva",
+        "class-variance-authority"
+      ],
+      "dependencyTypes": [
+        "!local"
+      ],
+      "pinVersion": "latest"
+    },
+    {
+      "label": "Keep all other dependencies in sync",
+      "packages": [
+        "**"
+      ],
+      "dependencyTypes": [
+        "!peer"
       ]
     }
   ]
