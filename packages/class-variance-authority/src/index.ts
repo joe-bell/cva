@@ -61,7 +61,11 @@ type Config<T> = T extends ConfigSchema
         ? (ConfigVariants<T> | ConfigVariantsMulti<T>) & ClassProp
         : ClassProp)[];
     }
-  : never;
+  : {
+      variants: never;
+      defaultVariants: never;
+      compoundVariants: never;
+    };
 
 type Props<T> = T extends ConfigSchema
   ? ConfigVariants<T> & ClassProp
