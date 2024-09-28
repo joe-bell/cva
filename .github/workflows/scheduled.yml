@@ -27,7 +27,6 @@ jobs:
       - name: Commit
         uses: EndBug/add-and-commit@v9
         with:
-          branch: main
           author_name: GitHub Actions
           author_email: 41898282+github-actions[bot]@users.noreply.github.com
           message: "chore: update sponsors.svg [ci skip]"
