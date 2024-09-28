@@ -1,0 +1,47 @@
+name: scheduled
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+  push:
+    branches: [main]
+
+jobs:
+  sponsors:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pnpm/action-setup@v3
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: "pnpm"
+          node-version-file: ".nvmrc"
+
+      - name: Preinstallation steps
+        shell: bash
+        run: corepack enable
+
+      - name: Install dependencies
+        shell: bash
+        run: pnpm i --frozen-lockfile
+
+      - name: Update sponsors
+        run: pnpm sponsors
+        env:
+          SPONSORKIT_GITHUB_TOKEN: ${{ secrets.SPONSORKIT_GITHUB_TOKEN }}
+          SPONSORKIT_GITHUB_LOGIN: joe-bell
+          SPONSORKIT_POLAR_TOKEN: ${{ secrets.SPONSORKIT_POLAR_TOKEN }}
+          SPONSORKIT_POLAR_ORGANIZATION: cva
+
+      - name: Commit
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: GitHub Actions
+          author_email: 41898282+github-actions[bot]@users.noreply.github.com
+          message: "chore: update sponsors.svg [ci skip]"
+          add: ".github/static/sponsorkit/sponsors.*"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
