@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: ./.github/actions/install
@@ -21,7 +21,7 @@ jobs:
   bundlesize:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: ./.github/actions/install
@@ -29,44 +29,15 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: ./.github/actions/install
       - run: pnpm check
-  examples:
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    if: github.event_name == 'pull_request' && github.actor_id == '7349341'
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: ./.github/actions/install
-      - run: pnpm -rc --filter="./examples/**" exec -- pwd | awk -F/ '{print $NF}' > TMP_EXAMPLES.txt
-      - name: Generate Examples Comment
-        env:
-          BRANCH: ${{ github.event.pull_request.head.ref }}
-        run: >
-          {
-            echo "**The latest updates to examples.**";
-            echo "";
-            echo "| Name     | StackBlitz  |";
-            echo "|:---------|:------------|";
-            while IFS= read -r id || [[ -n "$id" ]]; 
-              do echo "| **$id** | [Visit StackBlitz](https://stackblitz.com/github/joe-bell/cva/tree/${BRANCH}/examples/${id}) |";
-            done;
-          } < TMP_EXAMPLES.txt > TMP_EXAMPLES.md
-      - uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: "Examples"
-          recreate: true
-          path: TMP_EXAMPLES.md
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: ./.github/actions/install
@@ -74,7 +45,7 @@ jobs:
   prettier:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: ./.github/actions/install
@@ -82,7 +53,7 @@ jobs:
   syncpack:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: ./.github/actions/install
@@ -90,7 +61,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: ./.github/actions/install

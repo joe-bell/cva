@@ -23,12 +23,14 @@ export default defineConfig({
     starlight({
       ...config,
       description: "Class Variance Authority",
+      credits: false,
       logo: { src: "./src/assets/logo.svg", replacesTitle: true },
       social: {
         github: "https://github.com/joe-bell/cva",
-        twitter: "https://joebell.co.uk/twitter",
+        "x.com": "https://joebell.co.uk/x",
         threads: "https://joebell.co.uk/threads",
       },
+      tagline: "Class Variance Authority",
       sidebar: [
         {
           label: "Introduction",
@@ -66,6 +68,13 @@ export default defineConfig({
         {
           label: "FAQs ↗",
           link: "https://cva.style/docs/faqs",
+        },
+        {
+          label: "Sponsor ♡",
+          link: "https://polar.sh/cva",
+          attrs: {
+            target: "_blank",
+          },
         },
       ],
       customCss: ["./src/styles/main.css"],
