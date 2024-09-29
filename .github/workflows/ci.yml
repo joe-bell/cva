@@ -63,6 +63,7 @@ jobs:
           header: "Examples"
           recreate: true
           path: TMP_EXAMPLES.md
+        env:
           GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
   lint:
     runs-on: ubuntu-latest
