@@ -36,7 +36,7 @@
 <a href="https://polar.sh/cva"><picture><source media="(prefers-color-scheme: dark)" srcset="https://polar.sh/embed/tiers.svg?org=cva&darkmode"><img alt="Subscription Tiers on Polar" src="https://polar.sh/embed/tiers.svg?org=cva"></picture></a>
 
 <p align="center">
-  <a href="./.github/static/sponsorkit/sponsors.svg">
+  <a href="https://raw.githubusercontent.com/joe-bell/cva/refs/heads/main/.github/static/sponsorkit/sponsors.svg">
     <img src='./.github/static/sponsorkit/sponsors.svg'/>
   </a>
 </p>
