@@ -9,6 +9,7 @@ on:
 
 jobs:
   sponsors:
+    if: github.repository == 'joe-bell/cva'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
