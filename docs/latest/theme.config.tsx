@@ -77,11 +77,8 @@ const nextraConfig: DocsThemeConfig = {
     key: "1.0-beta",
     text: (
       <span>
-        <a
-          href="https://github.com/joe-bell/cva/discussions/205"
-          target="_blank"
-        >
-          🎉 cva@1.0 is now in beta. Read more →
+        <a href="https://beta.cva.style" target="_blank">
+          🎉 cva@1.0 is now in beta. See the updated docs →
         </a>
       </span>
     ),

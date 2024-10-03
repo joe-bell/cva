@@ -14,7 +14,8 @@
     "prettier": "prettier --config .prettierrc.js --ignore-unknown --no-error-on-unmatched-pattern",
     "syncpack": "SYNCPACK_VERBOSE=true syncpack list-mismatches --config .config/.syncpackrc",
     "test": "vitest --config .config/vitest.config.ts run --coverage",
-    "bundlesize": "pnpm run --filter './packages/**' --parallel bundlesize"
+    "bundlesize": "pnpm run --filter './packages/**' --parallel bundlesize",
+    "sponsors": "sponsorkit"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "1.5.0",
@@ -25,6 +26,8 @@
     "prettier-plugin-astro": "0.13.0",
     "prettier-plugin-packagejson": "2.5.0",
     "prettier-plugin-tailwindcss": "0.5.14",
+    "sharp": "^0.33.2",
+    "sponsorkit": "^0.15.5",
     "syncpack": "12.3.1",
     "typescript": "5.4.5",
     "vitest": "1.5.0"

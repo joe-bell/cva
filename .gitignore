@@ -4,3 +4,5 @@ coverage
 .next
 .swc
 *.tsbuildinfo
+.env
+.github/static/sponsorkit/**/*.json
