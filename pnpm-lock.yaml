@@ -269,8 +269,8 @@ importers:
   packages/class-variance-authority:
     dependencies:
       clsx:
-        specifier: 2.1.0
-        version: 2.1.0
+        specifier: ^2.1.1
+        version: 2.1.1
     devDependencies:
       '@swc/cli':
         specifier: 0.3.12
@@ -309,8 +309,8 @@ importers:
   packages/cva:
     dependencies:
       clsx:
-        specifier: 2.1.0
-        version: 2.1.0
+        specifier: ^2.1.1
+        version: 2.1.1
     devDependencies:
       '@swc/cli':
         specifier: 0.3.12
