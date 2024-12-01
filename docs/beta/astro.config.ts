@@ -27,8 +27,7 @@ export default defineConfig({
       logo: { src: "./src/assets/logo.svg", replacesTitle: true },
       social: {
         github: "https://github.com/joe-bell/cva",
-        "x.com": "https://joebell.co.uk/x",
-        threads: "https://joebell.co.uk/threads",
+        blueSky: "https://joebell.co.uk/bluesky",
       },
       tagline: "Class Variance Authority",
       sidebar: [

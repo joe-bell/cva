@@ -1,6 +1,6 @@
 {
   "name": "cva",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Class Variance Authority 🧬",
   "keywords": [
     "Class Variance Authority",
@@ -41,7 +41,7 @@
     "bundlesize": "pnpm build && bundlesize -f 'dist/*.js' -s 1.6KB"
   },
   "dependencies": {
-    "clsx": "2.1.0"
+    "clsx": "^2.1.1"
   },
   "devDependencies": {
     "@swc/cli": "0.3.12",
