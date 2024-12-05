@@ -33,7 +33,7 @@ type ClassValue =
   | null
   | boolean
   | undefined;
-type ClassDictionary = Record<string, unknown>;
+type ClassDictionary = Record<string, any>;
 type ClassArray = ClassValue[];
 
 /* Utils
@@ -55,8 +55,8 @@ type MergeVariantProps<Types extends object[]> = Types extends [
               ? First[K] | Exclude<MergeVariantProps<Rest>[K], First[K]>
               : First[K]
             : K extends keyof MergeVariantProps<Rest>
-            ? MergeVariantProps<Rest>[K]
-            : never;
+              ? MergeVariantProps<Rest>[K]
+              : never;
         }
       : never
     : never
