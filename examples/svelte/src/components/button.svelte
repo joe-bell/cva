@@ -12,6 +12,10 @@
         small: "small",
         medium: "medium",
       },
+      disabled: {
+        false: "enabled",
+        true: "disabled",
+      },
     },
     compoundVariants: [
       { intent: "primary", size: "medium", class: "primaryMedium" },
@@ -26,9 +30,14 @@
    */
   export let intent: $$Props["intent"] = "primary";
   export let size: $$Props["size"] = "medium";
+  export let disabled: $$Props["disabled"] = false;
 </script>
 
-<button {...$$props} class={button({ intent, size, class: $$props.class })}>
+<button
+  {...$$props}
+  class={button({ intent, size, disabled, class: $$props.class })}
+  {disabled}
+>
   <slot />
 </button>
 
@@ -45,7 +54,7 @@
     border: transparent;
   }
 
-  .primary:hover {
+  .primary.enabled:hover {
     background-color: rgb(37 99 235);
   }
 
@@ -55,7 +64,7 @@
     border-color: rgb(156 163 175);
   }
 
-  .secondary:hover {
+  .secondary.enabled:hover {
     background-color: rgb(243 244 246);
   }
 
@@ -73,5 +82,10 @@
 
   .primaryMedium {
     text-transform: uppercase;
+  }
+
+  .disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 </style>
