@@ -4,6 +4,6 @@
   "compound-components": "",
   "typescript": "TypeScript",
   "extending-components": "",
-  "mixing-components": "",
+  "composing-components": "",
   "polymorphism": ""
 }

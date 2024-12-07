@@ -1656,7 +1656,7 @@ describe("cva", () => {
     });
   });
 
-  describe("mixing classes", () => {
+  describe("composing classes", () => {
     type BoxProps = CVA.VariantProps<typeof box>;
     const box = cva(["box", "box-border"], {
       variants: {

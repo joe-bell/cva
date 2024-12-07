@@ -18,7 +18,7 @@ const config = {
 export default defineConfig({
   site,
   output: "static",
-  adapter: vercel({ analytics: false }),
+  adapter: vercel(),
   integrations: [
     starlight({
       ...config,
