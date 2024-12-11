@@ -128,6 +128,99 @@ importers:
         specifier: 5.4.5
         version: 5.4.5
 
+  examples/beta/astro-with-tailwindcss:
+    dependencies:
+      '@astrojs/check':
+        specifier: ^0.9.3
+        version: 0.9.3(prettier-plugin-astro@0.13.0)(prettier@3.2.5)(typescript@5.4.5)
+      '@astrojs/tailwind':
+        specifier: ^5.1.1
+        version: 5.1.1(astro@4.15.9(@types/node@20.12.7)(rollup@4.22.5)(typescript@5.4.5))(tailwindcss@3.4.13(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5)))(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5))
+      '@astrojs/ts-plugin':
+        specifier: ^1.10.2
+        version: 1.10.2
+      astro:
+        specifier: ^4.15.9
+        version: 4.15.9(@types/node@20.12.7)(rollup@4.22.5)(typescript@5.4.5)
+      cva:
+        specifier: workspace:*
+        version: link:../../../packages/cva
+      npm-run-all:
+        specifier: 4.1.5
+        version: 4.1.5
+      tailwindcss:
+        specifier: ^3.4.3
+        version: 3.4.13(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5))
+    devDependencies:
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+
+  examples/beta/react-with-css-modules:
+    dependencies:
+      cva:
+        specifier: workspace:*
+        version: link:../../../packages/cva
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/react':
+        specifier: 18.2.79
+        version: 18.2.79
+      '@types/react-dom':
+        specifier: 18.2.25
+        version: 18.2.25
+      '@vitejs/plugin-react':
+        specifier: ^4.2.1
+        version: 4.3.1(vite@5.4.8(@types/node@20.12.7))
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+      vite:
+        specifier: ^5.2.10
+        version: 5.4.8(@types/node@20.12.7)
+
+  examples/beta/react-with-tailwindcss:
+    dependencies:
+      cva:
+        specifier: workspace:*
+        version: link:../../../packages/cva
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/react':
+        specifier: 18.2.79
+        version: 18.2.79
+      '@types/react-dom':
+        specifier: 18.2.25
+        version: 18.2.25
+      '@vitejs/plugin-react':
+        specifier: ^4.2.1
+        version: 4.3.1(vite@5.4.8(@types/node@20.12.7))
+      autoprefixer:
+        specifier: ^10.4.13
+        version: 10.4.20(postcss@8.4.47)
+      postcss:
+        specifier: ^8.4.21
+        version: 8.4.47
+      tailwindcss:
+        specifier: ^3.4.3
+        version: 3.4.13(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5))
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+      vite:
+        specifier: ^5.2.10
+        version: 5.4.8(@types/node@20.12.7)
+
   examples/beta/react-with-tailwindcss-compound:
     dependencies:
       cva:
@@ -164,6 +257,55 @@ importers:
       vite:
         specifier: ^5.2.10
         version: 5.4.8(@types/node@20.12.7)
+
+  examples/beta/svelte:
+    devDependencies:
+      '@sveltejs/vite-plugin-svelte':
+        specifier: ^3.1.0
+        version: 3.1.2(svelte@4.2.19)(vite@5.4.8(@types/node@20.12.7))
+      '@tsconfig/svelte':
+        specifier: ^5.0.4
+        version: 5.0.4
+      cva:
+        specifier: workspace:*
+        version: link:../../../packages/cva
+      svelte:
+        specifier: ^4.2.15
+        version: 4.2.19
+      svelte-check:
+        specifier: ^3.6.9
+        version: 3.8.6(@babel/core@7.25.2)(postcss-load-config@4.0.2(postcss@8.4.47)(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5)))(postcss@8.4.47)(svelte@4.2.19)
+      tslib:
+        specifier: ^2.6.2
+        version: 2.7.0
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+      vite:
+        specifier: ^5.2.10
+        version: 5.4.8(@types/node@20.12.7)
+
+  examples/beta/vue:
+    dependencies:
+      cva:
+        specifier: workspace:*
+        version: link:../../../packages/cva
+      vue:
+        specifier: ^3.4.23
+        version: 3.5.10(typescript@5.4.5)
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: ^5.0.4
+        version: 5.1.4(vite@5.4.8(@types/node@20.12.7))(vue@3.5.10(typescript@5.4.5))
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+      vite:
+        specifier: ^5.2.10
+        version: 5.4.8(@types/node@20.12.7)
+      vue-tsc:
+        specifier: ^2.0.13
+        version: 2.1.6(typescript@5.4.5)
 
   examples/latest/astro-with-tailwindcss:
     dependencies:
