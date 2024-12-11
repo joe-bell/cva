@@ -1,9 +1,7 @@
 {
   "installation": "",
   "variants": "",
-  "compound-components": "",
   "typescript": "TypeScript",
   "extending-components": "",
-  "composing-components": "",
-  "polymorphism": ""
+  "composing-components": ""
 }

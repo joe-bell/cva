@@ -42,12 +42,20 @@ export default defineConfig({
             { label: "Installation", link: "/getting-started/installation" },
             { label: "Variants", link: "/getting-started/variants" },
             {
+              label: "Compound Components",
+              link: "/getting-started/compound-components",
+            },
+            {
               label: "Extending Components",
               link: "/getting-started/extending-components",
             },
             {
               label: "Composing Components",
               link: "/getting-started/composing-components",
+            },
+            {
+              label: "Polymorphism",
+              link: "/getting-started/polymorphism",
             },
             { label: "TypeScript", link: "/getting-started/typescript" },
           ],

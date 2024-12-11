@@ -4,6 +4,10 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  class-variance-authority: workspace:*
+  cva: workspace:*
+
 importers:
 
   .:
@@ -139,8 +143,8 @@ importers:
         specifier: ^4.15.9
         version: 4.15.9(@types/node@20.12.7)(rollup@4.22.5)(typescript@5.4.5)
       class-variance-authority:
-        specifier: latest
-        version: 0.7.1
+        specifier: workspace:*
+        version: link:../../packages/class-variance-authority
       npm-run-all:
         specifier: 4.1.5
         version: 4.1.5
@@ -152,39 +156,11 @@ importers:
         specifier: 5.4.5
         version: 5.4.5
 
-  examples/react-with-css-modules:
+  examples/beta/react-with-tailwindcss-compound:
     dependencies:
-      class-variance-authority:
-        specifier: latest
-        version: 0.7.1
-      react:
-        specifier: 18.2.0
-        version: 18.2.0
-      react-dom:
-        specifier: 18.2.0
-        version: 18.2.0(react@18.2.0)
-    devDependencies:
-      '@types/react':
-        specifier: 18.2.79
-        version: 18.2.79
-      '@types/react-dom':
-        specifier: 18.2.25
-        version: 18.2.25
-      '@vitejs/plugin-react':
-        specifier: ^4.2.1
-        version: 4.3.1(vite@5.4.8(@types/node@20.12.7))
-      typescript:
-        specifier: 5.4.5
-        version: 5.4.5
-      vite:
-        specifier: ^5.2.10
-        version: 5.4.8(@types/node@20.12.7)
-
-  examples/react-with-tailwindcss:
-    dependencies:
-      class-variance-authority:
-        specifier: latest
-        version: 0.7.1
+      cva:
+        specifier: workspace:*
+        version: link:../../../packages/cva
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -217,11 +193,39 @@ importers:
         specifier: ^5.2.10
         version: 5.4.8(@types/node@20.12.7)
 
-  examples/react-with-tailwindcss-compound:
+  examples/react-with-css-modules:
     dependencies:
       class-variance-authority:
-        specifier: latest
-        version: 0.7.1
+        specifier: workspace:*
+        version: link:../../packages/class-variance-authority
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/react':
+        specifier: 18.2.79
+        version: 18.2.79
+      '@types/react-dom':
+        specifier: 18.2.25
+        version: 18.2.25
+      '@vitejs/plugin-react':
+        specifier: ^4.2.1
+        version: 4.3.1(vite@5.4.8(@types/node@20.12.7))
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+      vite:
+        specifier: ^5.2.10
+        version: 5.4.8(@types/node@20.12.7)
+
+  examples/react-with-tailwindcss:
+    dependencies:
+      class-variance-authority:
+        specifier: workspace:*
+        version: link:../../packages/class-variance-authority
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -263,8 +267,8 @@ importers:
         specifier: ^5.0.4
         version: 5.0.4
       class-variance-authority:
-        specifier: latest
-        version: 0.7.1
+        specifier: workspace:*
+        version: link:../../packages/class-variance-authority
       svelte:
         specifier: ^4.2.15
         version: 4.2.19
@@ -284,8 +288,8 @@ importers:
   examples/vue:
     dependencies:
       class-variance-authority:
-        specifier: latest
-        version: 0.7.1
+        specifier: workspace:*
+        version: link:../../packages/class-variance-authority
       vue:
         specifier: ^3.4.23
         version: 3.5.10(typescript@5.4.5)
@@ -2234,9 +2238,6 @@ packages:
   ci-info@4.0.0:
     resolution: {integrity: sha512-TdHqgGf9odd8SXNuxtUBVx8Nv+qZOejE6qyqiy5NtbYYQOeFa6zmHkxlPzmaLxWWHsU6nJmB7AETdVPi+2NBUg==}
     engines: {node: '>=8'}
-
-  class-variance-authority@0.7.1:
-    resolution: {integrity: sha512-Ka+9Trutv7G8M6WT6SeiRWz792K5qEqIGEGzXKhAE6xOWAY6pPH8U+9IY3oCMv6kqTmLsv7Xh/2w2RigkePMsg==}
 
   cli-boxes@3.0.0:
     resolution: {integrity: sha512-/lzGpEWL/8PfI0BmBOPRwp0c/wFNX1RdUML3jK/RcSBA9T8mZDdQpqYBKtCFTOfQbwPqWEOpjqW+Fnayc0969g==}
@@ -8174,10 +8175,6 @@ snapshots:
   ci-env@1.17.0: {}
 
   ci-info@4.0.0: {}
-
-  class-variance-authority@0.7.1:
-    dependencies:
-      clsx: 2.1.1
 
   cli-boxes@3.0.0: {}
 

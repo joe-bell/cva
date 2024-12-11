@@ -1,4 +1,4 @@
-import { cx } from "class-variance-authority";
+import { cx } from "cva";
 import * as Nav from "./components/nav";
 
 // ## Option 1
@@ -42,7 +42,7 @@ function App() {
         "relative",
         "h-max w-max",
         "self-center justify-self-center",
-        "[&_:where(th,td)]:p-4"
+        "[&_:where(th,td)]:p-4",
       )}
     >
       <thead>

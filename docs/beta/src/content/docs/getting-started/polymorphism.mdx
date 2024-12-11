@@ -1,4 +1,6 @@
-# Polymorphism
+---
+title: Polymorphism
+---
 
 `cva` components are polymorphic (and framework-agnostic) by default; just apply the class to your preferred HTML element…
 
@@ -22,9 +24,10 @@ If you'd prefer to use a React-based API, `cva` strongly recommends using [`@rad
 // ./components/button.tsx
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva, type VariantProps } from "cva";
 
-const button = cva("button", {
+const button = cva({
+  base: "button",
   variants: {
     intent: {
       primary: [
