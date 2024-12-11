@@ -4,6 +4,10 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  class-variance-authority: workspace:*
+  cva: workspace:*
+
 importers:
 
   .:
@@ -83,6 +87,9 @@ importers:
       tailwindcss:
         specifier: ^3.4.3
         version: 3.4.13(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5))
+      tiny-invariant:
+        specifier: 1.3.1
+        version: 1.3.1
       typescript:
         specifier: 5.4.5
         version: 5.4.5
@@ -124,7 +131,7 @@ importers:
         specifier: 5.4.5
         version: 5.4.5
 
-  examples/astro-with-tailwindcss:
+  examples/beta/astro-with-tailwindcss:
     dependencies:
       '@astrojs/check':
         specifier: ^0.9.3
@@ -138,9 +145,9 @@ importers:
       astro:
         specifier: ^4.15.9
         version: 4.15.9(@types/node@20.12.7)(rollup@4.22.5)(typescript@5.4.5)
-      class-variance-authority:
-        specifier: latest
-        version: 0.7.0
+      cva:
+        specifier: workspace:*
+        version: link:../../../packages/cva
       npm-run-all:
         specifier: 4.1.5
         version: 4.1.5
@@ -152,11 +159,11 @@ importers:
         specifier: 5.4.5
         version: 5.4.5
 
-  examples/react-with-css-modules:
+  examples/beta/react-with-css-modules:
     dependencies:
-      class-variance-authority:
-        specifier: latest
-        version: 0.7.0
+      cva:
+        specifier: workspace:*
+        version: link:../../../packages/cva
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -180,11 +187,11 @@ importers:
         specifier: ^5.2.10
         version: 5.4.8(@types/node@20.12.7)
 
-  examples/react-with-tailwindcss:
+  examples/beta/react-with-tailwindcss:
     dependencies:
-      class-variance-authority:
-        specifier: latest
-        version: 0.7.0
+      cva:
+        specifier: workspace:*
+        version: link:../../../packages/cva
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -202,10 +209,10 @@ importers:
         specifier: ^4.2.1
         version: 4.3.1(vite@5.4.8(@types/node@20.12.7))
       autoprefixer:
-        specifier: ^10.4.19
+        specifier: ^10.4.13
         version: 10.4.20(postcss@8.4.47)
       postcss:
-        specifier: ^8.4.38
+        specifier: ^8.4.21
         version: 8.4.47
       tailwindcss:
         specifier: ^3.4.3
@@ -217,7 +224,44 @@ importers:
         specifier: ^5.2.10
         version: 5.4.8(@types/node@20.12.7)
 
-  examples/svelte:
+  examples/beta/react-with-tailwindcss-compound:
+    dependencies:
+      cva:
+        specifier: workspace:*
+        version: link:../../../packages/cva
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/react':
+        specifier: 18.2.79
+        version: 18.2.79
+      '@types/react-dom':
+        specifier: 18.2.25
+        version: 18.2.25
+      '@vitejs/plugin-react':
+        specifier: ^4.2.1
+        version: 4.3.1(vite@5.4.8(@types/node@20.12.7))
+      autoprefixer:
+        specifier: ^10.4.13
+        version: 10.4.20(postcss@8.4.47)
+      postcss:
+        specifier: ^8.4.21
+        version: 8.4.47
+      tailwindcss:
+        specifier: ^3.4.3
+        version: 3.4.13(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5))
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+      vite:
+        specifier: ^5.2.10
+        version: 5.4.8(@types/node@20.12.7)
+
+  examples/beta/svelte:
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^3.1.0
@@ -225,9 +269,9 @@ importers:
       '@tsconfig/svelte':
         specifier: ^5.0.4
         version: 5.0.4
-      class-variance-authority:
-        specifier: latest
-        version: 0.7.0
+      cva:
+        specifier: workspace:*
+        version: link:../../../packages/cva
       svelte:
         specifier: ^4.2.15
         version: 4.2.19
@@ -244,11 +288,153 @@ importers:
         specifier: ^5.2.10
         version: 5.4.8(@types/node@20.12.7)
 
-  examples/vue:
+  examples/beta/vue:
+    dependencies:
+      cva:
+        specifier: workspace:*
+        version: link:../../../packages/cva
+      vue:
+        specifier: ^3.4.23
+        version: 3.5.10(typescript@5.4.5)
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: ^5.0.4
+        version: 5.1.4(vite@5.4.8(@types/node@20.12.7))(vue@3.5.10(typescript@5.4.5))
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+      vite:
+        specifier: ^5.2.10
+        version: 5.4.8(@types/node@20.12.7)
+      vue-tsc:
+        specifier: ^2.0.13
+        version: 2.1.6(typescript@5.4.5)
+
+  examples/latest/astro-with-tailwindcss:
+    dependencies:
+      '@astrojs/check':
+        specifier: ^0.9.3
+        version: 0.9.3(prettier-plugin-astro@0.13.0)(prettier@3.2.5)(typescript@5.4.5)
+      '@astrojs/tailwind':
+        specifier: ^5.1.1
+        version: 5.1.1(astro@4.15.9(@types/node@20.12.7)(rollup@4.22.5)(typescript@5.4.5))(tailwindcss@3.4.13(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5)))(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5))
+      '@astrojs/ts-plugin':
+        specifier: ^1.10.2
+        version: 1.10.2
+      astro:
+        specifier: ^4.15.9
+        version: 4.15.9(@types/node@20.12.7)(rollup@4.22.5)(typescript@5.4.5)
+      class-variance-authority:
+        specifier: workspace:*
+        version: link:../../../packages/class-variance-authority
+      npm-run-all:
+        specifier: 4.1.5
+        version: 4.1.5
+      tailwindcss:
+        specifier: ^3.4.3
+        version: 3.4.13(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5))
+    devDependencies:
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+
+  examples/latest/react-with-css-modules:
     dependencies:
       class-variance-authority:
-        specifier: latest
-        version: 0.7.0
+        specifier: workspace:*
+        version: link:../../../packages/class-variance-authority
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/react':
+        specifier: 18.2.79
+        version: 18.2.79
+      '@types/react-dom':
+        specifier: 18.2.25
+        version: 18.2.25
+      '@vitejs/plugin-react':
+        specifier: ^4.2.1
+        version: 4.3.1(vite@5.4.8(@types/node@20.12.7))
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+      vite:
+        specifier: ^5.2.10
+        version: 5.4.8(@types/node@20.12.7)
+
+  examples/latest/react-with-tailwindcss:
+    dependencies:
+      class-variance-authority:
+        specifier: workspace:*
+        version: link:../../../packages/class-variance-authority
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+    devDependencies:
+      '@types/react':
+        specifier: 18.2.79
+        version: 18.2.79
+      '@types/react-dom':
+        specifier: 18.2.25
+        version: 18.2.25
+      '@vitejs/plugin-react':
+        specifier: ^4.2.1
+        version: 4.3.1(vite@5.4.8(@types/node@20.12.7))
+      autoprefixer:
+        specifier: ^10.4.13
+        version: 10.4.20(postcss@8.4.47)
+      postcss:
+        specifier: ^8.4.21
+        version: 8.4.47
+      tailwindcss:
+        specifier: ^3.4.3
+        version: 3.4.13(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5))
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+      vite:
+        specifier: ^5.2.10
+        version: 5.4.8(@types/node@20.12.7)
+
+  examples/latest/svelte:
+    devDependencies:
+      '@sveltejs/vite-plugin-svelte':
+        specifier: ^3.1.0
+        version: 3.1.2(svelte@4.2.19)(vite@5.4.8(@types/node@20.12.7))
+      '@tsconfig/svelte':
+        specifier: ^5.0.4
+        version: 5.0.4
+      class-variance-authority:
+        specifier: workspace:*
+        version: link:../../../packages/class-variance-authority
+      svelte:
+        specifier: ^4.2.15
+        version: 4.2.19
+      svelte-check:
+        specifier: ^3.6.9
+        version: 3.8.6(@babel/core@7.25.2)(postcss-load-config@4.0.2(postcss@8.4.47)(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5)))(postcss@8.4.47)(svelte@4.2.19)
+      tslib:
+        specifier: ^2.6.2
+        version: 2.7.0
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+      vite:
+        specifier: ^5.2.10
+        version: 5.4.8(@types/node@20.12.7)
+
+  examples/latest/vue:
+    dependencies:
+      class-variance-authority:
+        specifier: workspace:*
+        version: link:../../../packages/class-variance-authority
       vue:
         specifier: ^3.4.23
         version: 3.5.10(typescript@5.4.5)
@@ -2198,9 +2384,6 @@ packages:
     resolution: {integrity: sha512-TdHqgGf9odd8SXNuxtUBVx8Nv+qZOejE6qyqiy5NtbYYQOeFa6zmHkxlPzmaLxWWHsU6nJmB7AETdVPi+2NBUg==}
     engines: {node: '>=8'}
 
-  class-variance-authority@0.7.0:
-    resolution: {integrity: sha512-jFI8IQw4hczaL4ALINxqLEXQbWcNjoSkloa4IaufXCJr6QawJyw7tuRysRsrE8w2p/4gGaxKIt/hX3qz/IbD1A==}
-
   cli-boxes@3.0.0:
     resolution: {integrity: sha512-/lzGpEWL/8PfI0BmBOPRwp0c/wFNX1RdUML3jK/RcSBA9T8mZDdQpqYBKtCFTOfQbwPqWEOpjqW+Fnayc0969g==}
     engines: {node: '>=10'}
@@ -2234,10 +2417,6 @@ packages:
 
   clone-response@1.0.3:
     resolution: {integrity: sha512-ROoL94jJH2dUVML2Y/5PEDNaSHgeOdSDicUyS7izcF63G6sTc/FTjLub4b8Il9S8S0beOfYt0TaA5qvFK+w0wA==}
-
-  clsx@2.0.0:
-    resolution: {integrity: sha512-rQ1+kcj+ttHG0MKVGBUXwayCCF1oh39BF5COIpRzuCEv8Mwjv0XucrI2ExNTOn9IlLifGClWQcU9BrZORvtw6Q==}
-    engines: {node: '>=6'}
 
   clsx@2.1.0:
     resolution: {integrity: sha512-m3iNNWpd9rl3jvvcBnu70ylMdrXt8Vlq4HYadnU5fwcOtvkSQWPmj7amUcDT2qYI7risszBjI5AUIUox9D16pg==}
@@ -8142,10 +8321,6 @@ snapshots:
 
   ci-info@4.0.0: {}
 
-  class-variance-authority@0.7.0:
-    dependencies:
-      clsx: 2.0.0
-
   cli-boxes@3.0.0: {}
 
   cli-cursor@4.0.0:
@@ -8179,8 +8354,6 @@ snapshots:
   clone-response@1.0.3:
     dependencies:
       mimic-response: 1.0.1
-
-  clsx@2.0.0: {}
 
   clsx@2.1.0: {}
 
@@ -11157,7 +11330,7 @@ snapshots:
     dependencies:
       hosted-git-info: 7.0.2
       proc-log: 4.2.0
-      semver: 7.6.0
+      semver: 7.6.3
       validate-npm-package-name: 5.0.1
 
   npm-run-all@1.4.0:

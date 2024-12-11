@@ -18,7 +18,7 @@ const config = {
 export default defineConfig({
   site,
   output: "static",
-  adapter: vercel({ analytics: false }),
+  adapter: vercel(),
   integrations: [
     starlight({
       ...config,
@@ -42,6 +42,10 @@ export default defineConfig({
             { label: "Installation", link: "/getting-started/installation" },
             { label: "Variants", link: "/getting-started/variants" },
             {
+              label: "Compound Components",
+              link: "/getting-started/compound-components",
+            },
+            {
               label: "Extending Components",
               link: "/getting-started/extending-components",
             },
@@ -49,12 +53,48 @@ export default defineConfig({
               label: "Composing Components",
               link: "/getting-started/composing-components",
             },
+            {
+              label: "Polymorphism",
+              link: "/getting-started/polymorphism",
+            },
             { label: "TypeScript", link: "/getting-started/typescript" },
           ],
         },
         {
-          label: "Examples ↗",
-          link: "https://cva.style/docs/examples/astro",
+          label: "Examples",
+          items: [
+            {
+              label: "11ty",
+              link: "/examples/11ty",
+            },
+            {
+              label: "Astro",
+              link: "/examples/astro",
+            },
+            {
+              label: "BEM",
+              link: "/examples/bem",
+            },
+            {
+              label: "React",
+              items: [
+                { label: "CSS Modules", link: "/examples/react/css-modules" },
+                { label: "Tailwind CSS", link: "/examples/react/tailwindcss" },
+              ],
+            },
+            {
+              label: "Svelte",
+              link: "/examples/svelte",
+            },
+            {
+              label: "Vue",
+              link: "/examples/vue",
+            },
+            {
+              label: "Other Use Cases",
+              link: "/examples/other-use-cases",
+            },
+          ],
         },
         {
           label: "API Reference",

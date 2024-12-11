@@ -1,0 +1,21 @@
+{
+  "name": "example-beta-vue",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm check && vite build",
+    "check": "vue-tsc",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "cva": "beta",
+    "vue": "^3.4.23"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "typescript": "5.4.5",
+    "vite": "^5.2.10",
+    "vue-tsc": "^2.0.13"
+  }
+}

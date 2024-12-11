@@ -1,0 +1,27 @@
+---
+title: Other Use Cases
+---
+
+Although primarily designed for handling class names, at its core, `cva` is really just a fancy way of managing a string…
+
+## Dynamic Text Content
+
+```ts
+const greeter = cva("Good morning!", {
+  variants: {
+    isLoggedIn: {
+      true: "Here's a secret only logged in users can see",
+      false: "Log in to find out more…",
+    },
+  },
+  defaultVariants: {
+    isLoggedIn: "false",
+  },
+});
+
+greeter();
+// => "Good morning! Log in to find out more…"
+
+greeter({ isLoggedIn: "true" });
+// => "Good morning! Here's a secret only logged in users can see"
+```

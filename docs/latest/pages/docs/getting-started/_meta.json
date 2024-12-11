@@ -1,7 +1,7 @@
 {
   "installation": "",
   "variants": "",
-  "extending-components": "",
   "typescript": "TypeScript",
+  "extending-components": "",
   "composing-components": ""
 }

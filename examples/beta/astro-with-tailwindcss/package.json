@@ -1,0 +1,25 @@
+{
+  "name": "example-beta-astro-with-tailwindcss",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "astro": "astro",
+    "build": "pnpm check && astro check && astro build",
+    "check": "tsc",
+    "dev": "astro dev",
+    "preview": "astro preview",
+    "start": "astro dev"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.3",
+    "@astrojs/tailwind": "^5.1.1",
+    "@astrojs/ts-plugin": "^1.10.2",
+    "astro": "^4.15.9",
+    "cva": "beta",
+    "npm-run-all": "4.1.5",
+    "tailwindcss": "^3.4.3"
+  },
+  "devDependencies": {
+    "typescript": "5.4.5"
+  }
+}
