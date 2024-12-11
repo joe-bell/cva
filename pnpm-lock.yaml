@@ -128,34 +128,6 @@ importers:
         specifier: 5.4.5
         version: 5.4.5
 
-  examples/astro-with-tailwindcss:
-    dependencies:
-      '@astrojs/check':
-        specifier: ^0.9.3
-        version: 0.9.3(prettier-plugin-astro@0.13.0)(prettier@3.2.5)(typescript@5.4.5)
-      '@astrojs/tailwind':
-        specifier: ^5.1.1
-        version: 5.1.1(astro@4.15.9(@types/node@20.12.7)(rollup@4.22.5)(typescript@5.4.5))(tailwindcss@3.4.13(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5)))(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5))
-      '@astrojs/ts-plugin':
-        specifier: ^1.10.2
-        version: 1.10.2
-      astro:
-        specifier: ^4.15.9
-        version: 4.15.9(@types/node@20.12.7)(rollup@4.22.5)(typescript@5.4.5)
-      class-variance-authority:
-        specifier: workspace:*
-        version: link:../../packages/class-variance-authority
-      npm-run-all:
-        specifier: 4.1.5
-        version: 4.1.5
-      tailwindcss:
-        specifier: ^3.4.3
-        version: 3.4.13(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5))
-    devDependencies:
-      typescript:
-        specifier: 5.4.5
-        version: 5.4.5
-
   examples/beta/react-with-tailwindcss-compound:
     dependencies:
       cva:
@@ -193,11 +165,39 @@ importers:
         specifier: ^5.2.10
         version: 5.4.8(@types/node@20.12.7)
 
-  examples/react-with-css-modules:
+  examples/latest/astro-with-tailwindcss:
+    dependencies:
+      '@astrojs/check':
+        specifier: ^0.9.3
+        version: 0.9.3(prettier-plugin-astro@0.13.0)(prettier@3.2.5)(typescript@5.4.5)
+      '@astrojs/tailwind':
+        specifier: ^5.1.1
+        version: 5.1.1(astro@4.15.9(@types/node@20.12.7)(rollup@4.22.5)(typescript@5.4.5))(tailwindcss@3.4.13(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5)))(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5))
+      '@astrojs/ts-plugin':
+        specifier: ^1.10.2
+        version: 1.10.2
+      astro:
+        specifier: ^4.15.9
+        version: 4.15.9(@types/node@20.12.7)(rollup@4.22.5)(typescript@5.4.5)
+      class-variance-authority:
+        specifier: workspace:*
+        version: link:../../../packages/class-variance-authority
+      npm-run-all:
+        specifier: 4.1.5
+        version: 4.1.5
+      tailwindcss:
+        specifier: ^3.4.3
+        version: 3.4.13(ts-node@10.9.2(@swc/core@1.4.16(@swc/helpers@0.5.2))(@types/node@20.12.7)(typescript@5.4.5))
+    devDependencies:
+      typescript:
+        specifier: 5.4.5
+        version: 5.4.5
+
+  examples/latest/react-with-css-modules:
     dependencies:
       class-variance-authority:
         specifier: workspace:*
-        version: link:../../packages/class-variance-authority
+        version: link:../../../packages/class-variance-authority
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -221,11 +221,11 @@ importers:
         specifier: ^5.2.10
         version: 5.4.8(@types/node@20.12.7)
 
-  examples/react-with-tailwindcss:
+  examples/latest/react-with-tailwindcss:
     dependencies:
       class-variance-authority:
         specifier: workspace:*
-        version: link:../../packages/class-variance-authority
+        version: link:../../../packages/class-variance-authority
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -258,7 +258,7 @@ importers:
         specifier: ^5.2.10
         version: 5.4.8(@types/node@20.12.7)
 
-  examples/svelte:
+  examples/latest/svelte:
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^3.1.0
@@ -268,7 +268,7 @@ importers:
         version: 5.0.4
       class-variance-authority:
         specifier: workspace:*
-        version: link:../../packages/class-variance-authority
+        version: link:../../../packages/class-variance-authority
       svelte:
         specifier: ^4.2.15
         version: 4.2.19
@@ -285,11 +285,11 @@ importers:
         specifier: ^5.2.10
         version: 5.4.8(@types/node@20.12.7)
 
-  examples/vue:
+  examples/latest/vue:
     dependencies:
       class-variance-authority:
         specifier: workspace:*
-        version: link:../../packages/class-variance-authority
+        version: link:../../../packages/class-variance-authority
       vue:
         specifier: ^3.4.23
         version: 3.5.10(typescript@5.4.5)

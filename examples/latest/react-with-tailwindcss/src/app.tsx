@@ -46,7 +46,7 @@ function App() {
                 </td>
               ))}
             </tr>
-          ))
+          )),
         )}
       </tbody>
     </table>
