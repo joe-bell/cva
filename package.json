@@ -1,4 +1,5 @@
 {
+  "name": "root",
   "private": true,
   "scripts": {
     "check": "pnpm run --filter './packages/**' --parallel check",
@@ -35,5 +36,11 @@
   "packageManager": "pnpm@9.0.4",
   "engines": {
     "node": "20"
+  },
+  "pnpm": {
+    "overrides": {
+      "class-variance-authority": "workspace:*",
+      "cva": "workspace:*"
+    }
   }
 }

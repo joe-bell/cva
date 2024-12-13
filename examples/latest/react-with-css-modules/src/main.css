@@ -1,0 +1,48 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+html {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  tab-size: 4;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji";
+  font-feature-settings: normal;
+}
+
+#root {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  padding: 1.5rem;
+}
+
+.variant-table {
+  position: relative;
+  height: max-content;
+  width: max-content;
+  align-self: center;
+  justify-self: center;
+}
+
+.variant-table :where(th, td) {
+  padding: 0.5rem;
+}

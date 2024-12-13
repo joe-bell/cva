@@ -1,0 +1,25 @@
+---
+import invariant from "tiny-invariant";
+
+export interface Props {
+  dir?: string;
+  file?: string;
+}
+
+const branch = "main";
+
+const { dir, file } = Astro.props;
+
+invariant(dir, "No directory specified");
+invariant(file, "No file specified");
+---
+
+<div class="mt-4 block [&>*+*]:mt-4">
+  <a href={`https://github.com/joe-bell/cva/tree/${branch}/${dir}/${file}`}>
+    View on GitHub <span aria-label="External">↗</span>
+  </a>
+  <iframe
+    style={{ aspectRatio: 1 / 1, width: "100%" }}
+    src={`https://stackblitz.com/github/cva/tree/${branch}/${dir}?embed=1&file=${file}&hideNavigation=1&view=preview`}
+  ></iframe>
+</div>
