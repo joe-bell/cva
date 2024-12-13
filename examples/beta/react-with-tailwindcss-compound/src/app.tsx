@@ -48,7 +48,9 @@ function App() {
       <thead>
         <tr>
           {density.map((key) => (
-            <th scope="col">{key}</th>
+            <th scope="col" className="font-medium">
+              {key}
+            </th>
           ))}
         </tr>
       </thead>
