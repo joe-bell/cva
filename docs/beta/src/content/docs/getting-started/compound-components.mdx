@@ -2,15 +2,30 @@
 title: Compound Components
 ---
 
-Compound Components are a term that React.js developers will be familiar with, and feels like the best way to describe this pattern.
+For larger, more complex components, you may end up wanting to create a set of composable components that work together: "Compound Components"
 
-Build compound components with the power of CSS selectors and variables – no additional JS required.
+<details>
+<summary>e.g. <code>&lt;Accordion.Subcomponent /&gt;</code> instead of <code>&lt;Accordion /&gt;</code></summary>
 
-TODO
+```tsx
+import * as Accordion from "./Accordion";
 
-1. Tab with NormalCSS
-2. Tab with TailwindCss
+function Example() {
+  return (
+    <Accordion.Root>
+      <Accordion.Item>
+        <Accordion.Header>Section 1</Accordion.Header>
+        <Accordion.Content>Content 1</Accordion.Content>
+      </Accordion.Item>
+    </Accordion.Root>
+  );
+}
+```
+
+</details>
+
+`cva` encourages you to build these compound components **with the power of CSS**; leverage the cascade, custom properties, `:has()` selectors, and more…
 
 ## Examples
 
-- [React with Tailwind CSS](../examples/react/tailwindcss#compound-component)
+- [React with Tailwind CSS (Compound Components)](../examples/react/tailwindcss#compound-components)
