@@ -1,0 +1,31 @@
+---
+title: Compound Components
+---
+
+For larger, more complex components, you may end up wanting to create a set of composable components that work together: "Compound Components"
+
+<details>
+<summary>e.g. <code>&lt;Accordion.Subcomponent /&gt;</code> instead of <code>&lt;Accordion /&gt;</code></summary>
+
+```tsx
+import * as Accordion from "./Accordion";
+
+function Example() {
+  return (
+    <Accordion.Root>
+      <Accordion.Item>
+        <Accordion.Header>Section 1</Accordion.Header>
+        <Accordion.Content>Content 1</Accordion.Content>
+      </Accordion.Item>
+    </Accordion.Root>
+  );
+}
+```
+
+</details>
+
+`cva` encourages you to build these compound components **with the power of CSS**; leverage the cascade, custom properties, `:has()` selectors, and more…
+
+## Examples
+
+- [React with Tailwind CSS (Compound Components)](../examples/react/tailwindcss#compound-components)

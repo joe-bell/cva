@@ -115,7 +115,10 @@ You can enable autocompletion inside `cva` using the steps below:
     ```json
     {
       "experimental": {
-        "classRegex": ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+        "classRegex": [
+          ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+          ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+        ]
       }
     }
     ```

@@ -6,6 +6,7 @@
     {
       "label": "Use `workspace:*` protocol for local packages",
       "packages": [
+        "root",
         "docs-*",
         "cva",
         "class-variance-authority",
@@ -21,18 +22,30 @@
       "pinVersion": "workspace:*"
     },
     {
-      "label": "Use `latest` for examples",
+      "label": "Use `latest` for `latest` examples",
       "packages": [
         "example-*"
       ],
       "dependencies": [
-        "cva",
         "class-variance-authority"
       ],
       "dependencyTypes": [
         "!local"
       ],
       "pinVersion": "latest"
+    },
+    {
+      "label": "Use `beta` for `beta` examples",
+      "packages": [
+        "example-*"
+      ],
+      "dependencies": [
+        "cva"
+      ],
+      "dependencyTypes": [
+        "!local"
+      ],
+      "pinVersion": "beta"
     },
     {
       "label": "Keep all other dependencies in sync",
