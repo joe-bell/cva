@@ -65,7 +65,7 @@ If you're a Tailwind user, here are some additional (optional) steps to get the 
 
 You can enable autocompletion inside `cva` using the steps below:
 
-<Tabs items={["Visual Studio Code", "Neovim", "WebStorm"]}>
+<Tabs items={["Visual Studio Code", "Neovim", "WebStorm", "Zed"]}>
   <Tab>
 
     1. [Install the "Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
@@ -119,6 +119,28 @@ You can enable autocompletion inside `cva` using the steps below:
           ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
           ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
         ]
+      }
+    }
+    ```
+
+  </Tab>
+  <Tab>
+
+    1. Add the following to your [`settings.json`](https://zed.dev/docs/configuring-zed):
+
+    ```json
+    {
+      "lsp": {
+        "tailwindcss-language-server": {
+          "settings": {
+            "experimental": {
+              "classRegex": [
+                ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+                ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+              ]
+            }
+          }
+        }
       }
     }
     ```
