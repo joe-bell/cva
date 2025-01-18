@@ -10,7 +10,6 @@ const withNextra = nextra({
  * @type {import('next').NextConfig}
  */
 const nextConfig = {
-  appDir: false,
   async redirects() {
     return [
       {
