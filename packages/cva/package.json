@@ -36,7 +36,9 @@
     "build:esm": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.mjs -C module.type=es6 ",
     "build:tsc": "tsc --project .config/tsconfig.build.json",
     "bundlesize": "pnpm build && bundlesize -f 'dist/*.js' -s 1.6KB",
-    "check": "tsc --project tsconfig.json --noEmit",
+    "check": "pnpm run '/^check:.*/'",
+    "check:exports": "attw --pack .",
+    "check:tsc": "tsc --project tsconfig.json --noEmit",
     "dev": "jest --config .config/jest.config.ts --watch",
     "prepublishOnly": "pnpm build"
   },
@@ -44,6 +46,7 @@
     "clsx": "^2.1.1"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "0.17.3",
     "@swc/cli": "0.3.12",
     "@swc/core": "1.4.16",
     "@types/node": "20.12.7",
