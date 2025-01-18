@@ -31,3 +31,11 @@ header.header {
   hover:opacity-80 dark:after:border-gray-500/50
   dark:after:bg-gray-700/50;
 }
+
+/**
+ * Make the nested collapsible sidebar titles a little smaller with an
+ * absolutely disgraceful CSS selector (using `:where()` to reduce specificity).
+ */
+:where(.sidebar-content details details > summary > .group-label) > .large {
+  @apply text-sm;
+}

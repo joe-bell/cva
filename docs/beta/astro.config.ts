@@ -1,7 +1,7 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import tailwind from "@astrojs/tailwind";
-import vercel from "@astrojs/vercel/static";
+import vercel from "@astrojs/vercel";
 
 const site = "https://beta.cva.style";
 const googleAnalyticsId = "G-E8Z8HL9WXF";
@@ -105,8 +105,8 @@ export default defineConfig({
           link: "/tutorials",
         },
         {
-          label: "FAQs ↗",
-          link: "https://cva.style/docs/faqs",
+          label: "FAQs",
+          link: "/faqs",
         },
         {
           label: "Sponsor ♡",

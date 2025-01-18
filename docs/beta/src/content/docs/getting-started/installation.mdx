@@ -2,7 +2,7 @@
 title: Installation
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
 
 :::caution
 **You are currently viewing the docs for `cva@beta`**
@@ -50,19 +50,23 @@ You can enable autocompletion inside `cva` using the steps below:
 
 <Tabs>
   <TabItem label="Visual Studio Code">
+    <Steps>
 
     1. [Install the "Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
 
     2. Add the following to your [`.vscode/settings.json`](https://code.visualstudio.com/docs/getstarted/settings):
 
-    ```json
-    {
-      "tailwindCSS.experimental.classRegex": [
-        ["cva\\(([^)]*)\\)", "[\"'`]?([^\"'`]+)[\"'`]?"],
-        ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-      ]
-    }
-    ```
+        ```json
+        // .vscode/settings.json
+        {
+          "tailwindCSS.experimental.classRegex": [
+            ["cva\\(([^)]*)\\)", "[\"'`]?([^\"'`]+)[\"'`]?"],
+            ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+          ]
+        }
+        ```
+
+    </Steps>
 
   </TabItem>
   <TabItem label="Zed">
@@ -70,6 +74,7 @@ You can enable autocompletion inside `cva` using the steps below:
     Add the following to your [`.zed/settings.json`](https://zed.dev/docs/configuring-zed#settings-files):
 
     ```json
+    // .zed/settings.json
     {
       "lsp": {
         "tailwindcss-language-server": {
@@ -88,45 +93,47 @@ You can enable autocompletion inside `cva` using the steps below:
 
   </TabItem>
   <TabItem label="Neovim">
-
+    <Steps>
     1. [Install the extension](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#tailwindcss)
 
     2. Add the following configuration:
 
-    ```lua
-    require 'lspconfig'.tailwindcss.setup({
-      settings = {
-        tailwindCSS = {
-          experimental = {
-            classRegex = {
-              { "cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]" },
-              { "cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)" }
+        ```lua
+        require 'lspconfig'.tailwindcss.setup({
+          settings = {
+            tailwindCSS = {
+              experimental = {
+                classRegex = {
+                  { "cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]" },
+                  { "cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)" }
+                },
+              },
             },
           },
-        },
-      },
-    })
-    ```
+        })
+        ```
+    </Steps>
 
   </TabItem>
   <TabItem label="WebStorm">
-
+    <Steps>
     1. Check the version. Available for [WebStorm 2023.1](https://www.jetbrains.com/webstorm/whatsnew/#version-2023-1-tailwind-css-configuration) and later
 
     2. Open the settings. Go to [Languages and Frameworks | Style Sheets | Tailwind CSS](https://www.jetbrains.com/help/webstorm/tailwind-css.html#ws_css_tailwind_configuration)
 
     3. Add the following to your tailwind configuration
 
-    ```json
-    {
-      "experimental": {
-        "classRegex": [
-          ["cva\\(([^)]*)\\)", "[\"'`]?([^\"'`]+)[\"'`]?"],
-          ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-        ]
-      }
-    }
-    ```
+        ```json
+        {
+          "experimental": {
+            "classRegex": [
+              ["cva\\(([^)]*)\\)", "[\"'`]?([^\"'`]+)[\"'`]?"],
+              ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+            ]
+          }
+        }
+        ```
+    </Steps>
 
   </TabItem>
 </Tabs>
@@ -139,7 +146,8 @@ If you want to merge Tailwind CSS classes without conflicts, you may wish to [ro
 
 <summary>Example with tailwind-merge</summary>
 
-```ts filename="cva.config.ts"
+```ts
+// cva.config.ts
 import { defineConfig } from "cva";
 import { twMerge } from "tailwind-merge";
 
@@ -150,7 +158,8 @@ export const { cva, cx, compose } = defineConfig({
 });
 ```
 
-```ts filename="components/button.ts"
+```ts
+// components/button.ts
 import { cx, cva } from "../cva.config";
 
 export const button = cva({
