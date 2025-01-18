@@ -33,21 +33,12 @@ Shout-out to GitHub for transferring `npm` ownership of `cva`!
 
 Base styles are now applied via the named `base` property.
 
-- _Before_
+```diff lang="ts" ins="{ base:" ins=/(?<= )}/
+-  import { cva } from "class-variance-authority";
++  import { cva } from "cva";
 
-  ```ts
-  import { cva } from "class-variance-authority";
-
-  const before = cva("your-base-class");
-  ```
-
-- _After_
-
-  ```ts
-  import { cva } from "cva";
-
-  const after = cva({ base: "your-base-class" });
-  ```
+  const component = cva({ base: "your-base-class" });
+```
 
 ### 3. Goodbye `null`
 

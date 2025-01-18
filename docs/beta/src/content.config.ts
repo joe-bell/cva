@@ -1,11 +1,13 @@
+import { glob } from "astro/loaders";
 import { defineCollection, z } from "astro:content";
+import { docsLoader } from "@astrojs/starlight/loaders";
 import { docsSchema } from "@astrojs/starlight/schema";
 import { format } from "date-fns";
 
 export const collections = {
-  docs: defineCollection({ schema: docsSchema() }),
+  docs: defineCollection({ loader: docsLoader(), schema: docsSchema() }),
   tutorials: defineCollection({
-    type: "data",
+    loader: glob({ pattern: "**/*.json", base: "./src/content/tutorials" }),
     schema: () => {
       const common = z.object({
         title: z.string(),
