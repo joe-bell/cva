@@ -71,10 +71,13 @@ describe("compose", () => {
       },
     });
 
+    // @ts-expect-error
     const card = compose(box, stack);
 
     expectTypeOf(card).toBeFunction();
+
     expectTypeOf(card).parameter(0).toMatchTypeOf<
+      // @ts-expect-error
       | {
           shadow?: "sm" | "md" | undefined;
           gap?: "unset" | 1 | 2 | 3 | undefined;
@@ -85,14 +88,32 @@ describe("compose", () => {
     expect(card()).toBe("shadow-sm");
     expect(card({ class: "adhoc-class" })).toBe("shadow-sm adhoc-class");
     expect(card({ className: "adhoc-class" })).toBe("shadow-sm adhoc-class");
-    expect(card({ shadow: "md" })).toBe("shadow-md");
-    expect(card({ gap: 2 })).toBe("shadow-sm gap-2");
-    expect(card({ shadow: "md", gap: 3, class: "adhoc-class" })).toBe(
-      "shadow-md gap-3 adhoc-class",
-    );
-    expect(card({ shadow: "md", gap: 3, className: "adhoc-class" })).toBe(
-      "shadow-md gap-3 adhoc-class",
-    );
+    expect(
+      card(
+        // @ts-expect-error
+        { shadow: "md" },
+      ),
+    ).toBe("shadow-md");
+    expect(
+      card(
+        // @ts-expect-error
+        { gap: 2 },
+      ),
+    ).toBe("shadow-sm gap-2");
+    expect(
+      card(
+        // @ts-expect-error
+        { shadow: "md", gap: 3, class: "adhoc-class" },
+      ),
+    ).toBe("shadow-md gap-3 adhoc-class");
+    expect(
+      card({
+        // @ts-expect-error
+        shadow: "md",
+        gap: 3,
+        className: "adhoc-class",
+      }),
+    ).toBe("shadow-md gap-3 adhoc-class");
   });
 });
 
@@ -1787,7 +1808,11 @@ describe("defineConfig", () => {
             gap: "unset",
           },
         });
-        const card = composeExtended(box, stack);
+        const card = composeExtended(
+          // @ts-expect-error
+          box,
+          stack,
+        );
 
         expectTypeOf(card).toBeFunction();
 
@@ -1796,7 +1821,10 @@ describe("defineConfig", () => {
         expect(cardClassListSplit[0]).toBe(PREFIX);
         expect(cardClassListSplit[cardClassListSplit.length - 1]).toBe(SUFFIX);
 
-        const cardShadowGapClassList = card({ shadow: "md", gap: 3 });
+        const cardShadowGapClassList = card(
+          // @ts-expect-error
+          { shadow: "md", gap: 3 },
+        );
         const cardShadowGapClassListSplit = cardShadowGapClassList.split(" ");
         expect(cardShadowGapClassListSplit[0]).toBe(PREFIX);
         expect(
