@@ -1967,13 +1967,12 @@ describe("defineConfig", () => {
         const componentClassListSplit = componentClassList.split(" ");
 
         expectTypeOf(component).toBeFunction();
-        // bug below, should be PREFIX but returns "foo"
-        // expect(componentClassListSplit[0]).toBe(PREFIX);
-        // bug below, should be SUFFIX but returns "bar"
-        // expect(componentClassListSplit[0]).toBe(PREFIX);
-        // expect(
-        //   componentClassListSplit[componentClassListSplit.length - 1],
-        // ).toBe(SUFFIX);
+        // TODO: Fix test!
+        expect(componentClassListSplit[0]).toBe(PREFIX);
+        // TODO: Fix test!
+        expect(
+          componentClassListSplit[componentClassListSplit.length - 1],
+        ).toBe(SUFFIX);
       });
 
       test("should extend cx", () => {
