@@ -100,42 +100,43 @@ type CVAClassProp =
       className?: ClassValue;
     };
 
-type InternalOnly =
+type InternalOnlyWarning =
   "cva's generic parameters are restricted to internal use only.";
 
-type CVAConfig<Variants> = Variants extends CVAVariantShape
-  ? CVAConfigBase & {
-      variants?: Variants;
-      compoundVariants?: (Variants extends CVAVariantShape
-        ? (
-            | CVAVariantSchema<Variants>
-            | {
-                [Variant in keyof Variants]?:
-                  | StringToBoolean<keyof Variants[Variant]>
-                  | StringToBoolean<keyof Variants[Variant]>[]
-                  | undefined;
-              }
-          ) &
-            CVAClassProp
-        : CVAClassProp)[];
-      defaultVariants?: CVAVariantSchema<Variants>;
-    }
-  : CVAConfigBase & {
-      variants?: never;
-      compoundVariants?: never;
-      defaultVariants?: never;
-    };
+type CVAConfig<Config, Variants> = Config &
+  (Variants extends CVAVariantShape
+    ? CVAConfigBase & {
+        variants?: Variants;
+        compoundVariants?: (Variants extends CVAVariantShape
+          ? (
+              | CVAVariantSchema<Variants>
+              | {
+                  [Variant in keyof Variants]?:
+                    | StringToBoolean<keyof Variants[Variant]>
+                    | StringToBoolean<keyof Variants[Variant]>[]
+                    | undefined;
+                }
+            ) &
+              CVAClassProp
+          : CVAClassProp)[];
+        defaultVariants?: CVAVariantSchema<Variants>;
+      }
+    : CVAConfigBase & {
+        variants?: never;
+        compoundVariants?: never;
+        defaultVariants?: never;
+      });
 
 export interface CVA {
-  <_ extends InternalOnly, Config, Variants>(
-    config: Config & CVAConfig<Variants>,
+  <_ extends InternalOnlyWarning, Config, Variants>(
+    config: CVAConfig<Config, Variants>,
   ): {
     (
       props?: Variants extends CVAVariantShape
         ? CVAVariantSchema<Variants> & CVAClassProp
         : CVAClassProp,
     ): string;
-    _cva: Config;
+    config: Config;
   };
 }
 
@@ -181,9 +182,9 @@ export const defineConfig: DefineConfig = (options) => {
   };
 
   const cva: CVA = (config) => {
-    // TODO MAKE TYPES WORK!
+    // TODO: fix types
     // @ts-expect-error
-    const cvaFn = (props) => {
+    const component = (props) => {
       if (config?.variants == null) {
         return clsx(config?.base, props?.class, props?.className);
       }
@@ -238,17 +239,15 @@ export const defineConfig: DefineConfig = (options) => {
       );
     };
 
-    // TODO
-    // Figure out how to make this `_cva.config`
-    cvaFn._cva = config;
+    component.config = config;
 
-    return cvaFn;
+    return component;
   };
 
   const compose: Compose = (...components) => {
-    // TODO MAKE TYPES WORK!
+    // TODO: fix types
     // @ts-expect-error
-    const cvaFn = (props) => {
+    const component = (props) => {
       const propsWithoutClass = Object.fromEntries(
         Object.entries(props || {}).filter(
           ([key]) => !["class", "className"].includes(key),
@@ -262,16 +261,14 @@ export const defineConfig: DefineConfig = (options) => {
       );
     };
 
-    cvaFn._cva = components.reduce((acc, { _cva }) => {
-      // TODO FIX TYPES
-      // @ts-expect-error
-      Object.entries(_cva).forEach(([key, value]) => {
-        // TODO FIX TYPES
+    component.config = components.reduce((acc, { config }) => {
+      Object.entries(config || {}).forEach(([key, value]) => {
+        // TODO: fix types
         // @ts-expect-error
         acc[key] =
           typeof value === "object" && value !== null && !Array.isArray(value)
             ? {
-                // TODO FIX TYPES
+                // TODO: fix types
                 // @ts-expect-error
                 ...acc[key],
                 ...value,
@@ -281,7 +278,7 @@ export const defineConfig: DefineConfig = (options) => {
       return acc;
     }, {});
 
-    return cvaFn;
+    return component;
   };
 
   return {
@@ -294,10 +291,10 @@ export const defineConfig: DefineConfig = (options) => {
 export const { compose, cva, cx } = defineConfig();
 
 export interface CreateSchema {
-  <_ extends InternalOnly, Component, Variants>(
+  <_ extends InternalOnlyWarning, Component, Config, Variants>(
     component: Component &
       (Component extends ReturnType<CVA>
-        ? { _cva: CVAConfig<Variants> }
+        ? { config: CVAConfig<Config, Variants> }
         : never),
   ): {
     [Variant in keyof Variants]: ReadonlyArray<
@@ -307,14 +304,12 @@ export interface CreateSchema {
 }
 
 export const getSchema: CreateSchema = (component) => {
-  const variants = component._cva.variants;
-  // TODO
+  // TODO: fix types
   // Remove `any` if possible
-  // Possibly remove `as any` because it's causing {}
-  if (!variants) return {} as any;
+  if (!component.config?.variants) return {} as any;
 
   return Object.fromEntries(
-    Object.entries(variants).map(([key, value]) => [
+    Object.entries(component.config.variants).map(([key, value]) => [
       key,
       Object.keys(value) as StringToBoolean<keyof typeof value>[],
     ]),
