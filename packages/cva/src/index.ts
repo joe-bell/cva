@@ -90,7 +90,6 @@ type CVAVariantShape = Record<string, Record<string, ClassValue>>;
 type CVAVariantSchema<V extends CVAVariantShape> = {
   [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
 };
-type VariantValue = string | number | boolean;
 type CVAClassProp =
   | {
       class?: ClassValue;
@@ -101,48 +100,42 @@ type CVAClassProp =
       className?: ClassValue;
     };
 
+type InternalOnly =
+  "cva's generic parameters are restricted to internal use only.";
+
+type CVAConfig<Variants> = Variants extends CVAVariantShape
+  ? CVAConfigBase & {
+      variants?: Variants;
+      compoundVariants?: (Variants extends CVAVariantShape
+        ? (
+            | CVAVariantSchema<Variants>
+            | {
+                [Variant in keyof Variants]?:
+                  | StringToBoolean<keyof Variants[Variant]>
+                  | StringToBoolean<keyof Variants[Variant]>[]
+                  | undefined;
+              }
+          ) &
+            CVAClassProp
+        : CVAClassProp)[];
+      defaultVariants?: CVAVariantSchema<Variants>;
+    }
+  : CVAConfigBase & {
+      variants?: never;
+      compoundVariants?: never;
+      defaultVariants?: never;
+    };
+
 export interface CVA {
-  <
-    _ extends "cva's generic parameters are restricted to internal use only.",
-    V,
-  >(
-    config: V extends CVAVariantShape
-      ? CVAConfigBase & {
-          variants?: V;
-          compoundVariants?: (V extends CVAVariantShape
-            ? (
-                | CVAVariantSchema<V>
-                | {
-                    [Variant in keyof V]?:
-                      | StringToBoolean<keyof V[Variant]>
-                      | StringToBoolean<keyof V[Variant]>[]
-                      | undefined;
-                  }
-              ) &
-                CVAClassProp
-            : CVAClassProp)[];
-          defaultVariants?: CVAVariantSchema<V>;
-        }
-      : CVAConfigBase & {
-          variants?: never;
-          compoundVariants?: never;
-          defaultVariants?: never;
-        },
-  ): (
-    props?: V extends CVAVariantShape
-      ? CVAVariantSchema<V> & CVAClassProp
-      : CVAClassProp,
-  ) => string & {
-    schema: V extends CVAVariantShape
-      ? {
-          [Variant in keyof V]: ReadonlyArray<
-            StringToBoolean<Extract<keyof V[Variant], VariantValue>>
-          >;
-          // {
-          //   [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
-          // };
-        }
-      : never;
+  <_ extends InternalOnly, Config, Variants>(
+    config: Config & CVAConfig<Variants>,
+  ): {
+    (
+      props?: Variants extends CVAVariantShape
+        ? CVAVariantSchema<Variants> & CVAClassProp
+        : CVAClassProp,
+    ): string;
+    _cva: Config;
   };
 }
 
@@ -152,7 +145,7 @@ export interface CVA {
 export interface DefineConfigOptions {
   hooks?: {
     /**
-     * @deprecated please use `onComplete`
+     * @deprecated please use `onComplete`
      */
     "cx:done"?: (className: string) => string;
     /**
@@ -175,15 +168,6 @@ export interface DefineConfig {
 
 const falsyToString = <T extends unknown>(value: T) =>
   typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
-const normalizeVariantKey = <T extends string>(value: T) => {
-  if (value === "true") return true;
-  if (value === "false") return false;
-
-  const maybeNumber = Number(value);
-  if (!Number.isNaN(maybeNumber)) return maybeNumber;
-
-  return value;
-};
 
 export const defineConfig: DefineConfig = (options) => {
   const cx: CX = (...inputs) => {
@@ -196,75 +180,70 @@ export const defineConfig: DefineConfig = (options) => {
     return clsx(inputs);
   };
 
-  const cva: CVA = (config) =>
-    Object.assign(
-      ((props) => {
-        if (config?.variants == null)
-          return cx(config?.base, props?.class, props?.className);
+  const cva: CVA = (config) => {
+    // TODO MAKE TYPES WORK!
+    // @ts-expect-error
+    const cvaFn = (props) => {
+      if (config?.variants == null) {
+        return clsx(config?.base, props?.class, props?.className);
+      }
 
-        const { variants, defaultVariants } = config;
+      const { variants, defaultVariants } = config;
 
-        const getVariantClassNames = Object.keys(variants).map(
-          (variant: keyof typeof variants) => {
-            const variantProp = props?.[variant as keyof typeof props];
-            const defaultVariantProp = defaultVariants?.[variant];
+      const getVariantClassNames = Object.keys(variants).map(
+        (variant: keyof typeof variants) => {
+          const variantProp = props?.[variant as keyof typeof props];
+          const defaultVariantProp = defaultVariants?.[variant];
 
-            const variantKey = (falsyToString(variantProp) ||
-              falsyToString(
-                defaultVariantProp,
-              )) as keyof (typeof variants)[typeof variant];
+          const variantKey = (falsyToString(variantProp) ||
+            falsyToString(
+              defaultVariantProp,
+            )) as keyof (typeof variants)[typeof variant];
 
-            return variants[variant][variantKey];
-          },
-        );
+          return variants[variant][variantKey];
+        },
+      );
 
-        const defaultsAndProps = {
-          ...defaultVariants,
-          // remove `undefined` props
-          ...(props &&
-            Object.entries(props).reduce<typeof props>(
-              (acc, [key, value]) =>
-                typeof value === "undefined" ? acc : { ...acc, [key]: value },
-              {} as typeof props,
-            )),
-        };
+      const defaultsAndProps = {
+        ...defaultVariants,
+        ...(props &&
+          Object.entries(props).reduce<typeof props>(
+            (acc, [key, value]) =>
+              typeof value === "undefined" ? acc : { ...acc, [key]: value },
+            {} as typeof props,
+          )),
+      };
 
-        const getCompoundVariantClassNames = config?.compoundVariants?.reduce(
-          (acc, { class: cvClass, className: cvClassName, ...cvConfig }) =>
-            Object.entries(cvConfig).every(([cvKey, cvSelector]) => {
-              const selector =
-                defaultsAndProps[cvKey as keyof typeof defaultsAndProps];
+      const getCompoundVariantClassNames = config?.compoundVariants?.reduce(
+        (acc, { class: cvClass, className: cvClassName, ...cvConfig }) =>
+          Object.entries(cvConfig).every(([cvKey, cvSelector]) => {
+            const selector =
+              defaultsAndProps[cvKey as keyof typeof defaultsAndProps];
 
-              return Array.isArray(cvSelector)
-                ? cvSelector.includes(selector)
-                : selector === cvSelector;
-            })
-              ? [...acc, cvClass, cvClassName]
-              : acc,
-          [] as ClassValue[],
-        );
+            return Array.isArray(cvSelector)
+              ? cvSelector.includes(selector)
+              : selector === cvSelector;
+          })
+            ? [...acc, cvClass, cvClassName]
+            : acc,
+        [] as ClassValue[],
+      );
 
-        return cx(
-          config?.base,
-          getVariantClassNames,
-          getCompoundVariantClassNames,
-          props?.class,
-          props?.className,
-        );
-      }) as ReturnType<CVA>,
-      {
-        schema: config?.variants
-          ? Object.fromEntries(
-              Object.entries(config?.variants).map(([key, value]) => [
-                key,
-                Object.keys(value).map((propertyKey) =>
-                  normalizeVariantKey(propertyKey),
-                ),
-              ]),
-            )
-          : {},
-      },
-    );
+      return clsx(
+        config?.base,
+        getVariantClassNames,
+        getCompoundVariantClassNames,
+        props?.class,
+        props?.className,
+      );
+    };
+
+    // TODO
+    // Figure out how to make this `_cva.config`
+    cvaFn._cva = config;
+
+    return cvaFn;
+  };
 
   const compose: Compose =
     (...components) =>
@@ -290,3 +269,30 @@ export const defineConfig: DefineConfig = (options) => {
 };
 
 export const { compose, cva, cx } = defineConfig();
+
+export interface CreateSchema {
+  <_ extends InternalOnly, Component, Variants>(
+    component: Component &
+      (Component extends ReturnType<CVA>
+        ? { _cva: CVAConfig<Variants> }
+        : never),
+  ): {
+    [Variant in keyof Variants]: ReadonlyArray<
+      StringToBoolean<keyof Variants[Variant]>
+    >;
+  };
+}
+
+export const getSchema: CreateSchema = (component) => {
+  const variants = component._cva.variants;
+  // TODO
+  // Remove `any` if possible
+  if (!variants) return {} as any;
+
+  return Object.fromEntries(
+    Object.entries(variants).map(([key, value]) => [
+      key,
+      Object.keys(value) as StringToBoolean<keyof typeof value>[],
+    ]),
+  );
+};
