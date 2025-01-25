@@ -245,9 +245,10 @@ export const defineConfig: DefineConfig = (options) => {
     return cvaFn;
   };
 
-  const compose: Compose =
-    (...components) =>
-    (props) => {
+  const compose: Compose = (...components) => {
+    // TODO MAKE TYPES WORK!
+    // @ts-expect-error
+    const cvaFn = (props) => {
       const propsWithoutClass = Object.fromEntries(
         Object.entries(props || {}).filter(
           ([key]) => !["class", "className"].includes(key),
@@ -260,6 +261,28 @@ export const defineConfig: DefineConfig = (options) => {
         props?.className,
       );
     };
+
+    cvaFn._cva = components.reduce((acc, { _cva }) => {
+      // TODO FIX TYPES
+      // @ts-expect-error
+      Object.entries(_cva).forEach(([key, value]) => {
+        // TODO FIX TYPES
+        // @ts-expect-error
+        acc[key] =
+          typeof value === "object" && value !== null && !Array.isArray(value)
+            ? {
+                // TODO FIX TYPES
+                // @ts-expect-error
+                ...acc[key],
+                ...value,
+              }
+            : value;
+      });
+      return acc;
+    }, {});
+
+    return cvaFn;
+  };
 
   return {
     compose,
