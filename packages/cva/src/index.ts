@@ -310,6 +310,7 @@ export const getSchema: CreateSchema = (component) => {
   const variants = component._cva.variants;
   // TODO
   // Remove `any` if possible
+  // Possibly remove `as any` because it's causing {}
   if (!variants) return {} as any;
 
   return Object.fromEntries(
