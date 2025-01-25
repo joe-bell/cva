@@ -188,7 +188,7 @@ export const defineConfig: DefineConfig = (options) => {
       props,
     ) => {
       if (config?.variants == null) {
-        return clsx(config?.base, props?.class, props?.className);
+        return cx(config?.base, props?.class, props?.className);
       }
 
       const { variants, defaultVariants } = config;
@@ -232,7 +232,7 @@ export const defineConfig: DefineConfig = (options) => {
         [] as ClassValue[],
       );
 
-      return clsx(
+      return cx(
         config?.base,
         getVariantClassNames,
         getCompoundVariantClassNames,
