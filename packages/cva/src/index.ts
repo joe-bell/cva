@@ -182,9 +182,11 @@ export const defineConfig: DefineConfig = (options) => {
   };
 
   const cva: CVA = (config) => {
-    // TODO: fix types
-    // @ts-expect-error
-    const component = (props) => {
+    const component = (
+      // TODO: fix types
+      // @ts-expect-error
+      props,
+    ) => {
       if (config?.variants == null) {
         return clsx(config?.base, props?.class, props?.className);
       }
