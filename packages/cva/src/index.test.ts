@@ -191,69 +191,58 @@ describe("getSchema", () => {
           m: ["0", "1"];
           size: ["small", "medium", "large"];
         }
-      // TODO
-      // Unsure about this
+      // TODO FIX, this shouldn't be {}
       | {}
     >();
   });
 
-  // FAIL  packages/cva/src/index.test.ts > getSchema > should return the schema for a composed component
-  // TypeError: Cannot read properties of undefined (reading 'variants')
-  //  ❯ Module.getSchema packages/cva/src/index.ts:287:35
-  //     285|
-  //     286| export const getSchema: CreateSchema = (component) => {
-  //     287|   const variants = component._cva.variants;
-  //        |                                   ^
-  //     288|   // TODO
-  //     289|   // Remove `any` if possible
-  //  ❯ packages/cva/src/index.test.ts:232:20
+  test("should return the schema for a composed component", () => {
+    const box = cva({
+      variants: {
+        shadow: {
+          sm: "shadow-sm",
+          md: "shadow-md",
+        },
+      },
+      defaultVariants: {
+        shadow: "sm",
+      },
+    });
 
-  // test("should return the schema for a composed component", () => {
-  //   const box = cva({
-  //     variants: {
-  //       shadow: {
-  //         sm: "shadow-sm",
-  //         md: "shadow-md",
-  //       },
-  //     },
-  //     defaultVariants: {
-  //       shadow: "sm",
-  //     },
-  //   });
+    const stack = cva({
+      variants: {
+        gap: {
+          unset: null,
+          1: "gap-1",
+          2: "gap-2",
+          3: "gap-3",
+        },
+      },
+      defaultVariants: {
+        gap: "unset",
+      },
+    });
 
-  //   const stack = cva({
-  //     variants: {
-  //       gap: {
-  //         unset: null,
-  //         1: "gap-1",
-  //         2: "gap-2",
-  //         3: "gap-3",
-  //       },
-  //     },
-  //     defaultVariants: {
-  //       gap: "unset",
-  //     },
-  //   });
+    const card = compose(box, stack);
+    // @ts-expect-error FIX
+    const schema = getSchema(card);
 
-  //   const card = compose(box, stack);
-  //   // @ts-expect-error FIX
-  //   const schema = getSchema(card);
+    expect(schema).toStrictEqual({
+      shadow: ["sm", "md"],
+      gap: ["1", "2", "3", "unset"],
+    });
 
-  //   expect(schema).toStrictEqual({
-  //     shadow: ["sm", "md"],
-  //     gap: ["unset", "1", "2", "3"],
-  //   });
-
-  //   expectTypeOf(schema).toMatchTypeOf<
-  //     | {
-  //         shadow: ["sm", "md"];
-  //         gap: ["unset", "1", "2", "3"];
-  //       }
-  //     // TODO
-  //     // Unsure about this
-  //     | {}
-  //   >();
-  // });
+    //
+    // expectTypeOf(schema).toMatchTypeOf<
+    //   | {
+    //       shadow: ["sm", "md"];
+    //       gap: ["unset", "1", "2", "3"];
+    //     }
+    //   // TODO
+    //   // Unsure about this
+    //   | {}
+    // >();
+  });
 });
 
 describe("cva", () => {
