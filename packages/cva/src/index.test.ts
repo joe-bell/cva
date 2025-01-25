@@ -184,16 +184,18 @@ describe("getSchema", () => {
       size: ["small", "medium", "large"],
     });
 
-    expectTypeOf(schema).toMatchTypeOf<
-      | {
-          disabled: ["true", "false"];
-          intent: ["unset", "primary", "secondary", "warning", "danger"];
-          m: ["0", "1"];
-          size: ["small", "medium", "large"];
-        }
-      // TODO FIX, this shouldn't be {}
-      | {}
-    >();
+    expectTypeOf(schema).toMatchTypeOf<{
+      intent: readonly (
+        | "warning"
+        | "unset"
+        | "primary"
+        | "secondary"
+        | "danger"
+      )[];
+      disabled: readonly boolean[];
+      size: readonly ("small" | "medium" | "large")[];
+      m: readonly (0 | 1)[];
+    }>();
   });
 
   test("should return the schema for a composed component", () => {
@@ -224,7 +226,8 @@ describe("getSchema", () => {
     });
 
     const card = compose(box, stack);
-    // @ts-expect-error FIX
+    // TODO: fix types
+    // @ts-expect-error
     const schema = getSchema(card);
 
     expect(schema).toStrictEqual({
@@ -232,16 +235,12 @@ describe("getSchema", () => {
       gap: ["1", "2", "3", "unset"],
     });
 
-    //
-    // expectTypeOf(schema).toMatchTypeOf<
-    //   | {
-    //       shadow: ["sm", "md"];
-    //       gap: ["unset", "1", "2", "3"];
-    //     }
-    //   // TODO
-    //   // Unsure about this
-    //   | {}
-    // >();
+    // TODO: fix types
+    expectTypeOf(schema).toMatchTypeOf<// @ts-expect-error
+    {
+      shadow: readonly ("sm" | "md")[];
+      gap: readonly ("unset" | "1" | "2" | "3")[];
+    }>();
   });
 });
 
