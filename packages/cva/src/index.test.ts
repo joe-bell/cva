@@ -124,6 +124,7 @@ describe("getSchema", () => {
             "hover:bg-red-600",
           ],
         },
+        empty: {},
         disabled: {
           true: "button--disabled opacity-050 cursor-not-allowed",
           false: "button--enabled cursor-pointer",
@@ -194,7 +195,7 @@ describe("getSchema", () => {
       },
     });
 
-    expectTypeOf(schema).toMatchTypeOf<{
+    expectTypeOf(schema).toEqualTypeOf<{
       intent: {
         values: readonly (
           | "warning"
@@ -215,7 +216,6 @@ describe("getSchema", () => {
       };
       m: {
         values: readonly (0 | 1)[];
-        // defaultValue: undefined;
       };
     }>();
   });
@@ -263,7 +263,7 @@ describe("getSchema", () => {
       },
     });
 
-    expectTypeOf(schema).toMatchTypeOf<// TODO: fix types
+    expectTypeOf(schema).toEqualTypeOf<// TODO: fix types
     // @ts-expect-error
     {
       shadow: {
