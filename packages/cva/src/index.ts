@@ -299,9 +299,21 @@ export interface CreateSchema {
         ? { config: CVAConfig<Config, Variants> }
         : never),
   ): {
-    [Variant in keyof Variants]: ReadonlyArray<
-      StringToBoolean<keyof Variants[Variant]>
-    >;
+    // TODO
+    // - Return never if no variants
+    // - return never if no defaultVariants
+    [Variant in keyof Variants]: {
+      values: ReadonlyArray<StringToBoolean<keyof Variants[Variant]>>;
+      defaultValue: Readonly<
+        StringToBoolean<
+          // TODO: fix types
+          // Type '"defaultVariants"' cannot be used to index type 'Config'.ts(2536)
+          // Type 'Variant' cannot be used to index type 'Config["defaultVariants"]'.ts(2536)
+          // @ts-expect-error
+          Config["defaultVariants"][Variant]
+        >
+      >;
+    };
   };
 }
 
@@ -311,9 +323,19 @@ export const getSchema: CreateSchema = (component) => {
   if (!component.config?.variants) return {} as any;
 
   return Object.fromEntries(
-    Object.entries(component.config.variants).map(([key, value]) => [
-      key,
-      Object.keys(value) as StringToBoolean<keyof typeof value>[],
-    ]),
+    Object.entries(component.config.variants).map(([key, value]) => {
+      const defaultValue = component.config.defaultVariants?.[key] as any;
+
+      return [
+        key,
+        {
+          // TODO: possibly refine
+          values: Object.keys(value).map((v) =>
+            v === "true" ? true : v === "false" ? false : v,
+          ) as StringToBoolean<keyof typeof value>[],
+          ...(defaultValue == null ? {} : { defaultValue }),
+        },
+      ];
+    }),
   );
 };
