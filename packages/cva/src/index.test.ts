@@ -168,7 +168,6 @@ describe("getSchema", () => {
         },
       ],
       defaultVariants: {
-        m: 0,
         disabled: false,
         intent: "primary",
         size: "medium",
@@ -178,23 +177,46 @@ describe("getSchema", () => {
     const schema = getSchema(buttonWithoutBaseWithDefaultsString);
 
     expect(schema).toStrictEqual({
-      disabled: ["true", "false"],
-      intent: ["unset", "primary", "secondary", "warning", "danger"],
-      m: ["0", "1"],
-      size: ["small", "medium", "large"],
+      disabled: {
+        values: [true, false],
+        defaultValue: false,
+      },
+      intent: {
+        values: ["unset", "primary", "secondary", "warning", "danger"],
+        defaultValue: "primary",
+      },
+      m: {
+        values: ["0", "1"],
+      },
+      size: {
+        values: ["small", "medium", "large"],
+        defaultValue: "medium",
+      },
     });
 
     expectTypeOf(schema).toMatchTypeOf<{
-      intent: readonly (
-        | "warning"
-        | "unset"
-        | "primary"
-        | "secondary"
-        | "danger"
-      )[];
-      disabled: readonly boolean[];
-      size: readonly ("small" | "medium" | "large")[];
-      m: readonly (0 | 1)[];
+      intent: {
+        values: readonly (
+          | "warning"
+          | "unset"
+          | "primary"
+          | "secondary"
+          | "danger"
+        )[];
+        defaultValue: "primary";
+      };
+      disabled: {
+        values: readonly boolean[];
+        defaultValue: false;
+      };
+      size: {
+        values: readonly ("small" | "medium" | "large")[];
+        defaultValue: "medium";
+      };
+      m: {
+        values: readonly (0 | 1)[];
+        // defaultValue: undefined;
+      };
     }>();
   });
 
@@ -231,15 +253,26 @@ describe("getSchema", () => {
     const schema = getSchema(card);
 
     expect(schema).toStrictEqual({
-      shadow: ["sm", "md"],
-      gap: ["1", "2", "3", "unset"],
+      shadow: {
+        values: ["sm", "md"],
+        defaultValue: "sm",
+      },
+      gap: {
+        values: ["1", "2", "3", "unset"],
+        defaultValue: "unset",
+      },
     });
 
-    // TODO: fix types
-    expectTypeOf(schema).toMatchTypeOf<// @ts-expect-error
+    expectTypeOf(schema).toMatchTypeOf<// TODO: fix types
+    // @ts-expect-error
     {
-      shadow: readonly ("sm" | "md")[];
-      gap: readonly ("unset" | "1" | "2" | "3")[];
+      shadow: {
+        values: readonly ("sm" | "md")[];
+      };
+      gap: {
+        values: readonly ("unset" | "1" | "2" | "3")[];
+        defaultValue: "unset";
+      };
     }>();
   });
 });
