@@ -299,22 +299,30 @@ export interface CreateSchema {
         ? { config: CVAConfig<Config, Variants> }
         : never),
   ): {
-    // TODO
-    // - Return never if no variants
-    // - return never if no defaultVariants
-    [Variant in keyof Variants]: {
-      values: ReadonlyArray<StringToBoolean<keyof Variants[Variant]>>;
-      defaultValue: Readonly<
-        StringToBoolean<
-          // TODO: fix types
-          // Type '"defaultVariants"' cannot be used to index type 'Config'.ts(2536)
-          // Type 'Variant' cannot be used to index type 'Config["defaultVariants"]'.ts(2536)
-          // @ts-expect-error
-          Config["defaultVariants"][Variant]
-        >
-      >;
-    };
-  };
+    [Variant in keyof Variants]: Config extends CVAConfig<Config, Variants>
+      ? Variant extends keyof Config["defaultVariants"]
+        ? Config["defaultVariants"][Variant] extends undefined
+          ? never
+          : {
+              values: ReadonlyArray<StringToBoolean<keyof Variants[Variant]>>;
+              defaultValue: Readonly<
+                StringToBoolean<Config["defaultVariants"][Variant]>
+              >;
+            }
+        : {
+            values: ReadonlyArray<StringToBoolean<keyof Variants[Variant]>>;
+          }
+      : never;
+    // Iterate over the returned schema and remove any keys that have no values
+  } extends infer Schema
+    ? {
+        [K in keyof Schema as Schema[K] extends {
+          values: readonly never[];
+        }
+          ? never
+          : K]: Schema[K] extends { defaultValue: never } ? never : Schema[K];
+      }
+    : never;
 }
 
 export const getSchema: CreateSchema = (component) => {
@@ -322,20 +330,25 @@ export const getSchema: CreateSchema = (component) => {
   // Remove `any` if possible
   if (!component.config?.variants) return {} as any;
 
-  return Object.fromEntries(
-    Object.entries(component.config.variants).map(([key, value]) => {
-      const defaultValue = component.config.defaultVariants?.[key] as any;
+  return Object.entries(component.config.variants).reduce(
+    (acc, [key, value]) => {
+      const defaultValue = component.config.defaultVariants?.[key];
+      const hasDefaultValue = defaultValue !== undefined;
+      const values = Object.keys(value).map((v) =>
+        v === "true" ? true : v === "false" ? false : v,
+      ) as StringToBoolean<keyof typeof value>[];
+      const hasValues = values.length > 0;
 
-      return [
-        key,
-        {
-          // TODO: possibly refine
-          values: Object.keys(value).map((v) =>
-            v === "true" ? true : v === "false" ? false : v,
-          ) as StringToBoolean<keyof typeof value>[],
-          ...(defaultValue == null ? {} : { defaultValue }),
-        },
-      ];
-    }),
+      return hasValues || hasDefaultValue
+        ? {
+            ...acc,
+            [key]: {
+              ...(hasValues ? { values } : {}),
+              ...(hasDefaultValue ? { defaultValue } : {}),
+            },
+          }
+        : acc;
+    },
+    {} as ReturnType<CreateSchema>,
   );
 };
