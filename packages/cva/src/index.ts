@@ -25,16 +25,17 @@ import { clsx } from "clsx";
 // TS2742 error. To combat this, we copy clsx's types manually.
 // Should this project move to JSDoc, this workaround would no longer be needed.
 
-type ClassValue =
+export type ClassValue =
   | ClassArray
   | ClassDictionary
   | string
   | number
+  | bigint
   | null
   | boolean
   | undefined;
-type ClassDictionary = Record<string, any>;
-type ClassArray = ClassValue[];
+export type ClassDictionary = Record<string, any>;
+export type ClassArray = ClassValue[];
 
 /* Utils
   ---------------------------------- */
