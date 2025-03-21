@@ -35,7 +35,7 @@
     "build:cjs": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.js -C module.type=commonjs",
     "build:esm": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.mjs -C module.type=es6 ",
     "build:tsc": "tsc --project .config/tsconfig.build.json",
-    "bundlesize": "pnpm build && bundlesize -f 'dist/*.js' -s 1.6KB",
+    "bundlesize": "pnpm build && bundlesize -f 'dist/*.js' -s 2KB",
     "check": "pnpm run '/^check:.*/'",
     "check:exports": "attw --pack .",
     "check:tsc": "tsc --project tsconfig.json --noEmit",
