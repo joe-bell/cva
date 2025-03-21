@@ -1,0 +1,1613 @@
+<!doctype html>
+<html
+  lang="en"
+  dir="ltr"
+  data-theme="dark"
+  data-has-toc
+  data-has-sidebar
+  class="astro-hkjuoq6j"
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Variants | cva@beta</title>
+    <link
+      rel="canonical"
+      href="https://beta.cva.style/getting-started/variants/"
+    />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link
+      rel="preload"
+      href="/assets/fonts/inter-var-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
+    <link rel="apple-touch-icon" content="/assets/img/favicon.png" />
+    <script
+      src="https://www.googletagmanager.com/gtag/js?id=G-E8Z8HL9WXF"
+      async
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-E8Z8HL9WXF");
+    </script>
+    <link rel="shortcut icon" href="/assets/img/favicon.png" type="image/png" />
+    <meta name="generator" content="Astro v5.1.7" />
+    <meta name="generator" content="Starlight v0.31.1" />
+    <meta property="og:type" content="article" />
+    <meta
+      property="og:url"
+      content="https://beta.cva.style/getting-started/variants/"
+    />
+    <meta property="og:locale" content="en" />
+    <meta property="og:description" content="Class Variance Authority" />
+    <meta property="og:site_name" content="cva@beta" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="description" content="Class Variance Authority" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta property="og:title" content="cva@beta" />
+    <meta
+      property="og:image"
+      content="https://beta.cva.style/assets/img/og.png"
+    />
+    <meta
+      property="og:image:alt"
+      content="Interweaving circle, upside-down triangle and triangle: forming the letters CVA"
+    />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta name="apple-mobile-web-app-title" content="cva@beta" />
+    <meta name="twitter:creator" content="@joebell_" />
+    <script>
+      window.StarlightThemeProvider = (() => {
+        const storedTheme =
+          typeof localStorage !== "undefined" &&
+          localStorage.getItem("starlight-theme");
+        const theme =
+          storedTheme ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme =
+          theme === "light" ? "light" : "dark";
+        return {
+          updatePickers(theme = storedTheme || "auto") {
+            document
+              .querySelectorAll("starlight-theme-select")
+              .forEach((picker) => {
+                const select = picker.querySelector("select");
+                if (select) select.value = theme;
+                /** @type {HTMLTemplateElement | null} */
+                const tmpl = document.querySelector(`#theme-icons`);
+                const newIcon = tmpl && tmpl.content.querySelector("." + theme);
+                if (newIcon) {
+                  const oldIcon = picker.querySelector("svg.label-icon");
+                  if (oldIcon) {
+                    oldIcon.replaceChildren(
+                      ...newIcon.cloneNode(true).childNodes,
+                    );
+                  }
+                }
+              });
+          },
+        };
+      })();
+    </script>
+    <template id="theme-icons"
+      ><svg
+        aria-hidden="true"
+        class="light astro-jgatps62"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        style="--sl-icon-size: 1em"
+      >
+        <path
+          d="M5 12a1 1 0 0 0-1-1H3a1 1 0 0 0 0 2h1a1 1 0 0 0 1-1Zm.64 5-.71.71a1 1 0 0 0 0 1.41 1 1 0 0 0 1.41 0l.71-.71A1 1 0 0 0 5.64 17ZM12 5a1 1 0 0 0 1-1V3a1 1 0 0 0-2 0v1a1 1 0 0 0 1 1Zm5.66 2.34a1 1 0 0 0 .7-.29l.71-.71a1 1 0 1 0-1.41-1.41l-.66.71a1 1 0 0 0 0 1.41 1 1 0 0 0 .66.29Zm-12-.29a1 1 0 0 0 1.41 0 1 1 0 0 0 0-1.41l-.71-.71a1.004 1.004 0 1 0-1.43 1.41l.73.71ZM21 11h-1a1 1 0 0 0 0 2h1a1 1 0 0 0 0-2Zm-2.64 6A1 1 0 0 0 17 18.36l.71.71a1 1 0 0 0 1.41 0 1 1 0 0 0 0-1.41l-.76-.66ZM12 6.5a5.5 5.5 0 1 0 5.5 5.5A5.51 5.51 0 0 0 12 6.5Zm0 9a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Zm0 3.5a1 1 0 0 0-1 1v1a1 1 0 0 0 2 0v-1a1 1 0 0 0-1-1Z"
+        />
+      </svg>
+      <svg
+        aria-hidden="true"
+        class="astro-jgatps62 dark"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        style="--sl-icon-size: 1em"
+      >
+        <path
+          d="M21.64 13a1 1 0 0 0-1.05-.14 8.049 8.049 0 0 1-3.37.73 8.15 8.15 0 0 1-8.14-8.1 8.59 8.59 0 0 1 .25-2A1 1 0 0 0 8 2.36a10.14 10.14 0 1 0 14 11.69 1 1 0 0 0-.36-1.05Zm-9.5 6.69A8.14 8.14 0 0 1 7.08 5.22v.27a10.15 10.15 0 0 0 10.14 10.14 9.784 9.784 0 0 0 2.1-.22 8.11 8.11 0 0 1-7.18 4.32v-.04Z"
+        />
+      </svg>
+      <svg
+        aria-hidden="true"
+        class="auto astro-jgatps62"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        style="--sl-icon-size: 1em"
+      >
+        <path
+          d="M21 14h-1V7a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v7H3a1 1 0 0 0-1 1v2a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-2a1 1 0 0 0-1-1ZM6 7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7H6V7Zm14 10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1h16v1Z"
+        />
+      </svg>
+    </template>
+    <link rel="stylesheet" href="/_astro/print.BL8QyxEA.css" media="print" />
+    <link rel="stylesheet" href="/_astro/index.CTBS1QpA.css" />
+    <style>
+      :root {
+        --sl-badge-default-border: var(--sl-color-accent);
+        --sl-badge-default-bg: var(--sl-color-accent-low);
+        --sl-badge-default-text: #fff;
+        --sl-badge-note-border: var(--sl-color-blue);
+        --sl-badge-note-bg: var(--sl-color-blue-low);
+        --sl-badge-note-text: #fff;
+        --sl-badge-danger-border: var(--sl-color-red);
+        --sl-badge-danger-bg: var(--sl-color-red-low);
+        --sl-badge-danger-text: #fff;
+        --sl-badge-success-border: var(--sl-color-green);
+        --sl-badge-success-bg: var(--sl-color-green-low);
+        --sl-badge-success-text: #fff;
+        --sl-badge-caution-border: var(--sl-color-orange);
+        --sl-badge-caution-bg: var(--sl-color-orange-low);
+        --sl-badge-caution-text: #fff;
+        --sl-badge-tip-border: var(--sl-color-purple);
+        --sl-badge-tip-bg: var(--sl-color-purple-low);
+        --sl-badge-tip-text: #fff;
+      }
+      [data-theme="light"]:root {
+        --sl-badge-default-bg: var(--sl-color-accent-high);
+        --sl-badge-note-bg: var(--sl-color-blue-high);
+        --sl-badge-danger-bg: var(--sl-color-red-high);
+        --sl-badge-success-bg: var(--sl-color-green-high);
+        --sl-badge-caution-bg: var(--sl-color-orange-high);
+        --sl-badge-tip-bg: var(--sl-color-purple-high);
+      }
+      .sl-badge:where(.astro-m5wvyuqm) {
+        display: inline-block;
+        border: 1px solid var(--sl-color-border-badge);
+        border-radius: 0.25rem;
+        font-family: var(--sl-font-system-mono);
+        line-height: normal;
+        color: var(--sl-color-text-badge);
+        background-color: var(--sl-color-bg-badge);
+        overflow-wrap: anywhere;
+      }
+      .sidebar-content .sl-badge:where(.astro-m5wvyuqm) {
+        line-height: 1;
+        font-size: var(--sl-text-xs);
+        padding: 0.125rem 0.375rem;
+      }
+      .sidebar-content
+        a[aria-current="page"]
+        > .sl-badge:where(.astro-m5wvyuqm) {
+        --sl-color-bg-badge: transparent;
+        --sl-color-border-badge: currentColor;
+        color: inherit;
+      }
+      .default:where(.astro-m5wvyuqm) {
+        --sl-color-bg-badge: var(--sl-badge-default-bg);
+        --sl-color-border-badge: var(--sl-badge-default-border);
+        --sl-color-text-badge: var(--sl-badge-default-text);
+      }
+      .note:where(.astro-m5wvyuqm) {
+        --sl-color-bg-badge: var(--sl-badge-note-bg);
+        --sl-color-border-badge: var(--sl-badge-note-border);
+        --sl-color-text-badge: var(--sl-badge-note-text);
+      }
+      .danger:where(.astro-m5wvyuqm) {
+        --sl-color-bg-badge: var(--sl-badge-danger-bg);
+        --sl-color-border-badge: var(--sl-badge-danger-border);
+        --sl-color-text-badge: var(--sl-badge-danger-text);
+      }
+      .success:where(.astro-m5wvyuqm) {
+        --sl-color-bg-badge: var(--sl-badge-success-bg);
+        --sl-color-border-badge: var(--sl-badge-success-border);
+        --sl-color-text-badge: var(--sl-badge-success-text);
+      }
+      .tip:where(.astro-m5wvyuqm) {
+        --sl-color-bg-badge: var(--sl-badge-tip-bg);
+        --sl-color-border-badge: var(--sl-badge-tip-border);
+        --sl-color-text-badge: var(--sl-badge-tip-text);
+      }
+      .caution:where(.astro-m5wvyuqm) {
+        --sl-color-bg-badge: var(--sl-badge-caution-bg);
+        --sl-color-border-badge: var(--sl-badge-caution-border);
+        --sl-color-text-badge: var(--sl-badge-caution-text);
+      }
+      .small:where(.astro-m5wvyuqm) {
+        font-size: var(--sl-text-xs);
+        padding: 0.125rem 0.25rem;
+      }
+      .medium:where(.astro-m5wvyuqm) {
+        font-size: var(--sl-text-sm);
+        padding: 0.175rem 0.35rem;
+      }
+      .large:where(.astro-m5wvyuqm) {
+        font-size: var(--sl-text-base);
+        padding: 0.225rem 0.45rem;
+      }
+      .sl-markdown-content
+        :is(h1, h2, h3, h4, h5, h6)
+        .sl-badge:where(.astro-m5wvyuqm) {
+        vertical-align: middle;
+      }
+      svg:where(.astro-jgatps62) {
+        color: var(--sl-icon-color);
+        font-size: var(--sl-icon-size, 1em);
+        width: 1em;
+        height: 1em;
+      }
+      starlight-tabs:where(.astro-jjicehj6) {
+        display: block;
+      }
+      .tablist-wrapper:where(.astro-jjicehj6) {
+        overflow-x: auto;
+      }
+      :where(.astro-jjicehj6)[role="tablist"] {
+        display: flex;
+        list-style: none;
+        border-bottom: 2px solid var(--sl-color-gray-5);
+        padding: 0;
+      }
+      .tab:where(.astro-jjicehj6) {
+        margin-bottom: -2px;
+      }
+      .tab:where(.astro-jjicehj6) > :where(.astro-jjicehj6)[role="tab"] {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0 1.25rem;
+        text-decoration: none;
+        border-bottom: 2px solid var(--sl-color-gray-5);
+        color: var(--sl-color-gray-3);
+        outline-offset: var(--sl-outline-offset-inside);
+        overflow-wrap: initial;
+      }
+      .tab:where(.astro-jjicehj6)
+        :where(.astro-jjicehj6)[role="tab"][aria-selected="true"] {
+        color: var(--sl-color-white);
+        border-color: var(--sl-color-text-accent);
+        font-weight: 600;
+      }
+      .tablist-wrapper:where(.astro-jjicehj6) ~ [role="tabpanel"] {
+        margin-top: 1rem;
+      }
+      .sl-steps {
+        --bullet-size: calc(var(--sl-line-height) * 1rem);
+        --bullet-margin: 0.375rem;
+        list-style: none;
+        counter-reset: steps-counter var(--sl-steps-start, 0);
+        padding-inline-start: 0;
+      }
+      .sl-steps > li {
+        counter-increment: steps-counter;
+        position: relative;
+        padding-inline-start: calc(var(--bullet-size) + 1rem);
+        padding-bottom: 1px;
+        min-height: calc(var(--bullet-size) + var(--bullet-margin));
+      }
+      .sl-steps > li + li {
+        margin-top: 0;
+      }
+      .sl-steps > li:before {
+        content: counter(steps-counter);
+        position: absolute;
+        top: 0;
+        inset-inline-start: 0;
+        width: var(--bullet-size);
+        height: var(--bullet-size);
+        line-height: var(--bullet-size);
+        font-size: var(--sl-text-xs);
+        font-weight: 600;
+        text-align: center;
+        color: var(--sl-color-white);
+        background-color: var(--sl-color-gray-6);
+        border-radius: 99rem;
+        box-shadow: inset 0 0 0 1px var(--sl-color-gray-5);
+      }
+      .sl-steps > li:after {
+        --guide-width: 1px;
+        content: "";
+        position: absolute;
+        top: calc(var(--bullet-size) + var(--bullet-margin));
+        bottom: var(--bullet-margin);
+        inset-inline-start: calc((var(--bullet-size) - var(--guide-width)) / 2);
+        width: var(--guide-width);
+        background-color: var(--sl-color-hairline-light);
+      }
+      .sl-steps > li > :first-child {
+        --lh: calc(1em * var(--sl-line-height));
+        --shift-y: calc(0.5 * (var(--bullet-size) - var(--lh)));
+        transform: translateY(var(--shift-y));
+        margin-bottom: var(--shift-y);
+      }
+      .sl-steps > li > :first-child:where(h1, h2, h3, h4, h5, h6) {
+        --lh: calc(1em * var(--sl-line-height-headings));
+      }
+      @supports (--prop: 1lh) {
+        .sl-steps > li > :first-child {
+          --lh: 1lh;
+        }
+      }
+      .sl-link-button:where(.astro-kfcsib6p) {
+        align-items: center;
+        border: 1px solid transparent;
+        border-radius: 999rem;
+        display: inline-flex;
+        font-size: var(--sl-text-sm);
+        gap: 0.5em;
+        line-height: 1.1875;
+        outline-offset: 0.25rem;
+        padding: 0.4375rem 1.125rem;
+        text-decoration: none;
+      }
+      .sl-link-button:where(.astro-kfcsib6p).primary {
+        background: var(--sl-color-text-accent);
+        border-color: var(--sl-color-text-accent);
+        color: var(--sl-color-black);
+      }
+      .sl-link-button:where(.astro-kfcsib6p).primary:hover {
+        color: var(--sl-color-black);
+      }
+      .sl-link-button:where(.astro-kfcsib6p).secondary {
+        border-color: inherit;
+        color: var(--sl-color-white);
+      }
+      .sl-link-button:where(.astro-kfcsib6p).minimal {
+        color: var(--sl-color-white);
+        padding-inline: 0;
+      }
+      .sl-link-button:where(.astro-kfcsib6p) svg {
+        flex-shrink: 0;
+      }
+      @media (min-width: 50rem) {
+        .sl-link-button:where(.astro-kfcsib6p) {
+          font-size: var(--sl-text-base);
+          padding: 0.9375rem 1.25rem;
+        }
+      }
+      .sl-markdown-content .sl-link-button:where(.astro-kfcsib6p) {
+        margin-inline-end: 1rem;
+      }
+      .sl-markdown-content
+        .sl-link-button:where(.astro-kfcsib6p):not(:where(p *)) {
+        margin-block: 1rem;
+      }
+    </style>
+    <script type="module" src="/_astro/page.7qqag-5g.js"></script>
+  </head>
+  <body class="astro-hkjuoq6j">
+    <a href="#_top" class="astro-3sx6hutg">Skip to content</a>
+    <div class="page sl-flex astro-ydfyqg73">
+      <header class="header astro-ydfyqg73">
+        <div class="header sl-flex astro-ekyamynf">
+          <div class="title-wrapper sl-flex astro-ekyamynf">
+            <a href="/" class="site-title sl-flex astro-unlxvbzo">
+              <img
+                class="astro-unlxvbzo"
+                alt
+                src="/_astro/logo.B1h-aHEy.svg"
+                width="1160"
+                height="780"
+              />
+              <span class="astro-unlxvbzo sr-only" translate="no">
+                cva@beta
+              </span>
+            </a>
+          </div>
+          <div class="sl-flex astro-ekyamynf print:hidden">
+            <site-search
+              class="astro-ekyamynf astro-euzvl73o"
+              data-translations="{&#34;placeholder&#34;:&#34;Search&#34;}"
+            >
+              <button
+                data-open-modal
+                disabled
+                aria-label="Search"
+                aria-keyshortcuts="Control+K"
+                class="astro-euzvl73o"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="astro-euzvl73o astro-jgatps62"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style="--sl-icon-size: 1em"
+                >
+                  <path
+                    d="M21.71 20.29 18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a.999.999 0 0 0 1.42 0 1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"
+                  />
+                </svg>
+                <span
+                  class="sl-hidden md:sl-block astro-euzvl73o"
+                  aria-hidden="true"
+                  >Search</span
+                >
+                <kbd
+                  class="sl-hidden md:sl-flex astro-euzvl73o"
+                  style="display: none"
+                >
+                  <kbd class="astro-euzvl73o">Ctrl</kbd
+                  ><kbd class="astro-euzvl73o">K</kbd>
+                </kbd>
+              </button>
+              <dialog
+                style="padding: 0"
+                aria-label="Search"
+                class="astro-euzvl73o"
+              >
+                <div class="dialog-frame sl-flex astro-euzvl73o">
+                  <button
+                    data-close-modal
+                    class="sl-flex md:sl-hidden astro-euzvl73o"
+                  >
+                    Cancel
+                  </button>
+                  <div class="search-container astro-euzvl73o">
+                    <div id="starlight__search" class="astro-euzvl73o"></div>
+                  </div>
+                </div>
+              </dialog>
+            </site-search>
+            <script>
+              (() => {
+                const openBtn = document.querySelector(
+                  "button[data-open-modal]",
+                );
+                const shortcut = openBtn?.querySelector("kbd");
+                if (!openBtn || !(shortcut instanceof HTMLElement)) return;
+                const platformKey = shortcut.querySelector("kbd");
+                if (
+                  platformKey &&
+                  /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform)
+                ) {
+                  platformKey.textContent = "⌘";
+                  openBtn.setAttribute("aria-keyshortcuts", "Meta+K");
+                }
+                shortcut.style.display = "";
+              })();
+            </script>
+            <script
+              type="module"
+              src="/_astro/Search.astro_astro_type_script_index_0_lang.Di8WMhrZ.js"
+            ></script>
+          </div>
+          <div
+            class="sl-hidden md:sl-flex right-group astro-ekyamynf print:hidden"
+          >
+            <div class="sl-flex social-icons astro-ekyamynf">
+              <a
+                href="https://github.com/joe-bell/cva"
+                rel="me"
+                class="sl-flex astro-qyjeki2s"
+                ><span class="astro-qyjeki2s sr-only">GitHub</span
+                ><svg
+                  aria-hidden="true"
+                  class="astro-qyjeki2s astro-jgatps62"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style="--sl-icon-size: 1em"
+                >
+                  <path
+                    d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"
+                  />
+                </svg> </a
+              ><a
+                href="https://joebell.co.uk/bluesky"
+                rel="me"
+                class="sl-flex astro-qyjeki2s"
+                ><span class="astro-qyjeki2s sr-only">BlueSky</span
+                ><svg
+                  aria-hidden="true"
+                  class="astro-qyjeki2s astro-jgatps62"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style="--sl-icon-size: 1em"
+                >
+                  <path
+                    d="M12 10.8c-1-2.1-4-6-6.8-8C2.6 1 1.6 1.3.9 1.6.1 1.9 0 3 0 3.8c0 .7.4 5.6.6 6.4C1.4 13 4.3 14 7 13.6h.4H7c-4 .6-7.4 2-2.8 7 5 5.3 6.8-1 7.8-4.2 1 3.2 2 9.3 7.7 4.3 4.3-4.3 1.2-6.5-2.7-7a9 9 0 0 1-.4-.1h.4c2.7.3 5.6-.6 6.4-3.4.2-.8.6-5.7.6-6.4 0-.7-.1-1.9-.9-2.2-.7-.3-1.7-.7-4.3 1.2-2.8 2-5.7 5.9-6.8 8"
+                  />
+                </svg>
+              </a>
+            </div>
+            <starlight-theme-select>
+              <label style="--sl-select-width: 6.25em" class="astro-4q4xe5ne">
+                <span class="astro-4q4xe5ne sr-only">Select theme</span>
+                <svg
+                  aria-hidden="true"
+                  class="icon label-icon astro-4q4xe5ne astro-jgatps62"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style="--sl-icon-size: 1em"
+                >
+                  <path
+                    d="M21 14h-1V7a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v7H3a1 1 0 0 0-1 1v2a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-2a1 1 0 0 0-1-1ZM6 7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7H6V7Zm14 10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1h16v1Z"
+                  />
+                </svg>
+                <select value="auto" autocomplete="off" class="astro-4q4xe5ne">
+                  <option value="dark" class="astro-4q4xe5ne">Dark</option>
+                  <option value="light" class="astro-4q4xe5ne">Light</option>
+                  <option value="auto" selected class="astro-4q4xe5ne">
+                    Auto
+                  </option>
+                </select>
+                <svg
+                  aria-hidden="true"
+                  class="icon caret astro-4q4xe5ne astro-jgatps62"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style="--sl-icon-size: 1em"
+                >
+                  <path
+                    d="M17 9.17a1 1 0 0 0-1.41 0L12 12.71 8.46 9.17a1 1 0 1 0-1.41 1.42l4.24 4.24a1.002 1.002 0 0 0 1.42 0L17 10.59a1.002 1.002 0 0 0 0-1.42Z"
+                  />
+                </svg>
+              </label>
+            </starlight-theme-select>
+            <script>
+              StarlightThemeProvider.updatePickers();
+            </script>
+            <script type="module">
+              const r = "starlight-theme",
+                o = (e) =>
+                  e === "auto" || e === "dark" || e === "light" ? e : "auto",
+                c = () =>
+                  o(typeof localStorage < "u" && localStorage.getItem(r));
+              function n(e) {
+                typeof localStorage < "u" &&
+                  localStorage.setItem(
+                    r,
+                    e === "light" || e === "dark" ? e : "",
+                  );
+              }
+              const l = () =>
+                matchMedia("(prefers-color-scheme: light)").matches
+                  ? "light"
+                  : "dark";
+              function t(e) {
+                StarlightThemeProvider.updatePickers(e),
+                  (document.documentElement.dataset.theme =
+                    e === "auto" ? l() : e),
+                  n(e);
+              }
+              matchMedia("(prefers-color-scheme: light)").addEventListener(
+                "change",
+                () => {
+                  c() === "auto" && t("auto");
+                },
+              );
+              class s extends HTMLElement {
+                constructor() {
+                  super(),
+                    t(c()),
+                    this.querySelector("select")?.addEventListener(
+                      "change",
+                      (a) => {
+                        a.currentTarget instanceof HTMLSelectElement &&
+                          t(o(a.currentTarget.value));
+                      },
+                    );
+                }
+              }
+              customElements.define("starlight-theme-select", s);
+            </script>
+            <script type="module">
+              class s extends HTMLElement {
+                constructor() {
+                  super();
+                  const e = this.querySelector("select");
+                  e &&
+                    (e.addEventListener("change", (t) => {
+                      t.currentTarget instanceof HTMLSelectElement &&
+                        (window.location.pathname = t.currentTarget.value);
+                    }),
+                    window.addEventListener("pageshow", (t) => {
+                      if (!t.persisted) return;
+                      const n = e.querySelector("option[selected]")?.index;
+                      n !== e.selectedIndex && (e.selectedIndex = n ?? 0);
+                    }));
+                }
+              }
+              customElements.define("starlight-lang-select", s);
+            </script>
+          </div>
+        </div>
+      </header>
+      <nav class="sidebar astro-ydfyqg73 print:hidden" aria-label="Main">
+        <starlight-menu-button class="astro-algvf6tr print:hidden">
+          <button
+            aria-expanded="false"
+            aria-label="Menu"
+            aria-controls="starlight__sidebar"
+            class="sl-flex md:sl-hidden astro-algvf6tr"
+          >
+            <svg
+              aria-hidden="true"
+              class="astro-algvf6tr astro-jgatps62"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              style="--sl-icon-size: 1em"
+            >
+              <path
+                d="M3 8h18a1 1 0 1 0 0-2H3a1 1 0 0 0 0 2Zm18 8H3a1 1 0 0 0 0 2h18a1 1 0 0 0 0-2Zm0-5H3a1 1 0 0 0 0 2h18a1 1 0 0 0 0-2Z"
+              />
+            </svg>
+          </button>
+        </starlight-menu-button>
+        <script type="module">
+          class s extends HTMLElement {
+            constructor() {
+              super(),
+                (this.btn = this.querySelector("button")),
+                this.btn.addEventListener("click", () => this.toggleExpanded());
+              const t = this.closest("nav");
+              t && t.addEventListener("keyup", (e) => this.closeOnEscape(e));
+            }
+            setExpanded(t) {
+              this.setAttribute("aria-expanded", String(t)),
+                document.body.toggleAttribute("data-mobile-menu-expanded", t);
+            }
+            toggleExpanded() {
+              this.setExpanded(this.getAttribute("aria-expanded") !== "true");
+            }
+            closeOnEscape(t) {
+              t.code === "Escape" && (this.setExpanded(!1), this.btn.focus());
+            }
+          }
+          customElements.define("starlight-menu-button", s);
+        </script>
+        <div id="starlight__sidebar" class="sidebar-pane astro-ydfyqg73">
+          <div class="sidebar-content sl-flex astro-ydfyqg73">
+            <sl-sidebar-state-persist
+              data-hash="1s1xey5"
+              class="astro-ytf2sejh"
+            >
+              <script aria-hidden="true">
+                (() => {
+                  try {
+                    if (!matchMedia("(min-width: 50em)").matches) return;
+                    /** @type {HTMLElement | null} */
+                    const target = document.querySelector(
+                      "sl-sidebar-state-persist",
+                    );
+                    const state = JSON.parse(
+                      sessionStorage.getItem("sl-sidebar-state") || "0",
+                    );
+                    if (!target || !state || target.dataset.hash !== state.hash)
+                      return;
+                    window._starlightScrollRestore = state.scroll;
+                    customElements.define(
+                      "sl-sidebar-restore",
+                      class SidebarRestore extends HTMLElement {
+                        connectedCallback() {
+                          try {
+                            const idx = parseInt(this.dataset.index || "");
+                            const details = this.closest("details");
+                            if (details && typeof state.open[idx] === "boolean")
+                              details.open = state.open[idx];
+                          } catch {}
+                        }
+                      },
+                    );
+                  } catch {}
+                })();
+              </script>
+              <ul class="top-level astro-3dqlaqt3">
+                <li class="astro-3dqlaqt3">
+                  <a href="/" aria-current="false" class="large astro-3dqlaqt3">
+                    <span class="astro-3dqlaqt3">Introduction</span>
+                  </a>
+                </li>
+                <li class="astro-3dqlaqt3">
+                  <details open class="astro-3dqlaqt3">
+                    <sl-sidebar-restore data-index="0"></sl-sidebar-restore>
+                    <summary class="astro-3dqlaqt3">
+                      <div class="group-label astro-3dqlaqt3">
+                        <span class="large astro-3dqlaqt3"
+                          >Getting Started</span
+                        >
+                      </div>
+                      <svg
+                        aria-hidden="true"
+                        class="caret astro-3dqlaqt3 astro-jgatps62"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        style="--sl-icon-size: 1.25rem"
+                      >
+                        <path
+                          d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"
+                        />
+                      </svg>
+                    </summary>
+                    <ul class="astro-3dqlaqt3">
+                      <li class="astro-3dqlaqt3">
+                        <a
+                          href="/getting-started/whats-new"
+                          aria-current="false"
+                          class="astro-3dqlaqt3"
+                        >
+                          <span class="astro-3dqlaqt3">What&#39;s New?</span>
+                        </a>
+                      </li>
+                      <li class="astro-3dqlaqt3">
+                        <a
+                          href="/getting-started/installation"
+                          aria-current="false"
+                          class="astro-3dqlaqt3"
+                        >
+                          <span class="astro-3dqlaqt3">Installation</span>
+                        </a>
+                      </li>
+                      <li class="astro-3dqlaqt3">
+                        <a
+                          href="/getting-started/variants"
+                          aria-current="page"
+                          class="astro-3dqlaqt3"
+                        >
+                          <span class="astro-3dqlaqt3">Variants</span>
+                        </a>
+                      </li>
+                      <li class="astro-3dqlaqt3">
+                        <a
+                          href="/getting-started/compound-components"
+                          aria-current="false"
+                          class="astro-3dqlaqt3"
+                        >
+                          <span class="astro-3dqlaqt3"
+                            >Compound Components</span
+                          >
+                        </a>
+                      </li>
+                      <li class="astro-3dqlaqt3">
+                        <a
+                          href="/getting-started/extending-components"
+                          aria-current="false"
+                          class="astro-3dqlaqt3"
+                        >
+                          <span class="astro-3dqlaqt3"
+                            >Extending Components</span
+                          >
+                        </a>
+                      </li>
+                      <li class="astro-3dqlaqt3">
+                        <a
+                          href="/getting-started/composing-components"
+                          aria-current="false"
+                          class="astro-3dqlaqt3"
+                        >
+                          <span class="astro-3dqlaqt3"
+                            >Composing Components</span
+                          >
+                        </a>
+                      </li>
+                      <li class="astro-3dqlaqt3">
+                        <a
+                          href="/getting-started/polymorphism"
+                          aria-current="false"
+                          class="astro-3dqlaqt3"
+                        >
+                          <span class="astro-3dqlaqt3">Polymorphism</span>
+                        </a>
+                      </li>
+                      <li class="astro-3dqlaqt3">
+                        <a
+                          href="/getting-started/typescript"
+                          aria-current="false"
+                          class="astro-3dqlaqt3"
+                        >
+                          <span class="astro-3dqlaqt3">TypeScript</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </details>
+                </li>
+                <li class="astro-3dqlaqt3">
+                  <details open class="astro-3dqlaqt3">
+                    <sl-sidebar-restore data-index="1"></sl-sidebar-restore>
+                    <summary class="astro-3dqlaqt3">
+                      <div class="group-label astro-3dqlaqt3">
+                        <span class="large astro-3dqlaqt3">Examples</span>
+                      </div>
+                      <svg
+                        aria-hidden="true"
+                        class="caret astro-3dqlaqt3 astro-jgatps62"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        style="--sl-icon-size: 1.25rem"
+                      >
+                        <path
+                          d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"
+                        />
+                      </svg>
+                    </summary>
+                    <ul class="astro-3dqlaqt3">
+                      <li class="astro-3dqlaqt3">
+                        <a
+                          href="/examples/11ty"
+                          aria-current="false"
+                          class="astro-3dqlaqt3"
+                        >
+                          <span class="astro-3dqlaqt3">11ty</span>
+                        </a>
+                      </li>
+                      <li class="astro-3dqlaqt3">
+                        <a
+                          href="/examples/astro"
+                          aria-current="false"
+                          class="astro-3dqlaqt3"
+                        >
+                          <span class="astro-3dqlaqt3">Astro</span>
+                        </a>
+                      </li>
+                      <li class="astro-3dqlaqt3">
+                        <a
+                          href="/examples/bem"
+                          aria-current="false"
+                          class="astro-3dqlaqt3"
+                        >
+                          <span class="astro-3dqlaqt3">BEM</span>
+                        </a>
+                      </li>
+                      <li class="astro-3dqlaqt3">
+                        <details open class="astro-3dqlaqt3">
+                          <sl-sidebar-restore
+                            data-index="2"
+                          ></sl-sidebar-restore>
+                          <summary class="astro-3dqlaqt3">
+                            <div class="group-label astro-3dqlaqt3">
+                              <span class="large astro-3dqlaqt3">React</span>
+                            </div>
+                            <svg
+                              aria-hidden="true"
+                              class="caret astro-3dqlaqt3 astro-jgatps62"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              style="--sl-icon-size: 1.25rem"
+                            >
+                              <path
+                                d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"
+                              />
+                            </svg>
+                          </summary>
+                          <ul class="astro-3dqlaqt3">
+                            <li class="astro-3dqlaqt3">
+                              <a
+                                href="/examples/react/css-modules"
+                                aria-current="false"
+                                class="astro-3dqlaqt3"
+                              >
+                                <span class="astro-3dqlaqt3">CSS Modules</span>
+                              </a>
+                            </li>
+                            <li class="astro-3dqlaqt3">
+                              <a
+                                href="/examples/react/tailwindcss"
+                                aria-current="false"
+                                class="astro-3dqlaqt3"
+                              >
+                                <span class="astro-3dqlaqt3">Tailwind CSS</span>
+                              </a>
+                            </li>
+                          </ul>
+                        </details>
+                      </li>
+                      <li class="astro-3dqlaqt3">
+                        <a
+                          href="/examples/svelte"
+                          aria-current="false"
+                          class="astro-3dqlaqt3"
+                        >
+                          <span class="astro-3dqlaqt3">Svelte</span>
+                        </a>
+                      </li>
+                      <li class="astro-3dqlaqt3">
+                        <a
+                          href="/examples/vue"
+                          aria-current="false"
+                          class="astro-3dqlaqt3"
+                        >
+                          <span class="astro-3dqlaqt3">Vue</span>
+                        </a>
+                      </li>
+                      <li class="astro-3dqlaqt3">
+                        <a
+                          href="/examples/other-use-cases"
+                          aria-current="false"
+                          class="astro-3dqlaqt3"
+                        >
+                          <span class="astro-3dqlaqt3">Other Use Cases</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </details>
+                </li>
+                <li class="astro-3dqlaqt3">
+                  <a
+                    href="/api-reference"
+                    aria-current="false"
+                    class="large astro-3dqlaqt3"
+                  >
+                    <span class="astro-3dqlaqt3">API Reference</span>
+                  </a>
+                </li>
+                <li class="astro-3dqlaqt3">
+                  <a
+                    href="/tutorials"
+                    aria-current="false"
+                    class="large astro-3dqlaqt3"
+                  >
+                    <span class="astro-3dqlaqt3">Tutorials</span>
+                  </a>
+                </li>
+                <li class="astro-3dqlaqt3">
+                  <a
+                    href="/faqs"
+                    aria-current="false"
+                    class="large astro-3dqlaqt3"
+                  >
+                    <span class="astro-3dqlaqt3">FAQs</span>
+                  </a>
+                </li>
+                <li class="astro-3dqlaqt3">
+                  <a
+                    href="https://polar.sh/cva"
+                    aria-current="false"
+                    class="large astro-3dqlaqt3"
+                    target="_blank"
+                  >
+                    <span class="astro-3dqlaqt3">Sponsor ♡</span>
+                  </a>
+                </li>
+              </ul>
+              <script aria-hidden="true">
+                (() => {
+                  const scroller =
+                    document.getElementById("starlight__sidebar");
+                  if (!window._starlightScrollRestore || !scroller) return;
+                  scroller.scrollTop = window._starlightScrollRestore;
+                  delete window._starlightScrollRestore;
+                })();
+              </script>
+            </sl-sidebar-state-persist>
+            <div class="md:sl-hidden">
+              <div class="mobile-preferences sl-flex astro-mhg6utb5">
+                <div class="sl-flex social-icons astro-mhg6utb5">
+                  <a
+                    href="https://github.com/joe-bell/cva"
+                    rel="me"
+                    class="sl-flex astro-qyjeki2s"
+                    ><span class="astro-qyjeki2s sr-only">GitHub</span
+                    ><svg
+                      aria-hidden="true"
+                      class="astro-qyjeki2s astro-jgatps62"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      style="--sl-icon-size: 1em"
+                    >
+                      <path
+                        d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"
+                      />
+                    </svg> </a
+                  ><a
+                    href="https://joebell.co.uk/bluesky"
+                    rel="me"
+                    class="sl-flex astro-qyjeki2s"
+                    ><span class="astro-qyjeki2s sr-only">BlueSky</span
+                    ><svg
+                      aria-hidden="true"
+                      class="astro-qyjeki2s astro-jgatps62"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      style="--sl-icon-size: 1em"
+                    >
+                      <path
+                        d="M12 10.8c-1-2.1-4-6-6.8-8C2.6 1 1.6 1.3.9 1.6.1 1.9 0 3 0 3.8c0 .7.4 5.6.6 6.4C1.4 13 4.3 14 7 13.6h.4H7c-4 .6-7.4 2-2.8 7 5 5.3 6.8-1 7.8-4.2 1 3.2 2 9.3 7.7 4.3 4.3-4.3 1.2-6.5-2.7-7a9 9 0 0 1-.4-.1h.4c2.7.3 5.6-.6 6.4-3.4.2-.8.6-5.7.6-6.4 0-.7-.1-1.9-.9-2.2-.7-.3-1.7-.7-4.3 1.2-2.8 2-5.7 5.9-6.8 8"
+                      />
+                    </svg>
+                  </a>
+                </div>
+                <starlight-theme-select>
+                  <label
+                    style="--sl-select-width: 6.25em"
+                    class="astro-4q4xe5ne"
+                  >
+                    <span class="astro-4q4xe5ne sr-only">Select theme</span>
+                    <svg
+                      aria-hidden="true"
+                      class="icon label-icon astro-4q4xe5ne astro-jgatps62"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      style="--sl-icon-size: 1em"
+                    >
+                      <path
+                        d="M21 14h-1V7a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v7H3a1 1 0 0 0-1 1v2a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-2a1 1 0 0 0-1-1ZM6 7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7H6V7Zm14 10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1h16v1Z"
+                      />
+                    </svg>
+                    <select
+                      value="auto"
+                      autocomplete="off"
+                      class="astro-4q4xe5ne"
+                    >
+                      <option value="dark" class="astro-4q4xe5ne">Dark</option>
+                      <option value="light" class="astro-4q4xe5ne">
+                        Light
+                      </option>
+                      <option value="auto" selected class="astro-4q4xe5ne">
+                        Auto
+                      </option>
+                    </select>
+                    <svg
+                      aria-hidden="true"
+                      class="icon caret astro-4q4xe5ne astro-jgatps62"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      style="--sl-icon-size: 1em"
+                    >
+                      <path
+                        d="M17 9.17a1 1 0 0 0-1.41 0L12 12.71 8.46 9.17a1 1 0 1 0-1.41 1.42l4.24 4.24a1.002 1.002 0 0 0 1.42 0L17 10.59a1.002 1.002 0 0 0 0-1.42Z"
+                      />
+                    </svg>
+                  </label>
+                </starlight-theme-select>
+                <script>
+                  StarlightThemeProvider.updatePickers();
+                </script>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div class="main-frame astro-ydfyqg73">
+        <script type="module">
+          const a = document.getElementById("starlight__sidebar"),
+            n = a?.querySelector("sl-sidebar-state-persist"),
+            o = "sl-sidebar-state",
+            i = () => {
+              let t = [];
+              const e = n?.dataset.hash || "";
+              try {
+                const s = sessionStorage.getItem(o),
+                  r = JSON.parse(s || "{}");
+                Array.isArray(r.open) && r.hash === e && (t = r.open);
+              } catch {}
+              return { hash: e, open: t, scroll: a?.scrollTop || 0 };
+            },
+            c = (t) => {
+              try {
+                sessionStorage.setItem(o, JSON.stringify(t));
+              } catch {}
+            },
+            d = () => c(i()),
+            l = (t, e) => {
+              const s = i();
+              (s.open[e] = t), c(s);
+            };
+          n?.addEventListener("click", (t) => {
+            if (!(t.target instanceof Element)) return;
+            const e = t.target.closest("summary")?.closest("details");
+            if (!e) return;
+            const s = e.querySelector("sl-sidebar-restore"),
+              r = parseInt(s?.dataset.index || "");
+            isNaN(r) || l(!e.open, r);
+          });
+          addEventListener("visibilitychange", () => {
+            document.visibilityState === "hidden" && d();
+          });
+          addEventListener("pageHide", d);
+        </script>
+        <div class="lg:sl-flex astro-mguheckz">
+          <aside class="right-sidebar-container astro-mguheckz print:hidden">
+            <div class="right-sidebar astro-mguheckz">
+              <div class="lg:sl-hidden astro-kbzncky5">
+                <mobile-starlight-toc
+                  data-min-h="2"
+                  data-max-h="3"
+                  class="astro-gkwhvwae"
+                  ><nav
+                    aria-labelledby="starlight__on-this-page--mobile"
+                    class="astro-gkwhvwae"
+                  >
+                    <details id="starlight__mobile-toc" class="astro-gkwhvwae">
+                      <summary
+                        id="starlight__on-this-page--mobile"
+                        class="sl-flex astro-gkwhvwae"
+                      >
+                        <div class="toggle sl-flex astro-gkwhvwae">
+                          On this page<svg
+                            aria-hidden="true"
+                            class="caret astro-gkwhvwae astro-jgatps62"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            style="--sl-icon-size: 1rem"
+                          >
+                            <path
+                              d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"
+                            />
+                          </svg>
+                        </div>
+                        <span class="display-current astro-gkwhvwae"></span>
+                      </summary>
+                      <div class="dropdown astro-gkwhvwae">
+                        <ul class="isMobile astro-kbnvsspi" style="--depth: 0">
+                          <li class="astro-kbnvsspi" style="--depth: 0">
+                            <a
+                              href="#_top"
+                              class="astro-kbnvsspi"
+                              style="--depth: 0"
+                            >
+                              <span class="astro-kbnvsspi" style="--depth: 0"
+                                >Overview</span
+                              >
+                            </a>
+                          </li>
+                          <li class="astro-kbnvsspi" style="--depth: 0">
+                            <a
+                              href="#creating-variants"
+                              class="astro-kbnvsspi"
+                              style="--depth: 0"
+                            >
+                              <span class="astro-kbnvsspi" style="--depth: 0"
+                                >Creating Variants</span
+                              >
+                            </a>
+                          </li>
+                          <li class="astro-kbnvsspi" style="--depth: 0">
+                            <a
+                              href="#compound-variants"
+                              class="astro-kbnvsspi"
+                              style="--depth: 0"
+                            >
+                              <span class="astro-kbnvsspi" style="--depth: 0"
+                                >Compound Variants</span
+                              >
+                            </a>
+                            <ul
+                              class="isMobile astro-kbnvsspi"
+                              style="--depth: 1"
+                            >
+                              <li class="astro-kbnvsspi" style="--depth: 1">
+                                <a
+                                  href="#targeting-multiple-variant-conditions"
+                                  class="astro-kbnvsspi"
+                                  style="--depth: 1"
+                                >
+                                  <span
+                                    class="astro-kbnvsspi"
+                                    style="--depth: 1"
+                                    >Targeting Multiple Variant Conditions</span
+                                  >
+                                </a>
+                              </li>
+                            </ul>
+                          </li>
+                          <li class="astro-kbnvsspi" style="--depth: 0">
+                            <a
+                              href="#disabling-variants"
+                              class="astro-kbnvsspi"
+                              style="--depth: 0"
+                            >
+                              <span class="astro-kbnvsspi" style="--depth: 0"
+                                >Disabling Variants</span
+                              >
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                    </details>
+                  </nav></mobile-starlight-toc
+                >
+                <script
+                  type="module"
+                  src="/_astro/MobileTableOfContents.astro_astro_type_script_index_0_lang.CwvHEPnB.js"
+                ></script>
+              </div>
+              <div
+                class="right-sidebar-panel sl-hidden lg:sl-block astro-kbzncky5"
+              >
+                <div class="sl-container astro-kbzncky5">
+                  <starlight-toc data-min-h="2" data-max-h="3"
+                    ><nav aria-labelledby="starlight__on-this-page">
+                      <h2 id="starlight__on-this-page">On this page</h2>
+                      <ul class="astro-kbnvsspi" style="--depth: 0">
+                        <li class="astro-kbnvsspi" style="--depth: 0">
+                          <a
+                            href="#_top"
+                            class="astro-kbnvsspi"
+                            style="--depth: 0"
+                          >
+                            <span class="astro-kbnvsspi" style="--depth: 0"
+                              >Overview</span
+                            >
+                          </a>
+                        </li>
+                        <li class="astro-kbnvsspi" style="--depth: 0">
+                          <a
+                            href="#creating-variants"
+                            class="astro-kbnvsspi"
+                            style="--depth: 0"
+                          >
+                            <span class="astro-kbnvsspi" style="--depth: 0"
+                              >Creating Variants</span
+                            >
+                          </a>
+                        </li>
+                        <li class="astro-kbnvsspi" style="--depth: 0">
+                          <a
+                            href="#compound-variants"
+                            class="astro-kbnvsspi"
+                            style="--depth: 0"
+                          >
+                            <span class="astro-kbnvsspi" style="--depth: 0"
+                              >Compound Variants</span
+                            >
+                          </a>
+                          <ul class="astro-kbnvsspi" style="--depth: 1">
+                            <li class="astro-kbnvsspi" style="--depth: 1">
+                              <a
+                                href="#targeting-multiple-variant-conditions"
+                                class="astro-kbnvsspi"
+                                style="--depth: 1"
+                              >
+                                <span class="astro-kbnvsspi" style="--depth: 1"
+                                  >Targeting Multiple Variant Conditions</span
+                                >
+                              </a>
+                            </li>
+                          </ul>
+                        </li>
+                        <li class="astro-kbnvsspi" style="--depth: 0">
+                          <a
+                            href="#disabling-variants"
+                            class="astro-kbnvsspi"
+                            style="--depth: 0"
+                          >
+                            <span class="astro-kbnvsspi" style="--depth: 0"
+                              >Disabling Variants</span
+                            >
+                          </a>
+                        </li>
+                      </ul>
+                    </nav></starlight-toc
+                  >
+                  <script
+                    type="module"
+                    src="/_astro/TableOfContents.astro_astro_type_script_index_0_lang.CxWEh7Yp.js"
+                  ></script>
+                </div>
+              </div>
+            </div>
+          </aside>
+          <div class="main-pane astro-mguheckz">
+            <main data-pagefind-body class="astro-hkjuoq6j" lang="en" dir="ltr">
+              <div class="content-panel astro-7q45dxqc">
+                <div class="sl-container astro-7q45dxqc">
+                  <h1 id="_top" class="astro-xopw2hy3">Variants</h1>
+                </div>
+              </div>
+              <div class="content-panel astro-7q45dxqc">
+                <div class="sl-container astro-7q45dxqc">
+                  <div class="sl-markdown-content">
+                    <aside
+                      aria-label="Caution"
+                      class="starlight-aside starlight-aside--caution"
+                    >
+                      <p class="starlight-aside__title" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          class="starlight-aside__icon"
+                        >
+                          <path
+                            d="M12 16C11.8022 16 11.6089 16.0587 11.4444 16.1686C11.28 16.2784 11.1518 16.4346 11.0761 16.6173C11.0004 16.8001 10.9806 17.0011 11.0192 17.1951C11.0578 17.3891 11.153 17.5673 11.2929 17.7071C11.4327 17.847 11.6109 17.9422 11.8049 17.9808C11.9989 18.0194 12.2 17.9996 12.3827 17.9239C12.5654 17.8482 12.7216 17.72 12.8315 17.5556C12.9413 17.3911 13 17.1978 13 17C13 16.7348 12.8946 16.4805 12.7071 16.2929C12.5196 16.1054 12.2652 16 12 16ZM22.67 17.47L14.62 3.47003C14.3598 3.00354 13.9798 2.61498 13.5192 2.3445C13.0586 2.07401 12.5341 1.9314 12 1.9314C11.4659 1.9314 10.9414 2.07401 10.4808 2.3445C10.0202 2.61498 9.64019 3.00354 9.38 3.47003L1.38 17.47C1.11079 17.924 0.966141 18.441 0.960643 18.9688C0.955144 19.4966 1.089 20.0166 1.34868 20.4761C1.60837 20.9356 1.9847 21.3185 2.43968 21.5861C2.89466 21.8536 3.41218 21.9964 3.94 22H20.06C20.5921 22.0053 21.1159 21.8689 21.5779 21.6049C22.0399 21.341 22.4234 20.9589 22.689 20.4978C22.9546 20.0368 23.0928 19.5134 23.0895 18.9814C23.0862 18.4493 22.9414 17.9277 22.67 17.47ZM20.94 19.47C20.8523 19.626 20.7245 19.7556 20.5697 19.8453C20.4149 19.935 20.2389 19.9815 20.06 19.98H3.94C3.76111 19.9815 3.5851 19.935 3.43032 19.8453C3.27553 19.7556 3.14765 19.626 3.06 19.47C2.97223 19.318 2.92602 19.1456 2.92602 18.97C2.92602 18.7945 2.97223 18.622 3.06 18.47L11.06 4.47003C11.1439 4.30623 11.2714 4.16876 11.4284 4.07277C11.5855 3.97678 11.766 3.92599 11.95 3.92599C12.134 3.92599 12.3145 3.97678 12.4716 4.07277C12.6286 4.16876 12.7561 4.30623 12.84 4.47003L20.89 18.47C20.9892 18.6199 21.0462 18.7937 21.055 18.9732C21.0638 19.1527 21.0241 19.3312 20.94 19.49V19.47ZM12 8.00003C11.7348 8.00003 11.4804 8.10538 11.2929 8.29292C11.1054 8.48046 11 8.73481 11 9.00003V13C11 13.2652 11.1054 13.5196 11.2929 13.7071C11.4804 13.8947 11.7348 14 12 14C12.2652 14 12.5196 13.8947 12.7071 13.7071C12.8946 13.5196 13 13.2652 13 13V9.00003C13 8.73481 12.8946 8.48046 12.7071 8.29292C12.5196 8.10538 12.2652 8.00003 12 8.00003Z"
+                          ></path></svg
+                        >Caution
+                      </p>
+                      <div class="starlight-aside__content">
+                        <p>
+                          <strong
+                            >You are currently viewing the docs for
+                            <code dir="auto">cva@beta</code></strong
+                          ><br />
+                          For stable documentation, please visit
+                          <a href="https://cva.style">cva.style</a>.
+                        </p>
+                      </div>
+                    </aside>
+                    <div
+                      id="carbon-container"
+                      class="h-[154px] *:!mt-0 [&+:where(h1,h2,h3,h4,h5,h6)]:!mt-4"
+                    >
+                      <script
+                        async
+                        type="text/javascript"
+                        src="//cdn.carbonads.com/carbon.js?serve=CW7IC2QE&placement=cvastyle&format=responsive"
+                        id="_carbonads_js"
+                      ></script>
+                    </div>
+                    <h2 id="creating-variants">Creating Variants</h2>
+                    <aside
+                      aria-label="Note"
+                      class="starlight-aside starlight-aside--note"
+                    >
+                      <p class="starlight-aside__title" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          class="starlight-aside__icon"
+                        >
+                          <path
+                            d="M12 11C11.7348 11 11.4804 11.1054 11.2929 11.2929C11.1054 11.4804 11 11.7348 11 12V16C11 16.2652 11.1054 16.5196 11.2929 16.7071C11.4804 16.8946 11.7348 17 12 17C12.2652 17 12.5196 16.8946 12.7071 16.7071C12.8946 16.5196 13 16.2652 13 16V12C13 11.7348 12.8946 11.4804 12.7071 11.2929C12.5196 11.1054 12.2652 11 12 11ZM12.38 7.08C12.1365 6.97998 11.8635 6.97998 11.62 7.08C11.4973 7.12759 11.3851 7.19896 11.29 7.29C11.2017 7.3872 11.1306 7.49882 11.08 7.62C11.024 7.73868 10.9966 7.86882 11 8C10.9992 8.13161 11.0245 8.26207 11.0742 8.38391C11.124 8.50574 11.1973 8.61656 11.29 8.71C11.3872 8.79833 11.4988 8.86936 11.62 8.92C11.7715 8.98224 11.936 9.00632 12.099 8.99011C12.2619 8.97391 12.4184 8.91792 12.5547 8.82707C12.691 8.73622 12.8029 8.61328 12.8805 8.46907C12.9582 8.32486 12.9992 8.16378 13 8C12.9963 7.73523 12.8927 7.48163 12.71 7.29C12.6149 7.19896 12.5028 7.12759 12.38 7.08ZM12 2C10.0222 2 8.08879 2.58649 6.4443 3.6853C4.79981 4.78412 3.51809 6.3459 2.76121 8.17317C2.00433 10.0004 1.8063 12.0111 2.19215 13.9509C2.578 15.8907 3.53041 17.6725 4.92894 19.0711C6.32746 20.4696 8.10929 21.422 10.0491 21.8079C11.9889 22.1937 13.9996 21.9957 15.8268 21.2388C17.6541 20.4819 19.2159 19.2002 20.3147 17.5557C21.4135 15.9112 22 13.9778 22 12C22 10.6868 21.7413 9.38642 21.2388 8.17317C20.7363 6.95991 19.9997 5.85752 19.0711 4.92893C18.1425 4.00035 17.0401 3.26375 15.8268 2.7612C14.6136 2.25866 13.3132 2 12 2ZM12 20C10.4178 20 8.87104 19.5308 7.55544 18.6518C6.23985 17.7727 5.21447 16.5233 4.60897 15.0615C4.00347 13.5997 3.84504 11.9911 4.15372 10.4393C4.4624 8.88743 5.22433 7.46197 6.34315 6.34315C7.46197 5.22433 8.88743 4.4624 10.4393 4.15372C11.9911 3.84504 13.5997 4.00346 15.0615 4.60896C16.5233 5.21447 17.7727 6.23984 18.6518 7.55544C19.5308 8.87103 20 10.4177 20 12C20 14.1217 19.1572 16.1566 17.6569 17.6569C16.1566 19.1571 14.1217 20 12 20Z"
+                          ></path></svg
+                        >Note
+                      </p>
+                      <div class="starlight-aside__content">
+                        <p>
+                          Although <code dir="auto">cva</code> is a
+                          <a href="https://bundlephobia.com/package/cva"
+                            ><strong>tiny</strong></a
+                          >
+                          library, it’s best to use in a SSR/SSG environment –
+                          your user probably doesn’t need this JavaScript,
+                          especially for static components.
+                        </p>
+                      </div>
+                    </aside>
+                    <p>
+                      To kick things off, let’s build a “basic”
+                      <code dir="auto">button</code> component, using
+                      <code dir="auto">cva</code> to handle our variant’s
+                      classes
+                    </p>
+                    <aside
+                      aria-label="Note"
+                      class="starlight-aside starlight-aside--note"
+                    >
+                      <p class="starlight-aside__title" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          class="starlight-aside__icon"
+                        >
+                          <path
+                            d="M12 11C11.7348 11 11.4804 11.1054 11.2929 11.2929C11.1054 11.4804 11 11.7348 11 12V16C11 16.2652 11.1054 16.5196 11.2929 16.7071C11.4804 16.8946 11.7348 17 12 17C12.2652 17 12.5196 16.8946 12.7071 16.7071C12.8946 16.5196 13 16.2652 13 16V12C13 11.7348 12.8946 11.4804 12.7071 11.2929C12.5196 11.1054 12.2652 11 12 11ZM12.38 7.08C12.1365 6.97998 11.8635 6.97998 11.62 7.08C11.4973 7.12759 11.3851 7.19896 11.29 7.29C11.2017 7.3872 11.1306 7.49882 11.08 7.62C11.024 7.73868 10.9966 7.86882 11 8C10.9992 8.13161 11.0245 8.26207 11.0742 8.38391C11.124 8.50574 11.1973 8.61656 11.29 8.71C11.3872 8.79833 11.4988 8.86936 11.62 8.92C11.7715 8.98224 11.936 9.00632 12.099 8.99011C12.2619 8.97391 12.4184 8.91792 12.5547 8.82707C12.691 8.73622 12.8029 8.61328 12.8805 8.46907C12.9582 8.32486 12.9992 8.16378 13 8C12.9963 7.73523 12.8927 7.48163 12.71 7.29C12.6149 7.19896 12.5028 7.12759 12.38 7.08ZM12 2C10.0222 2 8.08879 2.58649 6.4443 3.6853C4.79981 4.78412 3.51809 6.3459 2.76121 8.17317C2.00433 10.0004 1.8063 12.0111 2.19215 13.9509C2.578 15.8907 3.53041 17.6725 4.92894 19.0711C6.32746 20.4696 8.10929 21.422 10.0491 21.8079C11.9889 22.1937 13.9996 21.9957 15.8268 21.2388C17.6541 20.4819 19.2159 19.2002 20.3147 17.5557C21.4135 15.9112 22 13.9778 22 12C22 10.6868 21.7413 9.38642 21.2388 8.17317C20.7363 6.95991 19.9997 5.85752 19.0711 4.92893C18.1425 4.00035 17.0401 3.26375 15.8268 2.7612C14.6136 2.25866 13.3132 2 12 2ZM12 20C10.4178 20 8.87104 19.5308 7.55544 18.6518C6.23985 17.7727 5.21447 16.5233 4.60897 15.0615C4.00347 13.5997 3.84504 11.9911 4.15372 10.4393C4.4624 8.88743 5.22433 7.46197 6.34315 6.34315C7.46197 5.22433 8.88743 4.4624 10.4393 4.15372C11.9911 3.84504 13.5997 4.00346 15.0615 4.60896C16.5233 5.21447 17.7727 6.23984 18.6518 7.55544C19.5308 8.87103 20 10.4177 20 12C20 14.1217 19.1572 16.1566 17.6569 17.6569C16.1566 19.1571 14.1217 20 12 20Z"
+                          ></path></svg
+                        >Note
+                      </p>
+                      <div class="starlight-aside__content">
+                        <p>Use of Tailwind CSS is optional</p>
+                      </div>
+                    </aside>
+                    <div class="expressive-code">
+                      <link rel="stylesheet" href="/_astro/ec.rh18c.css" />
+                      <script type="module" src="/_astro/ec.8zarh.js"></script>
+                      <figure class="frame has-title not-content">
+                        <figcaption class="header">
+                          <span class="title">components/button.ts</span>
+                        </figcaption>
+                        <pre
+                          data-language="ts"
+                        ><code><div class="ec-line"><div class="code"><span style="--0:#C792EA;--1:#8844AE">import</span><span style="--0:#D6DEEB;--1:#403F53"> { cva } </span><span style="--0:#C792EA;--1:#8844AE">from</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">cva</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">;</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#C792EA;--1:#8844AE">const </span><span style="--0:#82AAFF;--1:#3B61B0">button</span><span style="--0:#C792EA;--1:#8844AE"> = </span><span style="--0:#82AAFF;--1:#3B61B0">cva</span><span style="--0:#D6DEEB;--1:#403F53">(</span><span style="--0:#C792EA;--1:#8844AE">{</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">base: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">rounded border font-semibold</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#919F9F;--1:#5D6376">// **or**</span></div></div><div class="ec-line"><div class="code"><span class="indent">  </span><span style="--0:#919F9F;--1:#5D6376">// base: ["font-semibold", "border", "rounded"],</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">variants: {</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">    </span></span><span style="--0:#C792EA;--1:#8844AE">intent: {</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">      </span></span><span style="--0:#C792EA;--1:#8844AE">primary: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">border-transparent bg-blue-500 text-white hover:bg-blue-600</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span class="indent">      </span><span style="--0:#919F9F;--1:#5D6376">// **or**</span></div></div><div class="ec-line"><div class="code"><span class="indent">      </span><span style="--0:#919F9F;--1:#5D6376">// primary: [</span></div></div><div class="ec-line"><div class="code"><span class="indent">      </span><span style="--0:#919F9F;--1:#5D6376">//   "bg-blue-500",</span></div></div><div class="ec-line"><div class="code"><span class="indent">      </span><span style="--0:#919F9F;--1:#5D6376">//   "text-white",</span></div></div><div class="ec-line"><div class="code"><span class="indent">      </span><span style="--0:#919F9F;--1:#5D6376">//   "border-transparent",</span></div></div><div class="ec-line"><div class="code"><span class="indent">      </span><span style="--0:#919F9F;--1:#5D6376">//   "hover:bg-blue-600",</span></div></div><div class="ec-line"><div class="code"><span class="indent">      </span><span style="--0:#919F9F;--1:#5D6376">// ],</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">      </span></span><span style="--0:#C792EA;--1:#8844AE">secondary: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">border-gray-400 bg-white text-gray-800 hover:bg-gray-100</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">    </span></span><span style="--0:#C792EA;--1:#8844AE">},</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">    </span></span><span style="--0:#C792EA;--1:#8844AE">size: {</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">      </span></span><span style="--0:#C792EA;--1:#8844AE">small: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">px-2 py-1 text-sm</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">      </span></span><span style="--0:#C792EA;--1:#8844AE">medium: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">px-4 py-2 text-base</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">    </span></span><span style="--0:#C792EA;--1:#8844AE">},</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">},</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">compoundVariants:</span><span style="--0:#D6DEEB;--1:#403F53"> [</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">    </span></span><span style="--0:#D6DEEB;--1:#403F53">{</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">      </span></span><span style="--0:#D6DEEB;--1:#403F53">intent: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">primary</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">      </span></span><span style="--0:#D6DEEB;--1:#403F53">size: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">medium</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">      </span></span><span style="--0:#D6DEEB;--1:#403F53">class: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">uppercase</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">,</span></div></div><div class="ec-line"><div class="code"><span class="indent">      </span><span style="--0:#919F9F;--1:#5D6376">// **or** if you're a React.js user, `className` may feel more consistent:</span></div></div><div class="ec-line"><div class="code"><span class="indent">      </span><span style="--0:#919F9F;--1:#5D6376">// className: "uppercase"</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">    </span></span><span style="--0:#D6DEEB;--1:#403F53">},</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">  </span></span><span style="--0:#D6DEEB;--1:#403F53">]</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">defaultVariants: {</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">    </span></span><span style="--0:#C792EA;--1:#8844AE">intent: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">primary</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">    </span></span><span style="--0:#C792EA;--1:#8844AE">size: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">medium</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">},</span></div></div><div class="ec-line"><div class="code"><span style="--0:#C792EA;--1:#8844AE">}</span><span style="--0:#D6DEEB;--1:#403F53">);</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">button</span><span style="--0:#D6DEEB;--1:#403F53">();</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5D6376">// => "font-semibold border rounded bg-blue-500 text-white border-transparent hover:bg-blue-600 text-base py-2 px-4 uppercase"</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">button</span><span style="--0:#D6DEEB;--1:#403F53">({ intent: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">secondary</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">, size: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">small</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> });</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5D6376">// => "font-semibold border rounded bg-white text-gray-800 border-gray-400 hover:bg-gray-100 text-sm py-1 px-2"</span></div></div></code></pre>
+                        <div class="copy">
+                          <button
+                            title="Copy to clipboard"
+                            data-copied="Copied!"
+                            data-code="import { cva } from &#x22;cva&#x22;;const button = cva({  base: &#x22;rounded border font-semibold&#x22;,  // **or**  // base: [&#x22;font-semibold&#x22;, &#x22;border&#x22;, &#x22;rounded&#x22;],  variants: {    intent: {      primary: &#x22;border-transparent bg-blue-500 text-white hover:bg-blue-600&#x22;,      // **or**      // primary: [      //   &#x22;bg-blue-500&#x22;,      //   &#x22;text-white&#x22;,      //   &#x22;border-transparent&#x22;,      //   &#x22;hover:bg-blue-600&#x22;,      // ],      secondary: &#x22;border-gray-400 bg-white text-gray-800 hover:bg-gray-100&#x22;,    },    size: {      small: &#x22;px-2 py-1 text-sm&#x22;,      medium: &#x22;px-4 py-2 text-base&#x22;,    },  },  compoundVariants: [    {      intent: &#x22;primary&#x22;,      size: &#x22;medium&#x22;,      class: &#x22;uppercase&#x22;,      // **or** if you&#x27;re a React.js user, &#x60;className&#x60; may feel more consistent:      // className: &#x22;uppercase&#x22;    },  ],  defaultVariants: {    intent: &#x22;primary&#x22;,    size: &#x22;medium&#x22;,  },});button();// => &#x22;font-semibold border rounded bg-blue-500 text-white border-transparent hover:bg-blue-600 text-base py-2 px-4 uppercase&#x22;button({ intent: &#x22;secondary&#x22;, size: &#x22;small&#x22; });// => &#x22;font-semibold border rounded bg-white text-gray-800 border-gray-400 hover:bg-gray-100 text-sm py-1 px-2&#x22;"
+                          >
+                            <div></div>
+                          </button>
+                        </div>
+                      </figure>
+                    </div>
+                    <h2 id="compound-variants">Compound Variants</h2>
+                    <p>
+                      Variants that apply when multiple other variant conditions
+                      are met.
+                    </p>
+                    <div class="expressive-code">
+                      <figure class="frame has-title not-content">
+                        <figcaption class="header">
+                          <span class="title">components/button.ts</span>
+                        </figcaption>
+                        <pre
+                          data-language="ts"
+                        ><code><div class="ec-line"><div class="code"><span style="--0:#C792EA;--1:#8844AE">import</span><span style="--0:#D6DEEB;--1:#403F53"> { cva } </span><span style="--0:#C792EA;--1:#8844AE">from</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">cva</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">;</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#C792EA;--1:#8844AE">const </span><span style="--0:#82AAFF;--1:#3B61B0">button</span><span style="--0:#C792EA;--1:#8844AE"> = </span><span style="--0:#82AAFF;--1:#3B61B0">cva</span><span style="--0:#D6DEEB;--1:#403F53">(</span><span style="--0:#C792EA;--1:#8844AE">{</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">base: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">…</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">variants: {</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">    </span></span><span style="--0:#C792EA;--1:#8844AE">intent: { primary: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">…</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">, secondary: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">…</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE"> },</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">    </span></span><span style="--0:#C792EA;--1:#8844AE">size: { small: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">…</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">, medium: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">…</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE"> },</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">},</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">compoundVariants:</span><span style="--0:#D6DEEB;--1:#403F53"> [</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#919F9F;--1:#5D6376">// Applied via:</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#919F9F;--1:#5D6376">//   `button({ intent: "primary", size: "medium" })`</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">    </span></span><span style="--0:#D6DEEB;--1:#403F53">{</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">      </span></span><span style="--0:#D6DEEB;--1:#403F53">intent: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">primary</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">      </span></span><span style="--0:#D6DEEB;--1:#403F53">size: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">medium</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">      </span></span><span style="--0:#D6DEEB;--1:#403F53">class: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">…</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">    </span></span><span style="--0:#D6DEEB;--1:#403F53">},</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">  </span></span><span style="--0:#D6DEEB;--1:#403F53">]</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span style="--0:#C792EA;--1:#8844AE">}</span><span style="--0:#D6DEEB;--1:#403F53">);</span></div></div></code></pre>
+                        <div class="copy">
+                          <button
+                            title="Copy to clipboard"
+                            data-copied="Copied!"
+                            data-code="import { cva } from &#x22;cva&#x22;;const button = cva({  base: &#x22;…&#x22;,  variants: {    intent: { primary: &#x22;…&#x22;, secondary: &#x22;…&#x22; },    size: { small: &#x22;…&#x22;, medium: &#x22;…&#x22; },  },  compoundVariants: [    // Applied via:    //   &#x60;button({ intent: &#x22;primary&#x22;, size: &#x22;medium&#x22; })&#x60;    {      intent: &#x22;primary&#x22;,      size: &#x22;medium&#x22;,      class: &#x22;…&#x22;,    },  ],});"
+                          >
+                            <div></div>
+                          </button>
+                        </div>
+                      </figure>
+                    </div>
+                    <h3 id="targeting-multiple-variant-conditions">
+                      Targeting Multiple Variant Conditions
+                    </h3>
+                    <div class="expressive-code">
+                      <figure class="frame has-title not-content">
+                        <figcaption class="header">
+                          <span class="title">components/button.ts</span>
+                        </figcaption>
+                        <pre
+                          data-language="ts"
+                        ><code><div class="ec-line"><div class="code"><span style="--0:#C792EA;--1:#8844AE">import</span><span style="--0:#D6DEEB;--1:#403F53"> { cva } </span><span style="--0:#C792EA;--1:#8844AE">from</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">cva</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">;</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#C792EA;--1:#8844AE">const </span><span style="--0:#82AAFF;--1:#3B61B0">button</span><span style="--0:#C792EA;--1:#8844AE"> = </span><span style="--0:#82AAFF;--1:#3B61B0">cva</span><span style="--0:#D6DEEB;--1:#403F53">(</span><span style="--0:#C792EA;--1:#8844AE">{</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">base: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">…</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">variants: {</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">    </span></span><span style="--0:#C792EA;--1:#8844AE">intent: { primary: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">…</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">, secondary: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">…</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE"> },</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">    </span></span><span style="--0:#C792EA;--1:#8844AE">size: { small: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">…</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">, medium: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">…</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE"> },</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">},</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">compoundVariants:</span><span style="--0:#D6DEEB;--1:#403F53"> [</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#919F9F;--1:#5D6376">// Applied via:</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#919F9F;--1:#5D6376">//   `button({ intent: "primary", size: "medium" })`</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#919F9F;--1:#5D6376">//     or</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#919F9F;--1:#5D6376">//   `button({ intent: "secondary", size: "medium" })`</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">    </span></span><span style="--0:#D6DEEB;--1:#403F53">{</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">      </span></span><span style="--0:#D6DEEB;--1:#403F53">intent: [</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">primary</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">, </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">secondary</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">],</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">      </span></span><span style="--0:#D6DEEB;--1:#403F53">size: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">medium</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">      </span></span><span style="--0:#D6DEEB;--1:#403F53">class: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">…</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">    </span></span><span style="--0:#D6DEEB;--1:#403F53">},</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#D6DEEB;--1:#403F53">  </span></span><span style="--0:#D6DEEB;--1:#403F53">]</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span style="--0:#C792EA;--1:#8844AE">}</span><span style="--0:#D6DEEB;--1:#403F53">);</span></div></div></code></pre>
+                        <div class="copy">
+                          <button
+                            title="Copy to clipboard"
+                            data-copied="Copied!"
+                            data-code="import { cva } from &#x22;cva&#x22;;const button = cva({  base: &#x22;…&#x22;,  variants: {    intent: { primary: &#x22;…&#x22;, secondary: &#x22;…&#x22; },    size: { small: &#x22;…&#x22;, medium: &#x22;…&#x22; },  },  compoundVariants: [    // Applied via:    //   &#x60;button({ intent: &#x22;primary&#x22;, size: &#x22;medium&#x22; })&#x60;    //     or    //   &#x60;button({ intent: &#x22;secondary&#x22;, size: &#x22;medium&#x22; })&#x60;    {      intent: [&#x22;primary&#x22;, &#x22;secondary&#x22;],      size: &#x22;medium&#x22;,      class: &#x22;…&#x22;,    },  ],});"
+                          >
+                            <div></div>
+                          </button>
+                        </div>
+                      </figure>
+                    </div>
+                    <h2 id="disabling-variants">Disabling Variants</h2>
+                    <p>
+                      Want to disable a variant completely? Provide an option
+                      with a value of <code dir="auto">null</code>.
+                    </p>
+                    <p>
+                      If you’re stuck on naming, we recommend setting an
+                      explicit <code dir="auto">"unset"</code> option (<a
+                        href="https://developer.mozilla.org/en-US/docs/Web/CSS/unset"
+                        >similar to the CSS keyword</a
+                      >).
+                    </p>
+                    <div class="expressive-code">
+                      <figure class="frame not-content">
+                        <figcaption class="header"></figcaption>
+                        <pre
+                          data-language="ts"
+                        ><code><div class="ec-line"><div class="code"><span style="--0:#C792EA;--1:#8844AE">import</span><span style="--0:#D6DEEB;--1:#403F53"> { cva } </span><span style="--0:#C792EA;--1:#8844AE">from</span><span style="--0:#D6DEEB;--1:#403F53"> </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">cva</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53">;</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#C792EA;--1:#8844AE">const </span><span style="--0:#82AAFF;--1:#3B61B0">button</span><span style="--0:#C792EA;--1:#8844AE"> = </span><span style="--0:#82AAFF;--1:#3B61B0">cva</span><span style="--0:#D6DEEB;--1:#403F53">(</span><span style="--0:#C792EA;--1:#8844AE">{</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">base: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">button</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">variants: {</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">    </span></span><span style="--0:#C792EA;--1:#8844AE">intent: {</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">      </span></span><span style="--0:#C792EA;--1:#8844AE">unset: </span><span style="--0:#FF6A83;--1:#A24848">null</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">      </span></span><span style="--0:#C792EA;--1:#8844AE">primary: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">button--primary</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">      </span></span><span style="--0:#C792EA;--1:#8844AE">secondary: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">button--secondary</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#C792EA;--1:#8844AE">,</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">    </span></span><span style="--0:#C792EA;--1:#8844AE">},</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#C792EA;--1:#8844AE">  </span></span><span style="--0:#C792EA;--1:#8844AE">},</span></div></div><div class="ec-line"><div class="code"><span style="--0:#C792EA;--1:#8844AE">}</span><span style="--0:#D6DEEB;--1:#403F53">);</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#82AAFF;--1:#3B61B0">button</span><span style="--0:#D6DEEB;--1:#403F53">({ intent: </span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#ECC48D;--1:#984E4D">unset</span><span style="--0:#D9F5DD;--1:#111111">"</span><span style="--0:#D6DEEB;--1:#403F53"> });</span></div></div><div class="ec-line"><div class="code"><span style="--0:#919F9F;--1:#5D6376">// => "button"</span></div></div></code></pre>
+                        <div class="copy">
+                          <button
+                            title="Copy to clipboard"
+                            data-copied="Copied!"
+                            data-code="import { cva } from &#x22;cva&#x22;;const button = cva({  base: &#x22;button&#x22;,  variants: {    intent: {      unset: null,      primary: &#x22;button--primary&#x22;,      secondary: &#x22;button--secondary&#x22;,    },  },});button({ intent: &#x22;unset&#x22; });// => &#x22;button&#x22;"
+                          >
+                            <div></div>
+                          </button>
+                        </div>
+                      </figure>
+                    </div>
+                  </div>
+                  <footer class="sl-flex astro-easmpgef">
+                    <div class="meta sl-flex astro-easmpgef">
+                      <a
+                        href="https://github.com/joe-bell/cva/tree/main/docs/beta/src/content/docs/getting-started/variants.mdx"
+                        class="sl-flex astro-wz2viqij print:hidden"
+                        ><svg
+                          aria-hidden="true"
+                          class="astro-wz2viqij astro-jgatps62"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          style="--sl-icon-size: 1.2em"
+                        >
+                          <path
+                            d="M22 7.24a1 1 0 0 0-.29-.71l-4.24-4.24a1 1 0 0 0-1.1-.22 1 1 0 0 0-.32.22l-2.83 2.83L2.29 16.05a1 1 0 0 0-.29.71V21a1 1 0 0 0 1 1h4.24a1 1 0 0 0 .76-.29l10.87-10.93L21.71 8c.1-.1.17-.2.22-.33a1 1 0 0 0 0-.24v-.14l.07-.05ZM6.83 20H4v-2.83l9.93-9.93 2.83 2.83L6.83 20ZM18.17 8.66l-2.83-2.83 1.42-1.41 2.82 2.82-1.41 1.42Z"
+                          />
+                        </svg>
+                        Edit page</a
+                      >
+                    </div>
+                    <div
+                      class="pagination-links astro-pduzxsbj print:hidden"
+                      dir="ltr"
+                    >
+                      <a
+                        href="/getting-started/installation"
+                        rel="prev"
+                        class="astro-pduzxsbj"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="astro-pduzxsbj astro-jgatps62"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          style="--sl-icon-size: 1.5rem"
+                        >
+                          <path
+                            d="M17 11H9.41l3.3-3.29a1.004 1.004 0 1 0-1.42-1.42l-5 5a1 1 0 0 0-.21.33 1 1 0 0 0 0 .76 1 1 0 0 0 .21.33l5 5a1.002 1.002 0 0 0 1.639-.325 1 1 0 0 0-.219-1.095L9.41 13H17a1 1 0 0 0 0-2Z"
+                          />
+                        </svg>
+                        <span class="astro-pduzxsbj">
+                          Previous <br class="astro-pduzxsbj" />
+                          <span class="link-title astro-pduzxsbj"
+                            >Installation</span
+                          >
+                        </span>
+                      </a>
+                      <a
+                        href="/getting-started/compound-components"
+                        rel="next"
+                        class="astro-pduzxsbj"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="astro-pduzxsbj astro-jgatps62"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          style="--sl-icon-size: 1.5rem"
+                        >
+                          <path
+                            d="M17.92 11.62a1.001 1.001 0 0 0-.21-.33l-5-5a1.003 1.003 0 1 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1.002 1.002 0 0 0 .325 1.639 1 1 0 0 0 1.095-.219l5-5a1 1 0 0 0 .21-.33 1 1 0 0 0 0-.76Z"
+                          />
+                        </svg>
+                        <span class="astro-pduzxsbj">
+                          Next <br class="astro-pduzxsbj" />
+                          <span class="link-title astro-pduzxsbj"
+                            >Compound Components</span
+                          >
+                        </span>
+                      </a>
+                    </div>
+                  </footer>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
