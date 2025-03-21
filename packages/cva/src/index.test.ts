@@ -248,6 +248,7 @@ describe("getSchema", () => {
     });
 
     const card = compose(box, stack);
+    // https://github.com/joe-bell/cva/pull/333#issuecomment-2621011736
     // TODO: fix types
     // @ts-expect-error
     const schema = getSchema(card);
@@ -263,7 +264,10 @@ describe("getSchema", () => {
       },
     });
 
-    expectTypeOf(schema).toEqualTypeOf<// TODO: fix types
+    expectTypeOf(
+      schema,
+    ).toEqualTypeOf<// https://github.com/joe-bell/cva/pull/333#issuecomment-2621011736
+    // TODO: fix types
     // @ts-expect-error
     {
       shadow: {
@@ -2000,9 +2004,7 @@ describe("defineConfig", () => {
         const componentClassListSplit = componentClassList.split(" ");
 
         expectTypeOf(component).toBeFunction();
-        // TODO: Fix test!
         expect(componentClassListSplit[0]).toBe(PREFIX);
-        // TODO: Fix test!
         expect(
           componentClassListSplit[componentClassListSplit.length - 1],
         ).toBe(SUFFIX);
