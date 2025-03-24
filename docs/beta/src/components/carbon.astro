@@ -4,7 +4,12 @@
 
 <div
   id="carbon-container"
-  class="h-[154px] *:!mt-0 [&+:where(h1,h2,h3,h4,h5,h6)]:!mt-4"
+  class:list={[
+    "relative",
+    "h-[154px]",
+    "*:!mt-0",
+    "[&+:where(h1,h2,h3,h4,h5,h6)]:!mt-4",
+  ]}
 >
   <script
     is:inline
@@ -13,3 +18,17 @@
     src="//cdn.carbonads.com/carbon.js?serve=CW7IC2QE&placement=cvastyle&format=responsive"
     id="_carbonads_js"></script>
 </div>
+
+<style scoped>
+  #carbon-container::after {
+    content: "";
+    position: absolute;
+    display: block;
+    inset: 0;
+    height: 8.125rem;
+    max-width: 25rem;
+    background-color: hsl(0, 0%, 98%);
+    border: solid 1px hsl(0, 0%, 92%);
+    z-index: -1;
+  }
+</style>

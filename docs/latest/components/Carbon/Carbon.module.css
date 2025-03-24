@@ -1,0 +1,13 @@
+.root {
+  height: 154px;
+}
+
+.root {
+  position: relative;
+  margin-top: 0.5rem !important;
+  padding-bottom: 1rem !important;
+}
+
+.root + *:where(h1, h2, h3, h4, h5, h6) {
+  margin-top: 1rem !important;
+}
