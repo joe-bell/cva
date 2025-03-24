@@ -11,3 +11,15 @@
 .root + *:where(h1, h2, h3, h4, h5, h6) {
   margin-top: 1rem !important;
 }
+
+.root::after {
+  content: "";
+  position: absolute;
+  display: block;
+  inset: 0;
+  height: 8.125rem;
+  max-width: 25rem;
+  background-color: hsl(0, 0%, 98%);
+  border: solid 1px hsl(0, 0%, 92%);
+  z-index: -1;
+}
