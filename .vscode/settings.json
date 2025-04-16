@@ -1,12 +1,6 @@
 {
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "prettier.requireConfig": true,
-  "tailwindCSS.experimental.classRegex": [
-    [
-      ["classNames\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
-      ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
-      ["cx\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
-    ]
-  ],
+  "tailwindCSS.classFunctions": ["classNames", "cva", "cx"],
   "typescript.tsdk": "node_modules/typescript/lib"
 }
