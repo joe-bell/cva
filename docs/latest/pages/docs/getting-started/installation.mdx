@@ -77,10 +77,7 @@ You can enable autocompletion inside `cva` using the steps below:
 
     ```json
     {
-      "tailwindCSS.experimental.classRegex": [
-        ["cva\\(((?:[^()]|\\([^()]*\\))*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
-        ["cx\\(((?:[^()]|\\([^()]*\\))*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-      ]
+      "tailwindCSS.classFunctions": ["cva", "cx"]
     }
     ```
 
@@ -94,12 +91,7 @@ You can enable autocompletion inside `cva` using the steps below:
       "lsp": {
         "tailwindcss-language-server": {
           "settings": {
-            "experimental": {
-              "classRegex": [
-                ["cva\\(((?:[^()]|\\([^()]*\\))*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
-                ["cx\\(((?:[^()]|\\([^()]*\\))*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-              ]
-            }
+            "classFunctions": ["cva", "cx"],
           }
         }
       }
@@ -117,12 +109,7 @@ You can enable autocompletion inside `cva` using the steps below:
     require 'lspconfig'.tailwindcss.setup({
       settings = {
         tailwindCSS = {
-          experimental = {
-            classRegex = {
-              { "cva\\(((?:[^()]|\\([^()]*\\))*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]" },
-              { "cx\\(((?:[^()]|\\([^()]*\\))*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)" }
-            },
-          },
+          classFunctions = { "cva", "cx" },
         },
       },
     })
@@ -139,12 +126,7 @@ You can enable autocompletion inside `cva` using the steps below:
 
     ```json
     {
-      "experimental": {
-        "classRegex": [
-          ["cva\\(((?:[^()]|\\([^()]*\\))*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
-          ["cx\\(((?:[^()]|\\([^()]*\\))*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-        ]
-      }
+      "classFunctions": ["cva", "cx"]
     }
     ```
 
