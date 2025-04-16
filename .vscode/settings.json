@@ -1,6 +1,6 @@
 {
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "prettier.requireConfig": true,
-  "tailwindCSS.classFunctions": ["classNames", "cva", "cx"],
+  "tailwindCSS.classFunctions": ["cva", "cx"],
   "typescript.tsdk": "node_modules/typescript/lib"
 }
