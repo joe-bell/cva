@@ -80,7 +80,6 @@
   "size-limit": [
     {
       "path": "dist/index.js",
-      "import": "{ cva }",
       "limit": "1.6KB"
     }
   ]
