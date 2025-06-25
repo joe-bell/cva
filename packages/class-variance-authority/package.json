@@ -40,7 +40,7 @@
     "build:cjs": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.js -C module.type=commonjs",
     "build:esm": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.mjs -C module.type=es6 ",
     "build:tsc": "tsc --project .config/tsconfig.build.json",
-    "bundlesize": "pnpm build && bundlesize -f 'dist/*.js' -s 1.2KB",
+    "bundlesize": "pnpm build && size-limit",
     "check": "tsc --project tsconfig.json --noEmit",
     "prepublishOnly": "pnpm build"
   },
@@ -48,14 +48,15 @@
     "clsx": "^2.1.1"
   },
   "devDependencies": {
+    "@size-limit/preset-small-lib": "^11.2.0",
     "@swc/cli": "0.3.12",
     "@swc/core": "1.4.16",
     "@types/node": "20.12.7",
     "@types/react": "18.2.79",
     "@types/react-dom": "18.2.25",
-    "bundlesize": "0.18.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "size-limit": "^11.2.0",
     "ts-node": "10.9.2",
     "typescript": "5.7.3"
   },
@@ -73,5 +74,11 @@
     "main": "dist/index.js",
     "module": "dist/index.mjs",
     "types": "dist/index.d.ts"
-  }
+  },
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "limit": "1.2KB"
+    }
+  ]
 }
