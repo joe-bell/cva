@@ -43,13 +43,3 @@ html[class~="dark"] .nextra-nav-container {
 .nextra-content iframe + iframe {
   margin-top: 1rem;
 }
-
-.sponsors {
-  margin-top: 1rem;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.sponsors img {
-  border-radius: 0.5rem;
-}

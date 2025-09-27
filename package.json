@@ -14,7 +14,6 @@
     "prepare:hooks": "git config core.hooksPath .github/hooks",
     "prepare:packages": "pnpm build",
     "prettier": "prettier --config .prettierrc.js --ignore-unknown --no-error-on-unmatched-pattern",
-    "sponsors": "sponsorkit",
     "syncpack": "SYNCPACK_VERBOSE=true syncpack list-mismatches --config .config/.syncpackrc",
     "test": "vitest --config .config/vitest.config.ts run --coverage"
   },
@@ -26,7 +25,6 @@
     "prettier-plugin-astro": "0.14.1",
     "prettier-plugin-packagejson": "2.5.8",
     "prettier-plugin-tailwindcss": "0.6.10",
-    "sponsorkit": "^16.3.0",
     "syncpack": "13.0.0",
     "typescript": "5.7.3",
     "vitest": "3.0.2"

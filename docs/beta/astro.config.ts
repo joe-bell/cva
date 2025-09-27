@@ -110,7 +110,7 @@ export default defineConfig({
         },
         {
           label: "Sponsor ♡",
-          link: "https://polar.sh/cva",
+          link: "https://joebell.studio/sponsors",
           attrs: {
             target: "_blank",
           },
