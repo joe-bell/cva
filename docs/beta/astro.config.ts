@@ -2,6 +2,7 @@ import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import tailwind from "@astrojs/tailwind";
 import vercel from "@astrojs/vercel";
+import starlightLlmsTxt from "starlight-llms-txt";
 
 const site = "https://beta.cva.style";
 const googleAnalyticsId = "G-E8Z8HL9WXF";
@@ -115,6 +116,15 @@ export default defineConfig({
             target: "_blank",
           },
         },
+        {
+          label: "llms.txt",
+          link: "/llms.txt",
+        },
+      ],
+      plugins: [
+        starlightLlmsTxt({
+          exclude: ["examples/**", "faqs", "tutorials"],
+        }),
       ],
       customCss: ["./src/styles/main.css"],
       head: [
