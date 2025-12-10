@@ -1,6 +1,6 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Get Help
+  - name: Get help
     url: https://github.com/joe-bell/cva/discussions/new?category=q-a
     about: Ask the community for help
   - name: Ideas
