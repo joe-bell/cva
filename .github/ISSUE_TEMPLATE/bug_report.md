@@ -1,20 +1,10 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Create a report to help improve the project
 title: ""
 labels: bug
 assignees: ""
 ---
-
-<!--
-
-If your issue doesn't follow the templates provided, it will be closed without
-comment – no exceptions.
-
-For feature requests, please create a "Discussion" with the category "Ideas":
-https://github.com/joe-bell/cva/discussions/new
-
--->
 
 **Describe the bug**
 A clear and concise description of what the bug is.
