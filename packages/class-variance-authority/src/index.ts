@@ -41,7 +41,7 @@ export const cx = clsx;
 /* cva
   ============================================ */
 
-type ConfigSchema = Record<string, Record<string, ClassValue>>;
+export type ConfigSchema = Record<string, Record<string, ClassValue>>;
 
 type ConfigVariants<T extends ConfigSchema> = {
   [Variant in keyof T]?: StringToBoolean<keyof T[Variant]> | null | undefined;
