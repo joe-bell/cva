@@ -8,7 +8,6 @@
     "dev": "vitest --config .config/vitest.config.ts",
     "docs": "pnpm run --filter './docs/latest' dev",
     "preinstall": "npx only-allow pnpm",
-    "lint": "pnpm run --filter './packages/**' --parallel lint",
     "lint-staged": "lint-staged --config .config/lint-staged.config.mjs",
     "prepare": "pnpm run '/^prepare:.*/'",
     "prepare:hooks": "git config core.hooksPath .github/hooks",
