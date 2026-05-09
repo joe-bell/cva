@@ -20,5 +20,8 @@
   },
   "devDependencies": {
     "typescript": "5.7.3"
+  },
+  "engines": {
+    "node": "22"
   }
 }
