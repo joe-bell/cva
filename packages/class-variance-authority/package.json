@@ -58,7 +58,7 @@
     "react-dom": "18.2.0",
     "size-limit": "^11.2.0",
     "ts-node": "10.9.2",
-    "typescript": "5.7.3"
+    "typescript": "6.0.3"
   },
   "publishConfig": {
     "exports": {

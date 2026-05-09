@@ -1,0 +1,35 @@
+{
+  "$schema": "../node_modules/syncpack/schema.json",
+  "versionGroups": [
+    {
+      "label": "Use `workspace:*` protocol for local packages",
+      "packages": ["!example-*"],
+      "dependencies": ["cva", "class-variance-authority"],
+      "dependencyTypes": ["!local"],
+      "pinVersion": "workspace:*"
+    },
+    {
+      "label": "Use `latest` for `latest` examples",
+      "packages": ["example-*"],
+      "dependencies": ["class-variance-authority"],
+      "pinVersion": "latest"
+    },
+    {
+      "label": "Use `beta` for `beta` examples",
+      "packages": ["example-beta-*"],
+      "dependencies": ["cva"],
+      "pinVersion": "beta"
+    },
+    {
+      "label": "Ignore peer dependencies in `cva`",
+      "packages": ["cva"],
+      "dependencyTypes": ["peer"],
+      "isIgnored": true
+    },
+    {
+      "label": "Keep all other dependencies in sync",
+      "packages": ["**"],
+      "dependencyTypes": ["!peer"]
+    }
+  ]
+}

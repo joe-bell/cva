@@ -1,0 +1,5 @@
+- [ ] Update TypeScript
+  - Extend base config in root?
+- [ ] Upgrade Tailwind
+- [ ] Upgrade examples dependencies
+- [ ] Upgrade docs dependencies

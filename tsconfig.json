@@ -2,12 +2,12 @@
   "compilerOptions": {
     "isolatedModules": true,
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "target": "ES2019",
     "strict": true,
     "incremental": true,
     "skipLibCheck": true,
-    "types": ["vitest/globals"]
-  }
+    "types": ["vitest/globals"],
+  },
 }
