@@ -1,6 +1,1 @@
-- [ ] Upgrade examples dependencies
-  - [ ] svelte
-  - [ ] vue
-- [ ] Upgrade docs dependencies
-- [ ] swc and build tools
-- [ ] test
+- vitest parse error

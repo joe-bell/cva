@@ -48,15 +48,15 @@
     "clsx": "^2.1.1"
   },
   "devDependencies": {
-    "@size-limit/preset-small-lib": "^11.2.0",
-    "@swc/cli": "0.3.12",
-    "@swc/core": "1.4.16",
+    "@size-limit/preset-small-lib": "^12.1.0",
+    "@swc/cli": "0.8.1",
+    "@swc/core": "1.15.33",
     "@types/node": "20.12.7",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "size-limit": "^11.2.0",
+    "size-limit": "^12.1.0",
     "ts-node": "10.9.2",
     "typescript": "6.0.3"
   },
