@@ -30,7 +30,8 @@ const button = cva({
 });
 
 export interface ButtonProps
-  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "disabled">,
+  extends
+    Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "disabled">,
     VariantProps<typeof button> {}
 
 export const Button: React.FC<ButtonProps> = ({

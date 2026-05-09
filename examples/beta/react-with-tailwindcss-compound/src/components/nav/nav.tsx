@@ -32,8 +32,7 @@ export const root = cva({
 });
 
 export interface RootProps
-  extends React.HTMLAttributes<HTMLUListElement>,
-    VariantProps<typeof root> {}
+  extends React.HTMLAttributes<HTMLUListElement>, VariantProps<typeof root> {}
 
 export const Root: React.FC<RootProps> = ({ className, density, ...props }) => (
   <ul
@@ -53,8 +52,7 @@ export const item = cva({
 });
 
 export interface ItemProps
-  extends React.LiHTMLAttributes<HTMLLIElement>,
-    VariantProps<typeof item> {}
+  extends React.LiHTMLAttributes<HTMLLIElement>, VariantProps<typeof item> {}
 
 export const Item: React.FC<ItemProps> = ({ className, ...props }) => (
   <li data-id="nav-item" className={item({ className })} {...props} />
@@ -76,7 +74,8 @@ export const link = cva({
 });
 
 export interface LinkProps
-  extends React.AnchorHTMLAttributes<HTMLAnchorElement>,
+  extends
+    React.AnchorHTMLAttributes<HTMLAnchorElement>,
     VariantProps<typeof link> {}
 
 export const Link: React.FC<LinkProps> = ({ className, ...props }) => (

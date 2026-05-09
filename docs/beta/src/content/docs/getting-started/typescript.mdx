@@ -50,7 +50,8 @@ export const buttonVariants = cva({
  * Button
  */
 export interface ButtonProps
-  extends Omit<ButtonVariantProps, "required">,
+  extends
+    Omit<ButtonVariantProps, "required">,
     Required<Pick<ButtonVariantProps, "required">> {}
 
 export const button = (props: ButtonProps) => buttonVariants(props);

@@ -12,7 +12,7 @@
     "prepare": "pnpm run '/^prepare:.*/'",
     "prepare:hooks": "git config core.hooksPath .github/hooks",
     "prepare:packages": "pnpm build",
-    "prettier": "prettier --config .prettierrc.js --ignore-unknown --no-error-on-unmatched-pattern",
+    "prettier": "prettier --config .prettierrc.json --ignore-unknown --no-error-on-unmatched-pattern",
     "syncpack": "SYNCPACK_VERBOSE=true syncpack lint --config .config/.syncpackrc.json",
     "test": "vitest --config .config/vitest.config.ts run --coverage"
   },

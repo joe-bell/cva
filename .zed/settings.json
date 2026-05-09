@@ -1,0 +1,20 @@
+{
+  "format_on_save": "on",
+  "languages": {
+    "CSS": {
+      "language_servers": ["tailwindcss-intellisense-css"]
+    }
+  },
+  "lsp": {
+    "astro-language-server": {
+      "settings": {
+        "content-intellisense": true
+      }
+    },
+    "tailwindcss-language-server": {
+      "settings": {
+        "classFunctions": ["cva", "cx"]
+      }
+    }
+  }
+}

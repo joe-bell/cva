@@ -1,0 +1,16 @@
+{
+  "$schema": "https://www.schemastore.org/prettierrc.json",
+  "plugins": [
+    "prettier-plugin-astro",
+    "prettier-plugin-packagejson",
+    "prettier-plugin-tailwindcss"
+  ],
+  "overrides": [
+    {
+      "files": "*.astro",
+      "options": {
+        "parser": "astro"
+      }
+    }
+  ]
+}

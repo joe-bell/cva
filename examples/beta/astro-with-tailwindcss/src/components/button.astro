@@ -34,7 +34,8 @@ const button = cva({
 });
 
 export interface Props
-  extends Omit<HTMLAttributes<"button">, "disabled">,
+  extends
+    Omit<HTMLAttributes<"button">, "disabled">,
     VariantProps<typeof button> {}
 
 /**
