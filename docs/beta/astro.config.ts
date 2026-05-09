@@ -1,8 +1,8 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
-import tailwind from "@astrojs/tailwind";
 import vercel from "@astrojs/vercel";
 import starlightLlmsTxt from "starlight-llms-txt";
+import tailwindcss from "@tailwindcss/vite";
 
 const site = "https://beta.cva.style";
 const googleAnalyticsId = "G-E8Z8HL9WXF";
@@ -26,10 +26,23 @@ export default defineConfig({
       description: "Class Variance Authority",
       credits: false,
       logo: { src: "./src/assets/logo.svg", replacesTitle: true },
-      social: {
-        github: "https://github.com/joe-bell/cva",
-        blueSky: "https://joebell.co.uk/bluesky",
-      },
+      social: [
+        {
+          icon: "github",
+          label: "GitHub",
+          href: "https://github.com/joe-bell/cva",
+        },
+        {
+          icon: "x.com",
+          label: "X",
+          href: "https://joebell.studio/x",
+        },
+        {
+          icon: "blueSky",
+          label: "Bluesky",
+          href: "https://joebell.studio/bluesky",
+        },
+      ],
       tagline: "Class Variance Authority",
       sidebar: [
         {
@@ -205,18 +218,19 @@ export default defineConfig({
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-                
               gtag('config', '${googleAnalyticsId}');
             `,
         },
       ],
     }),
-    tailwind({ applyBaseStyles: false }),
   ],
   // Process images with sharp: https://docs.astro.build/en/guides/assets/#using-sharp
   image: {
     service: {
       entrypoint: "astro/assets/services/sharp",
     },
+  },
+  vite: {
+    plugins: [tailwindcss()],
   },
 });
