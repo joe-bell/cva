@@ -1,4 +1,4 @@
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
 import starlight from "@astrojs/starlight";
 import vercel from "@astrojs/vercel";
 import starlightLlmsTxt from "starlight-llms-txt";
@@ -20,9 +20,48 @@ export default defineConfig({
   site,
   output: "static",
   adapter: vercel(),
+  fonts: [
+    {
+      provider: fontProviders.local(),
+      name: "Inter",
+      cssVariable: "--font-inter",
+      options: {
+        variants: [
+          {
+            weight: "100 900",
+            style: "normal",
+            src: ["./src/assets/fonts/inter-var-latin.woff2"],
+            display: "optional",
+            unicodeRange: [
+              "U+0000-00FF",
+              "U+0131",
+              "U+0152-0153",
+              "U+02BB-02BC",
+              "U+02C6",
+              "U+02DA",
+              "U+02DC",
+              "U+2000-206F",
+              "U+2074",
+              "U+20AC",
+              "U+2122",
+              "U+2191",
+              "U+2193",
+              "U+2212",
+              "U+2215",
+              "U+FEFF",
+              "U+FFFD",
+            ],
+          },
+        ],
+      },
+    },
+  ],
   integrations: [
     starlight({
       ...config,
+      components: {
+        Head: "./src/components/head.astro",
+      },
       description: "Class Variance Authority",
       credits: false,
       logo: { src: "./src/assets/logo.svg", replacesTitle: true },
@@ -123,7 +162,7 @@ export default defineConfig({
           link: "/faqs",
         },
         {
-          label: "Sponsor ♡",
+          label: "Sponsor",
           link: "https://joebell.studio/sponsors",
           attrs: {
             target: "_blank",
@@ -141,17 +180,6 @@ export default defineConfig({
       ],
       customCss: ["./src/styles/main.css"],
       head: [
-        // Fonts
-        {
-          tag: "link",
-          attrs: {
-            rel: "preload",
-            href: "/assets/fonts/inter-var-latin.woff2",
-            as: "font",
-            type: "font/woff2",
-            crossorigin: "anonymous",
-          },
-        },
         // !@TODO
         // Remove `robots` before stable release
         {

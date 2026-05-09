@@ -1,6 +1,7 @@
 overrides:
   "class-variance-authority": "workspace:*"
   "cva": "workspace:*"
+  "mdast-util-directive>mdast-util-to-markdown": "2.1.2"
 
 minimumReleaseAge: 1440
 
