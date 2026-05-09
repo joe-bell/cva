@@ -21,11 +21,11 @@ const { format } = Astro.props;
         .map(({ data: tutorial }) => {
           if (tutorial.format === "YouTube")
             return (
-              <li class:list={"!mt-0"}>
+              <li class:list={"mt-0!"}>
                 <article
                   class:list={[
                     "relative",
-                    "!mb-0",
+                    "mb-0!",
                     "flex",
                     "flex-col",
                     "h-full",
@@ -51,7 +51,7 @@ const { format } = Astro.props;
                   <div
                     class:list={["flex", "flex-col", "gap-1", "p-3", "!mt-0"]}
                   >
-                    <h1 class="!mt-0 !text-base !leading-tight">
+                    <h1 class="mt-0! text-base! leading-tight!">
                       <a
                         href={`https://www.youtube.com/watch?v=${tutorial.youtubeId}`}
                         class:list={[
@@ -73,7 +73,7 @@ const { format } = Astro.props;
                     </h1>
                     <p
                       class:list={[
-                        "!mt-0 inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 !text-xs",
+                        "mt-0! inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs!",
                         ["text-gray-800", "dark:text-gray-300"],
                       ]}
                     >
@@ -87,7 +87,7 @@ const { format } = Astro.props;
                         •
                       </span>
                       <time
-                        class="!mt-0"
+                        class="mt-0!"
                         datetime={
                           tutorial.date.object.toISOString().split("T")[0]
                         }

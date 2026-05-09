@@ -15,14 +15,14 @@ export const root = cva({
   variants: {
     density: {
       compact: [
-        "[--nav-radius:theme(borderRadius.lg)]",
-        "[--nav-item-px:theme(space.3)]",
-        "[--nav-item-py:theme(space.2)]",
+        "[--nav-radius:var(--radius-lg)]",
+        "[--nav-item-px:--spacing(3)]",
+        "[--nav-item-py:--spacing(2)]",
       ],
       cozy: [
-        "[--nav-radius:theme(borderRadius.xl)]",
-        "[--nav-item-px:theme(space.5)]",
-        "[--nav-item-py:theme(space.4)]",
+        "[--nav-radius:var(--radius-xl)]",
+        "[--nav-item-px:--spacing(5)]",
+        "[--nav-item-py:--spacing(4)]",
       ],
     },
   },
