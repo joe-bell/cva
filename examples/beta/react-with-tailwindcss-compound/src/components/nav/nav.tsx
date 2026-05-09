@@ -8,7 +8,7 @@ export const root = cva({
   base: [
     "[--nav-item-py-offset:calc(var(--nav-item-py)*0.5*-1)]",
     "flex flex-col",
-    "rounded-[--nav-radius]",
+    "rounded-(--nav-radius)",
     "border border-zinc-200",
     "shadow-sm",
   ],
@@ -48,7 +48,7 @@ export const Root: React.FC<RootProps> = ({ className, density, ...props }) => (
   ============================================ */
 
 export const item = cva({
-  base: "group/nav-item mt-[--nav-item-py-offset] first:mt-0",
+  base: "group/nav-item mt-(--nav-item-py-offset) first:mt-0",
 });
 
 export interface ItemProps
@@ -64,12 +64,12 @@ export const Item: React.FC<ItemProps> = ({ className, ...props }) => (
 export const link = cva({
   base: [
     "relative flex bg-transparent font-light text-sm text-zinc-800",
-    "px-[--nav-item-px] py-[--nav-item-py]",
+    "px-(--nav-item-px) py-(--nav-item-py)",
     "hover:bg-zinc-50 hover:text-zinc-900 hover:z-20",
     "focus-visible:bg-white focus-visible:z-30 focus-visible:outline-none",
     "focus-visible:ring focus-visible:ring-zinc-600 focus-visible:ring-2",
-    "group-first/nav-item:rounded-t-[--nav-radius]",
-    "group-last/nav-item:rounded-b-[--nav-radius]",
+    "group-first/nav-item:rounded-t-(--nav-radius)",
+    "group-last/nav-item:rounded-b-(--nav-radius)",
   ],
 });
 

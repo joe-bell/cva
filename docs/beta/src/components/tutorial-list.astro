@@ -42,7 +42,7 @@ const { format } = Astro.props;
                     src={`http://img.youtube.com/vi/${tutorial.youtubeId}/sddefault.jpg`}
                     class:list={[
                       "bg-gray-200",
-                      "aspect-[16/9]",
+                      "aspect-video",
                       "object-cover",
                       "w-full",
                     ]}
@@ -80,7 +80,7 @@ const { format } = Astro.props;
                       <span>{tutorial.author}</span>
                       <span
                         class:list={[
-                          "!text-[0.75em]",
+                          "text-[0.75em]!",
                           ["text-gray-600", "dark:text-gray-400"],
                         ]}
                       >

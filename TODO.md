@@ -1,10 +1,10 @@
 - [ ] Update TypeScript
   - Extend base config in root?
-- [ ] Upgrade Tailwind
+- [x] Upgrade Tailwind
   - [x] Update versions and config
   - [x] Run automated script
-    - [ ] Update classes
-  - [ ] Update existing styles to use layers
+    - [x] Update classes
+  - [x] Update existing styles to use layers
 - [ ] Upgrade examples dependencies
 - [ ] Upgrade docs dependencies
 - [ ] Use Astro font loading for Inter
