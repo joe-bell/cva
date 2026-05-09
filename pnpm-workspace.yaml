@@ -1,5 +1,19 @@
+overrides:
+  "class-variance-authority": "workspace:*"
+  "cva": "workspace:*"
+
+minimumReleaseAge: 1440
+
 packages:
   - "docs/*"
   - "examples/**"
   - "packages/**"
-enable-pre-post-scripts: true
+
+enablePrePostScripts: true
+
+allowBuilds:
+  "@swc/core": true
+  core-js: true
+  esbuild: true
+  sharp: true
+  svelte-preprocess: true
