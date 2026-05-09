@@ -1,7 +1,6 @@
 - [ ] Upgrade examples dependencies
   - [ ] svelte
   - [ ] vue
-  - [ ] `transformWithEsbuild` is deprecated and will be removed in the future. Please migrate to `transformWithOxc`.
 - [ ] Upgrade docs dependencies
 - [ ] swc and build tools
 - [ ] test
