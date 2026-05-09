@@ -127,8 +127,8 @@ importers:
         specifier: 18.2.79
         version: 18.2.79
       typescript:
-        specifier: 6.0.3
-        version: 6.0.3
+        specifier: 5.7.3
+        version: 5.7.3
 
   examples/beta/astro-with-tailwindcss:
     dependencies:
@@ -5545,6 +5545,11 @@ packages:
 
   typescript@5.6.1-rc:
     resolution: {integrity: sha512-E3b2+1zEFu84jB0YQi9BORDjz9+jGbwwy1Zi3G0LUNw7a7cePUrHMRNy8aPh53nXpkFGVHSxIZo5vKTfYaFiBQ==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+  typescript@5.7.3:
+    resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -12029,6 +12034,8 @@ snapshots:
       semver: 7.7.4
 
   typescript@5.6.1-rc: {}
+
+  typescript@5.7.3: {}
 
   typescript@6.0.3: {}
 
