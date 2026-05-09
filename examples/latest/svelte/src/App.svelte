@@ -9,8 +9,8 @@
 <table class="variant-table">
   <thead>
     <tr>
-      <th />
-      <th />
+      <th></th>
+      <th></th>
       {#each intents as intent}
         <th scope="col">{intent || "default"}</th>
       {/each}
@@ -52,7 +52,7 @@
     justify-self: center;
   }
 
-  .variant-table :where(th, td) {
+  .variant-table :where(:global(th, td)) {
     padding: 0.5rem;
   }
 </style>

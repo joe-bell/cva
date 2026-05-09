@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Snippet } from "svelte";
   import type { HTMLButtonAttributes } from "svelte/elements";
   import { cva, type VariantProps } from "cva";
 
@@ -23,23 +24,32 @@
     ],
   });
 
-  interface $$Props extends HTMLButtonAttributes, Omit<VariantProps<typeof button>, 'disabled'> {}
+  interface ButtonProps
+    extends HTMLButtonAttributes,
+      Omit<VariantProps<typeof button>, "disabled"> {
+    children?: Snippet;
+  }
 
   /**
    * For Svelte components, we recommend setting your defaultVariants within
    * Svelte props (which are `undefined` by default)
    */
-  export let intent: $$Props["intent"] = "primary";
-  export let size: $$Props["size"] = "medium";
-  export let disabled: $$Props["disabled"] = false;
+  let {
+    intent = "primary",
+    size = "medium",
+    disabled = false,
+    class: className,
+    children,
+    ...props
+  }: ButtonProps = $props();
 </script>
 
 <button
-  {...$$props}
-  class={button({ intent, size, disabled: disabled ?? false, class: $$props.class })}
+  {...props}
+  class={button({ intent, size, disabled: disabled ?? false, class: className })}
   {disabled}
 >
-  <slot />
+  {@render children?.()}
 </button>
 
 <style>

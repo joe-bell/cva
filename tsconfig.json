@@ -1,13 +1,6 @@
 {
+  "extends": "./.config/tsconfig.base.json",
   "compilerOptions": {
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "target": "ES2019",
-    "strict": true,
-    "incremental": true,
-    "skipLibCheck": true,
     "types": ["vitest/globals"]
   }
 }

@@ -1,5 +1,21 @@
+overrides:
+  "class-variance-authority": "workspace:*"
+  "cva": "workspace:*"
+  "mdast-util-directive>mdast-util-to-markdown": "2.1.2"
+  "vite": "^7.3.2"
+
+minimumReleaseAge: 1440
+
 packages:
   - "docs/*"
   - "examples/**"
   - "packages/**"
-enable-pre-post-scripts: true
+
+enablePrePostScripts: true
+
+allowBuilds:
+  "@swc/core": true
+  core-js: true
+  esbuild: true
+  sharp: true
+  svelte-preprocess: true

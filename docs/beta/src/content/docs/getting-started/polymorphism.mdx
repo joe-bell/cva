@@ -38,7 +38,8 @@ import { mergeProps } from "@base-ui/react/merge-props";
 const _BUTTON_DEFAULT_TAG = "button" satisfies React.ElementType;
 
 export interface ButtonProps
-  extends useRender.ComponentProps<typeof _BUTTON_DEFAULT_TAG>,
+  extends
+    useRender.ComponentProps<typeof _BUTTON_DEFAULT_TAG>,
     VariantProps<typeof button> {}
 
 const button = cva({

@@ -1,0 +1,11 @@
+---
+import { Font } from "astro:assets";
+const { head } = Astro.locals.starlightRoute;
+---
+
+<Font cssVariable="--font-inter" preload />
+{
+  head.map(({ tag: Tag, attrs, content }) => (
+    <Tag {...attrs} set:html={content} />
+  ))
+}

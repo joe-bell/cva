@@ -1,14 +1,12 @@
-@tailwind base;
+@import "tailwindcss";
 
-:where(html, body, #root) {
-  width: 100%;
-  height: 100%;
+@layer base {
+  :where(html, body, #root) {
+    width: 100%;
+    height: 100%;
+  }
+
+  :where(#root) {
+    @apply grid p-6;
+  }
 }
-
-:where(#root) {
-  @apply grid p-6;
-}
-
-@tailwind components;
-
-@tailwind utilities;

@@ -5,3 +5,4 @@ coverage
 .swc
 *.tsbuildinfo
 .env
+.claude

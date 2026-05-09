@@ -58,7 +58,7 @@ function App() {
         <tr>
           {density.map((key) => (
             <td key={key} scope="col">
-              <div className="min-w-[10rem]">
+              <div className="min-w-40">
                 <Nav.Root density={key}>
                   {[0, 1, 2, 3, 4].map((_, i) => (
                     <Nav.Item>
