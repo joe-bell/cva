@@ -67,7 +67,7 @@ export const link = cva({
     "px-(--nav-item-px) py-(--nav-item-py)",
     "hover:bg-zinc-50 hover:text-zinc-900 hover:z-20",
     "focus-visible:bg-white focus-visible:z-30 focus-visible:outline-none",
-    "focus-visible:ring focus-visible:ring-zinc-600 focus-visible:ring-2",
+    " focus-visible:ring-zinc-600 focus-visible:ring-2",
     "group-first/nav-item:rounded-t-(--nav-radius)",
     "group-last/nav-item:rounded-b-(--nav-radius)",
   ],
