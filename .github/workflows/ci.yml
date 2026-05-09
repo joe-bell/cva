@@ -49,7 +49,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/install
-      - run: pnpm syncpack
+      - run: pnpm syncpack:lint
   test:
     runs-on: ubuntu-latest
     steps:
