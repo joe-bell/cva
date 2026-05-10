@@ -248,9 +248,6 @@ describe("getSchema", () => {
     });
 
     const card = compose(box, stack);
-    // https://github.com/joe-bell/cva/pull/333#issuecomment-2621011736
-    // TODO: fix types
-    // @ts-expect-error
     const schema = getSchema(card);
 
     expect(schema).toStrictEqual({
@@ -264,12 +261,7 @@ describe("getSchema", () => {
       },
     });
 
-    expectTypeOf(
-      schema,
-    ).toEqualTypeOf<// https://github.com/joe-bell/cva/pull/333#issuecomment-2621011736
-    // TODO: fix types
-    // @ts-expect-error
-    {
+    expectTypeOf(schema).toEqualTypeOf<{
       shadow: {
         values: readonly ("sm" | "md")[];
       };
