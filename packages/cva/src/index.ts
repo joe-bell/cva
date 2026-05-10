@@ -48,6 +48,37 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
   ? I
   : never;
 
+type CVAComponentLike = {
+  (props?: any): string;
+  config: any;
+};
+
+type CVAComposes = CVAComponentLike | CVAComponentLike[];
+
+type NormalizeComposes<Composed> = Composed extends readonly unknown[]
+  ? Composed
+  : Composed extends CVAComponentLike
+    ? [Composed]
+    : [];
+
+type MergedVariants<T extends readonly unknown[]> = UnionToIntersection<
+  {
+    [K in keyof T]: T[K] extends {
+      config: { variants?: infer V extends CVAVariantShape };
+    }
+      ? V
+      : never;
+  }[number]
+>;
+
+type MergedDefaultVariants<T extends readonly unknown[]> = UnionToIntersection<
+  {
+    [K in keyof T]: T[K] extends { config: { defaultVariants?: infer D } }
+      ? NonNullable<D>
+      : never;
+  }[number]
+>;
+
 export type VariantProps<Component extends (...args: any) => any> = Omit<
   OmitUndefined<Parameters<Component>[0]>,
   "class" | "className"
@@ -56,6 +87,14 @@ export type VariantProps<Component extends (...args: any) => any> = Omit<
 /* compose
   ---------------------------------- */
 
+/**
+ * @deprecated Use the `composes` key inside `cva` instead.
+ * @example
+ * // Before
+ * const card = compose(box, stack)
+ * // After
+ * const card = cva({ composes: [box, stack] })
+ */
 export interface Compose {
   <T extends ReturnType<CVA>[]>(
     ...components: [...T]
@@ -103,8 +142,11 @@ type CVAClassProp =
 type InternalOnlyWarning =
   "cva's generic parameters are restricted to internal use only.";
 
-type CVAComponentConfig<Config, Variants> = Config &
-  (Variants extends CVAVariantShape
+type CVAComponentConfig<
+  Config,
+  Variants,
+  Composed extends CVAComposes = CVAComposes,
+> = Config & { composes?: Composed } & (Variants extends CVAVariantShape
     ? CVAComponentConfigBase & {
         variants?: Variants;
         compoundVariants?: (Variants extends CVAVariantShape
@@ -136,10 +178,26 @@ interface CVAComponent<Config, Variants> {
   config: Config;
 }
 
+type CVADefaultVariants<Config> = Config extends { defaultVariants?: infer D }
+  ? D
+  : {};
+
 export interface CVA {
-  <_ extends InternalOnlyWarning, Config, Variants>(
-    config: CVAComponentConfig<Config, Variants>,
-  ): CVAComponent<Config, Variants>;
+  <
+    _ extends InternalOnlyWarning,
+    Config,
+    Variants,
+    Composed extends CVAComposes = [],
+  >(
+    config: CVAComponentConfig<Config, Variants, Composed>,
+  ): CVAComponent<
+    Config & {
+      variants: Variants & MergedVariants<NormalizeComposes<Composed>>;
+      defaultVariants: CVADefaultVariants<Config> &
+        MergedDefaultVariants<NormalizeComposes<Composed>>;
+    },
+    Variants & MergedVariants<NormalizeComposes<Composed>>
+  >;
 }
 
 /* defineConfig
@@ -183,12 +241,55 @@ export const defineConfig: DefineConfig = (options) => {
     return clsx(inputs);
   };
 
-  const cva: CVA = (config) => {
+  const cva = (<
+    _ extends InternalOnlyWarning,
+    Config,
+    Variants,
+    Composed extends CVAComposes = [],
+  >(
+    config: CVAComponentConfig<Config, Variants, Composed>,
+  ) => {
+    const components = (
+      config?.composes == null
+        ? []
+        : Array.isArray(config.composes)
+          ? config.composes
+          : [config.composes]
+    ) as CVAComponentLike[];
+    const mergedVariantsFromComposed = components.reduce(
+      (acc: CVAVariantShape, component: CVAComponentLike) => ({
+        ...acc,
+        ...component.config?.variants,
+      }),
+      {} as CVAVariantShape,
+    );
+    const mergedDefaultVariantsFromComposed = components.reduce(
+      (acc: Record<string, unknown>, component: CVAComponentLike) => ({
+        ...acc,
+        ...component.config?.defaultVariants,
+      }),
+      {} as Record<string, unknown>,
+    );
+
     const component: CVAComponent<typeof config, typeof config.variants> = (
       props,
     ) => {
+      const propsWithoutClass = Object.fromEntries(
+        Object.entries(props || {}).filter(
+          ([key]) => !["class", "className"].includes(key),
+        ),
+      );
+      const getComposedClassNames = components.map(
+        (component: CVAComponentLike) => component(propsWithoutClass),
+      );
+
       if (config?.variants == null) {
-        return cx(config?.base, props?.class, props?.className);
+        return cx(
+          getComposedClassNames,
+          config?.base,
+          props?.class,
+          props?.className,
+        );
       }
 
       const { variants, defaultVariants } = config;
@@ -218,7 +319,14 @@ export const defineConfig: DefineConfig = (options) => {
       };
 
       const getCompoundVariantClassNames = config?.compoundVariants?.reduce(
-        (acc, { class: cvClass, className: cvClassName, ...cvConfig }) =>
+        (
+          acc: ClassValue[],
+          {
+            class: cvClass,
+            className: cvClassName,
+            ...cvConfig
+          }: CVAClassProp & Record<string, unknown>,
+        ) =>
           Object.entries(cvConfig).every(([cvKey, cvSelector]) => {
             const selector =
               defaultsAndProps[cvKey as keyof typeof defaultsAndProps];
@@ -233,6 +341,7 @@ export const defineConfig: DefineConfig = (options) => {
       );
 
       return cx(
+        getComposedClassNames,
         config?.base,
         getVariantClassNames,
         getCompoundVariantClassNames,
@@ -241,10 +350,17 @@ export const defineConfig: DefineConfig = (options) => {
       );
     };
 
-    component.config = config;
+    component.config = {
+      ...config,
+      variants: { ...mergedVariantsFromComposed, ...config?.variants },
+      defaultVariants: {
+        ...mergedDefaultVariantsFromComposed,
+        ...config?.defaultVariants,
+      },
+    };
 
-    return component;
-  };
+    return component as ReturnType<CVA>;
+  }) as CVA;
 
   const compose: Compose = (...components) => {
     const config = components.reduce((acc, { config }) => {

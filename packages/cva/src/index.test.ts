@@ -101,6 +101,139 @@ describe("compose", () => {
   });
 });
 
+describe("cva — composes", () => {
+  test("should support a single component", () => {
+    const box = cva({
+      variants: {
+        shadow: {
+          sm: "shadow-sm",
+          md: "shadow-md",
+        },
+      },
+      defaultVariants: {
+        shadow: "sm",
+      },
+    });
+
+    const card = cva({ composes: box });
+
+    expectTypeOf(card).toBeFunction();
+    expectTypeOf(card).parameter(0).toMatchTypeOf<
+      | {
+          shadow?: "sm" | "md" | undefined;
+        }
+      | undefined
+    >();
+
+    expect(card()).toBe("shadow-sm");
+    expect(card({ class: "adhoc-class" })).toBe("shadow-sm adhoc-class");
+    expect(card({ className: "adhoc-class" })).toBe("shadow-sm adhoc-class");
+    expect(card({ shadow: "md" })).toBe("shadow-md");
+  });
+
+  test("should merge into a single component", () => {
+    const box = cva({
+      variants: {
+        shadow: {
+          sm: "shadow-sm",
+          md: "shadow-md",
+        },
+      },
+      defaultVariants: {
+        shadow: "sm",
+      },
+    });
+
+    const stack = cva({
+      variants: {
+        gap: {
+          unset: null,
+          1: "gap-1",
+          2: "gap-2",
+          3: "gap-3",
+        },
+      },
+      defaultVariants: {
+        gap: "unset",
+      },
+    });
+
+    const card = cva({ composes: [box, stack] });
+
+    expectTypeOf(card).toBeFunction();
+    expectTypeOf(card).parameter(0).toMatchTypeOf<
+      | {
+          shadow?: "sm" | "md" | undefined;
+          gap?: "unset" | 1 | 2 | 3 | undefined;
+        }
+      | undefined
+    >();
+
+    expect(card()).toBe("shadow-sm");
+    expect(card({ class: "adhoc-class" })).toBe("shadow-sm adhoc-class");
+    expect(card({ className: "adhoc-class" })).toBe("shadow-sm adhoc-class");
+    expect(card({ shadow: "md" })).toBe("shadow-md");
+    expect(card({ gap: 2 })).toBe("shadow-sm gap-2");
+    expect(card({ shadow: "md", gap: 3, class: "adhoc-class" })).toBe(
+      "shadow-md gap-3 adhoc-class",
+    );
+    expect(card({ shadow: "md", gap: 3, className: "adhoc-class" })).toBe(
+      "shadow-md gap-3 adhoc-class",
+    );
+  });
+
+  test("should support additional variants alongside composes", () => {
+    const box = cva({
+      variants: {
+        shadow: {
+          sm: "shadow-sm",
+          md: "shadow-md",
+        },
+      },
+      defaultVariants: {
+        shadow: "sm",
+      },
+    });
+
+    const stack = cva({
+      variants: {
+        gap: {
+          unset: null,
+          1: "gap-1",
+          2: "gap-2",
+          3: "gap-3",
+        },
+      },
+      defaultVariants: {
+        gap: "unset",
+      },
+    });
+
+    const card = cva({
+      composes: [box, stack],
+      variants: {
+        rounded: { sm: "rounded-sm", lg: "rounded-lg" },
+      },
+      defaultVariants: { rounded: "sm" },
+    });
+
+    expectTypeOf(card).parameter(0).toMatchTypeOf<
+      | {
+          shadow?: "sm" | "md" | undefined;
+          gap?: "unset" | 1 | 2 | 3 | undefined;
+          rounded?: "sm" | "lg" | undefined;
+        }
+      | undefined
+    >();
+
+    expect(card()).toBe("shadow-sm rounded-sm");
+    expect(card({ rounded: "lg" })).toBe("shadow-sm rounded-lg");
+    expect(card({ shadow: "md", gap: 2, rounded: "lg" })).toBe(
+      "shadow-md gap-2 rounded-lg",
+    );
+  });
+});
+
 describe("getSchema", () => {
   test("should return the schema for a component", () => {
     const buttonWithoutBaseWithDefaultsString = cva({
@@ -247,28 +380,22 @@ describe("getSchema", () => {
       },
     });
 
-    const card = compose(box, stack);
+    const single = cva({ composes: box });
+    expect(getSchema(single)).toStrictEqual({
+      shadow: { values: ["sm", "md"], defaultValue: "sm" },
+    });
+
+    const card = cva({ composes: [box, stack] });
     const schema = getSchema(card);
 
     expect(schema).toStrictEqual({
-      shadow: {
-        values: ["sm", "md"],
-        defaultValue: "sm",
-      },
-      gap: {
-        values: ["1", "2", "3", "unset"],
-        defaultValue: "unset",
-      },
+      shadow: { values: ["sm", "md"], defaultValue: "sm" },
+      gap: { values: ["1", "2", "3", "unset"], defaultValue: "unset" },
     });
 
     expectTypeOf(schema).toEqualTypeOf<{
-      shadow: {
-        values: readonly ("sm" | "md")[];
-      };
-      gap: {
-        values: readonly ("unset" | "1" | "2" | "3")[];
-        defaultValue: "unset";
-      };
+      shadow: { values: readonly ("sm" | "md")[]; defaultValue: "sm" };
+      gap: { values: readonly ("unset" | 1 | 2 | 3)[]; defaultValue: "unset" };
     }>();
   });
 });
