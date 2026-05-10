@@ -17,15 +17,36 @@ What's changed since `class-variance-authority@0.*`?
 
 ## Features
 
-### 1. `compose`
-
-Shallow merge any number of cva components into a single component via the new [`compose` method](/getting-started/composing-components).
-
-### 2. `defineConfig`
+### 1. `defineConfig`
 
 Extend `cva` via the new [`defineConfig` API](/api-reference#defineconfig).
 
 Want to use `cva`/`cx` with `tailwind-merge`? [No problem](/getting-started/installation#handling-style-conflicts)!
+
+### 2. `composes`
+
+Shallow merge one or more `cva` components into a single component via the new [`composes` key](/getting-started/composing-components).
+
+This [replaces the `compose` function](#1-compose--composes).
+
+## Deprecations
+
+### 1. `compose` → `composes`
+
+The `compose` method is deprecated in favour of the `composes` key inside `cva`. Pass a single component directly, or pass multiple components as an array.
+
+```diff lang="ts"
+- import { cva, compose } from "cva";
++ import { cva } from "cva";
+
+  const box = cva({ /* ... */ });
+  const root = cva({ /* ... */ });
+
+- const card = compose(box, root);
++ const card = cva({ composes: [box, root] });
+```
+
+See [Composing Components](/getting-started/composing-components) for more details and migration examples.
 
 ## Enhancements
 

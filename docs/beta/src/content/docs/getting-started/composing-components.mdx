@@ -11,11 +11,11 @@ For stable documentation, please visit [cva.style](https://cva.style).
 
 <Carbon />
 
-Any number of `cva` components can be shallow merged into a single component via the `compose` method:
+One or more `cva` components can be shallow merged into a single component via the `composes` key. Pass a single component directly, or pass multiple components as an array:
 
 ```ts
 // components/card.ts
-import { cva, compose } from "cva";
+import { cva, type VariantProps } from "cva";
 
 const box = cva({
   base: "box box-border",
@@ -40,8 +40,8 @@ const root = cva({
   },
 });
 
+export const card = cva({ composes: [box, root] });
 export interface CardProps extends VariantProps<typeof card> {}
-export const card = compose(box, root);
 
 card({ margin: 2, shadow: "md" });
 // => "box box-border m-2 card border-solid border-slate-300 rounded drop-shadow-md"
