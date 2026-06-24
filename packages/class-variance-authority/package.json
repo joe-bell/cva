@@ -45,7 +45,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "clsx": "^2.1.1"
+    "cnfast": "^0.0.8"
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^12.1.0",

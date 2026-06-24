@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import type * as CLSX from "clsx";
+import type * as CLSX from "cnfast";
 
 export type ClassPropKey = "class" | "className";
 

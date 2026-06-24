@@ -142,7 +142,7 @@ You can enable autocompletion inside `cva` using the steps below:
 
 Although `cva`'s API is designed to help you avoid styling conflicts, there's still a small margin of error.
 
-If you're keen to lift that burden altogether, check out the wonderful [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) package.
+If you're keen to lift that burden altogether, you can use [`cnfast`](https://github.com/aidenybai/cnfast) based on the wonderful [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) package.
 
 For bulletproof components, wrap your `cva` component with `twMerge`.
 
@@ -152,7 +152,7 @@ For bulletproof components, wrap your `cva` component with `twMerge`.
 
 ```ts
 import { cva, type VariantProps } from "class-variance-authority";
-import { twMerge } from "tailwind-merge";
+import { twMerge } from "cnfast"; // or "tailwind-merge"
 
 const buttonVariants = cva(["your", "base", "classes"], {
   variants: {

@@ -43,7 +43,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "clsx": "^2.1.1"
+    "cnfast": "^0.0.8"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.2",
