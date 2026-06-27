@@ -37,6 +37,12 @@ goals, setup, scripts, and conventions (Conventional Commits, Prettier,
 TypeScript) — follow it rather than duplicating its guidance here. All
 participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.md).
 
-One agent-specific note: this project uses `nvm` to manage Node.js versions, so
-prefix commands with `nvm use` where necessary. If you're Zed's agent you
-likely **won't** need to.
+Agent-specific notes:
+
+- This project uses `nvm` to manage Node.js versions, so prefix commands with
+  `nvm use` where necessary. If you're Zed's agent you likely **won't** need
+  to.
+- A `pre-commit` hook runs `lint-staged` (type check, Prettier, syncpack)
+  against staged changes. Make sure it runs before pushing — if it doesn't
+  fire in your environment, run it manually against the staged changes with
+  `pnpm lint-staged`.
