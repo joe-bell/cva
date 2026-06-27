@@ -7,7 +7,7 @@ overrides:
 minimumReleaseAge: 1440
 
 packages:
-  - "docs/*"
+  - "docs"
   - "examples/**"
   - "packages/**"
 

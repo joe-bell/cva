@@ -26,7 +26,7 @@ yarn.
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `packages/cva`                      | **Beta package** (`cva@1.0.0-beta.x`) — the current focus                                                                                                                      |
 | `packages/class-variance-authority` | Stable package (`0.7.x`), maintenance only                                                                                                                                     |
-| `docs/beta`                         | Unified docs site ([cva.style](https://cva.style), Astro Starlight) — stable at the root, beta under `/beta` via [`starlight-versions`](https://starlight-versions.vercel.app) |
+| `docs`                              | Unified docs site ([cva.style](https://cva.style), Astro Starlight) — stable at the root, beta under `/beta` via [`starlight-versions`](https://starlight-versions.vercel.app) |
 | `examples/beta`, `examples/latest`  | Framework usage examples for each package                                                                                                                                      |
 
 ## Contributing
