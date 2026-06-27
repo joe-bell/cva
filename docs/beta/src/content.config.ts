@@ -1,11 +1,14 @@
 import { glob } from "astro/loaders";
-import { defineCollection, z } from "astro:content";
+import { defineCollection } from "astro:content";
+import { z } from "astro/zod";
 import { docsLoader } from "@astrojs/starlight/loaders";
 import { docsSchema } from "@astrojs/starlight/schema";
+import { docsVersionsLoader } from "starlight-versions/loader";
 import { format } from "date-fns";
 
 export const collections = {
   docs: defineCollection({ loader: docsLoader(), schema: docsSchema() }),
+  versions: defineCollection({ loader: docsVersionsLoader() }),
   tutorials: defineCollection({
     loader: glob({ pattern: "**/*.json", base: "./src/content/tutorials" }),
     schema: () => {

@@ -22,13 +22,12 @@ This is a [pnpm](https://pnpm.io) workspace (Node `22`, see
 [`.nvmrc`](./.nvmrc)). pnpm is enforced via `only-allow` — don't use npm or
 yarn.
 
-| Path                                | What it is                                                            |
-| ----------------------------------- | --------------------------------------------------------------------- |
-| `packages/cva`                      | **Beta package** (`cva@1.0.0-beta.x`) — the current focus             |
-| `packages/class-variance-authority` | Stable package (`0.7.x`), maintenance only                            |
-| `docs/beta`                         | Beta docs ([beta.cva.style](https://beta.cva.style), Astro Starlight) |
-| `docs/latest`                       | Stable docs ([cva.style](https://cva.style), Next.js + Nextra)        |
-| `examples/beta`, `examples/latest`  | Framework usage examples for each package                             |
+| Path                                | What it is                                                                                                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/cva`                      | **Beta package** (`cva@1.0.0-beta.x`) — the current focus                                                                                                                      |
+| `packages/class-variance-authority` | Stable package (`0.7.x`), maintenance only                                                                                                                                     |
+| `docs/beta`                         | Unified docs site ([cva.style](https://cva.style), Astro Starlight) — stable at the root, beta under `/beta` via [`starlight-versions`](https://starlight-versions.vercel.app) |
+| `examples/beta`, `examples/latest`  | Framework usage examples for each package                                                                                                                                      |
 
 ## Contributing
 

@@ -2,13 +2,14 @@ import { defineConfig, fontProviders } from "astro/config";
 import starlight from "@astrojs/starlight";
 import vercel from "@astrojs/vercel";
 import starlightLlmsTxt from "starlight-llms-txt";
+import starlightVersions from "starlight-versions";
 import tailwindcss from "@tailwindcss/vite";
 
-const site = "https://beta.cva.style";
+const site = "https://cva.style";
 const googleAnalyticsId = "G-E8Z8HL9WXF";
 
 const config = {
-  title: "cva@beta",
+  title: "cva",
   favicon: "/assets/img/favicon.png",
   editLink: {
     baseUrl: "https://github.com/joe-bell/cva/tree/main/docs/beta/",
@@ -20,6 +21,12 @@ export default defineConfig({
   site,
   output: "static",
   adapter: vercel(),
+  redirects: {
+    // Preserve inbound links from the previous Nextra docs, which served pages
+    // under `/docs/*`.
+    "/docs": "/",
+    "/docs/[...slug]": "/[...slug]",
+  },
   fonts: [
     {
       provider: fontProviders.local(),
@@ -61,6 +68,7 @@ export default defineConfig({
       ...config,
       components: {
         Head: "./src/components/head.astro",
+        SiteTitle: "./src/components/site-title.astro",
       },
       description: "Class Variance Authority",
       credits: false,
@@ -83,6 +91,9 @@ export default defineConfig({
         },
       ],
       tagline: "Class Variance Authority",
+      // Sidebar for the current (stable) version.
+      // Each archived version (e.g. `beta`) defines its own sidebar in
+      // `src/content/versions/*.json`.
       sidebar: [
         {
           label: "Introduction",
@@ -91,13 +102,9 @@ export default defineConfig({
         {
           label: "Getting Started",
           items: [
-            { label: "What's New?", link: "/getting-started/whats-new" },
             { label: "Installation", link: "/getting-started/installation" },
             { label: "Variants", link: "/getting-started/variants" },
-            {
-              label: "Compound Components",
-              link: "/getting-started/compound-components",
-            },
+            { label: "TypeScript", link: "/getting-started/typescript" },
             {
               label: "Extending Components",
               link: "/getting-started/extending-components",
@@ -106,11 +113,6 @@ export default defineConfig({
               label: "Composing Components",
               link: "/getting-started/composing-components",
             },
-            {
-              label: "Polymorphism",
-              link: "/getting-started/polymorphism",
-            },
-            { label: "TypeScript", link: "/getting-started/typescript" },
           ],
         },
         {
@@ -132,7 +134,7 @@ export default defineConfig({
               label: "React",
               items: [
                 { label: "CSS Modules", link: "/examples/react/css-modules" },
-                { label: "Tailwind CSS", link: "/examples/react/tailwindcss" },
+                { label: "Tailwind CSS", link: "/examples/react/tailwind-css" },
               ],
             },
             {
@@ -175,17 +177,27 @@ export default defineConfig({
       ],
       plugins: [
         starlightLlmsTxt({
-          exclude: ["examples/**", "faqs", "tutorials"],
+          // Keep the versioned beta docs out of the current (stable) llms sets;
+          // they're surfaced separately via the `cva@beta` custom set below and
+          // linked from the /llms.txt index. Note: llms-full.txt always
+          // includes every page regardless of `exclude` (the "complete" set).
+          exclude: ["beta/**"],
+          customSets: [
+            {
+              label: "cva@beta",
+              description:
+                "Documentation for the cva@beta release (https://cva.style/beta)",
+              paths: ["beta/**"],
+            },
+          ],
+        }),
+        starlightVersions({
+          current: { label: "Latest" },
+          versions: [{ slug: "beta", label: "Beta" }],
         }),
       ],
       customCss: ["./src/styles/main.css"],
       head: [
-        // !@TODO
-        // Remove `robots` before stable release
-        {
-          tag: "meta",
-          attrs: { name: "robots", content: "noindex,nofollow" },
-        },
         // Open Graph
         {
           tag: "meta",

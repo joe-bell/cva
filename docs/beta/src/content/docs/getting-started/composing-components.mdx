@@ -4,21 +4,22 @@ title: Composing Components
 
 import Carbon from "../../../components/carbon.astro";
 
-:::caution
-**You are currently viewing the docs for `cva@beta`**  
-For stable documentation, please visit [cva.style](https://cva.style).
-:::
-
 <Carbon />
 
-Any number of `cva` components can be shallow merged into a single component via the `compose` method:
+Whilst `cva` doesn't yet offer a built-in method for composing components together, it does offer the tools to _extend_ components on your own terms…
+
+For example; two `cva` components, concatenated together with `cx`:
 
 ```ts
 // components/card.ts
-import { cva, compose } from "cva";
+import type { VariantProps } from "class-variance-authority";
+import { cva, cx } from "class-variance-authority";
 
-const box = cva({
-  base: "box box-border",
+/**
+ * Box
+ */
+export type BoxProps = VariantProps<typeof box>;
+export const box = cva(["box", "box-border"], {
   variants: {
     margin: { 0: "m-0", 2: "m-2", 4: "m-4", 8: "m-8" },
     padding: { 0: "p-0", 2: "p-2", 4: "p-4", 8: "p-8" },
@@ -29,8 +30,11 @@ const box = cva({
   },
 });
 
-const root = cva({
-  base: "card rounded border-solid border-slate-300",
+/**
+ * Card
+ */
+type CardBaseProps = VariantProps<typeof cardBase>;
+const cardBase = cva(["card", "border-solid", "border-slate-300", "rounded"], {
   variants: {
     shadow: {
       md: "drop-shadow-md",
@@ -40,11 +44,7 @@ const root = cva({
   },
 });
 
-export interface CardProps extends VariantProps<typeof card> {}
-export const card = compose(box, root);
-
-card({ margin: 2, shadow: "md" });
-// => "box box-border m-2 card border-solid border-slate-300 rounded drop-shadow-md"
-card({ margin: 2, shadow: "md", class: "adhoc-class" });
-// => "box box-border m-2 card border-solid border-slate-300 rounded drop-shadow-md adhoc-class"
+export interface CardProps extends BoxProps, CardBaseProps {}
+export const card = ({ margin, padding, shadow }: CardProps = {}) =>
+  cx(box({ margin, padding }), cardBase({ shadow }));
 ```

@@ -7,7 +7,7 @@
     "bundlesize": "pnpm run --filter './packages/**' --parallel bundlesize",
     "check": "pnpm run --filter './packages/**' --parallel check",
     "dev": "vitest --config .config/vitest.config.ts",
-    "docs": "pnpm run --filter './docs/latest' dev",
+    "docs": "pnpm run --filter './docs/beta' dev",
     "preinstall": "npx only-allow pnpm",
     "lint-staged": "lint-staged --config .config/lint-staged.config.mjs",
     "prepare": "pnpm run '/^prepare:.*/'",
