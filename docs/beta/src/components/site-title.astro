@@ -1,0 +1,11 @@
+---
+import Default from "@astrojs/starlight/components/SiteTitle.astro";
+
+// The "beta" badge (see `src/styles/main.css`) should only appear while
+// viewing the versioned beta docs under `/beta`, not the current/stable docs.
+const isBeta = Astro.url.pathname.startsWith("/beta");
+---
+
+<div style="display: contents" data-version={isBeta ? "beta" : "latest"}>
+  <Default {...Astro.props}><slot /></Default>
+</div>

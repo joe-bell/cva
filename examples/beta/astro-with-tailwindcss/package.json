@@ -12,15 +12,15 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
-    "@astrojs/ts-plugin": "^1.10.7",
+    "@astrojs/ts-plugin": "1.10.9",
     "@tailwindcss/vite": "^4.2.4",
-    "astro": "^6.3.1",
+    "astro": "7.0.3",
     "cva": "beta",
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
     "typescript": "6.0.3",
-    "vite": "^7.3.2"
+    "vite": "^8.1.0"
   },
   "engines": {
     "node": "22"

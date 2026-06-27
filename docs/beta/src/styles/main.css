@@ -47,7 +47,13 @@ header.header {
 }
 
 .site-title {
-  @apply relative after:rounded-md after:border after:border-gray-400/40 after:bg-gray-200/50 after:px-1.5 after:py-0.5 after:font-mono after:text-sm after:font-normal after:content-['beta'] hover:opacity-80 dark:after:border-gray-500/50 dark:after:bg-gray-700/50;
+  @apply relative hover:opacity-80;
+}
+
+/* The "beta" badge is only shown on the versioned beta docs (`/beta`), gated by
+ * the `data-version` attribute set in `src/components/site-title.astro`. */
+[data-version="beta"] .site-title {
+  @apply after:rounded-md after:border after:border-gray-400/40 after:bg-gray-200/50 after:px-1.5 after:py-0.5 after:font-mono after:text-sm after:font-normal after:content-['beta'] dark:after:border-gray-500/50 dark:after:bg-gray-700/50;
 }
 
 /**

@@ -2,13 +2,8 @@
 title: Installation
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 import Carbon from "../../../components/carbon.astro";
-import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
-
-:::caution
-**You are currently viewing the docs for `cva@beta`**
-For stable documentation, please visit [cva.style](https://cva.style).
-:::
 
 <Carbon />
 
@@ -16,39 +11,65 @@ For stable documentation, please visit [cva.style](https://cva.style).
   <TabItem label="pnpm">
 
     ```sh
-    pnpm i cva@beta
+    pnpm i class-variance-authority
     ```
 
   </TabItem>
   <TabItem label="npm">
 
     ```sh
-    npm i cva@beta
+    npm i class-variance-authority
     ```
 
   </TabItem>
   <TabItem label="yarn">
 
     ```sh
-    yarn add cva@beta
+    yarn add class-variance-authority
     ```
 
   </TabItem>
   <TabItem label="bun">
 
     ```sh
-    bun add cva@beta
+    bun add class-variance-authority
     ```
 
   </TabItem>
   <TabItem label="deno">
 
     ```sh
-    deno add cva@beta
+    deno add class-variance-authority
     ```
 
   </TabItem>
 </Tabs>
+
+<details>
+
+<summary>Do I really have to write such a long package name?</summary>
+
+Unfortunately, for a little bit longer, yes. Originally, the plan was to publish the package as `cva`, but this name [was taken and marked as a "placeholder"](https://www.npmjs.com/package/cva).
+
+On 2022/02/16, GitHub transferred NPM ownership of `cva` to [Joe Bell](https://joebell.studio). This shorter name will be used from v1 onwards.
+
+In the meantime, you can always alias the package for your convenience…
+
+1. Alias the package with [`npm install`](https://docs.npmjs.com/cli/v6/commands/npm-install)
+
+   ```sh
+   npm i cva@npm:class-variance-authority
+   ```
+
+2. Then import like so:
+
+   ```ts
+   import { cva } from "cva";
+
+   // …
+   ```
+
+</details>
 
 ## Tailwind CSS
 
@@ -60,20 +81,16 @@ You can enable autocompletion inside `cva` using the steps below:
 
 <Tabs>
   <TabItem label="Visual Studio Code">
-    <Steps>
 
     1. [Install the "Tailwind CSS IntelliSense" Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
 
-    2. Add the following to your [`.vscode/settings.json`](https://code.visualstudio.com/docs/getstarted/settings):
+    2. Add the following to your [`settings.json`](https://code.visualstudio.com/docs/getstarted/settings):
 
-        ```json
-        // .vscode/settings.json
-        {
-          "tailwindCSS.classFunctions": ["cva", "cx"],
-        }
-        ```
-
-    </Steps>
+    ```json
+    {
+      "tailwindCSS.classFunctions": ["cva", "cx"]
+    }
+    ```
 
   </TabItem>
   <TabItem label="Zed">
@@ -81,7 +98,6 @@ You can enable autocompletion inside `cva` using the steps below:
     Add the following to your [`.zed/settings.json`](https://zed.dev/docs/configuring-zed#settings-files):
 
     ```json
-    // .zed/settings.json
     {
       "lsp": {
         "tailwindcss-language-server": {
@@ -95,73 +111,59 @@ You can enable autocompletion inside `cva` using the steps below:
 
   </TabItem>
   <TabItem label="Neovim">
-    <Steps>
+
     1. [Install the extension](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#tailwindcss)
 
     2. Add the following configuration:
 
-        ```lua
-        require 'lspconfig'.tailwindcss.setup({
-          settings = {
-            tailwindCSS = {
-              classFunctions = { "cva", "cx" },
-            },
-          },
-        })
-        ```
-    </Steps>
+    ```lua
+    require 'lspconfig'.tailwindcss.setup({
+      settings = {
+        tailwindCSS = {
+          classFunctions = { "cva", "cx" },
+        },
+      },
+    })
+    ```
 
   </TabItem>
   <TabItem label="WebStorm">
-    <Steps>
+
     1. Check the version. Available for [WebStorm 2023.1](https://www.jetbrains.com/webstorm/whatsnew/#version-2023-1-tailwind-css-configuration) and later
 
     2. Open the settings. Go to [Languages and Frameworks | Style Sheets | Tailwind CSS](https://www.jetbrains.com/help/webstorm/tailwind-css.html#ws_css_tailwind_configuration)
 
     3. Add the following to your tailwind configuration
 
-        ```json
-        {
-          "classFunctions": ["cva", "cx"]
-        }
-        ```
-    </Steps>
+    ```json
+    {
+      "classFunctions": ["cva", "cx"]
+    }
+    ```
 
   </TabItem>
 </Tabs>
 
 ### Handling Style Conflicts
 
-If you want to merge Tailwind CSS classes without conflicts, you may wish to [roll-your-own `cva`](../api-reference#defineconfig) with the [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) package:
+Although `cva`'s API is designed to help you avoid styling conflicts, there's still a small margin of error.
+
+If you're keen to lift that burden altogether, check out the wonderful [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) package.
+
+For bulletproof components, wrap your `cva` component with `twMerge`.
 
 <details>
 
 <summary>Example with tailwind-merge</summary>
 
 ```ts
-// cva.config.ts
-import { defineConfig } from "cva";
+import { cva, type VariantProps } from "class-variance-authority";
 import { twMerge } from "tailwind-merge";
 
-export const { cva, cx, compose } = defineConfig({
-  hooks: {
-    onComplete: (className) => twMerge(className),
-  },
-});
-```
-
-```ts
-// components/button.ts
-import { cx, cva } from "../cva.config";
-
-export const button = cva({
-  // 1. `twMerge` strips out `bg-gray-200`…
-  base: "font-semibold bg-gray-200 border rounded",
+const buttonVariants = cva(["your", "base", "classes"], {
   variants: {
     intent: {
-      // 2. …as variant `bg-*` values take precedence
-      primary: "bg-blue-500 text-white border-transparent hover:bg-blue-600",
-      secondary: "bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+      primary: ["your", "primary", "classes"],
     },
   },
   defaultVariants: {
@@ -169,11 +171,10 @@ export const button = cva({
   },
 });
 
-button();
-// => "font-semibold border rounded bg-blue-500 text-white border-transparent hover:bg-blue-600 text-base py-2 px-4 uppercase"
+export interface ButtonVariants extends VariantProps<typeof buttonVariants> {}
 
-cx("bg-gray-200", "bg-blue-500");
-// => "bg-blue-500"
+export const button = (variants: ButtonVariants) =>
+  twMerge(buttonVariants(variants));
 ```
 
 </details>

@@ -4,17 +4,12 @@ title: Variants
 
 import Carbon from "../../../components/carbon.astro";
 
-:::caution
-**You are currently viewing the docs for `cva@beta`**  
-For stable documentation, please visit [cva.style](https://cva.style).
-:::
-
 <Carbon />
 
 ## Creating Variants
 
 :::note
-Although `cva` is a [**tiny**](https://bundlephobia.com/package/cva) library, it's best to use in a SSR/SSG environment – your user probably doesn't need this JavaScript, especially for static components.
+Although `cva` is a [**tiny**](https://bundlephobia.com/package/class-variance-authority) library, it's best to use in a SSR/SSG environment – your user probably doesn't need this JavaScript, especially for static components.
 :::
 
 To kick things off, let's build a "basic" `button` component, using `cva` to handle our variant's classes
@@ -25,49 +20,60 @@ Use of Tailwind CSS is optional
 
 ```ts
 // components/button.ts
-import { cva } from "cva";
+import { cva } from "class-variance-authority";
 
-const button = cva({
-  base: "rounded border font-semibold",
-  // **or**
-  // base: ["font-semibold", "border", "rounded"],
+const button = cva(["font-semibold", "border", "rounded"], {
   variants: {
     intent: {
-      primary: "border-transparent bg-blue-500 text-white hover:bg-blue-600",
+      primary: ["bg-blue-500", "text-white", "border-transparent"],
       // **or**
-      // primary: [
-      //   "bg-blue-500",
-      //   "text-white",
-      //   "border-transparent",
-      //   "hover:bg-blue-600",
-      // ],
-      secondary: "border-gray-400 bg-white text-gray-800 hover:bg-gray-100",
+      // primary: "bg-blue-500 text-white border-transparent hover:bg-blue-600",
+      secondary: ["bg-white", "text-gray-800", "border-gray-400"],
     },
     size: {
-      small: "px-2 py-1 text-sm",
-      medium: "px-4 py-2 text-base",
+      small: ["text-sm", "py-1", "px-2"],
+      medium: ["text-base", "py-2", "px-4"],
+    },
+    // `boolean` variants are also supported!
+    disabled: {
+      false: null,
+      true: ["opacity-50", "cursor-not-allowed"],
     },
   },
   compoundVariants: [
     {
       intent: "primary",
+      disabled: false,
+      class: "hover:bg-blue-600",
+    },
+    {
+      intent: "secondary",
+      disabled: false,
+      class: "hover:bg-gray-100",
+    },
+    {
+      intent: "primary",
       size: "medium",
-      class: "uppercase",
       // **or** if you're a React.js user, `className` may feel more consistent:
       // className: "uppercase"
+      class: "uppercase",
     },
   ],
   defaultVariants: {
     intent: "primary",
     size: "medium",
+    disabled: false,
   },
 });
 
 button();
-// => "font-semibold border rounded bg-blue-500 text-white border-transparent hover:bg-blue-600 text-base py-2 px-4 uppercase"
+// => "font-semibold border rounded bg-blue-500 text-white border-transparent text-base py-2 px-4 hover:bg-blue-600 uppercase"
+
+button({ disabled: true });
+// => "font-semibold border rounded bg-blue-500 text-white border-transparent text-base py-2 px-4 opacity-50 cursor-not-allowed uppercase"
 
 button({ intent: "secondary", size: "small" });
-// => "font-semibold border rounded bg-white text-gray-800 border-gray-400 hover:bg-gray-100 text-sm py-1 px-2"
+// => "font-semibold border rounded bg-white text-gray-800 border-gray-400 text-sm py-1 px-2 hover:bg-gray-100"
 ```
 
 ## Compound Variants
@@ -76,10 +82,9 @@ Variants that apply when multiple other variant conditions are met.
 
 ```ts
 // components/button.ts
-import { cva } from "cva";
+import { cva } from "class-variance-authority";
 
-const button = cva({
-  base: "…",
+const button = cva("…", {
   variants: {
     intent: { primary: "…", secondary: "…" },
     size: { small: "…", medium: "…" },
@@ -100,10 +105,9 @@ const button = cva({
 
 ```ts
 // components/button.ts
-import { cva } from "cva";
+import { cva } from "class-variance-authority";
 
-const button = cva({
-  base: "…",
+const button = cva("…", {
   variants: {
     intent: { primary: "…", secondary: "…" },
     size: { small: "…", medium: "…" },
@@ -120,28 +124,4 @@ const button = cva({
     },
   ],
 });
-```
-
-## Disabling Variants
-
-Want to disable a variant completely? Provide an option with a value of `null`.
-
-If you're stuck on naming, we recommend setting an explicit `"unset"` option ([similar to the CSS keyword](https://developer.mozilla.org/en-US/docs/Web/CSS/unset)).
-
-```ts
-import { cva } from "cva";
-
-const button = cva({
-  base: "button",
-  variants: {
-    intent: {
-      unset: null,
-      primary: "button--primary",
-      secondary: "button--secondary",
-    },
-  },
-});
-
-button({ intent: "unset" });
-// => "button"
 ```

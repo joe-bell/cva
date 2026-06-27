@@ -1,4 +1,4 @@
-![CVA](/docs/latest/public/assets/img/wallpaper-hd.jpg)
+![CVA](/docs/beta/public/assets/img/wallpaper-hd.jpg)
 
 <h1 align="center">cva</h1>
 

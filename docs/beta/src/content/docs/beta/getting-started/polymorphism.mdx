@@ -1,0 +1,81 @@
+---
+title: Polymorphism
+---
+
+import Carbon from "../../../../components/carbon.astro";
+
+<Carbon />
+
+`cva` components are polymorphic (and framework-agnostic) by default; just apply the class to your preferred HTML element…
+
+```tsx
+import { button } from "./components/button";
+
+export default () => (
+  <a className={button()} href="/sign-up">
+    Sign up
+  </a>
+);
+```
+
+## Alternative Approaches
+
+### React
+
+If you'd prefer to use a React-based API, `cva` strongly recommends using [Base UI's `useRender` hook](https://base-ui.com/react/utils/use-render) to roll your own `render` prop.
+
+```tsx
+"use client";
+import { cva, type VariantProps } from "cva";
+import { useRender } from "@base-ui/react/use-render";
+import { mergeProps } from "@base-ui/react/merge-props";
+
+const _BUTTON_DEFAULT_TAG = "button" satisfies React.ElementType;
+
+export interface ButtonProps
+  extends
+    useRender.ComponentProps<typeof _BUTTON_DEFAULT_TAG>,
+    VariantProps<typeof button> {}
+
+const button = cva({
+  base: "button",
+  variants: {
+    intent: {
+      primary: "bg-blue-500 hover:bg-blue-600 border-transparent text-white",
+      secondary: "border-gray-400 bg-white text-gray-800 hover:bg-gray-100",
+    },
+  },
+});
+
+export function Button({
+  render,
+  intent = "primary",
+  className,
+  ...props
+}: ButtonProps) {
+  const defaultProps: useRender.ElementProps<typeof _BUTTON_DEFAULT_TAG> = {
+    className: button({ intent, className }),
+    // Consider data-attributes for debugging purposes
+    ["data-button" as string]: "",
+    ["data-intent" as string]: intent,
+  };
+
+  return useRender({
+    defaultTagName: _BUTTON_DEFAULT_TAG,
+    render,
+    props: mergeProps<typeof _BUTTON_DEFAULT_TAG>(defaultProps, props),
+  });
+}
+```
+
+#### Usage
+
+```tsx
+import { Button } from "./components/button";
+
+// Renders:
+//   <a href="/sign-up" class="button bg-blue-500 text-white border-transparent hover:bg-blue-600">
+//     Sign up
+//   </a>
+export default () => <Button render={<a href="/contact" />}>Contact</Button>;
+```

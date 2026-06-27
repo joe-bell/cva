@@ -17,7 +17,7 @@ jobs:
       - name: Packages
         run: pnpm build
       - name: Examples
-        run: pnpm --filter "./examples/**" --parallel build
+        run: pnpm build:examples
   bundlesize:
     runs-on: ubuntu-latest
     steps:
