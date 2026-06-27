@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
+    "@astrojs/markdown-satteri": "0.3.2",
     "@astrojs/starlight": "0.41.1",
     "@astrojs/starlight-tailwind": "^5.0.0",
     "@astrojs/ts-plugin": "1.10.9",

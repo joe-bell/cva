@@ -3,10 +3,15 @@ import starlight from "@astrojs/starlight";
 import vercel from "@astrojs/vercel";
 import starlightLlmsTxt from "starlight-llms-txt";
 import starlightVersions from "starlight-versions";
+import { satteri } from "@astrojs/markdown-satteri";
 import tailwindcss from "@tailwindcss/vite";
 
 const site = "https://cva.style";
 const googleAnalyticsId = "G-E8Z8HL9WXF";
+
+// Single source of truth for the sponsors link, surfaced as a `/sponsors`
+// redirect so sidebars can link to `/sponsors` instead of hard-coding the URL.
+const sponsorsUrl = "https://joebell.studio/sponsors";
 
 const config = {
   title: "cva",
@@ -26,6 +31,17 @@ export default defineConfig({
     // under `/docs/*`.
     "/docs": "/",
     "/docs/[...slug]": "/[...slug]",
+    // Sponsors redirect (single source of truth). The versions plugin rewrites
+    // the beta sidebar's `/sponsors` to `/beta/sponsors`, so redirect both.
+    "/sponsors": sponsorsUrl,
+    "/beta/sponsors": sponsorsUrl,
+    // The beta sidebar links to `/llms.txt`; the versions plugin rewrites it to
+    // `/beta/llms.txt`, so point that back at the root llms index.
+    "/beta/llms.txt": "/llms.txt",
+  },
+  markdown: {
+    // Astro's Sätteri processor with smart punctuation (curly quotes, dashes…).
+    processor: satteri({ features: { smartPunctuation: true } }),
   },
   fonts: [
     {
@@ -165,7 +181,7 @@ export default defineConfig({
         },
         {
           label: "Sponsor",
-          link: "https://joebell.studio/sponsors",
+          link: "/sponsors",
           attrs: {
             target: "_blank",
           },

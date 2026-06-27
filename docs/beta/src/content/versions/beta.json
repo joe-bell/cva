@@ -47,9 +47,9 @@
     { "label": "FAQs", "link": "/faqs" },
     {
       "label": "Sponsor",
-      "link": "https://joebell.studio/sponsors",
+      "link": "/sponsors",
       "attrs": { "target": "_blank" }
     },
-    { "label": "llms.txt", "link": "https://cva.style/llms.txt" }
+    { "label": "llms.txt", "link": "/llms.txt" }
   ]
 }
