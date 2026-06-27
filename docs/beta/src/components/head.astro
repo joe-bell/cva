@@ -1,9 +1,14 @@
 ---
 import { Font } from "astro:assets";
 const { head } = Astro.locals.starlightRoute;
+
+// Keep the versioned beta docs out of search indexes (they're near-duplicates
+// of the current/stable docs). `follow` still lets crawlers traverse links.
+const isBeta = Astro.url.pathname.startsWith("/beta");
 ---
 
 <Font cssVariable="--font-inter" preload />
+{isBeta && <meta name="robots" content="noindex, follow" />}
 {
   head.map(({ tag: Tag, attrs, content }) => (
     <Tag {...attrs} set:html={content} />

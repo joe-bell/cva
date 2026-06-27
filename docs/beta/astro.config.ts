@@ -256,6 +256,12 @@ export default defineConfig({
           attrs: { name: "apple-mobile-web-app-title", content: config.title },
         },
         // Misc
+        // Override Starlight's auto `twitter:site`, which it derives from the
+        // X social link's path (`joebell.studio/x` → `@x`).
+        {
+          tag: "meta",
+          attrs: { name: "twitter:site", content: "@joebell_" },
+        },
         {
           tag: "meta",
           attrs: { name: "twitter:creator", content: "@joebell_" },
