@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "pnpm run --filter './packages/**' build",
+    "build:examples": "pnpm --filter './examples/**' --parallel build",
     "bundlesize": "pnpm run --filter './packages/**' --parallel bundlesize",
     "check": "pnpm run --filter './packages/**' --parallel check",
     "dev": "vitest --config .config/vitest.config.ts",
