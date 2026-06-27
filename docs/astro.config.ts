@@ -17,7 +17,7 @@ const config = {
   title: "cva",
   favicon: "/assets/img/favicon.png",
   editLink: {
-    baseUrl: "https://github.com/joe-bell/cva/tree/main/docs/beta/",
+    baseUrl: "https://github.com/joe-bell/cva/tree/main/docs/",
   },
 };
 
