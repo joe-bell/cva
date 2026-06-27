@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
-    "@astrojs/ts-plugin": "^1.10.7",
+    "@astrojs/ts-plugin": "1.10.9",
     "@tailwindcss/vite": "^4.2.4",
-    "astro": "^6.3.1",
+    "astro": "7.0.3",
     "class-variance-authority": "latest",
     "tailwindcss": "^4.3.0"
   },
