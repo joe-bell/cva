@@ -1,6 +1,6 @@
 import { defineConfig, fontProviders } from "astro/config";
 import starlight from "@astrojs/starlight";
-import vercel from "@astrojs/vercel";
+import cloudflare from "@astrojs/cloudflare";
 import starlightLlmsTxt from "starlight-llms-txt";
 import starlightVersions from "starlight-versions";
 import { satteri } from "@astrojs/markdown-satteri";
@@ -25,7 +25,15 @@ const config = {
 export default defineConfig({
   site,
   output: "static",
-  adapter: vercel(),
+  adapter: cloudflare({
+    // The docs site is fully static, so optimise images at build time rather
+    // than wiring up Cloudflare's runtime Images binding (the adapter default).
+    imageService: "compile",
+    // Prerender in Node rather than the adapter's default workerd runtime, so
+    // native deps used during the build (e.g. the Sätteri markdown processor)
+    // resolve their Node bindings instead of a workerd/wasm variant.
+    prerenderEnvironment: "node",
+  }),
   redirects: {
     // Preserve inbound links from the previous Nextra docs, which served pages
     // under `/docs/*`.
@@ -287,12 +295,6 @@ export default defineConfig({
       ],
     }),
   ],
-  // Process images with sharp: https://docs.astro.build/en/guides/assets/#using-sharp
-  image: {
-    service: {
-      entrypoint: "astro/assets/services/sharp",
-    },
-  },
   vite: {
     plugins: [tailwindcss()],
   },
