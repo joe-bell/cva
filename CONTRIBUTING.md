@@ -2,6 +2,24 @@
 
 Welcome, and thanks for your interest in contributing! Please take a moment to review the following:
 
+## Project Goals
+
+Keep these principles in mind when proposing changes — they help keep `cva`
+focused:
+
+- **Performance & minimal footprint** – keep the runtime tiny and
+  dependency-light.
+- **Strongly typed** – first-class TypeScript; let the types guide usage and
+  catch mistakes.
+- **Simplicity** – a small, predictable API surface that's easy to reason
+  about.
+- **Easy to extend** – compose cleanly with the wider ecosystem (e.g.
+  Tailwind CSS-specific tooling).
+- **Avoid reinventing the wheel** – lean on proven primitives rather than
+  rebuilding them.
+- **The perfect tool for design systems** – optimise for the people building
+  and maintaining them.
+
 ## Style Guide
 
 - **Commits** follow the ["Conventional Commits" specification](https://www.conventionalcommits.org/en/v1.0.0/). This allows for changelogs to be generated automatically upon release.
@@ -26,10 +44,20 @@ Welcome, and thanks for your interest in contributing! Please take a moment to r
 
 ### Scripts
 
+Run these from the repo root:
+
 - `pnpm dev` – runs vitest, watching for file changes
-- `pnpm build` – production build
-- `pnpm tsc` – type checks
-- `pnpm test`
+- `pnpm test` – runs the test suite with coverage
+- `pnpm build` – production build of the packages
+- `pnpm check` – type checks every package
+- `pnpm bundlesize` – verifies bundle size limits (`size-limit`)
+- `pnpm prettier --check .` – checks formatting (`--write` to fix)
+- `pnpm syncpack:lint` – checks dependency-version consistency (`pnpm syncpack:fix` to fix)
+
+To scope a command to a single package, use a pnpm filter, e.g. `pnpm --filter cva test`.
+
+CI runs `build`, `bundlesize`, `check`, `prettier`, `syncpack`, and `test`, so
+run the matching scripts locally before opening a PR.
 
 ## Releases
 
