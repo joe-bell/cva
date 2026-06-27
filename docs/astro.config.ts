@@ -26,12 +26,10 @@ export default defineConfig({
   site,
   output: "static",
   adapter: cloudflare({
-    // The docs site is fully static, so optimise images at build time rather
-    // than wiring up Cloudflare's runtime Images binding (the adapter default).
+    // Static site: optimize images at build time, no runtime Images binding.
     imageService: "compile",
-    // Prerender in Node rather than the adapter's default workerd runtime, so
-    // native deps used during the build (e.g. the Sätteri markdown processor)
-    // resolve their Node bindings instead of a workerd/wasm variant.
+    // Keep Sätteri on its native Node binding; the default workerd prerender
+    // resolves a wasm build that isn't installed.
     prerenderEnvironment: "node",
   }),
   redirects: {
