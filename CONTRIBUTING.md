@@ -2,6 +2,24 @@
 
 Welcome, and thanks for your interest in contributing! Please take a moment to review the following:
 
+## Project Goals
+
+Keep these principles in mind when proposing changes — they help keep `cva`
+focused:
+
+- **Performance & minimal footprint** – keep the runtime tiny and
+  dependency-light.
+- **Strongly typed** – first-class TypeScript; let the types guide usage and
+  catch mistakes.
+- **Simplicity** – a small, predictable API surface that's easy to reason
+  about.
+- **Easy to extend** – compose cleanly with the wider ecosystem (e.g.
+  Tailwind CSS-specific tooling).
+- **Avoid reinventing the wheel** – lean on proven primitives rather than
+  rebuilding them.
+- **The perfect tool for design systems** – optimise for the people building
+  and maintaining them.
+
 ## Style Guide
 
 - **Commits** follow the ["Conventional Commits" specification](https://www.conventionalcommits.org/en/v1.0.0/). This allows for changelogs to be generated automatically upon release.
