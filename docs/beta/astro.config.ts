@@ -82,6 +82,7 @@ export default defineConfig({
   integrations: [
     starlight({
       ...config,
+      routeMiddleware: "./src/route-data.ts",
       components: {
         Head: "./src/components/head.astro",
         SiteTitle: "./src/components/site-title.astro",
