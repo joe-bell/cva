@@ -46,6 +46,6 @@ Agent-specific notes:
   against staged changes. Make sure it runs before pushing — if it doesn't
   fire in your environment, run it manually against the staged changes with
   `pnpm lint-staged`.
-- Don't manually force line wrapping in code or comments — let Prettier handle
-  formatting. Write natural, unbroken lines and rely on `pnpm prettier --write`
-  (and the pre-commit hook) to wrap them.
+- Don't manually force line wrapping in code or comments — write natural,
+  unbroken lines and let the pre-commit hook's Prettier step handle wrapping
+  and formatting.
