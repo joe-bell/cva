@@ -8,4 +8,7 @@
     "binding": "ASSETS",
     "directory": "./dist/client",
   },
+  "routes": [{ "pattern": "cva.style", "custom_domain": true }],
+  "preview_urls": true,
+  "observability": { "enabled": true },
 }
