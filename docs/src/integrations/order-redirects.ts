@@ -2,11 +2,20 @@ import { readFile, writeFile } from "node:fs/promises";
 import type { AstroIntegration } from "astro";
 
 /**
- * Cloudflare evaluates `_redirects` top-to-bottom and warns (in the build log) that static rules placed *below* a line containing a splat (`*`) or placeholder (`:name`) "could be made more performant by bringing it above" those lines.
+ * Cloudflare evaluates `_redirects` top-to-bottom and warns (in the build log)
+ * that static rules placed *below* a line containing a splat (`*`) or
+ * placeholder (`:name`) "could be made more performant by bringing it above"
+ * those lines.
  *
- * The `@astrojs/cloudflare` adapter always *appends* the redirects generated from `astro.config.ts`'s `redirects` to the existing `public/_redirects`, so our `/docs/*` splat (which has to live in `public/_redirects` — see the note in `astro.config.ts`) ends up first, pushing every static rule below it.
+ * The `@astrojs/cloudflare` adapter always *appends* the redirects generated
+ * from `astro.config.ts`'s `redirects` to the existing `public/_redirects`, so
+ * our `/docs/*` splat (which has to live in `public/_redirects` — see the note
+ * in `astro.config.ts`) ends up first, pushing every static rule below it.
  *
- * This integration runs after the adapter has written the final file and stable-sorts it so all static rules come first and splat/placeholder rules come last, silencing the warnings without changing matching behaviour (static rules are exact, so they never overlap the splat).
+ * This integration runs after the adapter has written the final file and
+ * stable-sorts it so all static rules come first and splat/placeholder rules
+ * come last, silencing the warnings without changing matching behaviour
+ * (static rules are exact, so they never overlap the splat).
  */
 const isDynamicRule = (line: string): boolean => {
   const pattern = line.trim().split(/\s+/)[0] ?? "";
