@@ -32,7 +32,7 @@ export default defineConfig({
     "/sponsors": "https://joebell.studio/sponsors",
     // Preserve inbound links from the previous Nextra docs, which served pages
     // under `/docs/*`.
-    // Note:The `/docs/*` catch-all is defined in `public/_redirects`; a
+    // Note: the `/docs/*` catch-all is defined in `public/_redirects`; a
     // spread redirect here would compile to an `/index.html` target which
     // Cloudflare rejects as a loop.
     "/docs": "/",
