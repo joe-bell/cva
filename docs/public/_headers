@@ -1,5 +1,11 @@
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
 
+/beta
+  X-Robots-Tag: noindex, follow
+
+/beta/*
+  X-Robots-Tag: noindex, follow
+
 https://:version.:subdomain.workers.dev/*
   X-Robots-Tag: noindex
