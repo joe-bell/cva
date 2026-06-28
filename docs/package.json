@@ -26,12 +26,12 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.4",
-    "@types/node": "20.12.7",
+    "@types/node": "24.13.2",
     "typescript": "6.0.3",
     "vite": "^8.1.0",
     "wrangler": "^4.105.0"
   },
   "engines": {
-    "node": "22"
+    "node": "24"
   }
 }

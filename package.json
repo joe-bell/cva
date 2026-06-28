@@ -14,8 +14,8 @@
     "prepare:hooks": "git config core.hooksPath .github/hooks",
     "prepare:packages": "pnpm build",
     "prettier": "prettier --config .prettierrc.json --ignore-unknown --no-error-on-unmatched-pattern",
-    "syncpack:fix": "syncpack fix --config .config/.syncpackrc.json",
-    "syncpack:lint": "syncpack lint --config .config/.syncpackrc.json",
+    "syncpack:fix": "syncpack fix",
+    "syncpack:lint": "syncpack lint",
     "test": "vitest --config .config/vitest.config.ts run --coverage"
   },
   "devDependencies": {
@@ -32,6 +32,84 @@
   },
   "packageManager": "pnpm@11.0.9",
   "engines": {
-    "node": "22"
+    "node": "24"
+  },
+  "syncpack": {
+    "customTypes": {
+      "nodeEngine": {
+        "path": "engines.node",
+        "strategy": "version"
+      },
+      "packageManager": {
+        "path": "packageManager",
+        "strategy": "name@version"
+      }
+    },
+    "versionGroups": [
+      {
+        "label": "Use `workspace:*` protocol for local packages",
+        "packages": [
+          "!example-*"
+        ],
+        "dependencies": [
+          "cva",
+          "class-variance-authority"
+        ],
+        "dependencyTypes": [
+          "!local"
+        ],
+        "pinVersion": "workspace:*"
+      },
+      {
+        "label": "Use `latest` for `latest` examples",
+        "packages": [
+          "example-*"
+        ],
+        "dependencies": [
+          "class-variance-authority"
+        ],
+        "pinVersion": "latest"
+      },
+      {
+        "label": "Use `beta` for `beta` examples",
+        "packages": [
+          "example-beta-*"
+        ],
+        "dependencies": [
+          "cva"
+        ],
+        "pinVersion": "beta"
+      },
+      {
+        "label": "Examples allow Node >=22 — StackBlitz WebContainers run an older, fixed Node",
+        "packages": [
+          "example-*"
+        ],
+        "dependencyTypes": [
+          "nodeEngine"
+        ],
+        "pinVersion": ">=22"
+      },
+      {
+        "label": "Snap `engines.node` and `packageManager` to the root package",
+        "dependencyTypes": [
+          "nodeEngine",
+          "packageManager"
+        ],
+        "snapTo": [
+          "root"
+        ]
+      },
+      {
+        "label": "Ignore peer dependencies in `cva`",
+        "packages": [
+          "cva"
+        ],
+        "dependencyTypes": [
+          "peer"
+        ],
+        "isIgnored": true
+      }
+    ]
   }
 }

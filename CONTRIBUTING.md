@@ -42,6 +42,14 @@ focused:
    ```
 5. Voilà, you're ready to go!
 
+### Node.js versions
+
+The repo targets the Node.js version in [`.nvmrc`](./.nvmrc) (used by `nvm` and CI). The root package's `engines.node` is the single source of truth, and `docs` follows it. The published library packages (`packages/cva`, `packages/class-variance-authority`) intentionally **omit** `engines.node` so they don't constrain consumers — cva runs on any reasonable Node, and a pin would just emit `EBADENGINE` warnings for anyone on an older Node. The dev/CI Node requirement is enforced by `.nvmrc`, the root `engines.node`, and CI, not by the libraries.
+
+`syncpack` keeps the declared versions aligned via a custom type (configured under the `syncpack` key in the root [`package.json`](./package.json)): any non-example package that declares `engines.node` snaps to the root package's value, while the examples use their own `">=22"` pin. The field stays **optional** — packages without an `engines.node` (including the published libraries) aren't flagged. When you bump Node, update [`.nvmrc`](./.nvmrc) and the root `engines.node` together (everything else follows; only the examples' `">=22"` pin is separate), then run `pnpm syncpack:fix`.
+
+The framework demos under [`examples/`](./examples) are the exception. They're embedded in the docs as live [StackBlitz](https://stackblitz.com) playgrounds, and StackBlitz runs them in a [WebContainer](https://webcontainers.io) — an in-browser Node.js that ships a **single, non-configurable** version (Node `22` at time of writing; Node `24` is [not yet supported](https://github.com/stackblitz/webcontainer-core/issues/560)). Pinning an example's `engines.node` to a version the WebContainer can't provide makes StackBlitz emit `EBADENGINE` "unsupported engine" warnings on install, so the examples deliberately use a permissive range (`">=22"`) that the WebContainer's Node satisfies. **Don't raise the examples' `engines.node` above what StackBlitz can run** — keep it as a lower-bound range, not an exact pin, until WebContainers ship the newer version.
+
 ### Scripts
 
 Run these from the repo root:

@@ -51,7 +51,7 @@
     "@size-limit/preset-small-lib": "^12.1.0",
     "@swc/cli": "0.8.1",
     "@swc/core": "1.15.33",
-    "@types/node": "20.12.7",
+    "@types/node": "24.13.2",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "react": "19.2.6",

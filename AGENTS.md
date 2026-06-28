@@ -18,9 +18,11 @@ applies to the other — they are intentionally separate.
 
 ## Architecture
 
-This is a [pnpm](https://pnpm.io) workspace (Node `22`, see
+This is a [pnpm](https://pnpm.io) workspace (Node `24`, see
 [`.nvmrc`](./.nvmrc)). pnpm is enforced via `only-allow` — don't use npm or
 yarn.
+
+The dev/CI toolchain pins `engines.node` to the [`.nvmrc`](./.nvmrc) version. The `examples/` use a permissive range because they run on StackBlitz WebContainers, which ship an older, fixed Node, and the published library packages omit `engines.node` so they don't constrain consumers. Before changing any `engines.node` field, read the [Node.js versions](./CONTRIBUTING.md#nodejs-versions) section of [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
 | Path                                | What it is                                                                                                                                                                     |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -60,6 +62,5 @@ Agent-specific notes:
   against staged changes. Make sure it runs before pushing — if it doesn't
   fire in your environment, run it manually against the staged changes with
   `pnpm lint-staged`.
-- Don't manually force line wrapping in code or comments — write natural,
-  unbroken lines and let the pre-commit hook's Prettier step handle wrapping
-  and formatting.
+- **Never hard-wrap prose.** In Markdown (`.md` / `.mdx`), code comments, and commit bodies, write each paragraph as one unbroken line and let the editor soft-wrap it — don't insert manual newlines to keep lines short. Prettier defaults to `proseWrap: "preserve"`, so it won't reflow prose for you, and any hard wraps get committed verbatim as noisy diffs.
+- To verify an `examples/` change in a real StackBlitz WebContainer before merging, open it from GitHub against your branch: `https://stackblitz.com/github/joe-bell/cva/tree/<branch>/<dir>`. Branch names containing slashes (e.g. `claude/my-feature`) resolve fine — StackBlitz parses them correctly against the trailing path, so no slash-free branch is needed.
