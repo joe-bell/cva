@@ -31,9 +31,10 @@ export default defineConfig({
   }),
   redirects: {
     // Preserve inbound links from the previous Nextra docs, which served pages
-    // under `/docs/*`.
+    // under `/docs/*`. The `/docs/*` catch-all is in `public/_redirects`; a
+    // spread redirect here compiles to an `/index.html` target Cloudflare
+    // rejects as a loop.
     "/docs": "/",
-    "/docs/[...slug]": "/[...slug]",
     // Sponsors redirect (single source of truth). The versions plugin rewrites
     // the beta sidebar's `/sponsors` to `/beta/sponsors`, so redirect both.
     "/sponsors": sponsorsUrl,
