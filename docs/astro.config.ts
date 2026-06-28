@@ -1,6 +1,6 @@
 import { defineConfig, fontProviders } from "astro/config";
 import starlight from "@astrojs/starlight";
-import vercel from "@astrojs/vercel";
+import cloudflare from "@astrojs/cloudflare";
 import starlightLlmsTxt from "starlight-llms-txt";
 import starlightVersions from "starlight-versions";
 import { satteri } from "@astrojs/markdown-satteri";
@@ -8,10 +8,6 @@ import tailwindcss from "@tailwindcss/vite";
 
 const site = "https://cva.style";
 const googleAnalyticsId = "G-E8Z8HL9WXF";
-
-// Single source of truth for the sponsors link, surfaced as a `/sponsors`
-// redirect so sidebars can link to `/sponsors` instead of hard-coding the URL.
-const sponsorsUrl = "https://joebell.studio/sponsors";
 
 const config = {
   title: "cva",
@@ -21,26 +17,31 @@ const config = {
   },
 };
 
-// https://astro.build/config
+// Note:
+// Version-specific redirects still need to be defined statically.
+const versions = [{ slug: "beta", label: "Beta" }] as const;
+
 export default defineConfig({
   site,
   output: "static",
-  adapter: vercel(),
+  adapter: cloudflare({
+    imageService: "compile",
+    prerenderEnvironment: "node",
+  }),
   redirects: {
+    "/sponsors": "https://joebell.studio/sponsors",
     // Preserve inbound links from the previous Nextra docs, which served pages
     // under `/docs/*`.
+    // Note: the `/docs/*` catch-all is defined in `public/_redirects`; a
+    // spread redirect here would compile to an `/index.html` target which
+    // Cloudflare rejects as a loop.
     "/docs": "/",
-    "/docs/[...slug]": "/[...slug]",
-    // Sponsors redirect (single source of truth). The versions plugin rewrites
-    // the beta sidebar's `/sponsors` to `/beta/sponsors`, so redirect both.
-    "/sponsors": sponsorsUrl,
-    "/beta/sponsors": sponsorsUrl,
-    // The beta sidebar links to `/llms.txt`; the versions plugin rewrites it to
-    // `/beta/llms.txt`, so point that back at the root llms index.
+    // Redirect relative links within versioned docs
+    // (`starlight-versions` prepends `/<version>/` to sidebar paths)
+    "/beta/sponsors": "/sponsors",
     "/beta/llms.txt": "/llms.txt",
   },
   markdown: {
-    // Astro's Sätteri processor with smart punctuation (curly quotes, dashes…).
     processor: satteri({ features: { smartPunctuation: true } }),
   },
   fonts: [
@@ -194,23 +195,19 @@ export default defineConfig({
       ],
       plugins: [
         starlightLlmsTxt({
-          // Keep the versioned beta docs out of the current (stable) llms sets;
-          // they're surfaced separately via the `cva@beta` custom set below and
-          // linked from the /llms.txt index. Note: llms-full.txt always
-          // includes every page regardless of `exclude` (the "complete" set).
-          exclude: ["beta/**"],
-          customSets: [
-            {
-              label: "cva@beta",
-              description:
-                "Documentation for the cva@beta release (https://cva.style/beta)",
-              paths: ["beta/**"],
-            },
-          ],
+          exclude: versions.map((version) => `${version.slug}/**`),
+          customSets: versions.map((version) => ({
+            label: `cva@${version.slug}`,
+            description: `Documentation for the cva@${version.slug} release (https://cva.style/${version.slug})`,
+            paths: [`${version.slug}/**`],
+          })),
         }),
         starlightVersions({
           current: { label: "Latest" },
-          versions: [{ slug: "beta", label: "Beta" }],
+          versions: versions.map((version) => ({
+            slug: version.slug,
+            label: version.label,
+          })),
         }),
       ],
       customCss: ["./src/styles/main.css"],
@@ -287,12 +284,6 @@ export default defineConfig({
       ],
     }),
   ],
-  // Process images with sharp: https://docs.astro.build/en/guides/assets/#using-sharp
-  image: {
-    service: {
-      entrypoint: "astro/assets/services/sharp",
-    },
-  },
   vite: {
     plugins: [tailwindcss()],
   },

@@ -2,12 +2,16 @@
   "extends": "astro/tsconfigs/strictest",
   "compilerOptions": {
     "skipLibCheck": true,
+    "incremental": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "plugins": [
       {
         "name": "@astrojs/ts-plugin"
       }
     ]
   },
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"]
+  "exclude": ["${configDir}/dist"],
+  "include": ["${configDir}/.astro/types.d.ts", "${configDir}/**/*"]
 }
