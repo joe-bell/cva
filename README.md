@@ -40,5 +40,3 @@ Visit [**cva.style**](https://cva.style) to get started.
 ## License
 
 [Apache-2.0 License](/LICENSE) © [Joe Bell](https://joebell.studio)
-
-<!-- temp: build-watch-paths test — root .md should NOT trigger a docs build (remove me) -->
