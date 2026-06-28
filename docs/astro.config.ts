@@ -5,6 +5,7 @@ import starlightLlmsTxt from "starlight-llms-txt";
 import starlightVersions from "starlight-versions";
 import { satteri } from "@astrojs/markdown-satteri";
 import tailwindcss from "@tailwindcss/vite";
+import { orderRedirects } from "./src/integrations/order-redirects";
 
 const site = "https://cva.style";
 const googleAnalyticsId = "G-E8Z8HL9WXF";
@@ -17,9 +18,19 @@ const config = {
   },
 };
 
-// Note:
-// Version-specific redirects still need to be defined statically.
 const versions = [{ slug: "beta", label: "Beta" }] as const;
+
+// `starlight-versions` prepends `/<version>/` to sidebar paths, so each
+// archived version needs its `sponsors`/`llms.txt` links pointed back at the
+// canonical (unversioned) routes. Generating these from `versions` keeps new
+// versions automatic — the object is still resolved statically at config load,
+// which is all Astro's `redirects` requires.
+const versionRedirects = Object.fromEntries(
+  versions.flatMap(({ slug }) => [
+    [`/${slug}/sponsors`, "/sponsors"],
+    [`/${slug}/llms.txt`, "/llms.txt"],
+  ]),
+);
 
 export default defineConfig({
   site,
@@ -36,10 +47,8 @@ export default defineConfig({
     // spread redirect here would compile to an `/index.html` target which
     // Cloudflare rejects as a loop.
     "/docs": "/",
-    // Redirect relative links within versioned docs
-    // (`starlight-versions` prepends `/<version>/` to sidebar paths)
-    "/beta/sponsors": "/sponsors",
-    "/beta/llms.txt": "/llms.txt",
+    // Per-version redirects back to the canonical routes (see `versionRedirects`).
+    ...versionRedirects,
   },
   markdown: {
     processor: satteri({ features: { smartPunctuation: true } }),
@@ -283,6 +292,10 @@ export default defineConfig({
         },
       ],
     }),
+    // Runs after the Cloudflare adapter has emitted `_redirects`, hoisting
+    // static rules above the `/docs/*` splat to satisfy Cloudflare's build-time
+    // performance warning.
+    orderRedirects(),
   ],
   vite: {
     plugins: [tailwindcss()],
