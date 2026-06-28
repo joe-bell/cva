@@ -29,6 +29,21 @@ yarn.
 | `docs`                              | Unified docs site ([cva.style](https://cva.style), Astro Starlight) — stable at the root, beta under `/beta` via [`starlight-versions`](https://starlight-versions.vercel.app) |
 | `examples/beta`, `examples/latest`  | Framework usage examples for each package                                                                                                                                      |
 
+## Docs styling
+
+The `docs` site styles with **Tailwind CSS v4** via Starlight's official
+integration (`@astrojs/starlight-tailwind` + `@tailwindcss/vite`, configured in
+[`docs/astro.config.ts`](./docs/astro.config.ts) and
+[`docs/src/styles/main.css`](./docs/src/styles/main.css)). See Starlight's
+[CSS & Tailwind guide](https://starlight.astro.build/guides/css-and-tailwind/#tailwind-css).
+
+When styling components, use Tailwind v4 utility classes — don't reach for
+inline `style="…"`/`style={{ … }}` attributes or `<style>` tags. Prefer
+variant utilities (e.g. `after:…`, `dark:…`) over scoped CSS, and arbitrary
+values (e.g. `after:bg-[hsl(0,0%,98%)]`) when no token fits. Global styling
+that can't be expressed as utilities belongs in `main.css` (`@apply`, theme
+tokens), not in per-component `<style>` blocks.
+
 ## Contributing
 
 [CONTRIBUTING.md](./CONTRIBUTING.md) is the single source of truth for project

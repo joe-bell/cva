@@ -6,6 +6,6 @@ import Default from "@astrojs/starlight/components/SiteTitle.astro";
 const isBeta = Astro.url.pathname.startsWith("/beta");
 ---
 
-<div style="display: contents" data-version={isBeta ? "beta" : "latest"}>
+<div class="contents" data-version={isBeta ? "beta" : "latest"}>
   <Default {...Astro.props}><slot /></Default>
 </div>
