@@ -25,16 +25,6 @@
       "packages": ["cva"],
       "dependencyTypes": ["peer"],
       "isIgnored": true
-    },
-    {
-      "label": "Ignore deps in the latest docs (to be deprecated)",
-      "packages": ["docs-latest"],
-      "isIgnored": true
-    },
-    {
-      "label": "Keep all other dependencies in sync",
-      "packages": ["**", "!docs-latest"],
-      "dependencyTypes": ["!peer"]
     }
   ]
 }
