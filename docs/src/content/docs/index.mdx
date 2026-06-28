@@ -6,7 +6,16 @@ banner:
     <a href="/beta/">See the updated docs →</a>
 ---
 
-![CVA Logo](/assets/img/wallpaper-hd.jpg)
+import { Picture } from "astro:assets";
+
+<Picture
+  src="/assets/img/wallpaper-4k.png"
+  alt="CVA Logo"
+  width={1920}
+  height={1080}
+  layout="constrained"
+  formats={["avif", "webp"]}
+/>
 
 <br />
 <br />
