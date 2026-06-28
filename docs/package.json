@@ -4,9 +4,8 @@
   "type": "module",
   "scripts": {
     "astro": "astro",
-    "build": "astro check && astro build",
+    "build": "wrangler types && astro check && astro build",
     "check": "tsc",
-    "deploy": "astro build && wrangler deploy",
     "dev": "astro dev",
     "preview": "astro preview",
     "start": "astro dev"
