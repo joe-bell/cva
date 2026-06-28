@@ -28,15 +28,9 @@ export const collections = {
       });
 
       return z.discriminatedUnion("format", [
-        common.merge(
-          z.object({ format: z.literal("Audio"), url: z.string().url() }),
-        ),
-        common.merge(
-          z.object({ format: z.literal("Article"), url: z.string().url() }),
-        ),
-        common.merge(
-          z.object({ format: z.literal("YouTube"), youtubeId: z.string() }),
-        ),
+        common.extend({ format: z.literal("Audio"), url: z.url() }),
+        common.extend({ format: z.literal("Article"), url: z.url() }),
+        common.extend({ format: z.literal("YouTube"), youtubeId: z.string() }),
       ]);
     },
   }),
