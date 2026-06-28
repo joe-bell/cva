@@ -37,20 +37,13 @@ export const orderRedirects = (): AstroIntegration => ({
         return;
       }
 
-      const lines = contents.split("\n");
-      const rules = lines.filter((line) => line.trim() !== "");
-      const isReordered =
-        rules.some(isDynamicRule) &&
-        rules.some((line) => !isDynamicRule(line)) &&
-        rules.findIndex(isDynamicRule) <
-          rules.map(isDynamicRule).lastIndexOf(false);
-
-      if (!isReordered) return;
-
+      const rules = contents.split("\n").filter((line) => line.trim() !== "");
       const ordered = [
         ...rules.filter((line) => !isDynamicRule(line)),
         ...rules.filter(isDynamicRule),
       ];
+
+      if (ordered.join("\n") === rules.join("\n")) return;
 
       await writeFile(redirectsUrl, `${ordered.join("\n")}\n`);
       logger.info(
