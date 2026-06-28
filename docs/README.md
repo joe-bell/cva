@@ -47,6 +47,20 @@ All commands are run from the root of the project, from a terminal:
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
 
+## 🚀 Deployment
+
+Deployed via [Cloudflare Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/). Builds are scoped with [build watch paths](https://developers.cloudflare.com/pages/configuration/build-watch-paths/) set in the Cloudflare dashboard (**Settings → Build → Build watch paths**); there's no `wrangler.jsonc` equivalent. Paths are repo-root-relative, independent of the worker's `docs/` root.
+
+Include paths (excludes are empty):
+
+- `docs/*`
+- `packages/cva/*`
+- `.config/*`
+- `package.json`, `tsconfig.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.prettierrc.json`
+- `.nvmrc` — Node version; the one extensionless file we watch
+
+`*` matches across `/`, so `docs/*` covers nested files. Root `.md` files and other extensionless files (`LICENSE`, `.gitignore`) are excluded, so prose-only changes don't redeploy.
+
 ## 👀 Want to learn more?
 
 Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
