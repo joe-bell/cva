@@ -6,7 +6,6 @@ export default {
     `pnpm prettier --write ${filenames.map((f) => `'${f}'`).join(" ")}`,
   ],
   "package.json": () => "pnpm syncpack:lint",
-  // Regenerate Wrangler types in whichever package owns the changed config.
   "**/wrangler.jsonc": (filenames) =>
     filenames.map(
       (filename) => `pnpm --dir '${dirname(filename)}' exec wrangler types`,
