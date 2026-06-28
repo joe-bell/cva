@@ -5,6 +5,7 @@ import starlightLlmsTxt from "starlight-llms-txt";
 import starlightVersions from "starlight-versions";
 import { satteri } from "@astrojs/markdown-satteri";
 import tailwindcss from "@tailwindcss/vite";
+import { orderRedirects } from "./src/integrations/order-redirects";
 
 const site = "https://cva.style";
 const googleAnalyticsId = "G-E8Z8HL9WXF";
@@ -17,9 +18,14 @@ const config = {
   },
 };
 
-// Note:
-// Version-specific redirects still need to be defined statically.
 const versions = [{ slug: "beta", label: "Beta" }] as const;
+
+const versionRedirects = Object.fromEntries(
+  versions.flatMap(({ slug }) => [
+    [`/${slug}/sponsors`, "/sponsors"],
+    [`/${slug}/llms.txt`, "/llms.txt"],
+  ]),
+);
 
 export default defineConfig({
   site,
@@ -36,10 +42,7 @@ export default defineConfig({
     // spread redirect here would compile to an `/index.html` target which
     // Cloudflare rejects as a loop.
     "/docs": "/",
-    // Redirect relative links within versioned docs
-    // (`starlight-versions` prepends `/<version>/` to sidebar paths)
-    "/beta/sponsors": "/sponsors",
-    "/beta/llms.txt": "/llms.txt",
+    ...versionRedirects,
   },
   markdown: {
     processor: satteri({ features: { smartPunctuation: true } }),
@@ -283,6 +286,7 @@ export default defineConfig({
         },
       ],
     }),
+    orderRedirects(),
   ],
   vite: {
     plugins: [tailwindcss()],

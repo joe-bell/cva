@@ -1,5 +1,6 @@
 {
   "$schema": "https://www.schemastore.org/prettierrc.json",
+  "printWidth": 80,
   "plugins": [
     "prettier-plugin-astro",
     "prettier-plugin-packagejson",
