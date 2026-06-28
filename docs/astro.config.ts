@@ -26,10 +26,7 @@ export default defineConfig({
   site,
   output: "static",
   adapter: cloudflare({
-    // Static site: optimize images at build time, no runtime Images binding.
     imageService: "compile",
-    // Keep Sätteri on its native Node binding; the default workerd prerender
-    // resolves a wasm build that isn't installed.
     prerenderEnvironment: "node",
   }),
   redirects: {
