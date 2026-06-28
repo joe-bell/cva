@@ -20,11 +20,6 @@ const config = {
 
 const versions = [{ slug: "beta", label: "Beta" }] as const;
 
-// `starlight-versions` prepends `/<version>/` to sidebar paths, so each
-// archived version needs its `sponsors`/`llms.txt` links pointed back at the
-// canonical (unversioned) routes. Generating these from `versions` keeps new
-// versions automatic — the object is still resolved statically at config load,
-// which is all Astro's `redirects` requires.
 const versionRedirects = Object.fromEntries(
   versions.flatMap(({ slug }) => [
     [`/${slug}/sponsors`, "/sponsors"],
@@ -47,7 +42,6 @@ export default defineConfig({
     // spread redirect here would compile to an `/index.html` target which
     // Cloudflare rejects as a loop.
     "/docs": "/",
-    // Per-version redirects back to the canonical routes (see `versionRedirects`).
     ...versionRedirects,
   },
   markdown: {
@@ -292,9 +286,6 @@ export default defineConfig({
         },
       ],
     }),
-    // Runs after the Cloudflare adapter has emitted `_redirects`, hoisting
-    // static rules above the `/docs/*` splat to satisfy Cloudflare's build-time
-    // performance warning.
     orderRedirects(),
   ],
   vite: {
