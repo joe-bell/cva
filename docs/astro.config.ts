@@ -6,7 +6,10 @@ import starlightVersions from "starlight-versions";
 import { satteri } from "@astrojs/markdown-satteri";
 import tailwindcss from "@tailwindcss/vite";
 import { orderRedirects } from "./src/integrations/order-redirects";
-import { versionPageRedirects } from "./src/integrations/version-redirects";
+import {
+  assertVersionRedirects,
+  versionPageRedirects,
+} from "./src/integrations/version-redirects";
 
 const site = "https://cva.style";
 const googleAnalyticsId = "G-E8Z8HL9WXF";
@@ -20,6 +23,9 @@ const config = {
 };
 
 const versions = [{ slug: "beta", label: "Beta" }] as const;
+
+const docsDir = new URL("./src/content/docs/", import.meta.url);
+const versionSlugs = versions.map(({ slug }) => slug);
 
 const versionRedirects = Object.fromEntries(
   versions.flatMap(({ slug }) => [
@@ -46,10 +52,7 @@ export default defineConfig({
     ...versionRedirects,
     // Gracefully redirect pages that exist in some versions but not others to
     // the relevant version home, so switching versions never lands on a 404.
-    ...versionPageRedirects(
-      new URL("./src/content/docs/", import.meta.url),
-      versions.map(({ slug }) => slug),
-    ),
+    ...versionPageRedirects(docsDir, versionSlugs),
   },
   markdown: {
     processor: satteri({ features: { smartPunctuation: true } }),
@@ -294,6 +297,7 @@ export default defineConfig({
       ],
     }),
     orderRedirects(),
+    assertVersionRedirects(docsDir, versionSlugs),
   ],
   vite: {
     plugins: [tailwindcss()],

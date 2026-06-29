@@ -1,5 +1,6 @@
 import { readdirSync } from "node:fs";
-import type { ValidRedirectStatus } from "astro";
+import { readFile } from "node:fs/promises";
+import type { AstroIntegration, ValidRedirectStatus } from "astro";
 
 /**
  * Builds redirects that smooth over page differences between doc versions.
@@ -66,3 +67,73 @@ export const versionPageRedirects = (
 
   return redirects;
 };
+
+// Normalise a path for comparison: drop a trailing slash (but keep root `/`),
+// so the slash and slash-free variants Astro emits for each redirect collapse
+// to one key.
+const normalize = (path: string) =>
+  path.length > 1 ? path.replace(/\/+$/, "") : path;
+
+/**
+ * Build-time guard that the `versionPageRedirects` actually reach the deployed
+ * `_redirects`. It recomputes the expected redirects and fails the build if any
+ * are missing or point somewhere unexpected — catching regressions in the
+ * config wiring, the `@astrojs/cloudflare` adapter's serialisation, or the
+ * `order-redirects` pass, none of which a type check would surface.
+ *
+ * @param docsDir - URL of the `src/content/docs` directory.
+ * @param versionSlugs - Archived version slugs, matching `versionPageRedirects`.
+ */
+export const assertVersionRedirects = (
+  docsDir: URL,
+  versionSlugs: readonly string[],
+): AstroIntegration => ({
+  name: "assert-version-redirects",
+  hooks: {
+    "astro:build:done": async ({ dir, logger }) => {
+      const expected = Object.entries(
+        versionPageRedirects(docsDir, versionSlugs),
+      );
+      if (expected.length === 0) return;
+
+      let contents: string;
+      try {
+        contents = await readFile(new URL("./_redirects", dir), "utf-8");
+      } catch {
+        throw new Error(
+          `Expected ${expected.length} version redirect(s) but no _redirects file was emitted.`,
+        );
+      }
+
+      // Parse `SOURCE  DESTINATION  STATUS` lines, keyed by normalised source.
+      const emitted = new Map<string, { destination: string; status: string }>();
+      for (const line of contents.split("\n")) {
+        const [source, destination, status] = line.trim().split(/\s+/);
+        if (!source || !destination) continue;
+        emitted.set(normalize(source), { destination, status: status ?? "" });
+      }
+
+      const problems = expected.flatMap(([source, { destination, status }]) => {
+        const found = emitted.get(normalize(source));
+        if (!found) return [`${source} → ${destination} (missing)`];
+        if (
+          normalize(found.destination) !== normalize(destination) ||
+          found.status !== String(status)
+        ) {
+          return [
+            `${source} → ${found.destination} (${found.status}), expected ${destination} (${status})`,
+          ];
+        }
+        return [];
+      });
+
+      if (problems.length > 0) {
+        throw new Error(
+          `Version redirects missing or incorrect in _redirects:\n  ${problems.join("\n  ")}`,
+        );
+      }
+
+      logger.info(`Verified ${expected.length} version redirect(s).`);
+    },
+  },
+});
