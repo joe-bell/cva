@@ -8,12 +8,16 @@ type Redirects = Record<
 >;
 
 export interface VersionRedirectsOptions {
+  /** Project-root-relative path to the docs content directory, e.g.
+   *  `"src/content/docs"`. */
+  docs: string;
   /** Archived version slugs, e.g. `["beta"]`. The current (latest) version is
    *  implicit and represented internally by the empty string. */
   versions: readonly string[];
-  /** Root-only pages that live outside the versioned docs (e.g. `"sponsors"`,
-   *  `"llms.txt"`); each version permanently redirects back to the latest one. */
-  shared?: readonly string[];
+  /** Pages that live only at the root rather than per version (e.g.
+   *  `"sponsors"`, `"llms.txt"`); each version permanently redirects its copy
+   *  back to that root page. */
+  redirectToRoot?: readonly string[];
 }
 
 // Drop a trailing slash (keeping root `/`) so the slash and slash-free variants
@@ -21,10 +25,10 @@ export interface VersionRedirectsOptions {
 const normalize = (path: string) =>
   path.length > 1 ? path.replace(/\/+$/, "") : path;
 
-// Enumerate doc page slugs (version-prefixed, extension-free) from a
-// `src/content/docs` directory — the same `**/*.{md,mdx}` files Starlight's
-// `docsLoader()` reads, globbed here because redirects must be known before the
-// content layer has loaded.
+// Enumerate doc page slugs (version-prefixed, extension-free) from the docs
+// content directory — the same `**/*.{md,mdx}` files Starlight's `docsLoader()`
+// reads, globbed here because redirects must be known before the content layer
+// has loaded.
 const docsPageSlugs = (docsDir: URL): string[] =>
   readdirSync(docsDir, { recursive: true })
     .map((entry) => String(entry).replaceAll("\\", "/"))
@@ -35,8 +39,8 @@ const docsPageSlugs = (docsDir: URL): string[] =>
  * Computes every redirect needed to paper over differences between doc
  * versions:
  *
- * - **Shared pages** (`sponsors`, `llms.txt`, …) only exist at the root, so each
- *   version permanently (`301`) redirects back to the latest page.
+ * - **Root-only pages** (`sponsors`, `llms.txt`, …) only exist at the root, so
+ *   each version permanently (`301`) redirects its copy back to that page.
  * - **Page gaps** — `starlight-versions` rewrites the URL in place when you
  *   switch versions, with no check that the target exists, so a page present in
  *   only some versions 404s in the others. For every such gap we temporarily
@@ -44,14 +48,14 @@ const docsPageSlugs = (docsDir: URL): string[] =>
  *   would-be-missing URL to that version's home.
  */
 const buildRedirects = (
-  { versions, shared = [] }: VersionRedirectsOptions,
+  { versions, redirectToRoot = [] }: VersionRedirectsOptions,
   pages: readonly string[],
 ): Redirects => {
   const allVersions = ["", ...versions];
   const redirects: Redirects = {};
 
   for (const version of versions) {
-    for (const page of shared) {
+    for (const page of redirectToRoot) {
       redirects[`/${version}/${page}`] = {
         status: 301,
         destination: `/${page}`,
@@ -92,13 +96,13 @@ const buildRedirects = (
 
 /**
  * Astro integration that owns the documentation's version redirects end to end:
- * it discovers the doc pages from `src/content/docs` and injects the resulting
- * redirects into the build config (`astro:config:setup`), then asserts that
- * every one reached the emitted `_redirects` (`astro:build:done`).
+ * it discovers the doc pages under the `docs` directory and injects the
+ * resulting redirects into the build config (`astro:config:setup`), then asserts
+ * that every one reached the emitted `_redirects` (`astro:build:done`).
  *
- * Following Starlight, content is located via the resolved `config.srcDir`
- * rather than passed in — `getCollection` isn't available this early in the
- * build, before the content layer has loaded.
+ * Following Starlight, content is located by globbing the filesystem (resolved
+ * against `config.root`) rather than passed in — `getCollection` isn't available
+ * this early in the build, before the content layer has loaded.
  *
  * The assertion catches regressions the type checker can't — the
  * `@astrojs/cloudflare` adapter's serialisation or the `order-redirects` pass
@@ -113,7 +117,7 @@ export const versionRedirects = (
     name: "version-redirects",
     hooks: {
       "astro:config:setup": ({ config, updateConfig }) => {
-        const docsDir = new URL("content/docs/", config.srcDir);
+        const docsDir = new URL(options.docs.replace(/\/?$/, "/"), config.root);
         redirects = buildRedirects(options, docsPageSlugs(docsDir));
         updateConfig({ redirects });
       },

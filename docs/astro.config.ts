@@ -284,8 +284,9 @@ export default defineConfig({
     }),
     orderRedirects(),
     versionRedirects({
+      docs: "src/content/docs",
       versions: versions.map(({ slug }) => slug),
-      shared: ["sponsors", "llms.txt"],
+      redirectToRoot: ["sponsors", "llms.txt"],
     }),
   ],
   vite: {
