@@ -6,6 +6,7 @@ import starlightVersions from "starlight-versions";
 import { satteri } from "@astrojs/markdown-satteri";
 import tailwindcss from "@tailwindcss/vite";
 import { orderRedirects } from "./src/integrations/order-redirects";
+import { versionPageRedirects } from "./src/integrations/version-redirects";
 
 const site = "https://cva.style";
 const googleAnalyticsId = "G-E8Z8HL9WXF";
@@ -43,6 +44,12 @@ export default defineConfig({
     // Cloudflare rejects as a loop.
     "/docs": "/",
     ...versionRedirects,
+    // Gracefully redirect pages that exist in some versions but not others to
+    // the relevant version home, so switching versions never lands on a 404.
+    ...versionPageRedirects(
+      new URL("./src/content/docs/", import.meta.url),
+      versions.map(({ slug }) => slug),
+    ),
   },
   markdown: {
     processor: satteri({ features: { smartPunctuation: true } }),
