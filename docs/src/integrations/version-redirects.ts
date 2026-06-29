@@ -11,10 +11,6 @@ export interface VersionRedirectsOptions {
   /** Archived version slugs, e.g. `["beta"]`. The current (latest) version is
    *  implicit and represented internally by the empty string. */
   versions: readonly string[];
-  /** Every doc page slug across all versions — version-prefixed and without
-   *  extension, e.g. `"getting-started/installation"` or
-   *  `"beta/getting-started/whats-new"`. See {@link docsPageSlugs}. */
-  pages: readonly string[];
   /** Root-only pages that live outside the versioned docs (e.g. `"sponsors"`,
    *  `"llms.txt"`); each version permanently redirects back to the latest one. */
   shared?: readonly string[];
@@ -24,6 +20,16 @@ export interface VersionRedirectsOptions {
 // Astro emits for each redirect collapse to one comparison key.
 const normalize = (path: string) =>
   path.length > 1 ? path.replace(/\/+$/, "") : path;
+
+// Enumerate doc page slugs (version-prefixed, extension-free) from a
+// `src/content/docs` directory — the same `**/*.{md,mdx}` files Starlight's
+// `docsLoader()` reads, globbed here because redirects must be known before the
+// content layer has loaded.
+const docsPageSlugs = (docsDir: URL): string[] =>
+  readdirSync(docsDir, { recursive: true })
+    .map((entry) => String(entry).replaceAll("\\", "/"))
+    .filter((file) => /\.mdx?$/.test(file))
+    .map((file) => file.replace(/\.mdx?$/, ""));
 
 /**
  * Computes every redirect needed to paper over differences between doc
@@ -36,15 +42,11 @@ const normalize = (path: string) =>
  *   only some versions 404s in the others. For every such gap we temporarily
  *   (`302`, since the page may be added to the other version later) redirect the
  *   would-be-missing URL to that version's home.
- *
- * Pure in its inputs, so the integration can inject the result at config time
- * and re-derive the identical set to assert against at build time.
  */
-const buildRedirects = ({
-  versions,
-  pages,
-  shared = [],
-}: VersionRedirectsOptions): Redirects => {
+const buildRedirects = (
+  { versions, shared = [] }: VersionRedirectsOptions,
+  pages: readonly string[],
+): Redirects => {
   const allVersions = ["", ...versions];
   const redirects: Redirects = {};
 
@@ -90,8 +92,13 @@ const buildRedirects = ({
 
 /**
  * Astro integration that owns the documentation's version redirects end to end:
- * it injects them into the build config (`astro:config:setup`) and then asserts
- * that every one reached the emitted `_redirects` (`astro:build:done`).
+ * it discovers the doc pages from `src/content/docs` and injects the resulting
+ * redirects into the build config (`astro:config:setup`), then asserts that
+ * every one reached the emitted `_redirects` (`astro:build:done`).
+ *
+ * Following Starlight, content is located via the resolved `config.srcDir`
+ * rather than passed in — `getCollection` isn't available this early in the
+ * build, before the content layer has loaded.
  *
  * The assertion catches regressions the type checker can't — the
  * `@astrojs/cloudflare` adapter's serialisation or the `order-redirects` pass
@@ -100,12 +107,14 @@ const buildRedirects = ({
 export const versionRedirects = (
   options: VersionRedirectsOptions,
 ): AstroIntegration => {
-  const redirects = buildRedirects(options);
+  let redirects: Redirects = {};
 
   return {
     name: "version-redirects",
     hooks: {
-      "astro:config:setup": ({ updateConfig }) => {
+      "astro:config:setup": ({ config, updateConfig }) => {
+        const docsDir = new URL("content/docs/", config.srcDir);
+        redirects = buildRedirects(options, docsPageSlugs(docsDir));
         updateConfig({ redirects });
       },
       "astro:build:done": async ({ dir, logger }) => {
@@ -159,13 +168,3 @@ export const versionRedirects = (
     },
   };
 };
-
-/**
- * Enumerates doc page slugs (version-prefixed, extension-free) from a
- * `src/content/docs` directory, ready to feed {@link versionRedirects}.
- */
-export const docsPageSlugs = (docsDir: URL): string[] =>
-  readdirSync(docsDir, { recursive: true })
-    .map((entry) => String(entry).replaceAll("\\", "/"))
-    .filter((file) => /\.mdx?$/.test(file))
-    .map((file) => file.replace(/\.mdx?$/, ""));

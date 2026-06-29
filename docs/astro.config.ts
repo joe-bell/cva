@@ -6,10 +6,7 @@ import starlightVersions from "starlight-versions";
 import { satteri } from "@astrojs/markdown-satteri";
 import tailwindcss from "@tailwindcss/vite";
 import { orderRedirects } from "./src/integrations/order-redirects";
-import {
-  versionRedirects,
-  docsPageSlugs,
-} from "./src/integrations/version-redirects";
+import { versionRedirects } from "./src/integrations/version-redirects";
 
 const site = "https://cva.style";
 const googleAnalyticsId = "G-E8Z8HL9WXF";
@@ -23,11 +20,6 @@ const config = {
 };
 
 const versions = [{ slug: "beta", label: "Beta" }] as const;
-
-const versionSlugs = versions.map(({ slug }) => slug);
-const docsPages = docsPageSlugs(
-  new URL("./src/content/docs/", import.meta.url),
-);
 
 export default defineConfig({
   site,
@@ -292,8 +284,7 @@ export default defineConfig({
     }),
     orderRedirects(),
     versionRedirects({
-      versions: versionSlugs,
-      pages: docsPages,
+      versions: versions.map(({ slug }) => slug),
       shared: ["sponsors", "llms.txt"],
     }),
   ],
