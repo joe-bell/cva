@@ -7,8 +7,8 @@ import { satteri } from "@astrojs/markdown-satteri";
 import tailwindcss from "@tailwindcss/vite";
 import { orderRedirects } from "./src/integrations/order-redirects";
 import {
-  assertVersionRedirects,
-  versionPageRedirects,
+  versionRedirects,
+  docsPageSlugs,
 } from "./src/integrations/version-redirects";
 
 const site = "https://cva.style";
@@ -24,15 +24,8 @@ const config = {
 
 const versions = [{ slug: "beta", label: "Beta" }] as const;
 
-const docsDir = new URL("./src/content/docs/", import.meta.url);
 const versionSlugs = versions.map(({ slug }) => slug);
-
-const versionRedirects = Object.fromEntries(
-  versions.flatMap(({ slug }) => [
-    [`/${slug}/sponsors`, "/sponsors"],
-    [`/${slug}/llms.txt`, "/llms.txt"],
-  ]),
-);
+const docsPages = docsPageSlugs(new URL("./src/content/docs/", import.meta.url));
 
 export default defineConfig({
   site,
@@ -41,6 +34,9 @@ export default defineConfig({
     imageService: "compile",
     prerenderEnvironment: "node",
   }),
+  // Version-specific redirects (per-version `sponsors`/`llms.txt`, plus the
+  // cross-version page-gap fallbacks) are injected by the `versionRedirects`
+  // integration below.
   redirects: {
     "/sponsors": "https://joebell.studio/sponsors",
     // Preserve inbound links from the previous Nextra docs, which served pages
@@ -49,10 +45,6 @@ export default defineConfig({
     // spread redirect here would compile to an `/index.html` target which
     // Cloudflare rejects as a loop.
     "/docs": "/",
-    ...versionRedirects,
-    // Gracefully redirect pages that exist in some versions but not others to
-    // the relevant version home, so switching versions never lands on a 404.
-    ...versionPageRedirects(docsDir, versionSlugs),
   },
   markdown: {
     processor: satteri({ features: { smartPunctuation: true } }),
@@ -297,7 +289,11 @@ export default defineConfig({
       ],
     }),
     orderRedirects(),
-    assertVersionRedirects(docsDir, versionSlugs),
+    versionRedirects({
+      versions: versionSlugs,
+      pages: docsPages,
+      shared: ["sponsors", "llms.txt"],
+    }),
   ],
   vite: {
     plugins: [tailwindcss()],
