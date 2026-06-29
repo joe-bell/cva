@@ -12,9 +12,10 @@ export interface VersionRedirectsOptions {
   docs: string;
   /** Archived version slugs, e.g. `["beta"]`. */
   versions: readonly string[];
-  /** Pages that only exist at the root (e.g. `"sponsors"`, `"llms.txt"`); each
-   *  version's copy redirects back to the root page. */
-  redirectToRoot?: readonly string[];
+  /** Root-only pages (e.g. `"sponsors"`, `"llms.txt"`) for which a versioned
+   *  redirect to the root page is created per version, e.g. `/beta/sponsors` →
+   *  `/sponsors`. */
+  versionedRedirectsToRoot?: readonly string[];
 }
 
 // Astro emits both a trailing-slash and a slash-free variant for each redirect;
@@ -33,21 +34,21 @@ const docsPageSlugs = (docsDir: URL): string[] =>
 
 /**
  * Builds the version redirects for the docs site. Pages listed in
- * `redirectToRoot` only exist at the root, so each version's copy permanently
- * redirects back to it. For pages present in some versions but not others —
- * `starlight-versions` switches versions by rewriting the URL in place without
- * checking the target exists — the missing URL temporarily redirects to that
- * version's home, since the page may be added to the other version later.
+ * `versionedRedirectsToRoot` only exist at the root, so each version gets a copy
+ * that permanently redirects back to it. For pages present in some versions but
+ * not others — `starlight-versions` switches versions by rewriting the URL in
+ * place without checking the target exists — the missing URL temporarily
+ * redirects to that version's home, since the page may be added later.
  */
 const buildRedirects = (
-  { versions, redirectToRoot = [] }: VersionRedirectsOptions,
+  { versions, versionedRedirectsToRoot = [] }: VersionRedirectsOptions,
   pages: readonly string[],
 ): Redirects => {
   const allVersions = ["", ...versions];
   const redirects: Redirects = {};
 
   for (const version of versions) {
-    for (const page of redirectToRoot) {
+    for (const page of versionedRedirectsToRoot) {
       redirects[`/${version}/${page}`] = {
         status: 301,
         destination: `/${page}`,

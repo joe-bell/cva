@@ -28,7 +28,6 @@ export default defineConfig({
     imageService: "compile",
     prerenderEnvironment: "node",
   }),
-  // Version redirects are injected by the `versionRedirects` integration below.
   redirects: {
     "/sponsors": "https://joebell.studio/sponsors",
     // Preserve inbound links from the previous Nextra docs, which served pages
@@ -284,7 +283,7 @@ export default defineConfig({
     versionRedirects({
       docs: "src/content/docs",
       versions: versions.map(({ slug }) => slug),
-      redirectToRoot: ["sponsors", "llms.txt"],
+      versionedRedirectsToRoot: ["sponsors", "llms.txt"],
     }),
   ],
   vite: {
