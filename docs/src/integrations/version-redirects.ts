@@ -106,7 +106,10 @@ export const assertVersionRedirects = (
       }
 
       // Parse `SOURCE  DESTINATION  STATUS` lines, keyed by normalised source.
-      const emitted = new Map<string, { destination: string; status: string }>();
+      const emitted = new Map<
+        string,
+        { destination: string; status: string }
+      >();
       for (const line of contents.split("\n")) {
         const [source, destination, status] = line.trim().split(/\s+/);
         if (!source || !destination) continue;
