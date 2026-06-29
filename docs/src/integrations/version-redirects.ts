@@ -8,27 +8,23 @@ type Redirects = Record<
 >;
 
 export interface VersionRedirectsOptions {
-  /** Project-root-relative path to the docs content directory, e.g.
-   *  `"src/content/docs"`. */
+  /** Project-root-relative path to the docs content directory. */
   docs: string;
-  /** Archived version slugs, e.g. `["beta"]`. The current (latest) version is
-   *  implicit and represented internally by the empty string. */
+  /** Archived version slugs, e.g. `["beta"]`. */
   versions: readonly string[];
-  /** Pages that live only at the root rather than per version (e.g.
-   *  `"sponsors"`, `"llms.txt"`); each version permanently redirects its copy
-   *  back to that root page. */
+  /** Pages that only exist at the root (e.g. `"sponsors"`, `"llms.txt"`); each
+   *  version's copy redirects back to the root page. */
   redirectToRoot?: readonly string[];
 }
 
-// Drop a trailing slash (keeping root `/`) so the slash and slash-free variants
-// Astro emits for each redirect collapse to one comparison key.
+// Astro emits both a trailing-slash and a slash-free variant for each redirect;
+// drop the trailing slash (keeping root `/`) to compare them as one.
 const normalize = (path: string) =>
   path.length > 1 ? path.replace(/\/+$/, "") : path;
 
-// Enumerate doc page slugs (version-prefixed, extension-free) from the docs
-// content directory — the same `**/*.{md,mdx}` files Starlight's `docsLoader()`
-// reads, globbed here because redirects must be known before the content layer
-// has loaded.
+// Glob the doc page slugs (version-prefixed, extension-free) straight off disk —
+// the same files Starlight's `docsLoader()` reads. Redirects must be known
+// before the content layer loads, so `getCollection` is too late to use here.
 const docsPageSlugs = (docsDir: URL): string[] =>
   readdirSync(docsDir, { recursive: true })
     .map((entry) => String(entry).replaceAll("\\", "/"))
@@ -36,16 +32,12 @@ const docsPageSlugs = (docsDir: URL): string[] =>
     .map((file) => file.replace(/\.mdx?$/, ""));
 
 /**
- * Computes every redirect needed to paper over differences between doc
- * versions:
- *
- * - **Root-only pages** (`sponsors`, `llms.txt`, …) only exist at the root, so
- *   each version permanently (`301`) redirects its copy back to that page.
- * - **Page gaps** — `starlight-versions` rewrites the URL in place when you
- *   switch versions, with no check that the target exists, so a page present in
- *   only some versions 404s in the others. For every such gap we temporarily
- *   (`302`, since the page may be added to the other version later) redirect the
- *   would-be-missing URL to that version's home.
+ * Builds the version redirects for the docs site. Pages listed in
+ * `redirectToRoot` only exist at the root, so each version's copy permanently
+ * redirects back to it. For pages present in some versions but not others —
+ * `starlight-versions` switches versions by rewriting the URL in place without
+ * checking the target exists — the missing URL temporarily redirects to that
+ * version's home, since the page may be added to the other version later.
  */
 const buildRedirects = (
   { versions, redirectToRoot = [] }: VersionRedirectsOptions,
@@ -63,10 +55,8 @@ const buildRedirects = (
     }
   }
 
-  // version slug -> set of page paths it contains, where a "page path" is the
-  // slug minus its version prefix (so equivalent pages across versions share a
-  // key). The home page (`index`) is skipped: every version has one, so it can
-  // never be a gap.
+  // Group each version's page paths (the slug minus its version prefix) so
+  // equivalent pages share a key. `index` is every version's home, never a gap.
   const pagesByVersion = new Map(
     allVersions.map((slug) => [slug, new Set<string>()]),
   );
@@ -95,18 +85,8 @@ const buildRedirects = (
 };
 
 /**
- * Astro integration that owns the documentation's version redirects end to end:
- * it discovers the doc pages under the `docs` directory and injects the
- * resulting redirects into the build config (`astro:config:setup`), then asserts
- * that every one reached the emitted `_redirects` (`astro:build:done`).
- *
- * Following Starlight, content is located by globbing the filesystem (resolved
- * against `config.root`) rather than passed in — `getCollection` isn't available
- * this early in the build, before the content layer has loaded.
- *
- * The assertion catches regressions the type checker can't — the
- * `@astrojs/cloudflare` adapter's serialisation or the `order-redirects` pass
- * silently dropping or mangling a rule.
+ * Injects the docs version redirects at `astro:config:setup`, then verifies at
+ * `astro:build:done` that they all reached the emitted `_redirects`.
  */
 export const versionRedirects = (
   options: VersionRedirectsOptions,
@@ -134,7 +114,7 @@ export const versionRedirects = (
           );
         }
 
-        // Parse `SOURCE  DESTINATION  STATUS` lines, keyed by normalised source.
+        // Each emitted line is `<source> <destination> <status>`.
         const emitted = new Map<
           string,
           { destination: string; status: string }

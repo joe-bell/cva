@@ -28,9 +28,7 @@ export default defineConfig({
     imageService: "compile",
     prerenderEnvironment: "node",
   }),
-  // Version-specific redirects (per-version `sponsors`/`llms.txt`, plus the
-  // cross-version page-gap fallbacks) are injected by the `versionRedirects`
-  // integration below.
+  // Version redirects are injected by the `versionRedirects` integration below.
   redirects: {
     "/sponsors": "https://joebell.studio/sponsors",
     // Preserve inbound links from the previous Nextra docs, which served pages
