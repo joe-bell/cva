@@ -43,12 +43,24 @@ export const orderRedirects = (): AstroIntegration => ({
         ...rules.filter(isDynamicRule),
       ];
 
-      if (ordered.join("\n") === rules.join("\n")) return;
+      if (ordered.join("\n") !== rules.join("\n")) {
+        await writeFile(redirectsUrl, `${ordered.join("\n")}\n`);
+        logger.info(
+          "Reordered _redirects so static rules precede splat/placeholder rules.",
+        );
+      }
 
-      await writeFile(redirectsUrl, `${ordered.join("\n")}\n`);
-      logger.info(
-        "Reordered _redirects so static rules precede splat/placeholder rules.",
-      );
+      // `ordered` is what the file now holds: a static rule after the first
+      // splat/placeholder would re-trigger the warnings this reordering silences.
+      const firstDynamic = ordered.findIndex(isDynamicRule);
+      if (
+        firstDynamic !== -1 &&
+        ordered.slice(firstDynamic).some((line) => !isDynamicRule(line))
+      ) {
+        throw new Error(
+          "_redirects has a static rule after a splat/placeholder.",
+        );
+      }
     },
   },
 });
