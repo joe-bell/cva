@@ -25,7 +25,9 @@ const config = {
 const versions = [{ slug: "beta", label: "Beta" }] as const;
 
 const versionSlugs = versions.map(({ slug }) => slug);
-const docsPages = docsPageSlugs(new URL("./src/content/docs/", import.meta.url));
+const docsPages = docsPageSlugs(
+  new URL("./src/content/docs/", import.meta.url),
+);
 
 export default defineConfig({
   site,
