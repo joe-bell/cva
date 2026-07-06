@@ -56,6 +56,52 @@ values (e.g. `after:bg-[hsl(0,0%,98%)]`) when no token fits. Global styling
 that can't be expressed as utilities belongs in `main.css` (`@apply`, theme
 tokens), not in per-component `<style>` blocks.
 
+## Task-specific skills (`.agents/skills/`)
+
+Project skills live in `.agents/skills/` — the **single source of truth**; agent-specific directories only ever mirror it. They follow the [Agent Skills spec](https://agentskills.io/specification.md) (one `SKILL.md` per directory). Invoke the matching skill before working in that area. `pnpm lint:skills` validates each `SKILL.md` (`skill-check`, strict mode); it runs in pre-commit (via `lint-staged`) and in CI.
+
+Supported agent mirrors:
+
+- **Claude Code** — `.claude/skills/<name>` is a relative symlink (`../../.agents/skills/<name>`), committed to git as a symlink. Don't edit `.claude/skills/` directly or add real files there — nothing mechanical blocks a real file under `.claude/skills/` (git tracks the whole subtree), so it's on you not to commit one.
+- **Everything else** (Cursor, Codex, Amp, …) — reads the universal `.agents/skills/` directory natively; no mirror needed. Add a mirror entry here if we ever adopt an agent that needs one.
+
+The symlink wiring is **not mechanically enforced right now** — a structural drift check may be added later; only `skill-check` runs in lint. Until then, keeping the mirrors correct is on you: whenever you add, remove, rename, or update a skill, fix the `.claude/skills/` symlinks in the same change and keep the list below accurate. If you notice drift you didn't cause (a missing/orphaned/real-file entry in `.claude/skills/`, or this doc disagreeing with the directories), **warn about it in your summary** and fix it in the same change.
+
+Note the committed symlinks (here and in [MCP servers](#mcp-servers-mcpjson)) require a symlink-capable checkout: on Windows without Developer Mode (`core.symlinks=false`), git materializes them as plain text files and the mirrors silently stop working.
+
+Vendored skill files are excluded from Prettier ([`.prettierignore`](./.prettierignore)) so the committed bytes stay exactly what `npx skills` installed and the `skills-lock.json` hashes remain valid — don't format or hand-edit them beyond deliberate, documented tweaks (and re-run `npx skills` tooling rather than editing hashes by hand; if you must recompute, use the CLI's folder-hash algorithm).
+
+Installed skills:
+
+- `tailwind-css-v4` — Tailwind CSS v4 syntax and the v3→v4 differences (CSS-first `@theme` config, renamed/removed utilities, container queries, new features); use alongside the [Docs styling](#docs-styling) rules whenever touching styles. Hand-maintained in this repo (vendored, not installed from a registry), so it's not tracked in `skills-lock.json`.
+- `web-design-guidelines` — accessibility/UX review checklist; use when reviewing or building UI in `docs`
+- `writing-guidelines` — prose style review; use when writing or reviewing docs content
+- `find-skills` — discovers and installs further skills from the ecosystem; use when a task could benefit from a skill we don't have yet
+
+Except where a bullet says otherwise, skills are sourced from [skills.sh](https://skills.sh) and pinned by hash in [`skills-lock.json`](./skills-lock.json). To add one: `npx skills add <owner>/<repo> --skill <name> -a universal -y` (installs into `.agents/skills/` and records it in `skills-lock.json`), then create the matching `.claude/skills/<name>` relative symlink and run `pnpm lint:skills`.
+
+`skill-check --strict` requires every skill description to contain "Use when" phrasing, so a third-party skill may need a small local description tweak to pass (`find-skills` carries one). `npx skills update` overwrites local tweaks — re-run `pnpm lint:skills` after updating and re-apply if needed.
+
+**Curation is part of the self-improving loop.** If a task would benefit from a skill we don't have, use `find-skills` to look for one and recommend it (or add it, when the change is in scope); if a skill proves stale, superseded, or unused, update or remove it — deleting its `.agents/skills/` directory, its `.claude/skills/` symlink, its `skills-lock.json` entry, and its bullet above in the same change. After `npx skills update`, review the diff and re-run `pnpm lint:skills`.
+
+**Safety:** a skill is instructions the agent will follow, so treat adding or updating one like adding a dependency. Prefer reputable, widely-used sources; read the incoming `SKILL.md` content on install and on every update (`skill-check` runs with `--no-security-scan`, so content review is manual); never silently change a skill's `source` in `skills-lock.json`; and land skill changes via PR like any other code.
+
+There is deliberately no `astro` skill: Astro guidance comes from the official Astro Docs MCP server instead — see [MCP servers](#mcp-servers-mcpjson) below. Query it when working on the `docs` site.
+
+## MCP servers (`.mcp.json`)
+
+[`.mcp.json`](./.mcp.json) at the repo root is the **single source of truth** for project MCP server config (Claude Code reads it directly); editor-specific configs only ever mirror it:
+
+- **Cursor** — `.cursor/mcp.json` is a committed relative symlink to `../.mcp.json` (Cursor shares the `mcpServers` schema). Don't replace it with a real file.
+- **VS Code** — [`.vscode/mcp.json`](./.vscode/mcp.json) **cannot be a symlink**: VS Code expects a different schema (`servers` instead of `mcpServers`) and silently ignores configs in the wrong one, so it's a real file — plain JSON, no comments — kept in sync **by hand**. When changing `.mcp.json`, mirror the change there in the same commit.
+- **Zed** — the `context_servers` block in [`.zed/settings.json`](./.zed/settings.json) **cannot be a symlink either**: Zed uses its own schema (`context_servers`, with `url` for remote servers) inside its general project-settings file, so it's also kept in sync **by hand** in the same commit as any `.mcp.json` change.
+
+None of this is mechanically enforced either — the same drift rule as the [skills mirrors](#task-specific-skills-agentsskills) applies here: keep the Cursor symlink intact, keep the VS Code and Zed mirrors in sync in the same commit, keep this section accurate, and warn about drift you didn't cause. Add a mirror entry here if we ever support another editor/agent config.
+
+Currently configured: the official [Astro Docs MCP server](https://github.com/withastro/docs-mcp) (streamable HTTP at `https://mcp.docs.astro.build/mcp`), replacing an `astro` skill.
+
+Curate the server list like the skills: recommend (or add) a server when recurring work would benefit, remove one that stops earning its place — updating every mirror and this section in the same change — and stick to official/reputable endpoints over HTTPS, since MCP servers feed tools and content straight to the agent.
+
 ## Contributing
 
 [CONTRIBUTING.md](./CONTRIBUTING.md) is the single source of truth for project
@@ -65,13 +111,11 @@ participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.md).
 
 Agent-specific notes:
 
+- **Never expose private repositories.** This is a public repo: anything you write here is published. Never reference the owner's (or anyone's) private repositories — no repo names, URLs, or file paths — in code, docs, commit messages, PR titles/descriptions, issues, or review comments. If work is ported or adapted from a private source, describe it neutrally ("hand-maintained", "vendored") without naming or linking the source. This applies to every agent and every session, with no exceptions.
 - This project uses `nvm` to manage Node.js versions, so prefix commands with
   `nvm use` where necessary. If you're Zed's agent you likely **won't** need
   to.
-- A `pre-commit` hook runs `lint-staged` (type check, Prettier, syncpack)
-  against staged changes. Make sure it runs before pushing — if it doesn't
-  fire in your environment, run it manually against the staged changes with
-  `pnpm lint-staged`.
+- A `pre-commit` hook runs `lint-staged` (type check, Prettier, syncpack, skills lint) against staged changes. Make sure it runs before pushing — if it doesn't fire in your environment, run it manually against the staged changes with `pnpm lint-staged`.
 - **Formatting is part of the change, not a follow-up.** Before staging, run Prettier over the files you touched (`pnpm prettier --write <files>`) and stage the formatted result so it lands in the _same_ commit. Then confirm `git status` is clean. Never push a separate "prettier wrap"/formatting-only fixup commit to tidy up after yourself — that's noise, and it means the original commit was incomplete.
 - **Never hard-wrap Markdown prose.** In Markdown (`.md` / `.mdx`) only, write each paragraph as one unbroken line and let the editor soft-wrap it — don't insert manual newlines to keep lines short. Prettier defaults to `proseWrap: "preserve"`, so it won't reflow Markdown prose for you, and any hard wraps get committed verbatim as noisy diffs. Everywhere else — code comments and commit bodies — do hard-wrap, keeping lines within Prettier's `printWidth` (`80`, set in [`.prettierrc.json`](./.prettierrc.json)).
 - The `docs` site deploys via Cloudflare Workers Builds, and its build watch paths are configured in the Cloudflare dashboard UI (not `wrangler.jsonc`). See [Deployment](./docs/README.md#-deployment) in the docs README before changing how docs builds are scoped.
@@ -81,4 +125,5 @@ Agent-specific notes:
 
 Durable, hard-won lessons that don't fit a section above. See [Keeping this guide current](#keeping-this-guide-current-self-improving) for what belongs here and how to write it. Newest first; prune anything that's become wrong or obsolete.
 
+- `pnpm install` can fail with `ERR_PNPM_MISSING_TIME` when resolving a newly added dependency — this repo sets `minimumReleaseAge` in [`pnpm-workspace.yaml`](./pnpm-workspace.yaml), and pnpm's metadata cache sometimes races abbreviated vs full registry docs. Just re-run `pnpm install`; the retry succeeds off the now-cached full metadata. Don't "fix" it by setting `resolution-mode: highest` or removing `minimumReleaseAge` — that disables a deliberate supply-chain protection.
 - `CLAUDE.md` is a symlink to this file (`AGENTS.md`) — one source of truth serves both the Claude Code and generic-agent conventions. Edit `AGENTS.md`; don't try to write through the `CLAUDE.md` symlink (tools that refuse symlinks will error), and don't split them into two diverging files.

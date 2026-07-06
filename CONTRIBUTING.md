@@ -61,11 +61,11 @@ Run these from the repo root:
 - `pnpm bundlesize` – verifies bundle size limits (`size-limit`)
 - `pnpm prettier --check .` – checks formatting (`--write` to fix)
 - `pnpm syncpack:lint` – checks dependency-version consistency (`pnpm syncpack:fix` to fix)
+- `pnpm lint:skills` – validates the agent skills in `.agents/skills` (`skill-check`, strict mode)
 
 To scope a command to a single package, use a pnpm filter, e.g. `pnpm --filter cva test`.
 
-CI runs `build`, `bundlesize`, `check`, `prettier`, `syncpack`, and `test`, so
-run the matching scripts locally before opening a PR.
+CI runs `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `test`, so run the matching scripts locally before opening a PR.
 
 ## Releases
 

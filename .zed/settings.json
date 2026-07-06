@@ -1,4 +1,9 @@
 {
+  "context_servers": {
+    "astro-docs": {
+      "url": "https://mcp.docs.astro.build/mcp"
+    }
+  },
   "format_on_save": "on",
   "languages": {
     "CSS": {

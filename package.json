@@ -9,6 +9,7 @@
     "dev": "vitest --config .config/vitest.config.ts",
     "docs": "pnpm run --filter './docs' dev",
     "preinstall": "npx only-allow pnpm",
+    "lint:skills": "skill-check check ./.agents/skills --no-security-scan --strict",
     "lint-staged": "lint-staged --config .config/lint-staged.config.mjs",
     "prepare": "pnpm run '/^prepare:.*/'",
     "prepare:hooks": "git config core.hooksPath .github/hooks",
@@ -26,6 +27,7 @@
     "prettier-plugin-astro": "0.14.1",
     "prettier-plugin-packagejson": "3.0.2",
     "prettier-plugin-tailwindcss": "0.8.0",
+    "skill-check": "1.2.0",
     "syncpack": "15.0.0",
     "typescript": "6.0.3",
     "vitest": "4.1.5"
