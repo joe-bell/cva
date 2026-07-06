@@ -16,6 +16,16 @@ applies to the other — they are intentionally separate.
 > `cva@beta` is not covered by semver and may change without warning. See
 > [`packages/cva/README.md`](./packages/cva/README.md).
 
+## Keeping this guide current (self-improving)
+
+This file is a living document, and keeping it accurate is part of the work — not a separate chore. Treat every session as a chance to teach the next one: when you discover something durable that would have saved you time had it been written down, record it here in the same change.
+
+**What counts as a durable learning** (record it): a non-obvious convention or constraint; a gotcha that cost you a wrong turn; the fix to a mistake you'd otherwise repeat; a command/flag that's the "right" way to do something here; a surprising dependency or build/test interaction. If you'd want a teammate warned before they hit it, it belongs here.
+
+**What doesn't** (leave it out): one-off task details, narration of what you did, anything already covered by [`CONTRIBUTING.md`](./CONTRIBUTING.md) or an existing section above, and speculation you haven't verified. Prefer editing an existing section when the learning refines something already documented; only add to the [Learnings](#learnings) log below when it doesn't fit anywhere else.
+
+**How to record it**: keep entries short, specific, and actionable — state the rule and the reason, not the story. Follow the same Markdown conventions as the rest of this file (no hard-wrapped prose — one unbroken line per paragraph/bullet). Land the update in the _same_ commit as the change that taught you, so the guidance and the code move together. If a learning later proves wrong or obsolete, delete or correct it — stale guidance is worse than none.
+
 ## Architecture
 
 This is a [pnpm](https://pnpm.io) workspace (Node `24`, see
@@ -66,3 +76,9 @@ Agent-specific notes:
 - **Never hard-wrap Markdown prose.** In Markdown (`.md` / `.mdx`) only, write each paragraph as one unbroken line and let the editor soft-wrap it — don't insert manual newlines to keep lines short. Prettier defaults to `proseWrap: "preserve"`, so it won't reflow Markdown prose for you, and any hard wraps get committed verbatim as noisy diffs. Everywhere else — code comments and commit bodies — do hard-wrap, keeping lines within Prettier's `printWidth` (`80`, set in [`.prettierrc.json`](./.prettierrc.json)).
 - The `docs` site deploys via Cloudflare Workers Builds, and its build watch paths are configured in the Cloudflare dashboard UI (not `wrangler.jsonc`). See [Deployment](./docs/README.md#-deployment) in the docs README before changing how docs builds are scoped.
 - To verify an `examples/` change in a real StackBlitz WebContainer before merging, open it from GitHub against your branch: `https://stackblitz.com/github/joe-bell/cva/tree/<branch>/<dir>`. Branch names containing slashes (e.g. `claude/my-feature`) resolve fine — StackBlitz parses them correctly against the trailing path, so no slash-free branch is needed.
+
+## Learnings
+
+Durable, hard-won lessons that don't fit a section above. See [Keeping this guide current](#keeping-this-guide-current-self-improving) for what belongs here and how to write it. Newest first; prune anything that's become wrong or obsolete.
+
+- `CLAUDE.md` is a symlink to this file (`AGENTS.md`) — one source of truth serves both the Claude Code and generic-agent conventions. Edit `AGENTS.md`; don't try to write through the `CLAUDE.md` symlink (tools that refuse symlinks will error), and don't split them into two diverging files.
