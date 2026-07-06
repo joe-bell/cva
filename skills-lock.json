@@ -19,6 +19,12 @@
       "skillPath": "skills/web-design-guidelines/SKILL.md",
       "computedHash": "2b4252a346243aa696da2d021a7a2f747259567cd3ca51308ee86ca24ab60d86"
     },
+    "wrangler": {
+      "source": "cloudflare/skills",
+      "sourceType": "github",
+      "skillPath": "skills/wrangler/SKILL.md",
+      "computedHash": "5772e3a80648ffe8287ec5e95987a25170cc8f633facd21117d5874ca49b9548"
+    },
     "writing-guidelines": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
