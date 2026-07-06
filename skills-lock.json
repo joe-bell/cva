@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "deslop": {
+      "source": "cursor/plugins",
+      "sourceType": "github",
+      "skillPath": "cursor-team-kit/skills/deslop/SKILL.md",
+      "computedHash": "5608829d77af9d386e71927f11d7d934908096e4860ad93d86193be9064da4e7"
+    },
     "find-skills": {
       "source": "vercel-labs/skills",
       "sourceType": "github",

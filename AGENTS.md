@@ -74,13 +74,14 @@ Vendored skill files are excluded from Prettier ([`.prettierignore`](./.prettier
 Installed skills:
 
 - `tailwind-css-v4` — Tailwind CSS v4 syntax and the v3→v4 differences (CSS-first `@theme` config, renamed/removed utilities, container queries, new features); use alongside the [Docs styling](#docs-styling) rules whenever touching styles. Hand-maintained in this repo (vendored, not installed from a registry), so it's not tracked in `skills-lock.json`.
+- `deslop` — removes AI-generated slop (redundant comments, needless defensive code, `any` casts, deep nesting) from a branch's diff; use when cleaning up agent-written changes before merging. Sourced from `cursor/plugins` (carries a local "Use when" description tweak).
 - `web-design-guidelines` — accessibility/UX review checklist; use when reviewing or building UI in `docs`
 - `writing-guidelines` — prose style review; use when writing or reviewing docs content
 - `find-skills` — discovers and installs further skills from the ecosystem; use when a task could benefit from a skill we don't have yet
 
 Except where a bullet says otherwise, skills are sourced from [skills.sh](https://skills.sh) and pinned by hash in [`skills-lock.json`](./skills-lock.json). To add one: `npx skills add <owner>/<repo> --skill <name> -a universal -y` (installs into `.agents/skills/` and records it in `skills-lock.json`), then create the matching `.claude/skills/<name>` relative symlink and run `pnpm lint:skills`.
 
-`skill-check --strict` requires every skill description to contain "Use when" phrasing, so a third-party skill may need a small local description tweak to pass (`find-skills` carries one). `npx skills update` overwrites local tweaks — re-run `pnpm lint:skills` after updating and re-apply if needed.
+`skill-check --strict` requires every skill description to contain "Use when" phrasing, so a third-party skill may need a small local description tweak to pass (`find-skills` carries one, `deslop` too). `npx skills update` overwrites local tweaks — re-run `pnpm lint:skills` after updating and re-apply if needed. Beware that `npx skills check` is **not** read-only: it refreshes every lock-tracked skill from upstream just like `update`, clobbering local tweaks and rewriting `skills-lock.json` hashes — don't run it casually, and revert any skills you didn't mean to update. After re-applying a tweak, recompute that skill's `computedHash` with the CLI's folder-hash algorithm (sha256 over the skill dir's files, sorted by relative path, hashing each path then content) — the committed hashes cover the _tweaked_ local content, not pristine upstream.
 
 **Curation is part of the self-improving loop.** If a task would benefit from a skill we don't have, use `find-skills` to look for one and recommend it (or add it, when the change is in scope); if a skill proves stale, superseded, or unused, update or remove it — deleting its `.agents/skills/` directory, its `.claude/skills/` symlink, its `skills-lock.json` entry, and its bullet above in the same change. After `npx skills update`, review the diff and re-run `pnpm lint:skills`.
 
