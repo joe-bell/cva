@@ -1,5 +1,6 @@
 import { dirname } from "node:path";
 
+/** @type {import("lint-staged").Configuration} */
 export default {
   "*.{astro,js,jsx,svelte,ts,tsx,vue}": (filenames) => [
     "pnpm run --filter '!.' --parallel check",
