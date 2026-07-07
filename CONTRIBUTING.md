@@ -40,6 +40,7 @@ focused:
    ```sh
    pnpm i
    ```
+   Installing also registers the git pre-commit hook: the `prepare:hooks` script sets `core.hooksPath` to [`.github/hooks`](./.github/hooks), whose `pre-commit` runs `pnpm lint-staged` against your staged files on every commit. Don't bypass it (`--no-verify`) — if it didn't fire, re-run `pnpm i` and check `git config core.hooksPath` prints `.github/hooks`.
 5. Voilà, you're ready to go!
 
 ### Node.js versions
@@ -62,6 +63,7 @@ Run these from the repo root:
 - `pnpm prettier --check .` – checks formatting (`--write` to fix)
 - `pnpm syncpack:lint` – checks dependency-version consistency (`pnpm syncpack:fix` to fix)
 - `pnpm lint:skills` – validates the agent skills in `.agents/skills` (`skill-check`, strict mode)
+- `pnpm lint-staged` – runs the pre-commit checks against currently staged files (exactly what the pre-commit hook runs)
 
 To scope a command to a single package, use a pnpm filter, e.g. `pnpm --filter cva test`.
 

@@ -113,13 +113,22 @@ goals, setup, scripts, and conventions (Conventional Commits, Prettier,
 TypeScript) — follow it rather than duplicating its guidance here. All
 participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.md).
 
+### Commit workflow: the pre-commit hook is mandatory
+
+This is policy, not a suggestion. Read it before every commit; it applies to every agent, every session, and every commit, with no exceptions.
+
+1. **Every commit MUST go through the repo's pre-commit hook** — [`.github/hooks/pre-commit`](./.github/hooks/pre-commit), wired up via `git config core.hooksPath .github/hooks` (registered by the `prepare:hooks` script whenever `pnpm install` runs). It runs `pnpm lint-staged` against the staged files (type check, Prettier, syncpack, skills lint — config in [`.config/lint-staged.config.mjs`](./.config/lint-staged.config.mjs)). Committing with `git commit --no-verify` (or `-n`), unsetting or redirecting `core.hooksPath`, or any equivalent bypass is **forbidden**.
+2. **A silently-missing hook is never a pass.** Verify the hook actually fired: a real run prints lint-staged task output (e.g. `Running tasks for staged files...`) between your `git commit` invocation and the commit summary — silence means it did not run. To check the wiring directly, `git config core.hooksPath` must print `.github/hooks`; on a fresh clone before `pnpm install` it is **unset**, and git then commits without running any checks at all.
+3. **If the hook did not run for any reason** (fresh clone before install, `core.hooksPath` unset, `pnpm`/`lint-staged` missing from `PATH`), run the underlying check manually against the staged files before committing: bootstrap the toolchain first if needed (`nvm use && corepack enable && pnpm install`), then run `pnpm lint-staged`.
+4. **Self-repair is mandatory, in the same session.** Don't stop at the manual run — fix the wiring so the hook fires again: re-run `pnpm install` (its `prepare:hooks` step re-registers the hooks path), verify `git config core.hooksPath` prints `.github/hooks`, confirm the next commit visibly shows the hook's lint-staged output, and mention the repair in your summary.
+5. **If the repair itself fails, report it loudly** — state exactly what is broken and what you tried in your summary — instead of committing around it. A manual `pnpm lint-staged` run is an emergency stopgap for a single commit while the hook is being repaired, never an alternative workflow.
+
 Agent-specific notes:
 
 - **Never expose private repositories.** This is a public repo: anything you write here is published. Never reference the owner's (or anyone's) private repositories — no repo names, URLs, or file paths — in code, docs, commit messages, PR titles/descriptions, issues, or review comments. If work is ported or adapted from a private source, describe it neutrally ("hand-maintained", "vendored") without naming or linking the source. This applies to every agent and every session, with no exceptions.
 - This project uses `nvm` to manage Node.js versions, so prefix commands with
   `nvm use` where necessary. If you're Zed's agent you likely **won't** need
   to.
-- A `pre-commit` hook runs `lint-staged` (type check, Prettier, syncpack, skills lint) against staged changes. Make sure it runs before pushing — if it doesn't fire in your environment, run it manually against the staged changes with `pnpm lint-staged`.
 - **Formatting is part of the change, not a follow-up.** Before staging, run Prettier over the files you touched (`pnpm prettier --write <files>`) and stage the formatted result so it lands in the _same_ commit. Then confirm `git status` is clean. Never push a separate "prettier wrap"/formatting-only fixup commit to tidy up after yourself — that's noise, and it means the original commit was incomplete.
 - **Never hard-wrap Markdown prose.** In Markdown (`.md` / `.mdx`) only, write each paragraph as one unbroken line and let the editor soft-wrap it — don't insert manual newlines to keep lines short. Prettier defaults to `proseWrap: "preserve"`, so it won't reflow Markdown prose for you, and any hard wraps get committed verbatim as noisy diffs. Everywhere else — code comments and commit bodies — do hard-wrap, keeping lines within Prettier's `printWidth` (`80`, set in [`.prettierrc.json`](./.prettierrc.json)).
 - The `docs` site deploys via Cloudflare Workers Builds, and its build watch paths are configured in the Cloudflare dashboard UI (not `wrangler.jsonc`). See [Deployment](./docs/README.md#-deployment) in the docs README before changing how docs builds are scoped.
