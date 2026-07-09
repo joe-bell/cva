@@ -23,6 +23,7 @@ const component = cva(options);
    - `variants`: your variants schema
    - `compoundVariants`: variants based on a combination of previously defined variants
    - `defaultVariants`: set default values for previously defined variants.
+   - `composes`: shallow merge one or more other `cva` components into this one — a single component, or an array. See [Composing Components](/beta/getting-started/composing-components).
 
 ### Returns
 
@@ -48,6 +49,10 @@ const className = cx(classes);
 
 ## `compose`
 
+:::caution
+**Deprecated** — use the [`composes` key](#cva) inside `cva` instead. See [Composing Components](/beta/getting-started/composing-components) for migration examples.
+:::
+
 Shallow merges any number of `cva` components into a single component.
 
 ```ts
@@ -63,6 +68,51 @@ const composedComponent = compose(options);
 ### Returns
 
 A `cva` component function
+
+## `getSchema`
+
+Extracts a plain-object schema — variant names, their possible values, and default values — from a `cva` component. Useful for generating Storybook controls/args, documentation, or any other UI that needs to introspect a component's variants without re-declaring them.
+
+```ts
+import { cva, getSchema } from "cva";
+
+const button = cva({
+  base: "button",
+  variants: {
+    intent: {
+      primary: "button--primary",
+      secondary: "button--secondary",
+    },
+    disabled: {
+      true: "button--disabled",
+      false: "button--enabled",
+    },
+  },
+  defaultVariants: {
+    intent: "primary",
+    disabled: false,
+  },
+});
+
+getSchema(button);
+// => {
+//   intent: { values: ["primary", "secondary"], defaultValue: "primary" },
+//   disabled: { values: [true, false], defaultValue: false },
+// }
+```
+
+A variant is omitted from the result if it has no values (e.g. `variants: { empty: {} }`).
+
+### Parameters
+
+`component`: a component created by `cva` (including components composed via [`composes`](#cva))
+
+### Returns
+
+An object keyed by variant name. Each entry has:
+
+- `values`: a readonly array of the variant's possible values
+- `defaultValue`: present only if the variant has a `defaultVariants` entry
 
 ## `defineConfig`
 

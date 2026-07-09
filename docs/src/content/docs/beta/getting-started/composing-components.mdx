@@ -43,3 +43,40 @@ card({ margin: 2, shadow: "md" });
 card({ margin: 2, shadow: "md", class: "adhoc-class" });
 // => "box box-border m-2 card border-solid border-slate-300 rounded drop-shadow-md adhoc-class"
 ```
+
+## Extending variants
+
+If more than one composed component declares the same variant, their values are combined — each component resolves and applies its own class independently, so overlapping values **extend** rather than override one another:
+
+```ts
+const a = cva({ base: "a", variants: { style: { primary: "a-primary" } } });
+const b = cva({
+  base: "b",
+  variants: { style: { primary: "b-primary", secondary: "b-secondary" } },
+});
+
+const combined = cva({ composes: [a, b] });
+
+combined({ style: "primary" });
+// => "a a-primary b b-primary"
+```
+
+`defaultVariants` follow a last-wins merge — if multiple composed components declare a default for the same variant, the last one in the array (or the component's own `defaultVariants`, if declared) wins, and that value is applied to **every** composed component, not just the one that declared it:
+
+```ts
+const a = cva({
+  base: "a",
+  variants: { style: { primary: "a-primary" } },
+  defaultVariants: { style: "primary" },
+});
+const b = cva({
+  base: "b",
+  variants: { style: { primary: "b-primary", secondary: "b-secondary" } },
+  defaultVariants: { style: "secondary" },
+});
+
+const combined = cva({ composes: [a, b] });
+
+combined();
+// => "a b b-secondary"
+```
