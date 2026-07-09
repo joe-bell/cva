@@ -53,13 +53,16 @@ type CVAComponentLike = {
   config: any;
 };
 
-type CVAComposes = CVAComponentLike | CVAComponentLike[];
-
-type NormalizeComposes<Composed> = Composed extends readonly unknown[]
-  ? Composed
-  : Composed extends CVAComponentLike
-    ? [Composed]
-    : [];
+// `composes` accepts either a single component or a list of components. A
+// plain union (`CVAComponentLike | CVAComponentLike[]`) collapses an array
+// literal's element type to a union, silently dropping components whose
+// variants are a structural subtype of another composed component's (e.g.
+// `composes: [a, b]` where `b`'s variants are a superset of `a`'s). Splitting
+// inference across two type parameters preserves the array as a real tuple.
+type ComposedTuple<
+  S extends CVAComponentLike | undefined,
+  L extends readonly CVAComponentLike[],
+> = [S] extends [CVAComponentLike] ? [S] : L;
 
 type MergedVariants<T extends readonly unknown[]> = UnionToIntersection<
   {
@@ -71,13 +74,39 @@ type MergedVariants<T extends readonly unknown[]> = UnionToIntersection<
   }[number]
 >;
 
-type MergedDefaultVariants<T extends readonly unknown[]> = UnionToIntersection<
-  {
-    [K in keyof T]: T[K] extends { config: { defaultVariants?: infer D } }
-      ? NonNullable<D>
+// Right-biased merge (`B`'s keys win on conflicts) implemented as a mapped
+// type rather than `Omit<A, keyof B> & B`: the latter stays an unresolved
+// deferred type when `A`/`B` are themselves generic (as they are here, via
+// `ReturnType<CVA>` with no concrete `Config`), which then breaks downstream
+// `any`-narrowing in unrelated code that consumes `ReturnType<CVA>` (e.g.
+// the deprecated `compose`). A mapped type resolves eagerly instead.
+type RightMerge<A, B> = {
+  [K in keyof A | keyof B]: K extends keyof B
+    ? B[K]
+    : K extends keyof A
+      ? A[K]
       : never;
-  }[number]
->;
+};
+
+// `D` infers as `undefined` (not absent) when a component declares no
+// `defaultVariants` at all. `NonNullable<undefined>` would give `never`,
+// and `keyof never` is `string | number | symbol` (not `never`) — poisoning
+// `RightMerge`'s key union with every possible key. Normalize to `{}` instead,
+// matching a component that contributes nothing to the merge.
+type DefaultsOf<Component> = Component extends {
+  config: { defaultVariants?: infer D };
+}
+  ? D extends undefined
+    ? {}
+    : D
+  : {};
+
+type MergedDefaultVariants<T extends readonly unknown[]> = T extends readonly [
+  infer Head,
+  ...infer Rest,
+]
+  ? RightMerge<DefaultsOf<Head>, MergedDefaultVariants<Rest>>
+  : {};
 
 export type VariantProps<Component extends (...args: any) => any> = Omit<
   OmitUndefined<Parameters<Component>[0]>,
@@ -145,8 +174,14 @@ type InternalOnlyWarning =
 type CVAComponentConfig<
   Config,
   Variants,
-  Composed extends CVAComposes = CVAComposes,
-> = Config & { composes?: Composed } & (Variants extends CVAVariantShape
+  ComposedSingle extends CVAComponentLike | undefined =
+    | CVAComponentLike
+    | undefined,
+  ComposedList extends readonly CVAComponentLike[] =
+    readonly CVAComponentLike[],
+> = Config & {
+  composes?: ComposedSingle | readonly [...ComposedList];
+} & (Variants extends CVAVariantShape
     ? CVAComponentConfigBase & {
         variants?: Variants;
         compoundVariants?: (Variants extends CVAVariantShape
@@ -175,6 +210,7 @@ interface CVAComponent<Config, Variants> {
       ? CVAVariantSchema<Variants> & CVAClassProp
       : CVAClassProp,
   ): string;
+  /** @internal */
   config: Config;
 }
 
@@ -187,16 +223,18 @@ export interface CVA {
     _ extends InternalOnlyWarning,
     Config,
     Variants,
-    Composed extends CVAComposes = [],
+    ComposedSingle extends CVAComponentLike | undefined = undefined,
+    ComposedList extends readonly CVAComponentLike[] = [],
   >(
-    config: CVAComponentConfig<Config, Variants, Composed>,
+    config: CVAComponentConfig<Config, Variants, ComposedSingle, ComposedList>,
   ): CVAComponent<
     Config & {
-      variants: Variants & MergedVariants<NormalizeComposes<Composed>>;
+      variants: Variants &
+        MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>;
       defaultVariants: CVADefaultVariants<Config> &
-        MergedDefaultVariants<NormalizeComposes<Composed>>;
+        MergedDefaultVariants<ComposedTuple<ComposedSingle, ComposedList>>;
     },
-    Variants & MergedVariants<NormalizeComposes<Composed>>
+    Variants & MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>
   >;
 }
 
@@ -245,9 +283,10 @@ export const defineConfig: DefineConfig = (options) => {
     _ extends InternalOnlyWarning,
     Config,
     Variants,
-    Composed extends CVAComposes = [],
+    ComposedSingle extends CVAComponentLike | undefined = undefined,
+    ComposedList extends readonly CVAComponentLike[] = [],
   >(
-    config: CVAComponentConfig<Config, Variants, Composed>,
+    config: CVAComponentConfig<Config, Variants, ComposedSingle, ComposedList>,
   ) => {
     const components = (
       config?.composes == null
@@ -256,12 +295,28 @@ export const defineConfig: DefineConfig = (options) => {
           ? config.composes
           : [config.composes]
     ) as CVAComponentLike[];
+    // A one-level-deep merge per variant key, so overlapping variants (e.g.
+    // multiple composed components declaring `style`) union their values
+    // instead of the last component's values silently replacing the rest.
+    const mergeVariants = (
+      acc: CVAVariantShape,
+      variants: CVAVariantShape | undefined,
+    ): CVAVariantShape => {
+      if (!variants) return acc;
+      const merged: CVAVariantShape = { ...acc };
+      for (const key of Object.keys(variants)) {
+        merged[key] = { ...merged[key], ...variants[key] };
+      }
+      return merged;
+    };
     const mergedVariantsFromComposed = components.reduce(
-      (acc: CVAVariantShape, component: CVAComponentLike) => ({
-        ...acc,
-        ...component.config?.variants,
-      }),
+      (acc: CVAVariantShape, component: CVAComponentLike) =>
+        mergeVariants(acc, component.config?.variants),
       {} as CVAVariantShape,
+    );
+    const mergedVariants = mergeVariants(
+      mergedVariantsFromComposed,
+      config?.variants as CVAVariantShape | undefined,
     );
     const mergedDefaultVariantsFromComposed = components.reduce(
       (acc: Record<string, unknown>, component: CVAComponentLike) => ({
@@ -270,17 +325,32 @@ export const defineConfig: DefineConfig = (options) => {
       }),
       {} as Record<string, unknown>,
     );
+    // Local `defaultVariants` win over composed ones here too (last spread).
+    const mergedDefaultVariants: Record<string, unknown> = {
+      ...mergedDefaultVariantsFromComposed,
+      ...config?.defaultVariants,
+    };
 
     const component: CVAComponent<typeof config, typeof config.variants> = (
       props,
     ) => {
-      const propsWithoutClass = Object.fromEntries(
+      // Only propagate *defined* props over the merged defaults — an
+      // explicit `{ variant: undefined }` should still fall back to the
+      // (possibly composed) default, matching the local variant resolution
+      // below.
+      const definedPropsWithoutClass = Object.fromEntries(
         Object.entries(props || {}).filter(
-          ([key]) => !["class", "className"].includes(key),
+          ([key, value]) =>
+            !["class", "className"].includes(key) &&
+            typeof value !== "undefined",
         ),
       );
+      const propsForComposed = {
+        ...mergedDefaultVariants,
+        ...definedPropsWithoutClass,
+      };
       const getComposedClassNames = components.map(
-        (component: CVAComponentLike) => component(propsWithoutClass),
+        (component: CVAComponentLike) => component(propsForComposed),
       );
 
       if (config?.variants == null) {
@@ -352,11 +422,8 @@ export const defineConfig: DefineConfig = (options) => {
 
     component.config = {
       ...config,
-      variants: { ...mergedVariantsFromComposed, ...config?.variants },
-      defaultVariants: {
-        ...mergedDefaultVariantsFromComposed,
-        ...config?.defaultVariants,
-      },
+      variants: mergedVariants,
+      defaultVariants: mergedDefaultVariants,
     };
 
     return component as ReturnType<CVA>;
@@ -450,9 +517,15 @@ export const getSchema: GetSchema = (component) => {
     (acc, [key, value]) => {
       const defaultValue = component.config.defaultVariants?.[key];
       const hasDefaultValue = defaultValue !== undefined;
-      const values = Object.keys(value).map((v) =>
-        v === "true" ? true : v === "false" ? false : v,
-      ) as StringToBoolean<keyof typeof value>[];
+      const values = Object.keys(value).map((v) => {
+        if (v === "true") return true;
+        if (v === "false") return false;
+        // Normalize integer-like keys back to numbers, since that's how
+        // they appear in variant prop types (`keyof { 1: ... }` is `1`, not
+        // `"1"`) — object keys are always strings/symbols at runtime.
+        const n = Number(v);
+        return Number.isFinite(n) && n >= 0 && String(n) === v ? n : v;
+      }) as StringToBoolean<keyof typeof value>[];
       const hasValues = values.length > 0;
 
       return hasValues || hasDefaultValue
