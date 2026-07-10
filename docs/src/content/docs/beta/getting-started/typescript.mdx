@@ -7,7 +7,7 @@ import Carbon from "../../../../components/carbon.astro";
 
 <Carbon />
 
-## Extracting Variant Types
+## Extracting variant types
 
 `cva` offers the `VariantProps` helper to extract variant types
 
@@ -23,7 +23,7 @@ export type ButtonProps = VariantProps<typeof button>;
 export const button = cva(/* … */);
 ```
 
-## Required Variants
+## Required variants
 
 To keep the API small and unopinionated, `cva` **doesn't** offer a built-in solution for setting required variants.
 

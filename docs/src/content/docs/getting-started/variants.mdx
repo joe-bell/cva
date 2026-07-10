@@ -7,7 +7,7 @@ import Carbon from "../../../components/carbon.astro";
 
 <Carbon />
 
-## Creating Variants
+## Creating variants
 
 :::note
 Although `cva` is a [**tiny**](https://bundlephobia.com/package/class-variance-authority) library, it's best to use in a SSR/SSG environment – your user probably doesn't need this JavaScript, especially for static components.
@@ -77,7 +77,7 @@ button({ intent: "secondary", size: "small" });
 // => "font-semibold border rounded bg-white text-gray-800 border-gray-400 text-sm py-1 px-2 hover:bg-gray-100"
 ```
 
-## Compound Variants
+## Compound variants
 
 Variants that apply when multiple other variant conditions are met.
 
@@ -102,7 +102,7 @@ const button = cva("…", {
 });
 ```
 
-### Targeting Multiple Variant Conditions
+### Targeting multiple variant conditions
 
 ```ts
 // components/button.ts
