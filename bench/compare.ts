@@ -274,10 +274,15 @@ function formatOps(hz: number, rme: number): string {
   return `${ops} ops/s ±${rme.toFixed(2)}%`;
 }
 
+const NOISE_THRESHOLD_PERCENT = 5;
+
 function formatDelta(local: number, baseline: number): string {
   const delta = ((local - baseline) / baseline) * 100;
   const sign = delta >= 0 ? "+" : "";
-  return `${sign}${delta.toFixed(1)}%`;
+  const formatted = `${sign}${delta.toFixed(1)}%`;
+  if (delta > NOISE_THRESHOLD_PERCENT) return `🟢 ${formatted}`;
+  if (delta < -NOISE_THRESHOLD_PERCENT) return `🔴 ${formatted}`;
+  return formatted;
 }
 
 function renderPackageSection(result: BenchmarkResult): string {
@@ -292,7 +297,7 @@ function renderPackageSection(result: BenchmarkResult): string {
 
   const header = [
     "Task",
-    "PR (local)",
+    "This PR",
     ...baselines.flatMap((b) => [
       `\`${escapeMarkdown(b.version)}\` (${b.label})`,
       "Δ",
@@ -356,7 +361,7 @@ export function renderMarkdown(results: BenchmarkResult[]): string {
   return [
     "## Benchmarks",
     "",
-    "Comparing this PR's local benchmark run against the published npm versions (baselines resolved from the latest GitHub release and prerelease). Higher ops/s is better. Shared CI runners are noisy — treat deltas within ±5% as noise.",
+    "Comparing this PR's local benchmark run against the published npm versions (baselines resolved from the latest GitHub release and prerelease). Higher ops/s is better. Shared CI runners are noisy — treat deltas within ±5% as noise. Moves beyond that band are marked 🟢 (faster than the baseline) or 🔴 (slower).",
     "",
     sections.join("\n\n"),
     "",

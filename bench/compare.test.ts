@@ -193,6 +193,35 @@ describe("renderMarkdown", () => {
     expect(markdown).toMatch(/\+\d+\.\d%/);
   });
 
+  it("marks a delta beyond +5% with 🟢 (local is 100, baseline is 90 — +11.1%)", () => {
+    const validated = validateResult(validResult(), "cva");
+    const markdown = renderMarkdown([validated]);
+    expect(markdown).toContain("🟢 +11.1%");
+  });
+
+  it("marks a delta beyond -5% with 🔴 (a regression)", () => {
+    const result = validResult();
+    (result.implementations[0] as any).tasks[0].hz = 70;
+    (result.implementations[1] as any).tasks[0].hz = 100;
+    const validated = validateResult(result, "cva");
+    const markdown = renderMarkdown([validated]);
+    expect(markdown).toContain("🔴 -30.0%");
+  });
+
+  it("leaves an in-noise delta (within ±5%) unmarked", () => {
+    const result = validResult();
+    (result.implementations[0] as any).tasks[0].hz = 100;
+    (result.implementations[1] as any).tasks[0].hz = 98;
+    const validated = validateResult(result, "cva");
+    const markdown = renderMarkdown([validated]);
+    const row = markdown
+      .split("\n")
+      .find((line) => line.includes("cva: create"));
+    expect(row).toContain("+2.0%");
+    expect(row).not.toContain("🟢");
+    expect(row).not.toContain("🔴");
+  });
+
   it("renders — instead of a delta when the baseline hz is zero", () => {
     const result = validResult();
     (result.implementations[1] as any).tasks[0].hz = 0;
