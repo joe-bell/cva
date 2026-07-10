@@ -26,7 +26,7 @@ This [replaces the `compose` function](#1-compose--composes).
 
 ### 3. `getSchema`
 
-Extract a plain-object schema (variant names, values and defaults) from a `cva` component via the new [`getSchema` function](/beta/api-reference#getschema) — handy for generating Storybook controls/args or other UI that needs to introspect a component's variants.
+Extract a plain-object schema (variant names, values and defaults) from a `cva` component via the new [`getSchema` function](/beta/api-reference#getschema). Use it to generate Storybook controls or any other UI that reads a component's variants.
 
 ## Deprecations
 
@@ -46,10 +46,7 @@ The `compose` method is deprecated in favour of the `composes` key inside `cva`.
 ```
 
 :::note
-`composes` isn't always a byte-for-byte swap: when composed components declare
-conflicting `defaultVariants` for the same key, `composes` applies a single
-last-wins default to every component, whereas `compose` let each resolve its
-own. See [Extending variants](/beta/getting-started/composing-components#extending-variants).
+`composes` isn't always a byte-for-byte swap: when composed components declare conflicting `defaultVariants` for the same key, `composes` applies a single last-wins default to every component, whereas `compose` let each component resolve its own. See [Extending variants](/beta/getting-started/composing-components#extending-variants).
 :::
 
 See [Composing Components](/beta/getting-started/composing-components) for more details and migration examples.

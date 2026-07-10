@@ -23,7 +23,7 @@ const component = cva(options);
    - `variants`: your variants schema
    - `compoundVariants`: variants based on a combination of previously defined variants
    - `defaultVariants`: set default values for previously defined variants.
-   - `composes`: shallow merge one or more other `cva` components into this one — a single component, or an array. See [Composing Components](/beta/getting-started/composing-components).
+   - `composes`: shallow merge one or more other `cva` components into this one, as a single component or an array. See [Composing Components](/beta/getting-started/composing-components).
 
 ### Returns
 
@@ -50,7 +50,7 @@ const className = cx(classes);
 ## `compose`
 
 :::caution
-**Deprecated** — use the [`composes` key](#cva) inside `cva` instead. See [Composing Components](/beta/getting-started/composing-components) for migration examples.
+**Deprecated**: use the [`composes` key](#cva) inside `cva` instead. See [Composing Components](/beta/getting-started/composing-components) for migration examples.
 :::
 
 Shallow merges any number of `cva` components into a single component.
@@ -71,7 +71,7 @@ A `cva` component function
 
 ## `getSchema`
 
-Extracts a plain-object schema — variant names, their possible values, and default values — from a `cva` component. Useful for generating Storybook controls/args, documentation, or any other UI that needs to introspect a component's variants without re-declaring them.
+Extracts a plain-object schema (variant names, possible values, and default values) from a `cva` component. Use it to generate Storybook controls, documentation, or any other UI that reads a component's variants without re-declaring them.
 
 ```ts
 import { cva, getSchema } from "cva";
@@ -101,7 +101,7 @@ getSchema(button);
 // }
 ```
 
-A variant is omitted from the result if it has no values (e.g. `variants: { empty: {} }`).
+`getSchema` omits a variant that has no values (e.g. `variants: { empty: {} }`).
 
 ### Parameters
 

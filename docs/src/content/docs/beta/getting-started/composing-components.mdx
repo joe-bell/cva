@@ -6,7 +6,7 @@ import Carbon from "../../../../components/carbon.astro";
 
 <Carbon />
 
-One or more `cva` components can be shallow merged into a single component via the `composes` key. Pass a single component directly, or pass multiple components as an array:
+Shallow merge one or more `cva` components into a single component with the `composes` key. Pass a single component directly, or pass multiple components as an array:
 
 ```ts
 // components/card.ts
@@ -46,7 +46,7 @@ card({ margin: 2, shadow: "md", class: "adhoc-class" });
 
 ## Extending variants
 
-If more than one composed component declares the same variant, their values are combined — each component resolves and applies its own class independently, so overlapping values **extend** rather than override one another:
+If more than one composed component declares the same variant, their values combine. Each component still resolves and applies its own class, so overlapping values extend one another rather than override:
 
 ```ts
 const a = cva({ base: "a", variants: { style: { primary: "a-primary" } } });
@@ -61,7 +61,7 @@ combined({ style: "primary" });
 // => "a a-primary b b-primary"
 ```
 
-`defaultVariants` follow a last-wins merge — if multiple composed components declare a default for the same variant, the last one in the array (or the component's own `defaultVariants`, if declared) wins, and that value is applied to **every** composed component, not just the one that declared it:
+`defaultVariants` follow a last-wins merge. If multiple composed components declare a default for the same variant, the last one in the array wins, and a local `defaultVariants` on the composing component wins over all of them. `cva` applies that value to every composed component, not just the one that declared it:
 
 ```ts
 const a = cva({
@@ -82,8 +82,5 @@ combined();
 ```
 
 :::caution
-Pass the components to `composes` as an inline array (or a `readonly`/`as const`
-array). A pre-declared, mutable array variable (`const list = [a, b]`) loses the
-precise tuple inference `composes` relies on, which can silently widen or drop
-variant types.
+Pass components to `composes` as an inline array literal, or one marked `as const`. A pre-declared, mutable array variable (`const list = [a, b]`) loses the tuple inference `composes` relies on, which can silently widen or drop variant types.
 :::
