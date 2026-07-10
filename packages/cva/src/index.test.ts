@@ -2311,7 +2311,7 @@ describe("cva", () => {
 });
 
 describe("CVAVariantShape", () => {
-  test("types a standalone variants config passed to cva (#354)", () => {
+  test("types a standalone variants config passed to cva", () => {
     const variants = {
       intent: {
         primary: "button--primary",

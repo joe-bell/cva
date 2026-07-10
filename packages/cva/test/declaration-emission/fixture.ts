@@ -43,10 +43,7 @@ export const cardSchema = getSchema(card);
 // Deprecated API, still shipped — must still emit cleanly.
 export const legacyComposed = compose(button, stack);
 
-// A standalone variants config, typed via the exported `CVAVariantShape`
-// (mirrors https://github.com/joe-bell/cva/pull/354's `ConfigSchema` use
-// case: reusing a variants object, e.g. for Storybook controls, while
-// keeping it type-checked against what `cva` itself accepts).
+// A standalone variants config, satisfies-checked against `CVAVariantShape`.
 const variants = {
   tone: { light: "tone-light", dark: "tone-dark" },
 } satisfies CVAVariantShape;
