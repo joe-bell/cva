@@ -67,6 +67,22 @@ const buttonConfig = {
 /* Scenarios
   ============================================ */
 
+// Published versions before `composes` (e.g. `cva@1.0.0-beta.4`) destructure
+// only the config keys they know about, so a `composes` property is
+// silently ignored rather than throwing — benching it there would measure a
+// no-op and render a meaningless delta. Feature-detect per implementation
+// and only register the scenario where it actually composes.
+function supportsComposes(mod: typeof local): boolean {
+  try {
+    const probe = mod.cva({
+      composes: mod.cva({ base: "probe" }),
+    } as any);
+    return probe({}).includes("probe");
+  } catch {
+    return false;
+  }
+}
+
 function registerBenchmarks(mod: typeof local) {
   bench("cva: create", () => {
     mod.cva(buttonConfig);
@@ -100,12 +116,14 @@ function registerBenchmarks(mod: typeof local) {
     );
   });
 
-  bench("compose: two components", () => {
-    const buttonA = mod.cva(buttonConfig);
-    const buttonB = mod.cva({ base: "icon" });
-    const composed = mod.compose(buttonA, buttonB);
-    composed({ intent: "secondary" } as any);
-  });
+  if (supportsComposes(mod)) {
+    bench("composes: two components", () => {
+      const buttonA = mod.cva(buttonConfig);
+      const buttonB = mod.cva({ base: "icon" });
+      const composed = mod.cva({ composes: [buttonA, buttonB] } as any);
+      composed({ intent: "secondary" } as any);
+    });
+  }
 }
 
 /* Implementations
