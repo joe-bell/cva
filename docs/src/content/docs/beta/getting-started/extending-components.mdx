@@ -12,11 +12,11 @@ All `cva` components provide an optional `class` **or** `className` prop, which 
 // components/button.ts
 import { cva } from "cva";
 
-const button = cva(/* … */);
+const button = cva({ base: "font-semibold" });
 
 button({ class: "m-4" });
-// => "…buttonClasses m-4"
+// => "font-semibold m-4"
 
 button({ className: "m-4" });
-// => "…buttonClasses m-4"
+// => "font-semibold m-4"
 ```
