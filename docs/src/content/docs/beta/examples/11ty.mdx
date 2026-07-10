@@ -13,7 +13,7 @@ This example builds a `button` component with `cva` in an 11ty template.
 
 ```js
 // button.11ty.js
-import { cva } from "cva";
+const { cva } = require("cva");
 
 // ⚠️ Disclaimer: Use of Tailwind CSS is optional
 const button = cva({
@@ -45,7 +45,7 @@ const button = cva({
   },
 });
 
-export default function ({ label, intent, size }) {
+module.exports = function ({ label, intent, size }) {
   return `<button class="${button({ intent, size })}">${label}</button>`;
-}
+};
 ```

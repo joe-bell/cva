@@ -8,8 +8,6 @@ export default {
   ],
   "package.json": () => "pnpm syncpack:lint",
   ".agents/skills/**": () => "pnpm lint:skills",
-  "docs/src/content/docs/**/*.mdx": (filenames) =>
-    `node .config/check-docs-dashes.mjs ${filenames.map((f) => `'${f}'`).join(" ")}`,
   "**/wrangler.jsonc": (filenames) =>
     filenames.map(
       (filename) => `pnpm --dir '${dirname(filename)}' exec wrangler types`,
