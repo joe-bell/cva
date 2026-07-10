@@ -2327,23 +2327,21 @@ describe("CVAVariantShape", () => {
 
     expect(button({ intent: "primary" })).toBe("button--primary");
 
-    // @ts-expect-error — not a valid `CVAVariantShape` (value isn't a `ClassValue` map)
+    // @ts-expect-error — value isn't a `ClassValue` map
     ({ intent: "primary" }) satisfies CVA.CVAVariantShape;
   });
 });
 
 describe("exported types", () => {
-  test("CVAComponent and CVAComponentShape stay exported", () => {
-    // Both names must be reachable through the `CVA.` namespace import, or
-    // this fails to compile — a regression guard for downstream consumers'
-    // `declaration: true` builds, which need to name these types even
-    // though they aren't meant for direct use. See AGENTS.md Learnings.
+  test("portability types stay exported", () => {
+    // Each name below must be reachable through the `CVA.` namespace
+    // import, or this fails to compile. See AGENTS.md Learnings.
     expectTypeOf<CVA.CVAComponentShape>().toEqualTypeOf<
       CVA.CVAComponent<any, any>
     >();
-
-    const button = cva({ base: "button" });
-    expectTypeOf(button).toMatchTypeOf<CVA.CVAComponentShape>();
+    expectTypeOf<CVA.CVAVariantShape>().toEqualTypeOf<
+      Record<string, Record<string, CVA.ClassValue>>
+    >();
   });
 });
 
