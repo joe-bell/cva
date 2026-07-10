@@ -17,9 +17,8 @@
   "homepage": "https://github.com/joe-bell/cva#readme",
   "bugs": "https://github.com/joe-bell/cva/issues",
   "repository": "https://github.com/joe-bell/cva.git",
-  "funding": "https://polar.sh/cva",
   "license": "Apache-2.0",
-  "author": "Joe Bell (https://joebell.co.uk)",
+  "author": "Joe Bell (https://joebell.studio)",
   "exports": {
     ".": {
       "import": "./src/index.ts",
