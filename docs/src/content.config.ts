@@ -7,7 +7,12 @@ import { docsVersionsLoader } from "starlight-versions/loader";
 import { format } from "date-fns";
 
 export const collections = {
-  docs: defineCollection({ loader: docsLoader(), schema: docsSchema() }),
+  docs: defineCollection({
+    loader: docsLoader(),
+    // Require a `description` on every page — Starlight's own schema leaves
+    // it optional, but every page here needs one for SEO/OG meta.
+    schema: docsSchema({ extend: z.object({ description: z.string() }) }),
+  }),
   versions: defineCollection({ loader: docsVersionsLoader() }),
   tutorials: defineCollection({
     loader: glob({ pattern: "**/*.json", base: "./src/content/tutorials" }),

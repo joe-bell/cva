@@ -56,6 +56,10 @@ values (e.g. `after:bg-[hsl(0,0%,98%)]`) when no token fits. Global styling
 that can't be expressed as utilities belongs in `main.css` (`@apply`, theme
 tokens), not in per-component `<style>` blocks.
 
+## Docs writing
+
+Docs prose (`docs/src/content/docs/**`) follows the `writing-guidelines` skill (see [Task-specific skills](#task-specific-skills-agentsskills) below) — apply it whenever writing or editing docs content, not only when explicitly asked for a review pass. It layers this repo's house style (US English, no em/en-dash punctuation, verified `// =>` output comments, the beta/stable split, preserved author voice in FAQs/What's New) on top of the fetched upstream Vercel ruleset. Every page requires a `description` in its frontmatter — `docs/src/content.config.ts` enforces this via the Starlight schema, so a missing one fails the docs build.
+
 ## Task-specific skills (`.agents/skills/`)
 
 Project skills live in `.agents/skills/` — the **single source of truth**; agent-specific directories only ever mirror it. They follow the [Agent Skills spec](https://agentskills.io/specification.md) (one `SKILL.md` per directory). Invoke the matching skill before working in that area. `pnpm lint:skills` validates each `SKILL.md` (`skill-check`, strict mode); it runs in pre-commit (via `lint-staged`) and in CI.
@@ -76,7 +80,7 @@ Installed skills:
 - `tailwind-css-v4` — Tailwind CSS v4 syntax and the v3→v4 differences (CSS-first `@theme` config, renamed/removed utilities, container queries, new features); use alongside the [Docs styling](#docs-styling) rules whenever touching styles. Hand-maintained in this repo (vendored, not installed from a registry), so it's not tracked in `skills-lock.json`.
 - `deslop` — removes AI-generated slop (redundant comments, needless defensive code, `any` casts, deep nesting) from a branch's diff; use when cleaning up agent-written changes before merging. Sourced from `cursor/plugins` (carries a local "Use when" description tweak).
 - `web-design-guidelines` — accessibility/UX review checklist; use when reviewing or building UI in `docs`
-- `writing-guidelines` — prose style review; use when writing or reviewing docs content
+- `writing-guidelines` — prose style review; use when writing or reviewing docs content (see [Docs writing](#docs-writing) above). Sourced from `vercel-labs/agent-skills`; carries a local house-style addendum on top of the fetched upstream ruleset — re-apply it if `npx skills update` clobbers it, and recompute the hash per the note above
 - `find-skills` — discovers and installs further skills from the ecosystem; use when a task could benefit from a skill we don't have yet
 - `wrangler` — Cloudflare Workers CLI + `wrangler.jsonc` reference; use when touching the `docs` deployment (the docs site is an Astro Worker via `@astrojs/cloudflare`, configured in [`docs/wrangler.jsonc`](./docs/wrangler.jsonc) and deployed through Workers Builds). Sourced from `cloudflare/skills`; carries a local "Use when" description tweak, and its long body was split into `references/*.md` via `skill-check split-body` to satisfy the 500-line cap (see below).
 
