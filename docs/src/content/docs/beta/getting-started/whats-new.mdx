@@ -17,7 +17,7 @@ What's changed since `class-variance-authority@0.*`?
 
 Extend `cva` via the new [`defineConfig` API](/beta/api-reference#defineconfig).
 
-Want to use `cva`/`cx` with `tailwind-merge`? [No problem](/beta/getting-started/installation#handling-style-conflicts)!
+Use `cva`/`cx` with `tailwind-merge` via the new [`hooks.onComplete` option](/beta/getting-started/installation#handling-style-conflicts).
 
 ### 2. `composes`
 
@@ -47,7 +47,7 @@ The `compose` method is deprecated in favor of the `composes` property inside `c
 ```
 
 :::note
-`composes` isn't always a byte-for-byte swap: when composed components declare conflicting `defaultVariants` for the same key, `composes` applies a single last-wins default to every component, whereas `compose` let each component resolve its own. See [Extending variants](/beta/getting-started/composing-components#extending-variants).
+`composes` isn't always a byte-for-byte swap. When composed components declare conflicting `defaultVariants` for the same key, `composes` applies a single last-wins default to every component. `compose` let each component resolve its own default instead. See [Extending variants](/beta/getting-started/composing-components#extending-variants).
 :::
 
 See [Composing Components](/beta/getting-started/composing-components) for more details and migration examples.
@@ -79,6 +79,6 @@ Instead, we now recommend explicitly [rolling your own `unset` variant](/beta/ge
 
 ### 4. Clearer type guards
 
-`cva` uses generic type parameters to infer variant types, but this was often confused as something that could be customized.
+`cva` uses generic type parameters to infer variant types. Some users mistook these for a customization option.
 
-If you attempt to pass a generic type parameter, `cva` will now throw an error.
+If you now pass a generic type parameter, `cva` throws an error.

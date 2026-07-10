@@ -62,7 +62,7 @@ combined({ style: "primary" });
 // => "a a-primary b b-primary"
 ```
 
-`defaultVariants` follow a last-wins merge. If multiple composed components declare a default for the same variant, the last one in the array wins, and a local `defaultVariants` on the composing component wins over all of them. `cva` applies that value to every composed component, not just the one that declared it:
+`defaultVariants` follow a last-wins merge. If multiple composed components declare a default for the same variant, the last one in the array wins. A local `defaultVariants` on the composing component wins over all of them. `cva` applies that value to every composed component, not just the one that declared it:
 
 ```ts
 const a = cva({
