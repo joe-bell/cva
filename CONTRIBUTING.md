@@ -72,3 +72,5 @@ CI runs `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `t
 ## Releases
 
 A trade-off with using a personal repo is that permissions are fairly locked-down. In the mean-time releases will be made manually by the project owner.
+
+Version bumps (the `version` field in `packages/*/package.json`) are part of that manual release process — they happen only on `main`, cut by the project owner, as their own commit separate from any feature/fix work. Don't include a version bump in a feature or fix branch/PR, even if you're an agent implementing a versioned change like "cut vX.Y.Z" — leave that step to the owner on `main`.

@@ -135,6 +135,7 @@ Security review is a standing step, not an on-request extra. Before pushing a ch
 Agent-specific notes:
 
 - **Never expose private repositories.** This is a public repo: anything you write here is published. Never reference the owner's (or anyone's) private repositories — no repo names, URLs, or file paths — in code, docs, commit messages, PR titles/descriptions, issues, or review comments. If work is ported or adapted from a private source, describe it neutrally ("hand-maintained", "vendored") without naming or linking the source. This applies to every agent and every session, with no exceptions.
+- **Never bump a package version.** See [Releases](./CONTRIBUTING.md#releases) in `CONTRIBUTING.md` — version bumps happen only on `main`, cut by the project owner, as their own commit. Don't add one to a feature/fix branch or PR, even if explicitly asked to "cut vX.Y.Z"; implement the change and let the owner handle the bump separately.
 - This project uses `nvm` to manage Node.js versions, so prefix commands with
   `nvm use` where necessary. If you're Zed's agent you likely **won't** need
   to.
