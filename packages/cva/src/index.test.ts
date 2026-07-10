@@ -2332,6 +2332,21 @@ describe("CVAVariantShape", () => {
   });
 });
 
+describe("exported types", () => {
+  test("CVAComponent and CVAComponentShape stay exported", () => {
+    // Both names must be reachable through the `CVA.` namespace import, or
+    // this fails to compile — a regression guard for downstream consumers'
+    // `declaration: true` builds, which need to name these types even
+    // though they aren't meant for direct use. See AGENTS.md Learnings.
+    expectTypeOf<CVA.CVAComponentShape>().toEqualTypeOf<
+      CVA.CVAComponent<any, any>
+    >();
+
+    const button = cva({ base: "button" });
+    expectTypeOf(button).toMatchTypeOf<CVA.CVAComponentShape>();
+  });
+});
+
 describe("defineConfig", () => {
   describe("hooks", () => {
     describe("onComplete", () => {

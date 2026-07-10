@@ -25,6 +25,7 @@ focused:
 - **Commits** follow the ["Conventional Commits" specification](https://www.conventionalcommits.org/en/v1.0.0/). This allows for changelogs to be generated automatically upon release.
 - **Code** is formatted via [Prettier](https://prettier.io/)
 - **JavaScript** is written as [TypeScript](https://www.typescriptlang.org/) where possible.
+- **`packages/cva`'s type exports**: any type reachable from a public signature (a component's return type, a parameter type, a type derived from either) must be `export`ed from `src/index.ts`, even if it's not meant for direct use. Consumers who compile with `declaration: true` need to be able to name every type in their own generated `.d.ts` files, and an unexported-but-reachable type breaks their build with a `TS4023`/`TS2459`-family error even though `cva`'s own build stays green. These exports are for that portability reason only, not a feature we want people to reach for directly, so mark them with a short JSDoc saying so and don't add docs-site coverage for them. `packages/cva/src/index.test.ts` pins the current set of these exports.
 
 ## Getting Started
 

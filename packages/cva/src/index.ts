@@ -149,6 +149,10 @@ export type CXReturn = ReturnType<CX>;
   ============================================ */
 
 type CVAComponentConfigBase = { base?: ClassValue };
+/**
+ * Exported so TypeScript can name this type in your generated declarations
+ * (`declaration: true`) — you shouldn't really use it directly.
+ */
 export type CVAVariantShape = Record<string, Record<string, ClassValue>>;
 type CVAVariantSchema<V extends CVAVariantShape> = {
   [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
@@ -199,6 +203,10 @@ type CVAComponentConfig<
         defaultVariants?: never;
       });
 
+/**
+ * Exported so TypeScript can name this type in your generated declarations
+ * (`declaration: true`) — you shouldn't really use it directly.
+ */
 export interface CVAComponent<Config, Variants> {
   (
     props?: Variants extends CVAVariantShape
@@ -223,6 +231,10 @@ export interface CVAComponent<Config, Variants> {
 // `ReturnType<CVA>` instantiates this constraint inside the
 // `Compose`/`GetSchema` guards, where the shaped form rejects every real
 // component via props contravariance.
+/**
+ * Exported so TypeScript can name this type in your generated declarations
+ * (`declaration: true`) — you shouldn't really use it directly.
+ */
 export type CVAComponentShape = CVAComponent<any, any>;
 
 type CVADefaultVariants<Config> = Config extends { defaultVariants?: infer D }
