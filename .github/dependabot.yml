@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # SHA-pinned actions (see ci.yml, .github/actions/install, and the two
+    # benchmark workflows) don't update themselves — Dependabot opens a PR
+    # bumping the pin whenever an action publishes a new version, so pins
+    # stay current instead of silently rotting on an old, possibly
+    # vulnerable commit.
+    commit-message:
+      prefix: "ci"
