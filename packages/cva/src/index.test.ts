@@ -433,6 +433,21 @@ describe("cva — composes", () => {
       shadow: { values: ["sm"] },
     });
   });
+
+  test("should reject values that aren't cva() components", () => {
+    const box = cva({ variants: { shadow: { sm: "shadow-sm" } } });
+    const stack = cva({ variants: { gap: { 1: "gap-1" } } });
+
+    // @ts-expect-error — plain function: no `config` property
+    cva({ composes: () => "" });
+    // @ts-expect-error — plain function inside an array
+    cva({ composes: [box, () => ""] });
+
+    const composed = compose(box, stack);
+    // @ts-expect-error — `compose()` results carry no `config` and can't be
+    // re-composed; compose the original components via `composes` instead
+    cva({ composes: composed });
+  });
 });
 
 describe("getSchema", () => {

@@ -48,6 +48,14 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
   ? I
   : never;
 
+// The loosest shape a composable component can take: the required `config`
+// property is what rejects plain functions and (deprecated) `compose` results.
+// `config` is deliberately `any` — NOT a `CVAComponent`-derived shape — for two
+// verified reasons: a variant-less `cva({ base })` carries `variants: unknown`
+// (which fails any `CVAVariantShape`-shaped constraint), and `ReturnType<CVA>`
+// instantiates these constraints for the `Compose`/`GetSchema` guards, where a
+// shaped `config` makes `MergedVariants` resolve to `CVAVariantShape` and props
+// contravariance then rejects every real component.
 type CVAComponentLike = {
   (props?: any): string;
   config: any;
@@ -537,7 +545,6 @@ export interface GetSchema {
 }
 
 export const getSchema: GetSchema = (component) => {
-  // JB-353
   if (!component.config?.variants) return {} as any;
 
   return Object.entries(component.config.variants).reduce(
