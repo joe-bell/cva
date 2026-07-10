@@ -13,6 +13,26 @@
 
 export const STICKY_MARKER = "<!-- cva:pr-comment -->";
 
+/**
+ * Canonical top-to-bottom layout of the comment. Sections render in this
+ * order no matter which producer ran (or created its section) first, and
+ * reordering this list reorders every existing comment on its next update.
+ * A section id missing from the list still renders, after all listed ones,
+ * in its original appearance order.
+ */
+export const SECTION_ORDER = ["benchmark"];
+
+const SAFE_SECTION_ID = /^[a-z0-9-]+$/;
+
+function assertSectionId(id) {
+  if (typeof id !== "string" || !SAFE_SECTION_ID.test(id)) {
+    throw new Error(
+      `invalid section id ${JSON.stringify(id)} — must match ${SAFE_SECTION_ID}`,
+    );
+  }
+  return id;
+}
+
 function sectionMarkers(id) {
   return {
     start: `<!-- cva:section:${id}:start -->`,
@@ -20,36 +40,52 @@ function sectionMarkers(id) {
   };
 }
 
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 /** Wraps already-rendered, trusted markdown in this section's placeholders. */
 export function sectionBlock(id, content) {
-  const { start, end } = sectionMarkers(id);
+  const { start, end } = sectionMarkers(assertSectionId(id));
   return `${start}\n${content.trim()}\n${end}`;
 }
 
+const SECTION_PATTERN =
+  /<!-- cva:section:([a-z0-9-]+):start -->\n?([\s\S]*?)\n?<!-- cva:section:\1:end -->/g;
+
+/** Extracts `[{ id, content }]` from a comment body in appearance order. */
+function parseSections(body) {
+  return Array.from(body.matchAll(SECTION_PATTERN), (match) => ({
+    id: match[1],
+    content: match[2],
+  }));
+}
+
 /**
- * Returns `body` with section `id` replaced in place if its markers are
- * already present, or the section appended otherwise. Only ever matches
- * against our own placeholder markers — the section `content` itself is
- * never parsed or interpreted, just spliced in verbatim (it must already
- * be trusted-rendered markdown by the time it reaches this function).
+ * Returns the full comment body with section `id` set to `content` and
+ * every section laid out in canonical `order` (ids not in the list keep
+ * their relative appearance order, after all listed ones).
+ *
+ * The whole body is reassembled from the sticky marker plus the parsed
+ * sections — this module owns the comment outright, which is what makes
+ * reordering `SECTION_ORDER` retroactive. Only our own placeholder markers
+ * are ever parsed; each section's `content` is spliced back verbatim (it
+ * must already be trusted-rendered markdown by the time it reaches this
+ * function).
  */
-export function upsertSection(body, id, content) {
-  const { start, end } = sectionMarkers(id);
-  const block = sectionBlock(id, content);
-  const pattern = new RegExp(
-    `${escapeRegExp(start)}[\\s\\S]*?${escapeRegExp(end)}`,
-  );
+export function upsertSection(body, id, content, order = SECTION_ORDER) {
+  assertSectionId(id);
 
-  if (pattern.test(body)) {
-    return body.replace(pattern, block);
-  }
+  const sections = parseSections(body).filter((section) => section.id !== id);
+  sections.push({ id, content: content.trim() });
 
-  const trimmed = body.trimEnd();
-  return trimmed.length > 0 ? `${trimmed}\n\n${block}` : block;
+  const rank = (sectionId) => {
+    const index = order.indexOf(sectionId);
+    return index === -1 ? order.length : index;
+  };
+  // Array.prototype.sort is stable, so unlisted ids keep appearance order.
+  sections.sort((a, b) => rank(a.id) - rank(b.id));
+
+  return [
+    STICKY_MARKER,
+    ...sections.map((section) => sectionBlock(section.id, section.content)),
+  ].join("\n\n");
 }
 
 function sleep(ms) {
@@ -103,6 +139,7 @@ export async function upsertPrComment({
   createIfMissing = false,
   retries = 0,
   retryDelayMs = 5000,
+  order = SECTION_ORDER,
 }) {
   const existing = await findStickyComment({
     github,
@@ -117,6 +154,7 @@ export async function upsertPrComment({
       existing.body ?? STICKY_MARKER,
       sectionId,
       sectionContent,
+      order,
     );
     await github.rest.issues.updateComment({
       ...context.repo,
@@ -130,7 +168,7 @@ export async function upsertPrComment({
     return { action: "skipped-no-comment" };
   }
 
-  const body = upsertSection(STICKY_MARKER, sectionId, sectionContent);
+  const body = upsertSection(STICKY_MARKER, sectionId, sectionContent, order);
   const created = await github.rest.issues.createComment({
     ...context.repo,
     issue_number: issueNumber,

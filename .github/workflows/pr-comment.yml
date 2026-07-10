@@ -33,6 +33,10 @@ name: pr-comment
 #      producer should create the comment; every other producer waits for
 #      it via `retries`/`retryDelayMs` so producers never race to create
 #      duplicate comments).
+#   5. Add your section id to `SECTION_ORDER` in pr-comment.mjs to choose
+#      where it appears in the comment — sections render in that declared
+#      order no matter which producer runs first, and reordering the list
+#      reorders existing comments on their next update.
 on:
   workflow_run:
     workflows: [ci]

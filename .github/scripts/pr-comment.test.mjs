@@ -68,6 +68,69 @@ describe("upsertSection", () => {
     expect(updated).toContain("updated bench");
     expect(updated).not.toContain("bench content");
   });
+
+  it("renders sections in canonical order regardless of insertion order", () => {
+    const order = ["benchmark", "coverage"];
+    const coverageFirst = upsertSection(
+      STICKY_MARKER,
+      "coverage",
+      "coverage content",
+      order,
+    );
+    const both = upsertSection(
+      coverageFirst,
+      "benchmark",
+      "bench content",
+      order,
+    );
+    expect(both.indexOf("cva:section:benchmark:start")).toBeLessThan(
+      both.indexOf("cva:section:coverage:start"),
+    );
+  });
+
+  it("reordering the order list reorders the body on the next update", () => {
+    const both = upsertSection(
+      upsertSection(STICKY_MARKER, "benchmark", "bench content", [
+        "benchmark",
+        "coverage",
+      ]),
+      "coverage",
+      "coverage content",
+      ["benchmark", "coverage"],
+    );
+    const reordered = upsertSection(both, "coverage", "coverage content", [
+      "coverage",
+      "benchmark",
+    ]);
+    expect(reordered.indexOf("cva:section:coverage:start")).toBeLessThan(
+      reordered.indexOf("cva:section:benchmark:start"),
+    );
+    expect(reordered).toContain("bench content");
+  });
+
+  it("keeps a section whose id is absent from the order list, after listed ones", () => {
+    const order = ["benchmark"];
+    const withUnknown = upsertSection(
+      upsertSection(STICKY_MARKER, "extras", "extra content", order),
+      "benchmark",
+      "bench content",
+      order,
+    );
+    expect(withUnknown).toContain("extra content");
+    expect(withUnknown.indexOf("cva:section:benchmark:start")).toBeLessThan(
+      withUnknown.indexOf("cva:section:extras:start"),
+    );
+  });
+
+  it("rejects section ids that could break the marker format", () => {
+    expect(() => upsertSection(STICKY_MARKER, "Bad Id", "x")).toThrow(
+      /invalid section id/,
+    );
+    expect(() => upsertSection(STICKY_MARKER, "x --><script>", "x")).toThrow(
+      /invalid section id/,
+    );
+    expect(() => sectionBlock("UPPER", "x")).toThrow(/invalid section id/);
+  });
 });
 
 describe("findStickyComment", () => {
