@@ -7,7 +7,7 @@
  * against.
  */
 import { execFileSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import process from "node:process";
@@ -23,7 +23,7 @@ interface GitHubRelease {
   prerelease: boolean;
 }
 
-interface ManifestEntry {
+export interface ManifestEntry {
   package: string;
   label: "release" | "prerelease";
   version: string;
@@ -51,7 +51,7 @@ async function fetchLatestReleases(): Promise<
   }
 
   const response = await fetch(
-    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases?per_page=30`,
+    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases?per_page=100`,
     { headers },
   );
   if (!response.ok) {
@@ -80,6 +80,11 @@ async function isPublishedOnNpm(
   return response.ok;
 }
 
+function rootPackageManager(): string {
+  const rootPkgJson = JSON.parse(readFileSync("package.json", "utf8"));
+  return rootPkgJson.packageManager;
+}
+
 function installBaseline(pkg: string, version: string, dir: string) {
   mkdirSync(dir, { recursive: true });
   writeFileSync(
@@ -88,7 +93,10 @@ function installBaseline(pkg: string, version: string, dir: string) {
       {
         name: `bench-baseline-${pkg}`,
         private: true,
-        packageManager: "pnpm@11.0.9",
+        // Matches the root package's pin (not hardcoded) so corepack
+        // resolves the same pnpm version here as everywhere else in CI —
+        // see rootPackageManager().
+        packageManager: rootPackageManager(),
       },
       null,
       2,

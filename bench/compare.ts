@@ -11,6 +11,7 @@
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const MAX_FILE_BYTES = 512 * 1024;
 const MAX_IMPLEMENTATIONS = 6;
@@ -27,6 +28,11 @@ const ALLOWED_LABELS = new Set(["local", "release", "prerelease"]);
 const SAFE_SHORT = /^[\w.\- ]{1,64}$/;
 const SAFE_COMMIT = /^(unknown|[0-9a-f]{7,40})$/i;
 const SAFE_VERSION = /^[\w.\-+]{1,64}$/;
+// Deliberately excludes `[ ] ( ) ! /` and bare URLs: task names are
+// PR-controlled (a fork can edit `index.bench.ts` freely), so this allowlist
+// — not just escaping — is what makes markdown link/image injection into
+// the rendered comment impossible, not just awkward.
+const SAFE_TASK_NAME = /^[\w :,._+'-]{1,80}$/;
 
 export interface Task {
   name: string;
@@ -96,7 +102,12 @@ function assertExactKeys(value: unknown, allowed: string[], context: string) {
 function validateTask(raw: unknown): Task {
   assertExactKeys(raw, ["name", "hz", "mean", "rme", "samples"], "task");
   const task = raw as Record<string, unknown>;
-  const name = assertString(task.name, "task.name", undefined, MAX_TASK_NAME);
+  const name = assertString(
+    task.name,
+    "task.name",
+    SAFE_TASK_NAME,
+    MAX_TASK_NAME,
+  );
   const hz = assertFiniteNumber(task.hz, "task.hz");
   const mean = assertFiniteNumber(task.mean, "task.mean");
   const rme = assertFiniteNumber(task.rme, "task.rme");
@@ -253,7 +264,9 @@ function escapeMarkdown(value: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/\|/g, "\\|")
-    .replace(/`/g, "'");
+    .replace(/`/g, "'")
+    .replace(/\[/g, "(")
+    .replace(/\]/g, ")");
 }
 
 function formatOps(hz: number, rme: number): string {
@@ -304,7 +317,11 @@ function renderPackageSection(result: BenchmarkResult): string {
         continue;
       }
       row.push(formatOps(baselineTask.hz, baselineTask.rme));
-      row.push(localTask ? formatDelta(localTask.hz, baselineTask.hz) : "—");
+      row.push(
+        localTask && baselineTask.hz > 0
+          ? formatDelta(localTask.hz, baselineTask.hz)
+          : "—",
+      );
     }
 
     lines.push(`| ${row.join(" | ")} |`);
@@ -359,7 +376,10 @@ function parseArgs(argv: string[]) {
 }
 
 function isMainModule(): boolean {
-  return process.argv[1] === new URL(import.meta.url).pathname;
+  return (
+    process.argv[1] !== undefined &&
+    path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+  );
 }
 
 if (isMainModule()) {

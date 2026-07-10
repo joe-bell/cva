@@ -1,0 +1,94 @@
+/**
+ * Shared harness for the per-package `src/index.bench.ts` files.
+ *
+ * Both the "local" implementation and every installed baseline are loaded
+ * from built `dist/index.mjs` output — never from `src` — so the comparison
+ * is apples-to-apples: baselines are published SWC output, and benching
+ * local `src` through vitest/esbuild's transform instead would compare two
+ * different toolchains, not two versions of the same code.
+ */
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+
+import type { ManifestEntry } from "./baselines";
+
+export interface Implementation<Mod> {
+  label: string;
+  version: string;
+  mod: Mod;
+}
+
+async function importDist<Mod>(distPath: string): Promise<Mod> {
+  return await import(pathToFileURL(distPath).href);
+}
+
+/**
+ * Loads the local built implementation plus any installed baselines for
+ * `pkg`, using the `BENCH_BASELINES_DIR` manifest written by
+ * bench/baselines.ts. `packageDir` is the absolute path to the package
+ * directory (e.g. `packages/cva`).
+ *
+ * The local build is required — if `dist/index.mjs` is missing or stale,
+ * that's a real problem (run `pnpm build`), so it throws rather than
+ * silently omitting the local column. A baseline that fails to import
+ * (API drift in an older published version, or a missing dist layout) is
+ * skipped instead: report.ts renders that as a note in the comparison
+ * table rather than failing the whole benchmark run.
+ */
+export async function loadImplementations<Mod>(
+  pkg: string,
+  packageDir: string,
+): Promise<Implementation<Mod>[]> {
+  const localPkgJson = JSON.parse(
+    readFileSync(path.join(packageDir, "package.json"), "utf8"),
+  );
+
+  let localMod: Mod;
+  try {
+    localMod = await importDist<Mod>(path.join(packageDir, "dist/index.mjs"));
+  } catch (error) {
+    throw new Error(
+      `failed to import the local build of "${pkg}" at ${path.join(packageDir, "dist/index.mjs")} — run \`pnpm build\` first: ${(error as Error).message}`,
+    );
+  }
+
+  const implementations: Implementation<Mod>[] = [
+    { label: "local", version: localPkgJson.version, mod: localMod },
+  ];
+
+  const baselinesDir = process.env.BENCH_BASELINES_DIR;
+  if (!baselinesDir) return implementations;
+
+  let manifest: { entries: ManifestEntry[] };
+  try {
+    manifest = JSON.parse(
+      readFileSync(path.join(baselinesDir, "manifest.json"), "utf8"),
+    );
+  } catch {
+    return implementations;
+  }
+
+  for (const entry of manifest.entries) {
+    if (entry.package !== pkg || entry.skipped || !entry.dir) continue;
+
+    try {
+      const mod = await importDist<Mod>(
+        path.join(
+          baselinesDir,
+          entry.dir,
+          "node_modules",
+          pkg,
+          "dist/index.mjs",
+        ),
+      );
+      implementations.push({ label: entry.label, version: entry.version, mod });
+    } catch {
+      // API drift or an unexpected dist layout in an older published
+      // version — skip it. bench/report.ts renders a note for any
+      // manifest entry that never produced a benchmark group.
+    }
+  }
+
+  return implementations;
+}

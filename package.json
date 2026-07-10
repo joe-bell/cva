@@ -2,7 +2,7 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "bench": "vitest bench --run --config .config/vitest.config.ts --outputJson bench-results/vitest-bench.json && node bench/report.ts",
+    "bench": "pnpm build && vitest bench --run --no-file-parallelism --config .config/vitest.config.ts --outputJson bench-results/vitest-bench.json && node bench/report.ts",
     "bench:baselines": "node bench/baselines.ts",
     "bench:check": "tsc --project bench/tsconfig.json --noEmit",
     "bench:compare": "node bench/compare.ts",

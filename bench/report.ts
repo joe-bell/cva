@@ -11,6 +11,9 @@ import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 
+import type { ManifestEntry } from "./baselines";
+import type { Implementation, Task } from "./compare";
+
 const PACKAGES = ["cva", "class-variance-authority"];
 
 interface VitestBenchmark {
@@ -33,29 +36,6 @@ interface VitestFile {
 
 interface VitestReport {
   files: VitestFile[];
-}
-
-interface ManifestEntry {
-  package: string;
-  label: "release" | "prerelease";
-  version: string;
-  dir?: string;
-  skipped?: string;
-}
-
-interface Task {
-  name: string;
-  hz: number;
-  mean: number;
-  rme: number;
-  samples: number;
-}
-
-interface Implementation {
-  label: string;
-  version: string;
-  tasks?: Task[];
-  skipped?: string;
 }
 
 function parseArgs(argv: string[]) {
@@ -140,12 +120,20 @@ function main() {
     const implementations: Implementation[] = [];
 
     const localGroup = findGroup(report.files, pkg, "local");
-    implementations.push({
-      label: "local",
-      version: localVersion(pkg),
-      tasks: localGroup ? toTasks(localGroup) : undefined,
-      skipped: localGroup ? undefined : "no local benchmark results found",
-    });
+    const localVersionValue = localVersion(pkg);
+    implementations.push(
+      localGroup
+        ? {
+            label: "local",
+            version: localVersionValue,
+            tasks: toTasks(localGroup),
+          }
+        : {
+            label: "local",
+            version: localVersionValue,
+            skipped: "no local benchmark results found",
+          },
+    );
 
     for (const entry of manifestEntries.filter((e) => e.package === pkg)) {
       if (entry.skipped) {

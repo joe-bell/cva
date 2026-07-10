@@ -1,10 +1,11 @@
-import { readFileSync } from "node:fs";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 import { bench, describe } from "vitest";
 
-import * as local from "./index";
+import type * as local from "./index";
+
+import { loadImplementations } from "../../../bench/harness";
 
 /* Fixture
   ============================================ */
@@ -110,57 +111,19 @@ function registerBenchmarks(mod: typeof local) {
 /* Implementations
   ============================================ */
 
-interface BaselineEntry {
-  package: string;
-  label: string;
-  version: string;
-  dir?: string;
-  skipped?: string;
-}
+const packageDir = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+);
+const implementations = await loadImplementations<typeof local>(
+  "cva",
+  packageDir,
+);
 
-async function loadBaselines(): Promise<BaselineEntry[]> {
-  const baselinesDir = process.env.BENCH_BASELINES_DIR;
-  if (!baselinesDir) return [];
-
-  const manifestPath = path.join(baselinesDir, "manifest.json");
-  let manifest: { entries: BaselineEntry[] };
-  try {
-    manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-  } catch {
-    return [];
-  }
-
-  return manifest.entries.filter((entry) => entry.package === "cva");
-}
-
-const baselines = await loadBaselines();
-
-describe("local", () => {
-  registerBenchmarks(local);
-});
-
-for (const entry of baselines) {
-  if (entry.skipped || !entry.dir) continue;
-
-  const modPath = path.join(
-    process.env.BENCH_BASELINES_DIR!,
-    entry.dir,
-    "node_modules/cva/dist/index.mjs",
-  );
-
-  let baselineMod: typeof local | undefined;
-  try {
-    baselineMod = await import(pathToFileURL(modPath).href);
-  } catch {
-    // API drift or missing baseline — silently skip; the manifest already
-    // records installation failures, and report.ts renders a note for any
-    // baseline that never produced a benchmark group.
-    baselineMod = undefined;
-  }
-
-  if (!baselineMod) continue;
-
-  describe(`${entry.label}@${entry.version}`, () => {
-    registerBenchmarks(baselineMod!);
+for (const impl of implementations) {
+  const describeName =
+    impl.label === "local" ? "local" : `${impl.label}@${impl.version}`;
+  describe(describeName, () => {
+    registerBenchmarks(impl.mod);
   });
 }

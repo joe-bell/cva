@@ -83,10 +83,19 @@ jobs:
             // this run's actual head SHA before trusting that claim — this
             // is what stops a crafted artifact from getting a comment posted
             // on an arbitrary PR.
-            const { data: pull } = await github.rest.pulls.get({
-              ...context.repo,
-              pull_number: pr,
-            });
+            let pull;
+            try {
+              ({ data: pull } = await github.rest.pulls.get({
+                ...context.repo,
+                pull_number: pr,
+              }));
+            } catch (error) {
+              if (error.status === 404) {
+                console.log(`PR #${pr} no longer exists — skipping`);
+                return;
+              }
+              throw error;
+            }
             if (pull.head.sha !== process.env.HEAD_SHA) {
               console.log(
                 `head SHA mismatch for PR #${pr} (artifact run vs. current head) — skipping, a newer run will comment instead`,

@@ -138,17 +138,47 @@ describe("validateResult", () => {
       validateResult(validResult({ timestamp: "not a date" }), "cva"),
     ).toThrow(/valid date/);
   });
+
+  it("rejects a task name containing markdown link syntax", () => {
+    const bad = validResult();
+    (bad.implementations[0] as any).tasks[0].name =
+      "[click here](https://phish.example)";
+    expect(() => validateResult(bad, "cva")).toThrow(/unexpected format/);
+  });
+
+  it("rejects a task name containing markdown image syntax", () => {
+    const bad = validResult();
+    (bad.implementations[0] as any).tasks[0].name =
+      "![x](https://attacker.example/pixel.png)";
+    expect(() => validateResult(bad, "cva")).toThrow(/unexpected format/);
+  });
+
+  it("rejects a task name containing a bare URL", () => {
+    const bad = validResult();
+    (bad.implementations[0] as any).tasks[0].name =
+      "https://attacker.example/track";
+    expect(() => validateResult(bad, "cva")).toThrow(/unexpected format/);
+  });
 });
 
 describe("renderMarkdown", () => {
-  it("escapes markdown-hostile task names and never emits raw pipes/backticks", () => {
+  it("escapes markdown-hostile characters in the unrestricted skipped field", () => {
+    // `task.name` is now allowlisted at validation time (see above), but
+    // `implementation.skipped` carries no character restriction — it's the
+    // field that proves escapeMarkdown itself neutralizes link/image syntax
+    // and other hostile markdown, not just that bad input got rejected
+    // earlier.
     const result = validResult();
-    (result.implementations[0] as any).tasks[0].name = "a | b `c` <script>&";
+    (result.implementations[2] as any).skipped =
+      "a | b `c` <script>& [click](https://phish.example)!";
     const validated = validateResult(result, "cva");
     const markdown = renderMarkdown([validated]);
 
-    expect(markdown).toContain("a \\| b 'c' &lt;script&gt;&amp;");
+    expect(markdown).toContain(
+      "a \\| b 'c' &lt;script&gt;&amp; (click)(https://phish.example)!",
+    );
     expect(markdown).not.toContain("<script>");
+    expect(markdown).not.toContain("[click]");
   });
 
   it("renders a skipped-baseline note", () => {
@@ -161,5 +191,17 @@ describe("renderMarkdown", () => {
     const validated = validateResult(validResult(), "cva");
     const markdown = renderMarkdown([validated]);
     expect(markdown).toMatch(/\+\d+\.\d%/);
+  });
+
+  it("renders — instead of a delta when the baseline hz is zero", () => {
+    const result = validResult();
+    (result.implementations[1] as any).tasks[0].hz = 0;
+    const validated = validateResult(result, "cva");
+    const markdown = renderMarkdown([validated]);
+    const row = markdown
+      .split("\n")
+      .find((line) => line.includes("cva: create"));
+    expect(row).toBeDefined();
+    expect(row).not.toMatch(/Infinity|NaN/);
   });
 });

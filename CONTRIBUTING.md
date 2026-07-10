@@ -61,7 +61,7 @@ Run these from the repo root:
 - `pnpm build` – production build of the packages
 - `pnpm check` – type checks every package
 - `pnpm bundlesize` – verifies bundle size limits (`size-limit`)
-- `pnpm bench` – runs the `vitest bench` performance scenarios for each package (add `BENCH_BASELINES_DIR=<dir>` after running `pnpm bench:baselines --out <dir>` to also benchmark published npm baselines alongside your local changes)
+- `pnpm bench` – builds the packages, then runs the `vitest bench` performance scenarios against each built package (add `BENCH_BASELINES_DIR=<dir>` after running `pnpm bench:baselines --out <dir>` to also benchmark published npm baselines alongside your local changes)
 - `pnpm bench:compare` – renders a markdown comparison table from the `bench-results/benchmark-*.json` files produced by `pnpm bench`
 - `pnpm bench:check` – type checks the `bench/` helper scripts
 - `pnpm prettier --check .` – checks formatting (`--write` to fix)
@@ -71,7 +71,7 @@ Run these from the repo root:
 
 To scope a command to a single package, use a pnpm filter, e.g. `pnpm --filter cva test`.
 
-CI runs `build`, `bundlesize`, `benchmark`, `check`, `prettier`, `skills`, `syncpack`, and `test`, so run the matching scripts locally before opening a PR.
+CI gates on `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `test`, so run the matching scripts locally before opening a PR. CI also runs a `benchmark` job — informational only, see Benchmarks below — that doesn't gate merging.
 
 ## Benchmarks
 

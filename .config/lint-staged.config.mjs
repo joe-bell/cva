@@ -6,7 +6,7 @@ export default {
     "pnpm run --filter '!.' --parallel check",
     `pnpm prettier --write ${filenames.map((f) => `'${f}'`).join(" ")}`,
   ],
-  "bench/**/*.ts": () => "pnpm bench:check",
+  "{bench/**/*.ts,packages/*/src/*.bench.ts}": () => "pnpm bench:check",
   "package.json": () => "pnpm syncpack:lint",
   ".agents/skills/**": () => "pnpm lint:skills",
   "**/wrangler.jsonc": (filenames) =>
