@@ -43,8 +43,6 @@ export const cardSchema = getSchema(card);
 // Deprecated API, still shipped — must still emit cleanly.
 export const legacyComposed = compose(button, stack);
 
-export const render = (props: ButtonProps) => button(props);
-
 // A standalone variants config, typed via the exported `CVAVariantShape`
 // (mirrors https://github.com/joe-bell/cva/pull/354's `ConfigSchema` use
 // case: reusing a variants object, e.g. for Storybook controls, while

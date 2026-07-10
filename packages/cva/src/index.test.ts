@@ -2328,7 +2328,7 @@ describe("CVAVariantShape", () => {
     expect(button({ intent: "primary" })).toBe("button--primary");
 
     // @ts-expect-error — not a valid `CVAVariantShape` (value isn't a `ClassValue` map)
-    const invalid: CVA.CVAVariantShape = { intent: "primary" };
+    ({ intent: "primary" }) satisfies CVA.CVAVariantShape;
   });
 });
 
