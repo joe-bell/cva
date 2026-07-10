@@ -626,7 +626,7 @@ describe("getSchema", () => {
     const plainFunction = () => "";
 
     // @ts-expect-error — `compose()`'s result has no `.config`, so it can't
-    // be introspected by `getSchema`. Use the `composes` key instead.
+    // be introspected by `getSchema`. Use the `composes` property instead.
     getSchema(composed);
     // @ts-expect-error — not a cva()-created component at all
     getSchema(plainFunction);

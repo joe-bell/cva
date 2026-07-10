@@ -112,7 +112,7 @@ export type VariantProps<Component extends (...args: any) => any> = Omit<
   ---------------------------------- */
 
 /**
- * @deprecated Use the `composes` key inside `cva` instead.
+ * @deprecated Use the `composes` property inside `cva` instead.
  * @example
  * // Before
  * const card = compose(box, stack)
@@ -275,7 +275,7 @@ export interface DefineConfigOptions {
 export interface DefineConfig {
   (options?: DefineConfigOptions): {
     /**
-     * @deprecated Use the `composes` key inside `cva` instead.
+     * @deprecated Use the `composes` property inside `cva` instead.
      * @example
      * // Before
      * const card = compose(box, stack)

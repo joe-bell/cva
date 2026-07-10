@@ -20,7 +20,7 @@ Want to use `cva`/`cx` with `tailwind-merge`? [No problem](/beta/getting-started
 
 ### 2. `composes`
 
-Shallow merge one or more `cva` components into a single component via the new [`composes` key](/beta/getting-started/composing-components).
+Shallow merge one or more `cva` components into a single component via the new [`composes` property](/beta/getting-started/composing-components).
 
 This [replaces the `compose` function](#1-compose--composes).
 
@@ -32,7 +32,7 @@ Extract a plain-object schema (variant names, values and defaults) from a `cva` 
 
 ### 1. `compose` → `composes`
 
-The `compose` method is deprecated in favour of the `composes` key inside `cva`. Pass a single component directly, or pass multiple components as an array.
+The `compose` method is deprecated in favour of the `composes` property inside `cva`. Pass a single component directly, or pass multiple components as an array.
 
 ```diff lang="ts"
 - import { cva, compose } from "cva";
