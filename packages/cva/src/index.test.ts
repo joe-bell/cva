@@ -450,6 +450,226 @@ describe("cva — composes", () => {
   });
 });
 
+describe("cva — boolean variant shorthand", () => {
+  test("expands a string value to { true: value, false: null }", () => {
+    const button = cva({
+      variants: {
+        disabled: "opacity-50",
+      },
+    });
+
+    expect(button({ disabled: true })).toBe("opacity-50");
+    expect(button({ disabled: false })).toBe("");
+    expect(button()).toBe("");
+    expect(button({ disabled: undefined })).toBe("");
+
+    expectTypeOf<CVA.VariantProps<typeof button>>().toEqualTypeOf<{
+      disabled?: boolean | undefined;
+    }>();
+  });
+
+  test("matches the longhand form exactly", () => {
+    const shorthand = cva({ variants: { disabled: "opacity-50" } });
+    const longhand = cva({
+      variants: { disabled: { true: "opacity-50", false: null } },
+    });
+
+    expect(shorthand({ disabled: true })).toBe(longhand({ disabled: true }));
+    expect(shorthand({ disabled: false })).toBe(longhand({ disabled: false }));
+    expect(shorthand.config.variants).toStrictEqual(longhand.config.variants);
+  });
+
+  test("supports array values, including class dictionaries", () => {
+    const spinner = cva({
+      variants: {
+        loading: ["animate-spin", { "cursor-wait": true }],
+      },
+    });
+
+    expect(spinner({ loading: true })).toBe("animate-spin cursor-wait");
+    expect(spinner({ loading: false })).toBe("");
+  });
+
+  test("works with base and class/className props", () => {
+    const button = cva({
+      base: "button",
+      variants: { disabled: "opacity-50" },
+    });
+
+    expect(button({ disabled: true })).toBe("button opacity-50");
+    expect(button({ disabled: false, class: "extra" })).toBe("button extra");
+    expect(button({ disabled: true, className: "extra" })).toBe(
+      "button opacity-50 extra",
+    );
+  });
+
+  test("respects defaultVariants", () => {
+    const button = cva({
+      base: "button",
+      variants: { disabled: "opacity-50" },
+      defaultVariants: { disabled: true },
+    });
+
+    expect(button()).toBe("button opacity-50");
+    expect(button({ disabled: false })).toBe("button");
+  });
+
+  test("participates in compoundVariants", () => {
+    const button = cva({
+      variants: {
+        disabled: "opacity-50",
+        intent: {
+          primary: "button--primary",
+          secondary: "button--secondary",
+        },
+      },
+      compoundVariants: [
+        { disabled: true, intent: "primary", class: "cursor-not-allowed" },
+        { disabled: [false], intent: "secondary", class: "hover:underline" },
+      ],
+    });
+
+    expect(button({ disabled: true, intent: "primary" })).toBe(
+      "opacity-50 button--primary cursor-not-allowed",
+    );
+    expect(button({ disabled: false, intent: "secondary" })).toBe(
+      "button--secondary hover:underline",
+    );
+
+    expectTypeOf<CVA.VariantProps<typeof button>>().toEqualTypeOf<{
+      disabled?: boolean | undefined;
+      intent?: "primary" | "secondary" | undefined;
+    }>();
+  });
+
+  test("null declares a boolean variant with no classes", () => {
+    const button = cva({
+      base: "button",
+      variants: { busy: null },
+      compoundVariants: [{ busy: true, class: "cursor-wait" }],
+    });
+
+    expect(button()).toBe("button");
+    expect(button({ busy: true })).toBe("button cursor-wait");
+    expect(button({ busy: false })).toBe("button");
+    expect(getSchema(button)).toStrictEqual({
+      busy: { values: [true, false] },
+    });
+
+    expectTypeOf<CVA.VariantProps<typeof button>>().toEqualTypeOf<{
+      busy?: boolean | undefined;
+    }>();
+  });
+
+  test("leaves plain-object variant maps untouched", () => {
+    const button = cva({
+      variants: {
+        disabled: "opacity-50",
+        intent: {
+          primary: "button--primary",
+          fancy: { "button--fancy": true },
+        },
+      },
+    });
+
+    expect(button({ intent: "fancy" })).toBe("button--fancy");
+    expect(button({ intent: "primary", disabled: true })).toBe(
+      "opacity-50 button--primary",
+    );
+
+    expectTypeOf<CVA.VariantProps<typeof button>>().toEqualTypeOf<{
+      disabled?: boolean | undefined;
+      intent?: "primary" | "fancy" | undefined;
+    }>();
+  });
+
+  test("appears in getSchema with boolean values", () => {
+    const button = cva({
+      variants: { disabled: "opacity-50", hidden: null },
+      defaultVariants: { disabled: false },
+    });
+
+    const schema = getSchema(button);
+
+    expect(schema).toStrictEqual({
+      disabled: { values: [true, false], defaultValue: false },
+      hidden: { values: [true, false] },
+    });
+    expectTypeOf(schema).toEqualTypeOf<{
+      disabled: { values: readonly boolean[]; defaultValue: false };
+      hidden: { values: readonly boolean[] };
+    }>();
+  });
+
+  test("composes with shorthand on the inner component", () => {
+    const toggle = cva({ variants: { disabled: "opacity-50" } });
+    const extended = cva({
+      variants: { disabled: { true: "pointer-events-none" } },
+      composes: toggle,
+    });
+
+    expect(extended({ disabled: true })).toBe("opacity-50 pointer-events-none");
+    expect(extended({ disabled: false })).toBe("");
+    // Per-key merge: the local longhand `true` wins, the composed shorthand's
+    // normalized `false: null` is preserved.
+    expect(extended.config.variants).toStrictEqual({
+      disabled: { true: "pointer-events-none", false: null },
+    });
+    expect(getSchema(extended)).toStrictEqual({
+      disabled: { values: [true, false] },
+    });
+  });
+
+  test("composes with shorthand on the outer component", () => {
+    const base = cva({
+      variants: { disabled: { true: "opacity-50", false: "grayscale" } },
+    });
+    const extended = cva({
+      variants: { disabled: "pointer-events-none" },
+      composes: base,
+    });
+
+    expect(extended({ disabled: true })).toBe("opacity-50 pointer-events-none");
+    expect(extended({ disabled: false })).toBe("grayscale");
+    expect(extended.config.variants).toStrictEqual({
+      disabled: { true: "pointer-events-none", false: null },
+    });
+
+    expectTypeOf<CVA.VariantProps<typeof extended>>().toEqualTypeOf<{
+      disabled?: boolean | undefined;
+    }>();
+  });
+
+  test("rejects invalid shorthand usage", () => {
+    const button = cva({ variants: { disabled: "opacity-50" } });
+
+    // @ts-expect-error — shorthand variants take boolean props, not strings
+    button({ disabled: "true" });
+
+    cva({
+      variants: { disabled: "opacity-50" },
+      // @ts-expect-error — `defaultVariants` must be boolean for shorthand
+      defaultVariants: { disabled: "true" },
+    });
+
+    cva({
+      variants: { disabled: "opacity-50" },
+      // @ts-expect-error — compound selectors must be boolean for shorthand
+      compoundVariants: [{ disabled: "true", class: "cursor-not-allowed" }],
+    });
+
+    cva({
+      // @ts-expect-error — booleans aren't valid shorthand values
+      variants: { disabled: true },
+    });
+
+    cva({
+      // @ts-expect-error — `undefined` isn't a valid shorthand value
+      variants: { disabled: undefined },
+    });
+  });
+});
+
 describe("getSchema", () => {
   test("should return the schema for a component", () => {
     const buttonWithoutBaseWithDefaultsString = cva({

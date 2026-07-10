@@ -25,6 +25,12 @@ This [replaces the `compose` function](#1-compose--composes).
 
 Extract a plain-object schema (variant names, values and defaults) from a `cva` component via the new [`getSchema` utility](/beta/getting-started/utilities). Use it to generate Storybook controls or any other UI that reads a component's variants.
 
+### 4. Boolean variant shorthand
+
+Declare an on/off variant by assigning its classes directly to the variant name: `variants: { disabled: "button--disabled" }` expands to `{ disabled: { true: "button--disabled", false: null } }`. See [Boolean variants](/beta/getting-started/variants#boolean-variants).
+
+A component's internal `config.variants` always stores the expanded form, so `getSchema` reports shorthand variants as `{ values: [true, false] }`.
+
 ## Deprecations
 
 ### 1. `compose` → `composes`
