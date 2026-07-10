@@ -49,15 +49,15 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
   : never;
 
 // `composes` accepts either a single component or a list of components. A
-// plain union (`CVAComponentLike | CVAComponentLike[]`) collapses an array
+// plain union (`CVAComponentShape | CVAComponentShape[]`) collapses an array
 // literal's element type to a union, silently dropping components whose
 // variants are a structural subtype of another composed component's (e.g.
 // `composes: [a, b]` where `b`'s variants are a superset of `a`'s). Splitting
 // inference across two type parameters preserves the array as a real tuple.
 type ComposedTuple<
-  S extends CVAComponentLike | undefined,
-  L extends readonly CVAComponentLike[],
-> = [S] extends [CVAComponentLike] ? [S] : L;
+  S extends CVAComponentShape | undefined,
+  L extends readonly CVAComponentShape[],
+> = [S] extends [CVAComponentShape] ? [S] : L;
 
 type MergedVariants<T extends readonly unknown[]> = UnionToIntersection<
   {
@@ -169,11 +169,11 @@ type InternalOnlyWarning =
 type CVAComponentConfig<
   Config,
   Variants,
-  ComposedSingle extends CVAComponentLike | undefined =
-    | CVAComponentLike
+  ComposedSingle extends CVAComponentShape | undefined =
+    | CVAComponentShape
     | undefined,
-  ComposedList extends readonly CVAComponentLike[] =
-    readonly CVAComponentLike[],
+  ComposedList extends readonly CVAComponentShape[] =
+    readonly CVAComponentShape[],
 > = Config & {
   composes?: ComposedSingle | readonly [...ComposedList];
 } & (Variants extends CVAVariantShape
@@ -215,13 +215,15 @@ interface CVAComponent<Config, Variants> {
 // and `config` both collapse to `any` (mapped types over `any` are `any`),
 // i.e. `{ (props?: any): string; config: any }`. The required `config`
 // property is what rejects plain functions and (deprecated) `compose`
-// results. Keep the arguments `any` — a shaped `config` (e.g.
-// `{ variants?: CVAVariantShape }`) verifiably breaks: a variant-less
-// `cva({ base })` carries `variants: unknown`, and `ReturnType<CVA>`
-// instantiates this constraint inside the `Compose`/`GetSchema` guards,
-// where the shaped form rejects every real component via props
-// contravariance.
-type CVAComponentLike = CVAComponent<any, any>;
+// results.
+//
+// The `any` arguments are deliberate, not lazy typing — a shaped `config`
+// (e.g. `{ variants?: CVAVariantShape }`) was tried and verifiably breaks:
+// a variant-less `cva({ base })` carries `variants: unknown`, and
+// `ReturnType<CVA>` instantiates this constraint inside the
+// `Compose`/`GetSchema` guards, where the shaped form rejects every real
+// component via props contravariance.
+type CVAComponentShape = CVAComponent<any, any>;
 
 type CVADefaultVariants<Config> = Config extends { defaultVariants?: infer D }
   ? D
@@ -232,8 +234,8 @@ export interface CVA {
     _ extends InternalOnlyWarning,
     Config,
     Variants,
-    ComposedSingle extends CVAComponentLike | undefined = undefined,
-    ComposedList extends readonly CVAComponentLike[] = [],
+    ComposedSingle extends CVAComponentShape | undefined = undefined,
+    ComposedList extends readonly CVAComponentShape[] = [],
   >(
     config: CVAComponentConfig<Config, Variants, ComposedSingle, ComposedList>,
   ): CVAComponent<
@@ -307,8 +309,8 @@ export const defineConfig: DefineConfig = (options) => {
     _ extends InternalOnlyWarning,
     Config,
     Variants,
-    ComposedSingle extends CVAComponentLike | undefined = undefined,
-    ComposedList extends readonly CVAComponentLike[] = [],
+    ComposedSingle extends CVAComponentShape | undefined = undefined,
+    ComposedList extends readonly CVAComponentShape[] = [],
   >(
     config: CVAComponentConfig<Config, Variants, ComposedSingle, ComposedList>,
   ) => {
@@ -318,7 +320,7 @@ export const defineConfig: DefineConfig = (options) => {
         : Array.isArray(config.composes)
           ? config.composes
           : [config.composes]
-    ) as CVAComponentLike[];
+    ) as CVAComponentShape[];
     // A one-level-deep merge per variant key, so overlapping variants (e.g.
     // multiple composed components declaring `style`) union their values
     // instead of the last component's values silently replacing the rest.
@@ -334,7 +336,7 @@ export const defineConfig: DefineConfig = (options) => {
       return merged;
     };
     const mergedVariantsFromComposed = components.reduce(
-      (acc: CVAVariantShape, component: CVAComponentLike) =>
+      (acc: CVAVariantShape, component: CVAComponentShape) =>
         mergeVariants(acc, component.config?.variants),
       {} as CVAVariantShape,
     );
@@ -343,7 +345,7 @@ export const defineConfig: DefineConfig = (options) => {
       config?.variants as CVAVariantShape | undefined,
     );
     const mergedDefaultVariantsFromComposed = components.reduce(
-      (acc: Record<string, unknown>, component: CVAComponentLike) => ({
+      (acc: Record<string, unknown>, component: CVAComponentShape) => ({
         ...acc,
         ...component.config?.defaultVariants,
       }),
@@ -377,7 +379,7 @@ export const defineConfig: DefineConfig = (options) => {
           : {};
 
       const getComposedClassNames = components.length
-        ? components.map((component: CVAComponentLike) =>
+        ? components.map((component: CVAComponentShape) =>
             component({
               ...mergedDefaultVariants,
               ...definedPropsWithoutClass,
