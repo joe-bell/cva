@@ -450,6 +450,178 @@ describe("cva — composes", () => {
   });
 });
 
+describe("cva — internal variants", () => {
+  test("should hide a variant prefixed with `_` from props, but still apply it via defaults", () => {
+    const button = cva({
+      base: "button",
+      variants: {
+        _intent: {
+          primary: "intent-primary",
+          secondary: "intent-secondary",
+        },
+        size: {
+          sm: "size-sm",
+          lg: "size-lg",
+        },
+      },
+      defaultVariants: {
+        _intent: "primary",
+        size: "sm",
+      },
+    });
+
+    expect(button()).toBe("button intent-primary size-sm");
+
+    expectTypeOf<CVA.VariantProps<typeof button>>().toEqualTypeOf<{
+      size?: "sm" | "lg" | undefined;
+    }>();
+
+    // @ts-expect-error — `_intent` is internal and hidden from props
+    button({ _intent: "secondary" });
+  });
+
+  test("should still match compound variants against an internal variant", () => {
+    const button = cva({
+      base: "button",
+      variants: {
+        _intent: {
+          primary: "intent-primary",
+          secondary: "intent-secondary",
+        },
+        size: {
+          sm: "size-sm",
+          lg: "size-lg",
+        },
+      },
+      compoundVariants: [
+        {
+          _intent: "primary",
+          size: "lg",
+          class: "intent-primary-lg",
+        },
+        {
+          _intent: ["primary", "secondary"],
+          size: "sm",
+          class: "intent-any-sm",
+        },
+      ],
+      defaultVariants: {
+        _intent: "primary",
+        size: "sm",
+      },
+    });
+
+    expect(button({ size: "lg" })).toBe(
+      "button intent-primary size-lg intent-primary-lg",
+    );
+    expect(button()).toBe("button intent-primary size-sm intent-any-sm");
+  });
+
+  test("should still resolve an internal variant passed at runtime by an untyped caller", () => {
+    const button = cva({
+      base: "button",
+      variants: {
+        _intent: {
+          primary: "intent-primary",
+          secondary: "intent-secondary",
+        },
+      },
+      defaultVariants: { _intent: "primary" },
+    });
+
+    // Hiding is type-level only — an untyped/cast caller can still drive the
+    // internal variant directly, e.g. from a wrapper component.
+    expect((button as any)({ _intent: "secondary" })).toBe(
+      "button intent-secondary",
+    );
+  });
+
+  test("should omit an internal variant from getSchema, at runtime and in its type", () => {
+    const button = cva({
+      base: "button",
+      variants: {
+        _intent: {
+          primary: "intent-primary",
+          secondary: "intent-secondary",
+        },
+        size: {
+          sm: "size-sm",
+          lg: "size-lg",
+        },
+      },
+      defaultVariants: {
+        _intent: "primary",
+        size: "sm",
+      },
+    });
+
+    const schema = getSchema(button);
+
+    expect(schema).toStrictEqual({
+      size: { values: ["sm", "lg"], defaultValue: "sm" },
+    });
+    expectTypeOf(schema).toEqualTypeOf<{
+      size: { values: readonly ("sm" | "lg")[]; defaultValue: "sm" };
+    }>();
+  });
+
+  test("should hide a composed-only internal variant from the composer's props and schema", () => {
+    const base = cva({
+      variants: {
+        _tone: {
+          quiet: "tone-quiet",
+          loud: "tone-loud",
+        },
+      },
+      defaultVariants: { _tone: "quiet" },
+    });
+
+    const card = cva({
+      composes: base,
+      variants: {
+        pad: { sm: "pad-sm", lg: "pad-lg" },
+      },
+      defaultVariants: { pad: "sm" },
+    });
+
+    expect(card()).toBe("tone-quiet pad-sm");
+
+    expectTypeOf<CVA.VariantProps<typeof card>>().toEqualTypeOf<{
+      pad?: "sm" | "lg" | undefined;
+    }>();
+    // @ts-expect-error — `_tone` is internal, even when composed in
+    card({ _tone: "loud" });
+
+    expect(getSchema(card)).toStrictEqual({
+      pad: { values: ["sm", "lg"], defaultValue: "sm" },
+    });
+  });
+
+  test("should let a composer retune a composed-only internal default by redeclaring it locally", () => {
+    const base = cva({
+      variants: {
+        _tone: {
+          quiet: "tone-quiet",
+          loud: "tone-loud",
+        },
+      },
+      defaultVariants: { _tone: "quiet" },
+    });
+
+    // Redeclaring `_tone` locally is required to override its default from
+    // the composer — the same pre-existing rule that applies to any
+    // composed-only variant (public or internal).
+    const card = cva({
+      composes: base,
+      variants: { _tone: { loud: "loud-local" } },
+      defaultVariants: { _tone: "loud" },
+    });
+
+    expect(card()).toBe("tone-loud loud-local");
+    expect(getSchema(card)).toStrictEqual({});
+  });
+});
+
 describe("getSchema", () => {
   test("should return the schema for a component", () => {
     const buttonWithoutBaseWithDefaultsString = cva({

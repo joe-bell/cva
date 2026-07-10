@@ -25,6 +25,14 @@ This [replaces the `compose` function](#1-compose--composes).
 
 Extract a plain-object schema (variant names, values and defaults) from a `cva` component via the new [`getSchema` utility](/beta/getting-started/utilities). Use it to generate Storybook controls or any other UI that reads a component's variants.
 
+### 4. Internal variants
+
+A variant name prefixed with `_` is now [internal](/beta/getting-started/variants#internal-variants): hidden from the component's props type and from `getSchema`, while still settable via `defaultVariants` and matchable in `compoundVariants`.
+
+:::caution[Breaking change]
+If a component already declared a variant with a leading underscore (`_state`, `_internal`, etc.), that variant now disappears from its prop types and from `getSchema` results. It still resolves at runtime through `defaultVariants` or a matching `compoundVariants` entry, so rename it if your code relied on setting it as a public prop.
+:::
+
 ## Deprecations
 
 ### 1. `compose` → `composes`

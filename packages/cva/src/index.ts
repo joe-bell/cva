@@ -157,6 +157,14 @@ export type CVAVariantShape = Record<string, Record<string, ClassValue>>;
 type CVAVariantSchema<V extends CVAVariantShape> = {
   [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
 };
+// A variant name prefixed with `_` is internal: settable via
+// `defaultVariants`/`compoundVariants`, but hidden from the public props API.
+type InternalVariantKey = `_${string}`;
+type CVAVariantPropsSchema<V extends CVAVariantShape> = {
+  [Variant in keyof V as Variant extends InternalVariantKey
+    ? never
+    : Variant]?: StringToBoolean<keyof V[Variant]> | undefined;
+};
 type CVAClassProp =
   | {
       class?: ClassValue;
@@ -210,7 +218,7 @@ type CVAComponentConfig<
 export interface CVAComponent<Config, Variants> {
   (
     props?: Variants extends CVAVariantShape
-      ? CVAVariantSchema<Variants> & CVAClassProp
+      ? CVAVariantPropsSchema<Variants> & CVAClassProp
       : CVAClassProp,
   ): string;
   /** @internal */
@@ -534,10 +542,9 @@ export interface GetSchema {
         ? { config: CVAComponentConfig<Config, Variants> }
         : never),
   ): {
-    [Variant in keyof Variants]: Config extends CVAComponentConfig<
-      Config,
-      Variants
-    >
+    [Variant in keyof Variants as Variant extends InternalVariantKey
+      ? never
+      : Variant]: Config extends CVAComponentConfig<Config, Variants>
       ? Variant extends keyof Config["defaultVariants"]
         ? Config["defaultVariants"][Variant] extends undefined
           ? never
@@ -568,6 +575,9 @@ export const getSchema: GetSchema = (component) => {
 
   return Object.entries(component.config.variants).reduce(
     (acc, [key, value]) => {
+      // Mirrors the `InternalVariantKey` type-level filter above.
+      if (key.startsWith("_")) return acc;
+
       const defaultValue = component.config.defaultVariants?.[key];
       const hasDefaultValue = defaultValue !== undefined;
       const values = Object.keys(value).map((v) => {

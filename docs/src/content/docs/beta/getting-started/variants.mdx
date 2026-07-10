@@ -137,3 +137,62 @@ const button = cva({
 button({ intent: "unset" });
 // => "button"
 ```
+
+## Internal variants
+
+A variant name prefixed with `_` is internal: it's still declarable in `variants`, drivable via `defaultVariants`, and matchable in `compoundVariants`, but hidden from the component's props type and from [`getSchema`](/beta/api-reference#getschema).
+
+Use this for a variant an author drives (state, composition wiring), not one a consumer of the component should set directly.
+
+```ts
+import { cva } from "cva";
+
+const button = cva({
+  base: "button",
+  variants: {
+    _intent: {
+      primary: "button--primary",
+      secondary: "button--secondary",
+    },
+    size: {
+      small: "button--small",
+      medium: "button--medium",
+    },
+  },
+  defaultVariants: {
+    _intent: "primary",
+    size: "medium",
+  },
+});
+
+button({ size: "small" });
+// => "button button--primary button--small"
+
+button({ _intent: "secondary" });
+// Type error: object literal may only specify known properties, and
+// '_intent' does not exist in type '{ size?: "small" | "medium" }'
+```
+
+:::caution
+Hiding is type-level only. `_intent` still resolves at runtime through `defaultVariants` (or a matching `compoundVariants` entry), and an untyped caller, or one that casts around the type, can still set it directly. Internal variants keep a prop out of your typed API; they don't keep it out of the emitted class list.
+:::
+
+A composed-only internal variant is hidden from the composer's props too. To change its default from the composer, redeclare it locally: the same rule applies to any composed-only variant (see [Extending variants](/beta/getting-started/composing-components#extending-variants)).
+
+```ts
+const base = cva({
+  variants: {
+    _tone: { quiet: "tone-quiet", loud: "tone-loud" },
+  },
+  defaultVariants: { _tone: "quiet" },
+});
+
+const card = cva({
+  composes: base,
+  variants: { _tone: { loud: "loud-local" } },
+  defaultVariants: { _tone: "loud" },
+});
+
+card();
+// => "tone-loud loud-local"
+```
