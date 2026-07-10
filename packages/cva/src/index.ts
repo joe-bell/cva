@@ -48,19 +48,6 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
   ? I
   : never;
 
-// The loosest shape a composable component can take: the required `config`
-// property is what rejects plain functions and (deprecated) `compose` results.
-// `config` is deliberately `any` — NOT a `CVAComponent`-derived shape — for two
-// verified reasons: a variant-less `cva({ base })` carries `variants: unknown`
-// (which fails any `CVAVariantShape`-shaped constraint), and `ReturnType<CVA>`
-// instantiates these constraints for the `Compose`/`GetSchema` guards, where a
-// shaped `config` makes `MergedVariants` resolve to `CVAVariantShape` and props
-// contravariance then rejects every real component.
-type CVAComponentLike = {
-  (props?: any): string;
-  config: any;
-};
-
 // `composes` accepts either a single component or a list of components. A
 // plain union (`CVAComponentLike | CVAComponentLike[]`) collapses an array
 // literal's element type to a union, silently dropping components whose
@@ -221,6 +208,20 @@ interface CVAComponent<Config, Variants> {
   /** @internal */
   config: Config;
 }
+
+// The loosest form a composable component can take, constraining `composes`
+// and the composition merge helpers above. Deriving it from `CVAComponent`
+// keeps the two from drifting: instantiated with `any`, the props conditional
+// and `config` both collapse to `any` (mapped types over `any` are `any`),
+// i.e. `{ (props?: any): string; config: any }`. The required `config`
+// property is what rejects plain functions and (deprecated) `compose`
+// results. Keep the arguments `any` — a shaped `config` (e.g.
+// `{ variants?: CVAVariantShape }`) verifiably breaks: a variant-less
+// `cva({ base })` carries `variants: unknown`, and `ReturnType<CVA>`
+// instantiates this constraint inside the `Compose`/`GetSchema` guards,
+// where the shaped form rejects every real component via props
+// contravariance.
+type CVAComponentLike = CVAComponent<any, any>;
 
 type CVADefaultVariants<Config> = Config extends { defaultVariants?: infer D }
   ? D
