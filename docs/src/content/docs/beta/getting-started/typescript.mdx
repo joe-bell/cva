@@ -1,6 +1,6 @@
 ---
 title: TypeScript
-description: Extract variant types with VariantProps and require specific variants with TypeScript utility types.
+description: Extract variant types with VariantProps, type standalone variants configs with CVAVariantShape, and require specific variants with TypeScript utility types.
 ---
 
 ## Extracting variant types
@@ -17,6 +17,30 @@ import { cva, cx } from "cva";
  */
 export type ButtonProps = VariantProps<typeof button>;
 export const button = cva(/* … */);
+```
+
+## Typing a standalone variants config
+
+Declare a variants object before the component that uses it (for example, to share it with other tooling) and check it against `cva`'s own rules with `CVAVariantShape`:
+
+```ts
+// components/button.ts
+import { cva, type CVAVariantShape } from "cva";
+
+const variants = {
+  intent: {
+    primary: "button--primary",
+    secondary: "button--secondary",
+  },
+} satisfies CVAVariantShape;
+
+export const button = cva({ variants });
+
+// ❌ TypeScript Error:
+// Type 'string' is not assignable to type 'Record<string, ClassValue>'.
+const invalid = {
+  intent: "primary",
+} satisfies CVAVariantShape;
 ```
 
 ## Required variants
