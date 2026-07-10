@@ -1,20 +1,38 @@
-name: benchmark-comment
+name: pr-comment
 
-# Posts (and updates in place) a sticky PR comment with benchmark results.
+# Generic sticky-PR-comment infrastructure: any CI producer can contribute a
+# named "section" to one shared comment per PR without clobbering other
+# sections (today's only producer is the `benchmark` job in ci.yml, in the
+# "benchmark" section below).
 #
-# This workflow is deliberately split from `ci`'s `benchmark` job so it can
-# hold `pull-requests: write` safely: `workflow_run` always executes the
+# This workflow is deliberately split from the untrusted `ci` workflow so it
+# can hold `pull-requests: write` safely: `workflow_run` always executes the
 # workflow file as it exists on the default branch, and never checks out or
 # runs PR code — including for PRs opened from forks, where the
 # `pull_request` event's token is read-only and can't comment at all. That
 # split is what makes this work for every contributor, not just people with
 # write access to this repo.
 #
-# The `benchmark-results` artifact produced by the untrusted `ci` run is
-# treated as hostile input: test/bench/compare.ts strictly validates it
-# (exact schema, size caps, markdown-escaping) before anything from it is
-# rendered, and the claimed PR number is cross-checked against the run's
-# actual head SHA before this job ever writes a comment.
+# Extension contract for adding a new section producer:
+#   1. In the untrusted job that has the data (e.g. a `ci.yml` job), upload
+#      an artifact containing whatever you need to render, plus a
+#      `meta.json` with `{ "pr": <number> }` — see the `benchmark` job for
+#      the pattern.
+#   2. Add a step below (or a parallel job) that downloads YOUR artifact,
+#      then validates it strictly and renders it to markdown yourself in
+#      trusted code running from main — the artifact is hostile input and
+#      must never be embedded as markdown verbatim. See
+#      test/bench/compare.ts for the pattern: exact schema, size caps,
+#      escaping.
+#   3. Cross-check the artifact's claimed PR number against
+#      `github.event.workflow_run.head_sha` before trusting it (see the
+#      benchmark section's head-SHA check below) — this is what stops a
+#      crafted artifact from getting a comment posted on an arbitrary PR.
+#   4. Call `upsertPrComment` from .github/scripts/pr-comment.mjs with your
+#      own `sectionId` and `createIfMissing: false` (only the first/primary
+#      producer should create the comment; every other producer waits for
+#      it via `retries`/`retryDelayMs` so producers never race to create
+#      duplicate comments).
 on:
   workflow_run:
     workflows: [ci]
@@ -23,15 +41,15 @@ on:
 permissions: {}
 
 concurrency:
-  group: benchmark-comment-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+  group: pr-comment-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: true
 
 jobs:
   comment:
     # Intentionally not gated on `conclusion == 'success'`: an unrelated ci
-    # job failing (prettier, syncpack, ...) must not silently suppress the
-    # benchmark comment. The real gate is whether the benchmark artifact
-    # exists, handled below via `steps.download.outcome`.
+    # job failing (prettier, syncpack, ...) must not silently suppress a
+    # section that did produce valid data. Each section gates on its own
+    # artifact's presence instead (`steps.download.outcome` below).
     if: github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -58,13 +76,13 @@ jobs:
       # Renders trusted markdown from untrusted data: test/bench/compare.ts
       # throws (non-zero exit) on any schema violation, so a tampered or
       # malformed artifact fails this step loudly instead of silently
-      # commenting garbage.
-      - name: Validate and render
+      # producing a bad section.
+      - name: Validate and render benchmark section
         id: render
         if: steps.download.outcome == 'success'
-        run: node test/bench/compare.ts --dir test/bench/.output > comment.md
+        run: node test/bench/compare.ts --dir test/bench/.output > benchmark-section.md
 
-      - name: Upsert sticky comment
+      - name: Upsert benchmark section
         if: success() && steps.download.outcome == 'success'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
@@ -72,6 +90,9 @@ jobs:
         with:
           script: |
             const fs = require("node:fs");
+            const { upsertPrComment } = await import(
+              "${{ github.workspace }}/.github/scripts/pr-comment.mjs"
+            );
 
             const meta = JSON.parse(fs.readFileSync("test/bench/.output/meta.json", "utf8"));
             const pr = meta.pr;
@@ -103,28 +124,16 @@ jobs:
               return;
             }
 
-            const marker = "<!-- benchmark:cva -->";
-            const body = `${marker}\n${fs.readFileSync("comment.md", "utf8")}`;
-
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              ...context.repo,
-              issue_number: pr,
-              per_page: 100,
+            const sectionContent = fs.readFileSync("benchmark-section.md", "utf8");
+            const result = await upsertPrComment({
+              github,
+              context,
+              issueNumber: pr,
+              sectionId: "benchmark",
+              sectionContent,
+              // The benchmark section is today's only producer, so it's the
+              // one allowed to create the comment. A future second producer
+              // should leave this false and rely on retries to wait for it.
+              createIfMissing: true,
             });
-            const existing = comments.find(
-              (c) => c.user?.type === "Bot" && c.body?.startsWith(marker),
-            );
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                ...context.repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                ...context.repo,
-                issue_number: pr,
-                body,
-              });
-            }
+            console.log(`pr-comment: ${result.action}`);
