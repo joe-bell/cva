@@ -47,28 +47,6 @@ const className = cx(classes);
 
 `string`
 
-## `compose`
-
-:::caution
-**Deprecated**: use the [`composes` property](#cva) inside `cva` instead. See [Composing Components](/beta/getting-started/composing-components) for migration examples.
-:::
-
-Shallow merges any number of `cva` components into a single component.
-
-```ts
-import { compose } from "cva";
-
-const composedComponent = compose(options);
-```
-
-### Parameters
-
-`options`: array of `cva` components
-
-### Returns
-
-A `cva` component function
-
 ## `getSchema`
 
 Extracts a plain-object schema (variant names, possible values, and default values) from a `cva` component. Use it to generate Storybook controls, documentation, or any other UI that reads a component's variants without re-declaring them. See [Utilities](/beta/getting-started/utilities) for use cases.
