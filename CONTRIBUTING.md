@@ -61,6 +61,9 @@ Run these from the repo root:
 - `pnpm build` – production build of the packages
 - `pnpm check` – type checks every package
 - `pnpm bundlesize` – verifies bundle size limits (`size-limit`)
+- `pnpm bench` – runs the `vitest bench` performance scenarios for each package (add `BENCH_BASELINES_DIR=<dir>` after running `pnpm bench:baselines --out <dir>` to also benchmark published npm baselines alongside your local changes)
+- `pnpm bench:compare` – renders a markdown comparison table from the `bench-results/benchmark-*.json` files produced by `pnpm bench`
+- `pnpm bench:check` – type checks the `bench/` helper scripts
 - `pnpm prettier --check .` – checks formatting (`--write` to fix)
 - `pnpm syncpack:lint` – checks dependency-version consistency (`pnpm syncpack:fix` to fix)
 - `pnpm lint:skills` – validates the agent skills in `.agents/skills` (`skill-check`, strict mode)
@@ -68,7 +71,15 @@ Run these from the repo root:
 
 To scope a command to a single package, use a pnpm filter, e.g. `pnpm --filter cva test`.
 
-CI runs `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `test`, so run the matching scripts locally before opening a PR.
+CI runs `build`, `bundlesize`, `benchmark`, `check`, `prettier`, `skills`, `syncpack`, and `test`, so run the matching scripts locally before opening a PR.
+
+## Benchmarks
+
+Every PR runs a `benchmark` CI job that benchmarks each package's local build (`packages/*/src/index.bench.ts`, run via `vitest bench`) alongside the latest published release and prerelease versions of that same package (resolved from GitHub Releases and installed outside the workspace by [`bench/baselines.ts`](./bench/baselines.ts) — the workspace's `pnpm-workspace.yaml` `overrides` pin `cva`/`class-variance-authority` to `workspace:*`, so baselines can't be installed inside the workspace without being silently overridden). A package that hasn't published a matching version yet is simply skipped, not treated as a failure.
+
+Results are posted as a sticky PR comment (updated in place on every push, including from forks) by a separate `benchmark-comment` workflow — see that file's header comment for why it's split out and how the untrusted artifact it reads is validated. This is **informational only**: a regression doesn't fail CI, so treat it as a signal to investigate, not a gate.
+
+`benchmark-release` attaches a `benchmark-<package>.json` file to every published GitHub release (`workflow_dispatch` with a `tag` input can also run it on demand). [`bench/report.ts`](./bench/report.ts) writes that schema and [`bench/compare.ts`](./bench/compare.ts) reads it — if you change the shape of one, bump `schemaVersion` and update the other in the same change.
 
 ### Build & publish (`packages/*`)
 

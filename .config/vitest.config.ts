@@ -5,7 +5,7 @@ export default defineConfig({
     globals: true,
     coverage: {
       include: ["packages/*/src/**/*.ts"],
-      exclude: ["**/coverage/**"],
+      exclude: ["**/coverage/**", "**/*.bench.ts"],
     },
   },
 });

@@ -2,6 +2,10 @@
   "name": "root",
   "private": true,
   "scripts": {
+    "bench": "vitest bench --run --config .config/vitest.config.ts --outputJson bench-results/vitest-bench.json && node bench/report.ts",
+    "bench:baselines": "node bench/baselines.ts",
+    "bench:check": "tsc --project bench/tsconfig.json --noEmit",
+    "bench:compare": "node bench/compare.ts",
     "build": "pnpm run --filter './packages/**' build",
     "build:examples": "pnpm --filter './examples/**' --parallel build",
     "bundlesize": "pnpm run --filter './packages/**' --parallel bundlesize",
@@ -20,6 +24,7 @@
     "test": "vitest --config .config/vitest.config.ts run --coverage"
   },
   "devDependencies": {
+    "@types/node": "24.13.2",
     "@vitest/coverage-v8": "4.1.5",
     "if-env": "1.0.4",
     "lint-staged": "17.0.3",

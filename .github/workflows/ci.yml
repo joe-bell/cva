@@ -6,7 +6,40 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/install
+      - name: Install published baselines
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node bench/baselines.ts --out "$RUNNER_TEMP/bench-baselines"
+      - name: Run benchmarks
+        env:
+          BENCH_BASELINES_DIR: ${{ runner.temp }}/bench-baselines
+        run: pnpm bench
+      - name: Job summary
+        run: pnpm bench:compare >> "$GITHUB_STEP_SUMMARY"
+      - name: Record PR number
+        if: github.event_name == 'pull_request'
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          printf '{ "pr": %d }\n' "$PR_NUMBER" > bench-results/meta.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: github.event_name == 'pull_request'
+        with:
+          name: benchmark-results
+          path: bench-results/
+          retention-days: 14
   build:
     runs-on: ubuntu-latest
     steps:
@@ -34,6 +67,7 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/install
       - run: pnpm check
+      - run: pnpm bench:check
   prettier:
     runs-on: ubuntu-latest
     steps:

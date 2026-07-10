@@ -1,0 +1,121 @@
+name: benchmark-comment
+
+# Posts (and updates in place) a sticky PR comment with benchmark results.
+#
+# This workflow is deliberately split from `ci`'s `benchmark` job so it can
+# hold `pull-requests: write` safely: `workflow_run` always executes the
+# workflow file as it exists on the default branch, and never checks out or
+# runs PR code — including for PRs opened from forks, where the
+# `pull_request` event's token is read-only and can't comment at all. That
+# split is what makes this work for every contributor, not just people with
+# write access to this repo.
+#
+# The `benchmark-results` artifact produced by the untrusted `ci` run is
+# treated as hostile input: bench/compare.ts strictly validates it (exact
+# schema, size caps, markdown-escaping) before anything from it is rendered,
+# and the claimed PR number is cross-checked against the run's actual head
+# SHA before this job ever writes a comment.
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+
+permissions: {}
+
+concurrency:
+  group: benchmark-comment-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+jobs:
+  comment:
+    # Intentionally not gated on `conclusion == 'success'`: an unrelated ci
+    # job failing (prettier, syncpack, ...) must not silently suppress the
+    # benchmark comment. The real gate is whether the benchmark artifact
+    # exists, handled below via `steps.download.outcome`.
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Download benchmark artifact
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: benchmark-results
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          path: bench-results
+
+      # Renders trusted markdown from untrusted data: bench/compare.ts throws
+      # (non-zero exit) on any schema violation, so a tampered or malformed
+      # artifact fails this step loudly instead of silently commenting
+      # garbage.
+      - name: Validate and render
+        id: render
+        if: steps.download.outcome == 'success'
+        run: node bench/compare.ts --dir bench-results > comment.md
+
+      - name: Upsert sticky comment
+        if: success() && steps.download.outcome == 'success'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        with:
+          script: |
+            const fs = require("node:fs");
+
+            const meta = JSON.parse(fs.readFileSync("bench-results/meta.json", "utf8"));
+            const pr = meta.pr;
+            if (!Number.isInteger(pr) || pr < 1 || pr > 1_000_000_000) {
+              throw new Error(`invalid PR number in benchmark artifact: ${meta.pr}`);
+            }
+
+            // The artifact claims to belong to PR `pr`. Cross-check against
+            // this run's actual head SHA before trusting that claim — this
+            // is what stops a crafted artifact from getting a comment posted
+            // on an arbitrary PR.
+            const { data: pull } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: pr,
+            });
+            if (pull.head.sha !== process.env.HEAD_SHA) {
+              console.log(
+                `head SHA mismatch for PR #${pr} (artifact run vs. current head) — skipping, a newer run will comment instead`,
+              );
+              return;
+            }
+
+            const marker = "<!-- benchmark:cva -->";
+            const body = `${marker}\n${fs.readFileSync("comment.md", "utf8")}`;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...context.repo,
+              issue_number: pr,
+              per_page: 100,
+            });
+            const existing = comments.find(
+              (c) => c.user?.type === "Bot" && c.body?.startsWith(marker),
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                ...context.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: pr,
+                body,
+              });
+            }
