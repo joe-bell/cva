@@ -2310,6 +2310,28 @@ describe("cva", () => {
   });
 });
 
+describe("CVAVariantShape", () => {
+  test("types a standalone variants config passed to cva (#354)", () => {
+    const variants = {
+      intent: {
+        primary: "button--primary",
+        secondary: "button--secondary",
+      },
+    } satisfies CVA.CVAVariantShape;
+
+    const button = cva({ variants });
+
+    expectTypeOf<CVA.VariantProps<typeof button>>().toEqualTypeOf<{
+      intent?: "primary" | "secondary" | undefined;
+    }>();
+
+    expect(button({ intent: "primary" })).toBe("button--primary");
+
+    // @ts-expect-error — not a valid `CVAVariantShape` (value isn't a `ClassValue` map)
+    const invalid: CVA.CVAVariantShape = { intent: "primary" };
+  });
+});
+
 describe("defineConfig", () => {
   describe("hooks", () => {
     describe("onComplete", () => {

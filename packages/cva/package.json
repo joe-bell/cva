@@ -37,6 +37,7 @@
     "build:tsc": "tsc --project .config/tsconfig.build.json",
     "bundlesize": "pnpm build && size-limit",
     "check": "pnpm run '/^check:.*/'",
+    "check:declaration": "node test/declaration-emission/check.mjs",
     "check:exports": "attw --pack .",
     "check:tsc": "tsc --project tsconfig.json --noEmit",
     "dev": "jest --config .config/jest.config.ts --watch",

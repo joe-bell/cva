@@ -149,7 +149,10 @@ export type CXReturn = ReturnType<CX>;
   ============================================ */
 
 type CVAComponentConfigBase = { base?: ClassValue };
-type CVAVariantShape = Record<string, Record<string, ClassValue>>;
+// Exported so a standalone variants config can be typed/`satisfies`-checked
+// before being passed to `cva`, e.g. when reusing it to generate Storybook
+// controls (see https://github.com/joe-bell/cva/pull/354).
+export type CVAVariantShape = Record<string, Record<string, ClassValue>>;
 type CVAVariantSchema<V extends CVAVariantShape> = {
   [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
 };
@@ -199,7 +202,11 @@ type CVAComponentConfig<
         defaultVariants?: never;
       });
 
-interface CVAComponent<Config, Variants> {
+// Exported so downstream consumers compiling with `declaration: true` can
+// name this type — it's `cva`'s return type, so any re-exported component
+// (or a type derived from one, e.g. `VariantProps<typeof x>`) forces their
+// declaration emitter to reference it.
+export interface CVAComponent<Config, Variants> {
   (
     props?: Variants extends CVAVariantShape
       ? CVAVariantSchema<Variants> & CVAClassProp
@@ -223,7 +230,11 @@ interface CVAComponent<Config, Variants> {
 // `ReturnType<CVA>` instantiates this constraint inside the
 // `Compose`/`GetSchema` guards, where the shaped form rejects every real
 // component via props contravariance.
-type CVAComponentShape = CVAComponent<any, any>;
+//
+// Exported alongside `CVAComponent` for the same declaration-emission reason
+// (a downstream `.config` narrowing or generic constraint against a cva
+// component can end up naming this alias directly).
+export type CVAComponentShape = CVAComponent<any, any>;
 
 type CVADefaultVariants<Config> = Config extends { defaultVariants?: infer D }
   ? D
