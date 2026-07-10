@@ -11,10 +11,10 @@ name: benchmark-comment
 # write access to this repo.
 #
 # The `benchmark-results` artifact produced by the untrusted `ci` run is
-# treated as hostile input: bench/compare.ts strictly validates it (exact
-# schema, size caps, markdown-escaping) before anything from it is rendered,
-# and the claimed PR number is cross-checked against the run's actual head
-# SHA before this job ever writes a comment.
+# treated as hostile input: test/bench/compare.ts strictly validates it
+# (exact schema, size caps, markdown-escaping) before anything from it is
+# rendered, and the claimed PR number is cross-checked against the run's
+# actual head SHA before this job ever writes a comment.
 on:
   workflow_run:
     workflows: [ci]
@@ -53,16 +53,16 @@ jobs:
           name: benchmark-results
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
-          path: bench-results
+          path: test/bench/.output
 
-      # Renders trusted markdown from untrusted data: bench/compare.ts throws
-      # (non-zero exit) on any schema violation, so a tampered or malformed
-      # artifact fails this step loudly instead of silently commenting
-      # garbage.
+      # Renders trusted markdown from untrusted data: test/bench/compare.ts
+      # throws (non-zero exit) on any schema violation, so a tampered or
+      # malformed artifact fails this step loudly instead of silently
+      # commenting garbage.
       - name: Validate and render
         id: render
         if: steps.download.outcome == 'success'
-        run: node bench/compare.ts --dir bench-results > comment.md
+        run: node test/bench/compare.ts --dir test/bench/.output > comment.md
 
       - name: Upsert sticky comment
         if: success() && steps.download.outcome == 'success'
@@ -73,7 +73,7 @@ jobs:
           script: |
             const fs = require("node:fs");
 
-            const meta = JSON.parse(fs.readFileSync("bench-results/meta.json", "utf8"));
+            const meta = JSON.parse(fs.readFileSync("test/bench/.output/meta.json", "utf8"));
             const pr = meta.pr;
             if (!Number.isInteger(pr) || pr < 1 || pr > 1_000_000_000) {
               throw new Error(`invalid PR number in benchmark artifact: ${meta.pr}`);

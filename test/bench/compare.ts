@@ -1,5 +1,5 @@
 /**
- * Validates `benchmark-<package>.json` files (see bench/report.ts) and
+ * Validates `benchmark-<package>.json` files (see test/bench/report.ts) and
  * renders them as a markdown comparison table.
  *
  * This module is intentionally Node-stdlib-only with zero dependencies: it's
@@ -373,7 +373,7 @@ export function renderMarkdown(results: BenchmarkResult[]): string {
   ============================================ */
 
 function parseArgs(argv: string[]) {
-  let dir = "bench-results";
+  let dir = "test/bench/.output";
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--dir" && argv[i + 1]) dir = argv[++i];
   }

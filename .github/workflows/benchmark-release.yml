@@ -43,4 +43,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag || github.event.release.tag_name }}
-        run: gh release upload "$TAG" bench-results/benchmark-*.json --clobber --repo "$GITHUB_REPOSITORY"
+        run: gh release upload "$TAG" test/bench/.output/benchmark-*.json --clobber --repo "$GITHUB_REPOSITORY"

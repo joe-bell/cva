@@ -1,9 +1,10 @@
 /**
  * Converts a `vitest bench --outputJson` report plus the baselines manifest
- * (see bench/baselines.ts) into one minimal, stable `benchmark-<package>.json`
- * file per workspace package. This is the only schema that crosses the trust
- * boundary into the privileged sticky-comment workflow (see bench/compare.ts),
- * so it deliberately carries nothing beyond what's needed to render a table.
+ * (see test/bench/baselines.ts) into one minimal, stable
+ * `benchmark-<package>.json` file per workspace package. This is the only
+ * schema that crosses the trust boundary into the privileged sticky-comment
+ * workflow (see test/bench/compare.ts), so it deliberately carries nothing
+ * beyond what's needed to render a table.
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -39,9 +40,9 @@ interface VitestReport {
 }
 
 function parseArgs(argv: string[]) {
-  let vitestJson = "bench-results/vitest-bench.json";
+  let vitestJson = "test/bench/.output/vitest-bench.json";
   let baselinesDir = process.env.BENCH_BASELINES_DIR;
-  let outDir = "bench-results";
+  let outDir = "test/bench/.output";
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--vitest-json" && argv[i + 1]) vitestJson = argv[++i];
     if (argv[i] === "--baselines" && argv[i + 1]) baselinesDir = argv[++i];
@@ -51,10 +52,8 @@ function parseArgs(argv: string[]) {
 }
 
 function packageNameFromFilepath(filepath: string): string | undefined {
-  const segments = filepath.split(path.sep);
-  const index = segments.indexOf("packages");
-  const candidate = index >= 0 ? segments[index + 1] : undefined;
-  return PACKAGES.includes(candidate ?? "") ? candidate : undefined;
+  const basename = path.basename(filepath, ".bench.ts");
+  return PACKAGES.includes(basename) ? basename : undefined;
 }
 
 function localVersion(pkg: string): string {

@@ -62,8 +62,8 @@ Run these from the repo root:
 - `pnpm check` – type checks every package
 - `pnpm bundlesize` – verifies bundle size limits (`size-limit`)
 - `pnpm bench` – builds the packages, then runs the `vitest bench` performance scenarios against each built package (add `BENCH_BASELINES_DIR=<dir>` after running `pnpm bench:baselines --out <dir>` to also benchmark published npm baselines alongside your local changes)
-- `pnpm bench:compare` – renders a markdown comparison table from the `bench-results/benchmark-*.json` files produced by `pnpm bench`
-- `pnpm bench:check` – type checks the `bench/` helper scripts
+- `pnpm bench:compare` – renders a markdown comparison table from the `test/bench/.output/benchmark-*.json` files produced by `pnpm bench`
+- `pnpm bench:check` – type checks the `test/bench/` scripts
 - `pnpm prettier --check .` – checks formatting (`--write` to fix)
 - `pnpm syncpack:lint` – checks dependency-version consistency (`pnpm syncpack:fix` to fix)
 - `pnpm lint:skills` – validates the agent skills in `.agents/skills` (`skill-check`, strict mode)
@@ -75,11 +75,11 @@ CI gates on `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, an
 
 ## Benchmarks
 
-Every PR runs a `benchmark` CI job that benchmarks each package's local build (`packages/*/src/index.bench.ts`, run via `vitest bench`) alongside the latest published release and prerelease versions of that same package (resolved from GitHub Releases and installed outside the workspace by [`bench/baselines.ts`](./bench/baselines.ts) — the workspace's `pnpm-workspace.yaml` `overrides` pin `cva`/`class-variance-authority` to `workspace:*`, so baselines can't be installed inside the workspace without being silently overridden). A package that hasn't published a matching version yet is simply skipped, not treated as a failure.
+Every PR runs a `benchmark` CI job that benchmarks each package's local build (`test/bench/*.bench.ts`, run via `vitest bench`) alongside the latest published release and prerelease versions of that same package (resolved from GitHub Releases and installed outside the workspace by [`test/bench/baselines.ts`](./test/bench/baselines.ts) — the workspace's `pnpm-workspace.yaml` `overrides` pin `cva`/`class-variance-authority` to `workspace:*`, so baselines can't be installed inside the workspace without being silently overridden). A package that hasn't published a matching version yet is simply skipped, not treated as a failure.
 
 Results are posted as a sticky PR comment (updated in place on every push, including from forks) by a separate `benchmark-comment` workflow — see that file's header comment for why it's split out and how the untrusted artifact it reads is validated. This is **informational only**: a regression doesn't fail CI, so treat it as a signal to investigate, not a gate.
 
-`benchmark-release` attaches a `benchmark-<package>.json` file to every published GitHub release (`workflow_dispatch` with a `tag` input can also run it on demand). [`bench/report.ts`](./bench/report.ts) writes that schema and [`bench/compare.ts`](./bench/compare.ts) reads it — if you change the shape of one, bump `schemaVersion` and update the other in the same change.
+`benchmark-release` attaches a `benchmark-<package>.json` file to every published GitHub release (`workflow_dispatch` with a `tag` input can also run it on demand). [`test/bench/report.ts`](./test/bench/report.ts) writes that schema and [`test/bench/compare.ts`](./test/bench/compare.ts) reads it — if you change the shape of one, bump `schemaVersion` and update the other in the same change.
 
 ### Build & publish (`packages/*`)
 

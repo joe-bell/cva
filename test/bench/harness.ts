@@ -1,5 +1,5 @@
 /**
- * Shared harness for the per-package `src/index.bench.ts` files.
+ * Shared harness for the per-package `test/bench/*.bench.ts` files.
  *
  * Both the "local" implementation and every installed baseline are loaded
  * from built `dist/index.mjs` output — never from `src` — so the comparison
@@ -26,7 +26,7 @@ async function importDist<Mod>(distPath: string): Promise<Mod> {
 /**
  * Loads the local built implementation plus any installed baselines for
  * `pkg`, using the `BENCH_BASELINES_DIR` manifest written by
- * bench/baselines.ts. `packageDir` is the absolute path to the package
+ * test/bench/baselines.ts. `packageDir` is the absolute path to the package
  * directory (e.g. `packages/cva`).
  *
  * The local build is required — if `dist/index.mjs` is missing or stale,
@@ -85,7 +85,7 @@ export async function loadImplementations<Mod>(
       implementations.push({ label: entry.label, version: entry.version, mod });
     } catch {
       // API drift or an unexpected dist layout in an older published
-      // version — skip it. bench/report.ts renders a note for any
+      // version — skip it. test/bench/report.ts renders a note for any
       // manifest entry that never produced a benchmark group.
     }
   }

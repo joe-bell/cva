@@ -1,5 +1,5 @@
 {
   "extends": "../../tsconfig.json",
   "include": ["src/**/*.ts", "tsdown.config.mts"],
-  "exclude": ["node_modules", "dist", "src/**/*.bench.ts"]
+  "exclude": ["node_modules", "dist"]
 }

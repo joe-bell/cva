@@ -8,11 +8,11 @@ export default defineConfig(({ mode }) => ({
     // mode to "benchmark") so `pnpm test` keeps file parallelism.
     ...(mode === "benchmark" && { fileParallelism: false }),
     benchmark: {
-      outputJson: "bench-results/vitest-bench.json",
+      outputJson: "test/bench/.output/vitest-bench.json",
     },
     coverage: {
       include: ["packages/*/src/**/*.ts"],
-      exclude: ["**/coverage/**", "**/*.bench.ts"],
+      exclude: ["**/coverage/**"],
     },
   },
 }));
