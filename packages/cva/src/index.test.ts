@@ -338,6 +338,51 @@ describe("cva — composes", () => {
     });
   });
 
+  test("should apply a locally-redeclared variant at the composed default", () => {
+    const box = cva({
+      variants: { shadow: { sm: "shadow-sm", md: "shadow-md" } },
+      defaultVariants: { shadow: "sm" },
+    });
+
+    // `card` redeclares `shadow: "sm"` locally. The effective default ("sm",
+    // from `box`) must resolve the local class too — so the no-props render
+    // matches explicitly selecting that default, and both match `getSchema`.
+    const card = cva({
+      composes: box,
+      variants: { shadow: { sm: "local-sm" } },
+    });
+
+    expect(card()).toBe("shadow-sm local-sm");
+    expect(card()).toBe(card({ shadow: "sm" }));
+    expect(getSchema(card).shadow.defaultValue).toBe("sm");
+  });
+
+  test("should keep the schema type when a local default overrides a composed one", () => {
+    const b = cva({
+      variants: { style: { primary: "b-primary", secondary: "b-secondary" } },
+      defaultVariants: { style: "primary" },
+    });
+    const combined = cva({
+      composes: b,
+      variants: { style: { secondary: "c-secondary" } },
+      defaultVariants: { style: "secondary" },
+    });
+
+    const schema = getSchema(combined);
+
+    expect(schema).toStrictEqual({
+      style: { values: ["primary", "secondary"], defaultValue: "secondary" },
+    });
+    // A plain intersection would collapse `"primary" & "secondary"` to `never`
+    // and silently drop `style` from this type.
+    expectTypeOf(schema).toEqualTypeOf<{
+      style: {
+        values: readonly ("primary" | "secondary")[];
+        defaultValue: "secondary";
+      };
+    }>();
+  });
+
   test("should support nested composition", () => {
     const box = cva({
       base: "box",
@@ -570,6 +615,32 @@ describe("getSchema", () => {
     getSchema(composed);
     // @ts-expect-error — not a cva()-created component at all
     getSchema(plainFunction);
+  });
+
+  test("should normalize numeric variant keys, including negatives", () => {
+    const component = cva({
+      variants: {
+        offset: {
+          [-1]: "-mt-1",
+          0: "mt-0",
+          1: "mt-1",
+        },
+      },
+      defaultVariants: { offset: -1 },
+    });
+
+    const schema = getSchema(component);
+
+    // Runtime values match the variant prop types (`-1 | 0 | 1`), not the
+    // stringified object keys they were read from. Order follows `Object.keys`:
+    // array-index keys (`0`, `1`) ascending first, then other keys (`-1`) by
+    // insertion order.
+    expect(schema).toStrictEqual({
+      offset: { values: [0, 1, -1], defaultValue: -1 },
+    });
+    expectTypeOf(schema).toEqualTypeOf<{
+      offset: { values: readonly (0 | 1 | -1)[]; defaultValue: -1 };
+    }>();
   });
 });
 

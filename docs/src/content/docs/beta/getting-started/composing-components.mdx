@@ -80,3 +80,10 @@ const combined = cva({ composes: [a, b] });
 combined();
 // => "a b b-secondary"
 ```
+
+:::caution
+Pass the components to `composes` as an inline array (or a `readonly`/`as const`
+array). A pre-declared, mutable array variable (`const list = [a, b]`) loses the
+precise tuple inference `composes` relies on, which can silently widen or drop
+variant types.
+:::

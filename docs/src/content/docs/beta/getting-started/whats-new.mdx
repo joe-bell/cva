@@ -45,6 +45,13 @@ The `compose` method is deprecated in favour of the `composes` key inside `cva`.
 + const card = cva({ composes: [box, root] });
 ```
 
+:::note
+`composes` isn't always a byte-for-byte swap: when composed components declare
+conflicting `defaultVariants` for the same key, `composes` applies a single
+last-wins default to every component, whereas `compose` let each resolve its
+own. See [Extending variants](/beta/getting-started/composing-components#extending-variants).
+:::
+
 See [Composing Components](/beta/getting-started/composing-components) for more details and migration examples.
 
 ## Enhancements
