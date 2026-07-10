@@ -94,7 +94,7 @@ An object keyed by variant name. Each entry has:
 
 ## `defineConfig`
 
-Generate `cva`, `cx` and `compose` functions based on your preferred configuration.
+Generate `cva` and `cx` functions based on your preferred configuration.
 
 Store in a `cva.config.ts` file, and import across your project.
 
@@ -102,9 +102,11 @@ Store in a `cva.config.ts` file, and import across your project.
 // cva.config.ts
 import { defineConfig } from "cva";
 
-export const { cva, cx, compose } = defineConfig(options);
+export const { cva, cx } = defineConfig(options);
 ```
 
 1. `options`
    - `hooks`
-     - `onComplete`: returns a concatenated class string of all classes passed to `cx`, `cva` or `compose`.
+     - `onComplete`: returns a concatenated class string of all classes passed to `cx` or `cva`.
+
+`defineConfig` also returns a deprecated `compose` function for migrating from `class-variance-authority`; use the `composes` property on `cva` instead. See [What's new?](/beta/getting-started/whats-new#1-compose--composes).
