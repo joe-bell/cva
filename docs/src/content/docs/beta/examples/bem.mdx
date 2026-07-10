@@ -32,9 +32,10 @@ import Carbon from "../../../../components/carbon.astro";
 ```
 
 ```ts
-import { cva } from "class-variance-authority";
+import { cva } from "cva";
 
-const button = cva("button", {
+const button = cva({
+  base: "button",
   variants: {
     intent: {
       primary: "button--primary",

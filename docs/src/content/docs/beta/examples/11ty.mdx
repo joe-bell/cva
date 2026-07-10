@@ -2,14 +2,19 @@
 title: 11ty
 ---
 
+import Carbon from "../../../../components/carbon.astro";
+
+<Carbon />
+
 ## Tailwind CSS
 
 ```js
 // button.11ty.js
-const { cva } = require("class-variance-authority");
+import { cva } from "cva";
 
 // ⚠️ Disclaimer: Use of Tailwind CSS is optional
-const button = cva("button", {
+const button = cva({
+  base: "button",
   variants: {
     intent: {
       primary: [
@@ -37,7 +42,7 @@ const button = cva("button", {
   },
 });
 
-module.exports = function ({ label, intent, size }) {
+export default function ({ label, intent, size }) {
   return `<button class="${button({ intent, size })}">${label}</button>`;
-};
+}
 ```

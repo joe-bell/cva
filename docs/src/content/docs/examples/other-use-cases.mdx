@@ -11,6 +11,8 @@ Although primarily designed for handling class names, at its core, `cva` is real
 ## Dynamic Text Content
 
 ```ts
+import { cva } from "class-variance-authority";
+
 const greeter = cva("Good morning!", {
   variants: {
     isLoggedIn: {
