@@ -1,6 +1,6 @@
 ---
 title: What's New?
-description: What changed in cva@1.0 — defineConfig, composes, getSchema, and other breaking changes since class-variance-authority@0.x.
+description: What changed in cva@1.0, defineConfig, composes, getSchema, and other breaking changes since class-variance-authority@0.x.
 ---
 
 import Carbon from "../../../../components/carbon.astro";
@@ -33,7 +33,7 @@ Extract a plain-object schema (variant names, values and defaults) from a `cva` 
 
 ### 1. `compose` → `composes`
 
-The `compose` method is deprecated in favour of the `composes` property inside `cva`. Pass a single component directly, or pass multiple components as an array.
+The `compose` method is deprecated in favor of the `composes` property inside `cva`. Pass a single component directly, or pass multiple components as an array.
 
 ```diff lang="ts"
 - import { cva, compose } from "cva";
@@ -56,7 +56,7 @@ See [Composing Components](/beta/getting-started/composing-components) for more 
 
 ### 1. `class-variance-authority` → `cva`
 
-One of the biggest – and let's be honest, most important – complaints about `class-variance-authority` was that the name was just too damn long.
+One of the biggest (and let's be honest, most important) complaints about `class-variance-authority` was that the name was just too damn long.
 
 Shout-out to GitHub for transferring `npm` ownership of `cva`!
 
@@ -73,7 +73,7 @@ Base styles are now applied via the named `base` property.
 
 ### 3. Goodbye `null`
 
-Previously, passing `null` to a variant would disable a variant completely – to match the behaviour of Stitches.js – however this [caused a great deal of confusion](https://github.com/joe-bell/cva/discussions/97).
+Previously, passing `null` to a variant would disable it completely, to match the behavior of Stitches.js. However, this [caused a great deal of confusion](https://github.com/joe-bell/cva/discussions/97).
 
 Instead, we now recommend explicitly [rolling your own `unset` variant](/beta/getting-started/variants#disabling-variants).
 
