@@ -294,6 +294,10 @@ export interface DefineConfig {
 const falsyToString = <T extends unknown>(value: T) =>
   typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
 
+// Shared across every non-composed call, rather than allocating a fresh `[]`
+// per call — `cx` (clsx) treats an empty array identically to an absent one.
+const emptyClassNames: string[] = [];
+
 export const defineConfig: DefineConfig = (options) => {
   const cx: CX = (...inputs) => {
     if (typeof options?.hooks?.["cx:done"] !== "undefined")
@@ -385,7 +389,7 @@ export const defineConfig: DefineConfig = (options) => {
               ...definedPropsWithoutClass,
             }),
           )
-        : [];
+        : emptyClassNames;
 
       if (config?.variants == null) {
         return cx(
