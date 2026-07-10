@@ -1,0 +1,43 @@
+---
+title: Utilities
+---
+
+import Carbon from "../../../../components/carbon.astro";
+
+<Carbon />
+
+## `getSchema`
+
+Re-declaring variants for a Storybook story or prop table creates a second copy to keep in sync by hand. `getSchema` extracts them from the component instead, so your config stays the single source of truth:
+
+```ts
+import { cva, getSchema } from "cva";
+
+const button = cva({
+  base: "button",
+  variants: {
+    intent: {
+      primary: "button--primary",
+      secondary: "button--secondary",
+    },
+    size: {
+      small: "button--small",
+      large: "button--large",
+    },
+  },
+  defaultVariants: {
+    intent: "primary",
+    size: "small",
+  },
+});
+
+getSchema(button);
+// => {
+//   intent: { values: ["primary", "secondary"], defaultValue: "primary" },
+//   size: { values: ["small", "large"], defaultValue: "small" },
+// }
+```
+
+The schema is fully typed: `values` narrows to the variant's literal values, and `defaultValue` only appears when the component declares one.
+
+For the full signature, see the [API reference](/beta/api-reference#getschema).
