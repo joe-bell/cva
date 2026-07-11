@@ -63,6 +63,7 @@ Run these from the repo root:
 - `pnpm bundlesize` – verifies bundle size limits (`size-limit`)
 - `pnpm bench` – builds the packages, then runs the `vitest bench` performance scenarios against each built package (add `BENCH_BASELINES_DIR=<dir>` after running `pnpm bench:baselines --out <dir>` to also benchmark published npm baselines alongside your local changes)
 - `pnpm bench:compare` – renders a markdown comparison table from the `test/bench/.output/benchmark-*.json` files produced by `pnpm bench`
+- `pnpm bench:preview` – one command that installs the npm baselines, runs `pnpm bench` against them, and writes the rendered comparison table to `test/bench/.output/preview.md` (see Benchmarks below)
 - `pnpm bench:check` – type checks the `test/bench/` scripts
 - `pnpm prettier --check .` – checks formatting (`--write` to fix)
 - `pnpm syncpack:lint` – checks dependency-version consistency (`pnpm syncpack:fix` to fix)
@@ -102,6 +103,8 @@ Day to day: `pnpm --filter <package> dev` runs the build in watch mode, and beca
 Every PR runs a `benchmark` CI job that benchmarks each package's local build (`test/bench/*.bench.ts`, run via `vitest bench`) alongside the latest published release and prerelease versions of that same package (resolved from GitHub Releases and installed outside the workspace by [`test/bench/baselines.ts`](./test/bench/baselines.ts) — the workspace's `pnpm-workspace.yaml` `overrides` pin `cva`/`class-variance-authority` to `workspace:*`, so baselines can't be installed inside the workspace without being silently overridden). A package that hasn't published a matching version yet is simply skipped, not treated as a failure.
 
 Results are posted as a sticky PR comment (updated in place on every push, including from forks) by a separate `pr-comment` workflow — see that file's header comment for why it's split out, how the untrusted artifact it reads is validated, and how to add a section of your own to the same comment from a future CI step. This is **informational only**: a regression doesn't fail CI, so treat it as a signal to investigate, not a gate.
+
+To reproduce that table locally before pushing, run `pnpm bench:preview`. It installs the baselines, benchmarks your build against them, and writes the rendered markdown to `test/bench/.output/preview.md` — produced by the same [`test/bench/compare.ts`](./test/bench/compare.ts) that renders the PR comment and the CI job summary, so the preview matches what a PR would show. Offline (no GitHub or npm access) it falls back to a local-only table with no baseline columns.
 
 `benchmark-release` attaches a `benchmark-<package>.json` file to every published GitHub release (`workflow_dispatch` with a `tag` input can also run it on demand). [`test/bench/report.ts`](./test/bench/report.ts) writes that schema and [`test/bench/compare.ts`](./test/bench/compare.ts) reads it — if you change the shape of one, bump `schemaVersion` and update the other in the same change.
 

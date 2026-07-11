@@ -6,6 +6,7 @@
     "bench:baselines": "node test/bench/baselines.ts",
     "bench:check": "tsc --project test/bench/tsconfig.json --noEmit",
     "bench:compare": "node test/bench/compare.ts",
+    "bench:preview": "node test/bench/preview.ts",
     "build": "pnpm run --filter './packages/**' build",
     "build:examples": "pnpm --filter './examples/**' --parallel build",
     "bundlesize": "pnpm run --filter './packages/**' --parallel bundlesize",
