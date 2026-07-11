@@ -21,42 +21,39 @@
   "author": "Joe Bell (https://joebell.studio)",
   "sideEffects": false,
   "exports": {
-    "types": "./src/index.ts",
-    "import": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
   },
-  "main": "src/index.ts",
-  "module": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist/"
   ],
   "scripts": {
-    "build": "pnpm run '/^build:.*/'",
-    "build:cjs": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.js -C module.type=commonjs",
-    "build:esm": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.mjs -C module.type=es6 ",
-    "build:tsc": "tsc --project .config/tsconfig.build.json",
+    "build": "tsdown",
     "bundlesize": "pnpm build && size-limit",
     "check": "pnpm run '/^check:.*/'",
-    "check:exports": "attw --pack .",
     "check:tsc": "tsc --project tsconfig.json --noEmit",
+    "dev": "tsdown --watch",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
     "clsx": "^2.1.1"
   },
   "devDependencies": {
-    "@arethetypeswrong/cli": "0.18.2",
+    "@arethetypeswrong/core": "0.18.2",
     "@size-limit/preset-small-lib": "^12.1.0",
-    "@swc/cli": "0.8.1",
-    "@swc/core": "1.15.33",
     "@types/node": "24.13.2",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
+    "publint": "0.3.21",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "size-limit": "^12.1.0",
-    "ts-node": "10.9.2",
-    "typescript": "6.0.3"
+    "tsdown": "0.22.4",
+    "typescript": "6.0.3",
+    "unplugin-unused": "0.5.7"
   },
   "peerDependencies": {
     "typescript": ">= 4.5.5"
@@ -68,9 +65,11 @@
   },
   "publishConfig": {
     "exports": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      ".": {
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.js"
+      },
+      "./package.json": "./package.json"
     },
     "main": "dist/index.js",
     "module": "dist/index.mjs",
