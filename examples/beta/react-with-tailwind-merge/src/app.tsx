@@ -1,5 +1,5 @@
 import React from "react";
-import { cx } from "./cva.config";
+import { cn } from "./cva.config";
 import { Button } from "./components";
 
 const intents = [undefined, "primary", "secondary"] as const;
@@ -9,7 +9,7 @@ const isDisabled = [false, true] as const;
 function App() {
   return (
     <table
-      className={cx(
+      className={cn(
         "relative",
         "h-max w-max",
         "self-center justify-self-center",

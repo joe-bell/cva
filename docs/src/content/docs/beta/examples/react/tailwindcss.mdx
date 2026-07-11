@@ -23,7 +23,7 @@ These examples build a `button` component with `cva` and Tailwind CSS in a React
 
 ## Merging Tailwind classes
 
-This example follows shadcn/ui's popular `cn` pattern: `clsx` resolves `cva`'s authoring grammar and [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) dedupes conflicting Tailwind utilities, wired together as the `cx` concatenator via [`cva/core`](/beta/api-reference#cvacore). See [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for the details.
+This example follows shadcn/ui's popular [`cn` helper](https://ui.shadcn.com/docs/installation/manual#add-a-cn-helper): `clsx` resolves `cva`'s authoring grammar and [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) dedupes conflicting Tailwind utilities. It's wired in as `cva`'s concatenator via [`cva/core`](/beta/api-reference#cvacore) and re-exported as `cn` for parity. See [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for the details.
 
 <StackBlitz
   dir="examples/beta/react-with-tailwind-merge"
