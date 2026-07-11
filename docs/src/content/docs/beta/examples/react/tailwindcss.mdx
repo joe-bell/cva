@@ -1,11 +1,11 @@
 ---
 title: React with Tailwind CSS
-description: A cva button component built with React and Tailwind CSS, including a compound-components example.
+description: A cva button component built with React and Tailwind CSS, including compound-components and tailwind-merge examples.
 ---
 
 import StackBlitz from "../../../../../components/stackblitz.astro";
 
-These examples build a `button` component with `cva` and Tailwind CSS in a React project, including a compound-components variant.
+These examples build a `button` component with `cva` and Tailwind CSS in a React project, including a compound-components variant and a `tailwind-merge` setup for resolving conflicting classes.
 
 ## Basic component
 
@@ -19,4 +19,13 @@ These examples build a `button` component with `cva` and Tailwind CSS in a React
 <StackBlitz
   dir="examples/beta/react-with-tailwindcss-compound"
   file="src/components/nav/nav.tsx"
+/>
+
+## Merging Tailwind classes
+
+This example follows shadcn/ui's popular `cn` pattern: `clsx` resolves `cva`'s authoring grammar and [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) dedupes conflicting Tailwind utilities, wired together as the `cx` concatenator via [`cva/core`](/beta/api-reference#cvacore). See [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for the details.
+
+<StackBlitz
+  dir="examples/beta/react-with-tailwind-merge"
+  file="src/cva.config.ts"
 />
