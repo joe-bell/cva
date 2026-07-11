@@ -73,14 +73,6 @@ To scope a command to a single package, use a pnpm filter, e.g. `pnpm --filter c
 
 CI gates on `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `test`, so run the matching scripts locally before opening a PR. CI also runs a `benchmark` job — informational only, see Benchmarks below — that doesn't gate merging.
 
-## Benchmarks
-
-Every PR runs a `benchmark` CI job that benchmarks each package's local build (`test/bench/*.bench.ts`, run via `vitest bench`) alongside the latest published release and prerelease versions of that same package (resolved from GitHub Releases and installed outside the workspace by [`test/bench/baselines.ts`](./test/bench/baselines.ts) — the workspace's `pnpm-workspace.yaml` `overrides` pin `cva`/`class-variance-authority` to `workspace:*`, so baselines can't be installed inside the workspace without being silently overridden). A package that hasn't published a matching version yet is simply skipped, not treated as a failure.
-
-Results are posted as a sticky PR comment (updated in place on every push, including from forks) by a separate `pr-comment` workflow — see that file's header comment for why it's split out, how the untrusted artifact it reads is validated, and how to add a section of your own to the same comment from a future CI step. This is **informational only**: a regression doesn't fail CI, so treat it as a signal to investigate, not a gate.
-
-`benchmark-release` attaches a `benchmark-<package>.json` file to every published GitHub release (`workflow_dispatch` with a `tag` input can also run it on demand). [`test/bench/report.ts`](./test/bench/report.ts) writes that schema and [`test/bench/compare.ts`](./test/bench/compare.ts) reads it — if you change the shape of one, bump `schemaVersion` and update the other in the same change.
-
 ### Build & publish (`packages/*`)
 
 Both published packages (`packages/cva` and `packages/class-variance-authority`) build with [tsdown](https://tsdown.dev). The shared options live in [`.config/tsdown.base.mts`](./.config/tsdown.base.mts) (alongside the repo's other shared tool config), and each package's `tsdown.config.mts` spreads that base and adds only its genuine deltas — entry points, sourcemaps, and output extensions. One `pnpm --filter <package> build` emits the whole dual-format output to `dist/`. The base uses tsdown's explicit extensions (`fixedExtension: true`), so `cva` ships `index.cjs` + `index.d.cts` (CommonJS) and `index.mjs` + `index.d.mts` (ESM); `class-variance-authority` overrides `fixedExtension` to keep the `index.js` + `index.d.ts` CommonJS layout it has always published, in case anything in the wild references those `dist/` paths directly.
@@ -104,6 +96,14 @@ Two details of the published map are deliberate:
 What tsdown does **not** own: `size-limit` remains the bundle-size budget (tsdown's per-file gzip size report is informational only), the `tsc --noEmit` check remains the source type check, and version bumps stay manual per [Releases](#releases).
 
 Day to day: `pnpm --filter <package> dev` runs the build in watch mode, and because the root `prepare:packages` script builds on every `pnpm install`, the publish-shape gates run then too — a broken manifest fails fast on your machine rather than in CI. If that per-install cost ever becomes a problem, `attw: 'ci-only'` in the config confines the slowest gate to CI.
+
+## Benchmarks
+
+Every PR runs a `benchmark` CI job that benchmarks each package's local build (`test/bench/*.bench.ts`, run via `vitest bench`) alongside the latest published release and prerelease versions of that same package (resolved from GitHub Releases and installed outside the workspace by [`test/bench/baselines.ts`](./test/bench/baselines.ts) — the workspace's `pnpm-workspace.yaml` `overrides` pin `cva`/`class-variance-authority` to `workspace:*`, so baselines can't be installed inside the workspace without being silently overridden). A package that hasn't published a matching version yet is simply skipped, not treated as a failure.
+
+Results are posted as a sticky PR comment (updated in place on every push, including from forks) by a separate `pr-comment` workflow — see that file's header comment for why it's split out, how the untrusted artifact it reads is validated, and how to add a section of your own to the same comment from a future CI step. This is **informational only**: a regression doesn't fail CI, so treat it as a signal to investigate, not a gate.
+
+`benchmark-release` attaches a `benchmark-<package>.json` file to every published GitHub release (`workflow_dispatch` with a `tag` input can also run it on demand). [`test/bench/report.ts`](./test/bench/report.ts) writes that schema and [`test/bench/compare.ts`](./test/bench/compare.ts) reads it — if you change the shape of one, bump `schemaVersion` and update the other in the same change.
 
 ## Releases
 
