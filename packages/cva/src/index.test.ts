@@ -2509,27 +2509,63 @@ describe("defineConfig", () => {
       expect(button({ intent: "primary" })).toBe("bg-blue-500");
     });
 
-    test("concatenators accepting ClassValue (or wider) are assignable", () => {
-      // Contravariance: any function accepting a supertype of `ClassValue`
-      // per argument fits the default `CX` contract — clsx, clsx/lite, and
-      // cnfast's `cn` are all typed this way (real-package pins live in
+    test("infers the authoring surface from the concatenator's parameters", () => {
+      // A twMerge-shaped concatenator (strings and falsy, no objects or
+      // numbers) is accepted bare, and the authoring surface narrows to
+      // exactly what it can consume (real-package pins live in
       // `concatenators.test.ts`).
-      expectTypeOf((...inputs: CVA.ClassValue[]) =>
-        inputs.join(" "),
-      ).toMatchTypeOf<CVA.CX>();
-      expectTypeOf((...inputs: unknown[]) =>
-        inputs.join(" "),
-      ).toMatchTypeOf<CVA.CX>();
-    });
-
-    test("a bare twMerge-shaped concatenator is rejected by the default contract", () => {
-      defineConfig({
-        // @ts-expect-error — tailwind-merge's `ClassNameValue` has no
-        // objects/numbers, so it can't accept everything cva may pass;
-        // augment `CVARegistry` (see `type-tests/registry.ts`) or wrap it
+      const { cva: narrowCva, cx: narrowCx } = defineConfig({
         cx: (...inputs: (string | null | undefined | 0 | false)[]) =>
           inputs.filter(Boolean).join(" "),
       });
+
+      const button = narrowCva({
+        base: "font-semibold",
+        variants: { intent: { primary: "bg-blue-500" } },
+      });
+      expect(button({ intent: "primary", class: "extra" })).toBe(
+        "font-semibold bg-blue-500 extra",
+      );
+      expect(narrowCx("a", null, "b")).toBe("a b");
+
+      narrowCva({
+        // @ts-expect-error — objects aren't part of this concatenator's grammar
+        base: { "bg-gray-200": true },
+      });
+      narrowCva({
+        // @ts-expect-error — object-syntax variant values fail the variants gate
+        variants: { intent: { primary: { "bg-blue-500": true } } },
+      });
+      // @ts-expect-error — and neither are object-syntax class props
+      button({ intent: "primary", class: { extra: true } });
+    });
+
+    test("falls back to the full ClassValue grammar when nothing narrower is inferrable", () => {
+      // An unannotated inline concatenator is contextually typed `any[]`,
+      // and a wider-than-`ClassValue` signature can't widen the authoring
+      // surface — both land on the `ClassValue` default.
+      const { cva: inlineCva } = defineConfig({
+        cx: (...inputs) => inputs.filter(Boolean).join("|"),
+      });
+      const { cva: unknownCva } = defineConfig({
+        cx: (...inputs: unknown[]) => inputs.filter(Boolean).join("|"),
+      });
+
+      for (const cvaExtended of [inlineCva, unknownCva]) {
+        const badge = cvaExtended({
+          base: ["badge", { "badge--raised": true }],
+          variants: { tone: { info: { "bg-blue-500": true } } },
+        });
+        expectTypeOf(badge).toBeFunction();
+      }
+
+      expectTypeOf<
+        CVA.CXInput<(...inputs: unknown[]) => string>
+      >().toEqualTypeOf<CVA.ClassValue>();
+      expectTypeOf<CVA.CXInput<CVA.CX>>().toEqualTypeOf<CVA.ClassValue>();
+      expectTypeOf<
+        CVA.CXInput<(...inputs: string[]) => string>
+      >().toEqualTypeOf<string>();
     });
   });
 });

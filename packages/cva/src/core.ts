@@ -38,30 +38,36 @@ export type ClassValue =
 export type ClassDictionary = Record<string, any>;
 export type ClassArray = ClassValue[];
 
-/* CVARegistry
+/* CXInput
   ---------------------------------- */
 
 /**
- * Augment this interface with a `classValue` member to narrow cva's
- * authoring surface (`base`, variant values, `class`/`className`) and the
- * `cx` contract to your concatenator's own input type, project-wide.
- * The registered type must be a subtype of `ClassValue`.
- *
- * @example
- * declare module "cva/core" {
- *   interface CVARegistry {
- *     classValue: import("tailwind-merge").ClassNameValue;
- *   }
- * }
+ * Any function usable as a `cx` concatenator.
  */
-export interface CVARegistry {}
+export type AnyCX = (...inputs: any[]) => string;
 
-// `| string` keeps composed component outputs (always strings) passable and
-// authorable under any registration.
-type RegisteredClassValue = CVARegistry extends {
-  classValue: infer V extends ClassValue;
-}
-  ? V | string
+/**
+ * The class value type a concatenator accepts, inferred from its
+ * parameters — `defineConfig` uses this to type the authoring surface
+ * (`base`, variant values, `class`/`className`) against the configured
+ * concatenator's own input grammar.
+ *
+ * Falls back to `ClassValue` when nothing narrower can be inferred: `any`
+ * (e.g. an unannotated inline function, which TypeScript contextually
+ * types as `any[]`) and `never` both land on the default, so inline
+ * concatenators keep the full clsx-flavored grammar.
+ */
+export type CXInput<TCX extends AnyCX> = Parameters<TCX>[number] extends infer P
+  ? // `0 extends 1 & P` is only true when `P` is `any`.
+    0 extends 1 & P
+    ? ClassValue
+    : [P] extends [never]
+      ? ClassValue
+      : // A concatenator accepting more than cva's grammar (e.g.
+        // `unknown`) can't widen the authoring surface beyond it.
+        [P] extends [ClassValue]
+        ? P
+        : ClassValue
   : ClassValue;
 
 /* Utils
@@ -146,27 +152,27 @@ export type VariantProps<Component extends (...args: any) => any> = Omit<
  * // After
  * const card = cva({ composes: [box, stack] })
  */
-export interface Compose {
-  <T extends ReturnType<CVA>[]>(
-    ...components: [...T]
+export interface Compose<T extends ClassValue = ClassValue> {
+  <Components extends ReturnType<CVA>[]>(
+    ...components: [...Components]
   ): (
     props?: (
       | UnionToIntersection<
           {
-            [K in keyof T]: VariantProps<T[K]>;
+            [K in keyof Components]: VariantProps<Components[K]>;
           }[number]
         >
       | undefined
     ) &
-      CVAClassProp,
+      CVAClassProp<T>,
   ) => string;
 }
 
 /* cx
   ---------------------------------- */
 
-export interface CX {
-  (...inputs: RegisteredClassValue[]): string;
+export interface CX<TClassValue extends ClassValue = ClassValue> {
+  (...inputs: TClassValue[]): string;
 }
 
 export type CXOptions = Parameters<CX>;
@@ -175,26 +181,23 @@ export type CXReturn = ReturnType<CX>;
 /* cva
   ============================================ */
 
-type CVAComponentConfigBase = { base?: RegisteredClassValue };
+type CVAComponentConfigBase<T extends ClassValue = ClassValue> = { base?: T };
 /**
  * Exported so TypeScript can name this type in your generated declarations
  * (`declaration: true`) — you shouldn't really use it directly.
  */
-export type CVAVariantShape = Record<
-  string,
-  Record<string, RegisteredClassValue>
->;
+export type CVAVariantShape = Record<string, Record<string, ClassValue>>;
 type CVAVariantSchema<V extends CVAVariantShape> = {
   [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
 };
-type CVAClassProp =
+type CVAClassProp<T extends ClassValue = ClassValue> =
   | {
-      class?: RegisteredClassValue;
+      class?: T;
       className?: never;
     }
   | {
       class?: never;
-      className?: RegisteredClassValue;
+      className?: T;
     };
 
 type InternalOnlyWarning =
@@ -208,10 +211,14 @@ type CVAComponentConfig<
     | undefined,
   ComposedList extends readonly CVAComponentShape[] =
     readonly CVAComponentShape[],
+  T extends ClassValue = ClassValue,
 > = Config & {
   composes?: ComposedSingle | readonly [...ComposedList];
-} & (Variants extends CVAVariantShape
-    ? CVAComponentConfigBase & {
+  // The gate checks variant values against the configured concatenator's
+  // input type, so e.g. object syntax fails here (on the `variants` key)
+  // under a concatenator that doesn't accept objects.
+} & (Variants extends Record<string, Record<string, T>>
+    ? CVAComponentConfigBase<T> & {
         variants?: Variants;
         compoundVariants?: (Variants extends CVAVariantShape
           ? (
@@ -223,11 +230,13 @@ type CVAComponentConfig<
                     | undefined;
                 }
             ) &
-              CVAClassProp
-          : CVAClassProp)[];
-        defaultVariants?: CVAVariantSchema<Variants>;
+              CVAClassProp<T>
+          : CVAClassProp<T>)[];
+        defaultVariants?: Variants extends CVAVariantShape
+          ? CVAVariantSchema<Variants>
+          : never;
       }
-    : CVAComponentConfigBase & {
+    : CVAComponentConfigBase<T> & {
         variants?: never;
         compoundVariants?: never;
         defaultVariants?: never;
@@ -237,11 +246,15 @@ type CVAComponentConfig<
  * Exported so TypeScript can name this type in your generated declarations
  * (`declaration: true`) — you shouldn't really use it directly.
  */
-export interface CVAComponent<Config, Variants> {
+export interface CVAComponent<
+  Config,
+  Variants,
+  T extends ClassValue = ClassValue,
+> {
   (
     props?: Variants extends CVAVariantShape
-      ? CVAVariantSchema<Variants> & CVAClassProp
-      : CVAClassProp,
+      ? CVAVariantSchema<Variants> & CVAClassProp<T>
+      : CVAClassProp<T>,
   ): string;
   /** @internal */
   config: Config;
@@ -271,7 +284,7 @@ type CVADefaultVariants<Config> = Config extends { defaultVariants?: infer D }
   ? D
   : {};
 
-export interface CVA {
+export interface CVA<T extends ClassValue = ClassValue> {
   <
     _ extends InternalOnlyWarning,
     Config,
@@ -279,7 +292,13 @@ export interface CVA {
     ComposedSingle extends CVAComponentShape | undefined = undefined,
     ComposedList extends readonly CVAComponentShape[] = [],
   >(
-    config: CVAComponentConfig<Config, Variants, ComposedSingle, ComposedList>,
+    config: CVAComponentConfig<
+      Config,
+      Variants,
+      ComposedSingle,
+      ComposedList,
+      T
+    >,
   ): CVAComponent<
     Omit<Config, "defaultVariants"> & {
       variants: Variants &
@@ -294,14 +313,15 @@ export interface CVA {
       > &
         CVADefaultVariants<Config>;
     },
-    Variants & MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>
+    Variants & MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>,
+    T
   >;
 }
 
 /* defineConfig
   ---------------------------------- */
 
-export interface DefineConfigOptions {
+export interface DefineConfigOptions<TCX extends AnyCX = CX> {
   /**
    * The class name concatenator used by `cva`, `cx`, and `compose`. It owns
    * the class name grammar entirely: cva assembles the authored values
@@ -309,12 +329,13 @@ export interface DefineConfigOptions {
    * variant values, `class`/`className`) and passes them through verbatim,
    * one argument each, without interpreting them.
    *
-   * By default the accepted inputs are typed as `ClassValue`
-   * (clsx-compatible); augment {@link CVARegistry} to narrow both this
-   * contract and the authoring surface to your concatenator's own input
-   * type.
+   * The authoring surface adopts the concatenator's own input type
+   * automatically (see {@link CXInput}): pass `twMerge` and your variants
+   * are checked against tailwind-merge's `ClassNameValue`; pass `clsx` (or
+   * any function whose parameters don't narrow further) and you keep the
+   * full clsx-flavored `ClassValue` grammar.
    */
-  cx: CX;
+  cx: TCX;
   hooks?: {
     /**
      * @deprecated please use the `cx` option instead
@@ -328,7 +349,9 @@ export interface DefineConfigOptions {
 }
 
 export interface DefineConfig {
-  (options: DefineConfigOptions): {
+  <TCX extends AnyCX>(
+    options: DefineConfigOptions<TCX>,
+  ): {
     /**
      * @deprecated Use the `composes` property inside `cva` instead.
      * @example
@@ -337,9 +360,9 @@ export interface DefineConfig {
      * // After
      * const card = cva({ composes: [box, stack] })
      */
-    compose: Compose;
-    cx: CX;
-    cva: CVA;
+    compose: Compose<CXInput<TCX>>;
+    cx: CX<CXInput<TCX>>;
+    cva: CVA<CXInput<TCX>>;
   };
 }
 
@@ -353,7 +376,10 @@ const falsyToString = <T extends unknown>(value: T) =>
 // per call — spreading an empty array contributes no arguments.
 const emptyClassNames: string[] = [];
 
-export const defineConfig: DefineConfig = (options) => {
+// The implementation is typed against the `ClassValue` defaults and cast to
+// the generic `DefineConfig` — the narrowing lives entirely in the types
+// (`CXInput`); the runtime is identical for every concatenator.
+export const defineConfig = ((options: DefineConfigOptions) => {
   const cx: CX = (...inputs) => {
     const className = options.cx(...inputs);
 
@@ -487,7 +513,7 @@ export const defineConfig: DefineConfig = (options) => {
 
       const getCompoundVariantClassNames = config?.compoundVariants?.reduce(
         (
-          acc: RegisteredClassValue[],
+          acc: ClassValue[],
           {
             class: cvClass,
             className: cvClassName,
@@ -504,7 +530,7 @@ export const defineConfig: DefineConfig = (options) => {
           })
             ? [...acc, cvClass, cvClassName]
             : acc,
-        [] as RegisteredClassValue[],
+        [] as ClassValue[],
       );
 
       return cx(
@@ -572,7 +598,7 @@ export const defineConfig: DefineConfig = (options) => {
     cva,
     cx,
   };
-};
+}) as DefineConfig;
 
 export interface GetSchema {
   <_ extends InternalOnlyWarning, Component, Config, Variants>(

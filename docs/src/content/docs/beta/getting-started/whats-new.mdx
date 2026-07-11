@@ -27,7 +27,7 @@ Extract a plain-object schema (variant names, values and defaults) from a `cva` 
 
 ### 4. Bring your own concatenator with `cva/core`
 
-The `cva` package is now a preset over a lean core: importing from `cva` gives you `cva`/`cx` wired up with `clsx`, exactly like `class-variance-authority`. The new [`cva/core` entry point](/beta/api-reference#cvacore) exposes the same engine with no concatenator wired up, so you can swap in `tailwind-merge`, `cnfast`, `clsx/lite`, or your own function via the required `cx` option, and optionally [augment `CVARegistry`](/beta/api-reference#cvaregistry) to type your variants against your concatenator's own input grammar.
+The `cva` package is now a preset over a lean core: importing from `cva` gives you `cva`/`cx` wired up with `clsx`, exactly like `class-variance-authority`. The new [`cva/core` entry point](/beta/api-reference#cvacore) exposes the same engine with no concatenator wired up, so you can swap in `tailwind-merge`, `cnfast`, `clsx/lite`, or your own function via the required `cx` option. The authoring surface adopts your concatenator's input type automatically, so your variants are typechecked against exactly what it supports.
 
 ## Deprecations
 

@@ -16,19 +16,23 @@
 import { clsx } from "clsx";
 import {
   defineConfig as defineCoreConfig,
+  type AnyCX,
   type CVA,
+  type CXInput,
   type Compose,
   type CX,
   type DefineConfigOptions as CoreDefineConfigOptions,
 } from "./core.js";
 
 export type {
+  AnyCX,
   ClassValue,
   ClassDictionary,
   ClassArray,
   VariantProps,
   Compose,
   CX,
+  CXInput,
   CXOptions,
   CXReturn,
   CVAVariantShape,
@@ -42,19 +46,21 @@ export { getSchema } from "./core.js";
 /* defineConfig
   ---------------------------------- */
 
-export interface DefineConfigOptions extends Omit<
-  CoreDefineConfigOptions,
+export interface DefineConfigOptions<TCX extends AnyCX = CX> extends Omit<
+  CoreDefineConfigOptions<TCX>,
   "cx"
 > {
   /**
    * The class name concatenator used by `cva`, `cx`, and `compose`.
    * Defaults to `clsx`.
    */
-  cx?: CX;
+  cx?: TCX;
 }
 
 export interface DefineConfig {
-  (options?: DefineConfigOptions): {
+  <TCX extends AnyCX = CX>(
+    options?: DefineConfigOptions<TCX>,
+  ): {
     /**
      * @deprecated Use the `composes` property inside `cva` instead.
      * @example
@@ -63,9 +69,9 @@ export interface DefineConfig {
      * // After
      * const card = cva({ composes: [box, stack] })
      */
-    compose: Compose;
-    cx: CX;
-    cva: CVA;
+    compose: Compose<CXInput<TCX>>;
+    cx: CX<CXInput<TCX>>;
+    cva: CVA<CXInput<TCX>>;
   };
 }
 
@@ -74,7 +80,10 @@ export interface DefineConfig {
  * package is the clsx preset, while `cva/core` is where custom
  * configuration (your own `cx` concatenator, hooks) lives.
  */
-export const defineConfig: DefineConfig = (options) =>
-  defineCoreConfig({ ...options, cx: options?.cx ?? clsx });
+export const defineConfig = ((options?: DefineConfigOptions) =>
+  defineCoreConfig({
+    ...options,
+    cx: options?.cx ?? clsx,
+  })) as DefineConfig;
 
 export const { compose, cva, cx } = defineCoreConfig({ cx: clsx });

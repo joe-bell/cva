@@ -1,13 +1,8 @@
 /**
  * The real-package concatenator matrix: every supported swap target is
  * exercised through `cva`/`cx` with its actual published package, covering
- * both type assignability against the default `CX` contract and runtime
- * behavior using that concatenator's own features.
- *
- * The registry-narrowed contract (`CVARegistry` augmentation, which lets a
- * bare `twMerge` typecheck) cannot be tested here — module augmentation
- * applies to the whole compilation — so it lives in the isolated
- * `type-tests/registry.ts` compile instead (`pnpm --filter cva check:registry`).
+ * both the inferred authoring surface (`CXInput`) and runtime behavior
+ * using that concatenator's own features.
  */
 import { clsx } from "clsx";
 import { clsx as clsxLite } from "clsx/lite";
@@ -18,8 +13,9 @@ import { cva, cx } from "./";
 import { defineConfig } from "./core";
 
 describe("clsx (the `cva` preset default)", () => {
-  test("is directly assignable to the default contract", () => {
+  test("infers the full ClassValue authoring surface", () => {
     expectTypeOf(clsx).toMatchTypeOf<CVA.CX>();
+    expectTypeOf<CVA.CXInput<typeof clsx>>().toEqualTypeOf<CVA.ClassValue>();
   });
 
   test("cx behaves as an alias of clsx across the full grammar", () => {
@@ -53,11 +49,15 @@ describe("clsx (the `cva` preset default)", () => {
 describe("clsx/lite", () => {
   const { cva: liteCva, cx: liteCx } = defineConfig({ cx: clsxLite });
 
-  test("is directly assignable to the default contract", () => {
+  test("infers the full ClassValue authoring surface (lite's own typing)", () => {
     // Note this is clsx/lite's own (over-broad) published typing: its
-    // runtime only understands string arguments. See the dropping test
-    // below — the runtime limitation is lite's documented contract.
+    // runtime only understands string arguments, so inference cannot
+    // narrow further. See the dropping test below — the runtime
+    // limitation is lite's documented contract.
     expectTypeOf(clsxLite).toMatchTypeOf<CVA.CX>();
+    expectTypeOf<
+      CVA.CXInput<typeof clsxLite>
+    >().toEqualTypeOf<CVA.ClassValue>();
   });
 
   test("string-authored components work fully", () => {
@@ -98,12 +98,25 @@ describe("clsx/lite", () => {
 });
 
 describe("tailwind-merge", () => {
-  // Bare `twMerge` fails the default `ClassValue` contract by design (no
-  // objects/numbers) — the cast documents that string/array authoring is
-  // the user's responsibility here. Augmenting `CVARegistry` makes the bare
-  // assignment typecheck and enforces that authoring surface instead; see
-  // `type-tests/registry.ts`.
-  const { cva: twCva, cx: twCx } = defineConfig({ cx: twMerge as CVA.CX });
+  // Bare `twMerge` works out of the box: the authoring surface is inferred
+  // from its parameters (`ClassNameValue` — strings and arrays, no objects
+  // or numbers) and enforced at compile time; see the inference test below.
+  const { cva: twCva, cx: twCx } = defineConfig({ cx: twMerge });
+
+  test("narrows the authoring surface to twMerge's own ClassNameValue", () => {
+    expectTypeOf<CVA.CXInput<typeof twMerge>>().toEqualTypeOf<
+      Parameters<typeof twMerge>[number]
+    >();
+
+    twCva({
+      // @ts-expect-error — objects aren't part of tailwind-merge's ClassNameValue
+      base: { "bg-gray-200": true },
+    });
+    twCva({
+      // @ts-expect-error — object-syntax variant values fail the variants gate
+      variants: { intent: { primary: { "bg-blue-500": true } } },
+    });
+  });
 
   test("resolves conflicts across base, variants, and the class prop", () => {
     const button = twCva({
@@ -141,8 +154,12 @@ describe("tailwind-merge", () => {
 describe("cnfast", () => {
   const { cva: cnCva, cx: cnCx } = defineConfig({ cx: cn });
 
-  test("is directly assignable to the default contract", () => {
+  test("infers the full ClassValue authoring surface", () => {
+    // `cn` is overloaded (tagged-template form first, variadic last) —
+    // `Parameters` picks the last overload, cnfast's own `ClassValue[]`,
+    // which is structurally identical to cva's.
     expectTypeOf(cn).toMatchTypeOf<CVA.CX>();
+    expectTypeOf<CVA.CXInput<typeof cn>>().toEqualTypeOf<CVA.ClassValue>();
   });
 
   test("supports the full grammar with tailwind-merge conflict resolution", () => {
