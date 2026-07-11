@@ -8,4 +8,7 @@ export default defineConfig({
   entry: ["src/index.ts", "src/types.ts"],
   // Never shipped sourcemaps.
   sourcemap: false,
+  // Keep the historical `.js`/`.d.ts` CJS layout - published `dist/` paths
+  // may be referenced directly in the wild.
+  fixedExtension: false,
 });

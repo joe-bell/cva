@@ -5,10 +5,10 @@ import type { UserConfig } from "tsdown";
 
 export const base = {
   format: ["esm", "cjs"],
-  // Also determines the output extensions: "neutral" emits the packages'
-  // historical `.js`/`.mjs` layout, "node" would rename CJS output to
-  // `.cjs`/`.d.cts`.
   platform: "neutral",
+  // Explicit `.cjs`/`.d.cts` CJS output (with `platform: "neutral"` the
+  // default would be `.js`/`.d.ts`).
+  fixedExtension: true,
   // Keep in sync with `tsconfig.base.json`.
   target: "es2019",
   // Declarations come from tsc: the public types don't satisfy

@@ -24,9 +24,9 @@
     ".": "./src/index.ts",
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.cts",
   "files": [
     "dist/"
   ],
@@ -67,17 +67,17 @@
     "exports": {
       ".": {
         "import": "./dist/index.mjs",
-        "require": "./dist/index.js"
+        "require": "./dist/index.cjs"
       },
       "./package.json": "./package.json"
     },
-    "main": "dist/index.js",
+    "main": "dist/index.cjs",
     "module": "dist/index.mjs",
-    "types": "dist/index.d.ts"
+    "types": "dist/index.d.cts"
   },
   "size-limit": [
     {
-      "path": "dist/index.js",
+      "path": "dist/index.cjs",
       "limit": "1.6KB"
     }
   ]
