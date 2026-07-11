@@ -22,6 +22,15 @@ export interface Implementation<Mod> {
   mod: Mod;
 }
 
+/**
+ * Shared tinybench options for every `bench()` call. tinybench defaults to
+ * a 500ms measure and 100ms warmup — tuned for fast local iteration;
+ * doubling both meaningfully tightens the relative margin of error on
+ * noisy shared CI runners, which is what the comparison table's ±5% noise
+ * band hinges on.
+ */
+export const BENCH_OPTIONS = { time: 1000, warmupTime: 200 };
+
 async function importDist<Mod>(distPath: string): Promise<Mod> {
   return await import(pathToFileURL(distPath).href);
 }

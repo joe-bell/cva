@@ -5,7 +5,7 @@ import { bench, describe } from "vitest";
 
 import type * as local from "../../packages/cva/src/index";
 
-import { loadImplementations } from "./harness";
+import { BENCH_OPTIONS, loadImplementations } from "./harness";
 
 /* Fixture
   ============================================ */
@@ -84,45 +84,65 @@ function supportsComposes(mod: typeof local): boolean {
 }
 
 function registerBenchmarks(mod: typeof local) {
-  bench("cva: create", () => {
-    mod.cva(buttonConfig);
-  });
+  bench(
+    "cva: create",
+    () => {
+      mod.cva(buttonConfig);
+    },
+    BENCH_OPTIONS,
+  );
 
   const buttonVariants = mod.cva(buttonConfig);
 
-  bench("cva: call defaults", () => {
-    buttonVariants({});
-  });
+  bench(
+    "cva: call defaults",
+    () => {
+      buttonVariants({});
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench("cva: call with props", () => {
-    buttonVariants({ intent: "primary", disabled: true } as any);
-    buttonVariants({ intent: "primary", size: "medium" } as any);
-    buttonVariants({
-      intent: "warning",
-      size: "medium",
-      disabled: true,
-    } as any);
-    buttonVariants({ size: "small" } as any);
-    buttonVariants({ size: "large", intent: "danger" } as any);
-  });
+  bench(
+    "cva: call with props",
+    () => {
+      buttonVariants({ intent: "primary", disabled: true } as any);
+      buttonVariants({ intent: "primary", size: "medium" } as any);
+      buttonVariants({
+        intent: "warning",
+        size: "medium",
+        disabled: true,
+      } as any);
+      buttonVariants({ size: "small" } as any);
+      buttonVariants({ size: "large", intent: "danger" } as any);
+    },
+    BENCH_OPTIONS,
+  );
 
-  bench("cx: many args", () => {
-    mod.cx(
-      "button",
-      ["extra-one", { active: true, disabled: false }],
-      undefined,
-      false && "not-rendered",
-      "trailing",
-    );
-  });
+  bench(
+    "cx: many args",
+    () => {
+      mod.cx(
+        "button",
+        ["extra-one", { active: true, disabled: false }],
+        undefined,
+        false && "not-rendered",
+        "trailing",
+      );
+    },
+    BENCH_OPTIONS,
+  );
 
   if (supportsComposes(mod)) {
-    bench("composes: two components", () => {
-      const buttonA = mod.cva(buttonConfig);
-      const buttonB = mod.cva({ base: "icon" });
-      const composed = mod.cva({ composes: [buttonA, buttonB] } as any);
-      composed({ intent: "secondary" } as any);
-    });
+    bench(
+      "composes: two components",
+      () => {
+        const buttonA = mod.cva(buttonConfig);
+        const buttonB = mod.cva({ base: "icon" });
+        const composed = mod.cva({ composes: [buttonA, buttonB] } as any);
+        composed({ intent: "secondary" } as any);
+      },
+      BENCH_OPTIONS,
+    );
   }
 }
 
