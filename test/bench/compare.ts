@@ -370,7 +370,7 @@ export function renderMarkdown(results: BenchmarkResult[]): string {
   return [
     "## Benchmarks",
     "",
-    "Comparing this PR's local benchmark run against the published npm versions (baselines resolved from the latest GitHub release and prerelease). Higher ops/s is better. Shared CI runners are noisy — treat deltas within ±5% as noise. Moves beyond that band are marked 🟢 (faster than the baseline) or 🔴 (slower).",
+    "Comparing this PR's local benchmark run against the published npm versions (baselines resolved from each package's npm dist-tags — `beta` for `cva`, `latest` for `class-variance-authority`). Higher ops/s is better. Shared CI runners are noisy — treat deltas within ±5% as noise. Moves beyond that band are marked 🟢 (faster than the baseline) or 🔴 (slower).",
     "",
     sections.join("\n\n"),
     "",

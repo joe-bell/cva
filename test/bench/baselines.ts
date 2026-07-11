@@ -1,8 +1,7 @@
 /**
- * Resolves each workspace package's latest stable (`latest`) and prerelease
- * (`beta`) npm dist-tags, then installs each one outside the pnpm workspace
- * (so the workspace `overrides` that pin `cva` and
- * `class-variance-authority` to `workspace:*` don't silently override the
+ * Resolves each workspace package's published npm dist-tags, then installs each
+ * one outside the pnpm workspace (so the workspace `overrides` that pin `cva`
+ * and `class-variance-authority` to `workspace:*` don't silently override the
  * install) and writes a manifest describing what's available to benchmark
  * against.
  */
@@ -45,29 +44,57 @@ const DIST_TAGS: Record<Label, string> = {
   prerelease: "beta",
 };
 
+/**
+ * Which npm dist-tags carry meaningful baselines per package. `cva` keeps
+ * `latest` at 0.0.0 so it doesn't overwrite stable — only `beta` is
+ * comparable. `class-variance-authority` publishes stable to `latest` and has
+ * no `beta` dist-tag.
+ */
+const PACKAGE_BASELINES: Record<string, readonly Label[]> = {
+  cva: ["prerelease"],
+  "class-variance-authority": ["release"],
+};
+
+const PLACEHOLDER_VERSIONS = new Set(["0.0.0"]);
+
+function packageBaselineLabels(pkg: string): readonly Label[] {
+  return PACKAGE_BASELINES[pkg] ?? LABELS;
+}
+
+function skippedForLabels(
+  labels: readonly Label[],
+  reason: string,
+): ResolvedVersion[] {
+  return labels.map((label) => ({
+    label,
+    version: "unknown",
+    skipped: reason,
+  }));
+}
+
 export async function resolvePackageVersions(
   pkg: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<ResolvedVersion[]> {
+  const labels = packageBaselineLabels(pkg);
+
   let response: Response;
   try {
     response = await fetchImpl(
       `https://registry.npmjs.org/${encodeURIComponent(pkg)}`,
     );
   } catch (error) {
-    return LABELS.map((label) => ({
-      label,
-      version: "unknown",
-      skipped: `failed to resolve npm dist-tags: ${(error as Error).message}`,
-    }));
+    return skippedForLabels(
+      labels,
+      `failed to resolve npm dist-tags: ${(error as Error).message}`,
+    );
   }
 
   if (!response.ok) {
-    return LABELS.map((label) => ({
-      label,
-      version: "unknown",
-      skipped: `npm registry returned ${response.status} ${response.statusText}`,
-    }));
+    return skippedForLabels(
+      labels,
+      `npm registry returned ${response.status} ${response.statusText}`,
+    );
   }
 
   let distTags: unknown;
@@ -76,26 +103,33 @@ export async function resolvePackageVersions(
       "dist-tags"
     ];
   } catch (error) {
-    return LABELS.map((label) => ({
-      label,
-      version: "unknown",
-      skipped: `failed to parse npm dist-tags: ${(error as Error).message}`,
-    }));
+    return skippedForLabels(
+      labels,
+      `failed to parse npm dist-tags: ${(error as Error).message}`,
+    );
   }
 
-  return LABELS.map((label) => {
+  return labels.map((label) => {
+    const distTag = DIST_TAGS[label];
     const version =
       typeof distTags === "object" && distTags !== null
-        ? (distTags as Record<string, unknown>)[DIST_TAGS[label]]
+        ? (distTags as Record<string, unknown>)[distTag]
         : undefined;
-    if (typeof version === "string" && version.length > 0) {
-      return { label, version };
+    if (typeof version !== "string" || version.length === 0) {
+      return {
+        label,
+        version: "unknown",
+        skipped: `no ${distTag} dist-tag on npm`,
+      };
     }
-    return {
-      label,
-      version: "unknown",
-      skipped: `no ${DIST_TAGS[label]} dist-tag on npm`,
-    };
+    if (PLACEHOLDER_VERSIONS.has(version)) {
+      return {
+        label,
+        version,
+        skipped: `${distTag} dist-tag points at placeholder version ${version}`,
+      };
+    }
+    return { label, version };
   });
 }
 

@@ -2,14 +2,14 @@
  * One-command local preview of the benchmark table that gets posted as the
  * sticky PR comment. Chains the existing pieces — test/bench/baselines.ts,
  * `pnpm bench`, and test/bench/compare.ts — so the rendered markdown comes
- * from the same `compare.ts` the CI job summary and the privileged
- * sticky-comment workflow use; this file adds no rendering of its own.
+ * from the same `compare.ts` the privileged sticky-comment workflow uses;
+ * this file adds no rendering of its own.
  *
  * Installs the published npm baselines into an outside-the-workspace temp
  * dir (the workspace `overrides` would otherwise swap them for local
- * source). If that fails — no network, GitHub API or npm unreachable — it
- * warns and renders a local-only preview instead of erroring, so the
- * command always produces output.
+ * source). If that fails — no network or npm unreachable — it warns and
+ * renders a local-only preview instead of erroring, so the command always
+ * produces output.
  */
 import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
@@ -30,7 +30,7 @@ try {
   haveBaselines = true;
 } catch {
   console.warn(
-    "\nCouldn't install npm baselines (offline, or GitHub/npm unreachable) — rendering a local-only preview.\n",
+    "\nCouldn't install npm baselines (offline, or npm unreachable) — rendering a local-only preview.\n",
   );
 }
 
