@@ -20,15 +20,11 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/install
       - name: Install published baselines
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
         run: node test/bench/baselines.ts --out "$RUNNER_TEMP/bench-baselines"
       - name: Run benchmarks
         env:
           BENCH_BASELINES_DIR: ${{ runner.temp }}/bench-baselines
         run: pnpm bench
-      - name: Job summary
-        run: pnpm bench:compare >> "$GITHUB_STEP_SUMMARY"
       - name: Record PR number
         if: github.event_name == 'pull_request'
         env:

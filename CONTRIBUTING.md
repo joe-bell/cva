@@ -72,7 +72,7 @@ Run these from the repo root:
 
 To scope a command to a single package, use a pnpm filter, e.g. `pnpm --filter cva test`.
 
-CI gates on `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `test`, so run the matching scripts locally before opening a PR. CI also runs a `benchmark` job — informational only, see Benchmarks below — that doesn't gate merging.
+CI gates on `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `test`, so run the matching scripts locally before opening a PR. CI also runs an informational `benchmark` job, which posts its results as a PR comment.
 
 ### Build & publish (`packages/*`)
 
@@ -100,11 +100,11 @@ Day to day: `pnpm --filter <package> dev` runs the build in watch mode, and beca
 
 ## Benchmarks
 
-Every PR runs a `benchmark` CI job that benchmarks each package's local build (`test/bench/*.bench.ts`, run via `vitest bench`) alongside the latest published release and prerelease versions of that same package (resolved from GitHub Releases and installed outside the workspace by [`test/bench/baselines.ts`](./test/bench/baselines.ts) — the workspace's `pnpm-workspace.yaml` `overrides` pin `cva`/`class-variance-authority` to `workspace:*`, so baselines can't be installed inside the workspace without being silently overridden). A package that hasn't published a matching version yet is simply skipped, not treated as a failure.
+Every PR runs a `benchmark` CI job that benchmarks each package's local build (`test/bench/*.bench.ts`, run via `vitest bench`) alongside the latest stable and prerelease versions of that same package (resolved from the package's npm `latest` and `beta` dist-tags, then installed outside the workspace by [`test/bench/baselines.ts`](./test/bench/baselines.ts) — the workspace's `pnpm-workspace.yaml` `overrides` pin `cva`/`class-variance-authority` to `workspace:*`, so baselines can't be installed inside the workspace without being silently overridden). A missing dist-tag or baseline installation failure is recorded as skipped, so the local benchmark still runs.
 
 Results are posted as a sticky PR comment (updated in place on every push, including from forks) by a separate `pr-comment` workflow — see that file's header comment for why it's split out, how the untrusted artifact it reads is validated, and how to add a section of your own to the same comment from a future CI step. This is **informational only**: a regression doesn't fail CI, so treat it as a signal to investigate, not a gate.
 
-To reproduce that table locally before pushing, run `pnpm bench:preview`. It installs the baselines, benchmarks your build against them, and writes the rendered markdown to `test/bench/.output/preview.md` — produced by the same [`test/bench/compare.ts`](./test/bench/compare.ts) that renders the PR comment and the CI job summary, so the preview matches what a PR would show. Offline (no GitHub or npm access) it falls back to a local-only table with no baseline columns.
+To reproduce that table locally before pushing, run `pnpm bench:preview`. It installs the baselines, benchmarks your build against them, and writes the rendered markdown to `test/bench/.output/preview.md` — produced by the same [`test/bench/compare.ts`](./test/bench/compare.ts) that renders the PR comment, so the preview matches what a PR would show. Offline (no npm access) it falls back to a local-only table with no baseline columns.
 
 `benchmark-release` attaches a `benchmark-<package>.json` file to every published GitHub release (`workflow_dispatch` with a `tag` input can also run it on demand). [`test/bench/report.ts`](./test/bench/report.ts) writes that schema and [`test/bench/compare.ts`](./test/bench/compare.ts) reads it — if you change the shape of one, bump `schemaVersion` and update the other in the same change.
 

@@ -1,7 +1,7 @@
 /**
- * Resolves the latest published release and prerelease versions of each
- * workspace package from GitHub Releases, then installs each one outside
- * the pnpm workspace (so the workspace `overrides` that pin `cva` and
+ * Resolves each workspace package's latest stable (`latest`) and prerelease
+ * (`beta`) npm dist-tags, then installs each one outside the pnpm workspace
+ * (so the workspace `overrides` that pin `cva` and
  * `class-variance-authority` to `workspace:*` don't silently override the
  * install) and writes a manifest describing what's available to benchmark
  * against.
@@ -11,21 +11,16 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 
-const REPO_OWNER = "joe-bell";
-const REPO_NAME = "cva";
 const PACKAGES = ["cva", "class-variance-authority"];
 const LABELS = ["release", "prerelease"] as const;
 
-interface GitHubRelease {
-  tag_name: string;
-  draft: boolean;
-  prerelease: boolean;
-}
+type Label = (typeof LABELS)[number];
 
 export interface ManifestEntry {
   package: string;
-  label: "release" | "prerelease";
+  label: Label;
   version: string;
   dir?: string;
   skipped?: string;
@@ -39,45 +34,69 @@ function parseArgs(argv: string[]) {
   return { out };
 }
 
-async function fetchLatestReleases(): Promise<
-  Record<"release" | "prerelease", string | undefined>
-> {
-  const headers: Record<string, string> = {
-    Accept: "application/vnd.github+json",
-    "User-Agent": "cva-benchmark-ci",
-  };
-  if (process.env.GITHUB_TOKEN) {
-    headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
-  }
-
-  const response = await fetch(
-    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases?per_page=100`,
-    { headers },
-  );
-  if (!response.ok) {
-    throw new Error(
-      `Failed to list GitHub releases: ${response.status} ${response.statusText}`,
-    );
-  }
-
-  const releases = (await response.json()) as GitHubRelease[];
-  const release = releases.find((r) => !r.draft && !r.prerelease);
-  const prerelease = releases.find((r) => !r.draft && r.prerelease);
-
-  return {
-    release: release?.tag_name.replace(/^v/, ""),
-    prerelease: prerelease?.tag_name.replace(/^v/, ""),
-  };
+interface ResolvedVersion {
+  label: Label;
+  version: string;
+  skipped?: string;
 }
 
-async function isPublishedOnNpm(
+const DIST_TAGS: Record<Label, string> = {
+  release: "latest",
+  prerelease: "beta",
+};
+
+export async function resolvePackageVersions(
   pkg: string,
-  version: string,
-): Promise<boolean> {
-  const response = await fetch(
-    `https://registry.npmjs.org/${encodeURIComponent(pkg)}/${encodeURIComponent(version)}`,
-  );
-  return response.ok;
+  fetchImpl: typeof fetch = fetch,
+): Promise<ResolvedVersion[]> {
+  let response: Response;
+  try {
+    response = await fetchImpl(
+      `https://registry.npmjs.org/${encodeURIComponent(pkg)}`,
+    );
+  } catch (error) {
+    return LABELS.map((label) => ({
+      label,
+      version: "unknown",
+      skipped: `failed to resolve npm dist-tags: ${(error as Error).message}`,
+    }));
+  }
+
+  if (!response.ok) {
+    return LABELS.map((label) => ({
+      label,
+      version: "unknown",
+      skipped: `npm registry returned ${response.status} ${response.statusText}`,
+    }));
+  }
+
+  let distTags: unknown;
+  try {
+    distTags = ((await response.json()) as Record<string, unknown>)[
+      "dist-tags"
+    ];
+  } catch (error) {
+    return LABELS.map((label) => ({
+      label,
+      version: "unknown",
+      skipped: `failed to parse npm dist-tags: ${(error as Error).message}`,
+    }));
+  }
+
+  return LABELS.map((label) => {
+    const version =
+      typeof distTags === "object" && distTags !== null
+        ? (distTags as Record<string, unknown>)[DIST_TAGS[label]]
+        : undefined;
+    if (typeof version === "string" && version.length > 0) {
+      return { label, version };
+    }
+    return {
+      label,
+      version: "unknown",
+      skipped: `no ${DIST_TAGS[label]} dist-tag on npm`,
+    };
+  });
 }
 
 function rootPackageManager(): string {
@@ -112,42 +131,24 @@ async function main() {
   const { out } = parseArgs(process.argv.slice(2));
   mkdirSync(out, { recursive: true });
 
-  const latest = await fetchLatestReleases();
   const entries: ManifestEntry[] = [];
 
   for (const pkg of PACKAGES) {
-    for (const label of LABELS) {
-      const version = latest[label];
-      if (!version) {
-        entries.push({
-          package: pkg,
-          label,
-          version: "unknown",
-          skipped: `no ${label} found on GitHub`,
-        });
+    const versions = await resolvePackageVersions(pkg);
+    for (const resolved of versions) {
+      if (resolved.skipped) {
+        entries.push({ package: pkg, ...resolved });
         continue;
       }
 
-      const published = await isPublishedOnNpm(pkg, version);
-      if (!published) {
-        entries.push({
-          package: pkg,
-          label,
-          version,
-          skipped: "not published on npm",
-        });
-        continue;
-      }
-
-      const dirName = `${pkg}-${label}`;
+      const dirName = `${pkg}-${resolved.label}`;
       try {
-        installBaseline(pkg, version, path.join(out, dirName));
-        entries.push({ package: pkg, label, version, dir: dirName });
+        installBaseline(pkg, resolved.version, path.join(out, dirName));
+        entries.push({ package: pkg, ...resolved, dir: dirName });
       } catch (error) {
         entries.push({
           package: pkg,
-          label,
-          version,
+          ...resolved,
           skipped: `failed to install: ${(error as Error).message}`,
         });
       }
@@ -167,4 +168,13 @@ async function main() {
   }
 }
 
-await main();
+function isMainModule(): boolean {
+  return (
+    process.argv[1] !== undefined &&
+    path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+  );
+}
+
+if (isMainModule()) {
+  await main();
+}

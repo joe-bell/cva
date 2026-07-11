@@ -115,14 +115,17 @@ jobs:
             if (!Number.isInteger(pr) || pr < 1 || pr > 1_000_000_000) {
               throw new Error(`invalid PR number in benchmark artifact: ${meta.pr}`);
             }
+            const runPulls = context.payload.workflow_run.pull_requests ?? [];
+            if (!runPulls.some((pull) => pull.number === pr)) {
+              throw new Error(
+                `artifact PR #${pr} is not associated with this workflow run`,
+              );
+            }
 
-            // The artifact claims to belong to PR `pr`. Cross-check both the
-            // head SHA and the head repo of the run that produced it against
-            // that PR before trusting the claim. The SHA check stops a
-            // crafted artifact from targeting an arbitrary PR; the repo
-            // check stops a fork from mirroring a victim PR's (public,
-            // content-addressed) head commit to pass the SHA check and
-            // overwrite the victim's comment with fabricated numbers.
+            // The workflow-run payload binds the artifact to PR `pr`.
+            // Cross-check the head SHA and repo as well: the SHA check stops
+            // stale artifacts, while the repo check stops a fork from
+            // mirroring a victim PR's public, content-addressed head commit.
             let pull;
             try {
               ({ data: pull } = await github.rest.pulls.get({
