@@ -8,6 +8,7 @@
     "strict": true,
     "incremental": true,
     "skipLibCheck": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "noEmit": true
   }
 }
