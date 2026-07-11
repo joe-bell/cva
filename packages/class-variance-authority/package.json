@@ -20,27 +20,21 @@
   "license": "Apache-2.0",
   "author": "Joe Bell (https://joebell.studio)",
   "exports": {
-    ".": {
-      "import": "./src/index.ts",
-      "types": "./src/index.ts"
-    },
-    "./types": {
-      "types": "./src/types.ts"
-    }
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts",
+    "./package.json": "./package.json"
   },
-  "main": "src/index.ts",
-  "module": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist/"
   ],
   "scripts": {
-    "build": "pnpm run '/^build:.*/'",
-    "build:cjs": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.js -C module.type=commonjs",
-    "build:esm": "swc ./src/index.ts --config-file ./.config/.swcrc -o dist/index.mjs -C module.type=es6 ",
-    "build:tsc": "tsc --project .config/tsconfig.build.json",
+    "build": "tsdown",
     "bundlesize": "pnpm build && size-limit",
     "check": "tsc --project tsconfig.json --noEmit",
+    "dev": "tsdown --watch",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
@@ -48,31 +42,39 @@
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^12.1.0",
-    "@swc/cli": "0.8.1",
-    "@swc/core": "1.15.33",
     "@types/node": "24.13.2",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
+    "publint": "0.3.21",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "size-limit": "^12.1.0",
-    "ts-node": "10.9.2",
-    "typescript": "6.0.3"
+    "tsdown": "0.22.4",
+    "typescript": "6.0.3",
+    "unplugin-unused": "0.5.7"
   },
   "publishConfig": {
     "exports": {
       ".": {
         "import": "./dist/index.mjs",
-        "require": "./dist/index.js",
-        "types": "./dist/index.d.ts"
+        "require": "./dist/index.js"
       },
       "./types": {
-        "types": "./dist/types.d.ts"
-      }
+        "import": "./dist/types.mjs",
+        "require": "./dist/types.js"
+      },
+      "./package.json": "./package.json"
     },
     "main": "dist/index.js",
     "module": "dist/index.mjs",
-    "types": "dist/index.d.ts"
+    "types": "dist/index.d.ts",
+    "typesVersions": {
+      "*": {
+        "types": [
+          "./dist/types.d.ts"
+        ]
+      }
+    }
   },
   "size-limit": [
     {

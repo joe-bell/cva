@@ -70,15 +70,15 @@ To scope a command to a single package, use a pnpm filter, e.g. `pnpm --filter c
 
 CI runs `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `test`, so run the matching scripts locally before opening a PR.
 
-### Build & publish (`packages/cva`)
+### Build & publish (`packages/*`)
 
-`packages/cva` builds with [tsdown](https://tsdown.dev), configured in [`packages/cva/tsdown.config.mts`](./packages/cva/tsdown.config.mts). One `pnpm --filter cva build` emits the whole dual-format output to `dist/` — `index.js` + `index.d.ts` (CommonJS) and `index.mjs` + `index.d.mts` (ESM), plus sourcemaps. That file layout is the package's historical published shape, pinned by the config's `outExtensions` callback (tsdown would otherwise default the CommonJS side to `.cjs`/`.d.cts`).
+Both published packages (`packages/cva` and `packages/class-variance-authority`) build with [tsdown](https://tsdown.dev), each configured by its own `tsdown.config.mts` (e.g. [`packages/cva/tsdown.config.mts`](./packages/cva/tsdown.config.mts)). One `pnpm --filter <package> build` emits the whole dual-format output to `dist/` — `index.js` + `index.d.ts` (CommonJS) and `index.mjs` + `index.d.mts` (ESM). Each config pins that package's historical published shape via its `outExtensions` callback (tsdown would otherwise default the CommonJS side to `.cjs`/`.d.cts`), so the two configs differ only where the packages genuinely differ (entry points, sourcemaps, gate options — the comments in each config explain the differences).
 
-#### How the package transforms for publish
+#### How the packages transform for publish
 
-The `exports` and `publishConfig.exports` blocks in [`packages/cva/package.json`](./packages/cva/package.json) are **machine-generated**: the config's `exports: { devExports: true }` makes tsdown rewrite both on every build. **Never hand-edit them** — the next build silently overwrites your change; adjust `tsdown.config.mts` instead. The two blocks implement a dev/publish split:
+The `exports` and `publishConfig.exports` blocks in each package's `package.json` are **machine-generated**: the config's `exports: { devExports: true }` makes tsdown rewrite both on every build. **Never hand-edit them** — the next build silently overwrites your change; adjust that package's `tsdown.config.mts` instead. (One exception: `class-variance-authority`'s `publishConfig.typesVersions` — the node10 fallback for its `./types` subpath — is hand-maintained; tsdown doesn't generate it but preserves it across rebuilds.) The two blocks implement a dev/publish split:
 
-- The top-level `exports` points at `./src/index.ts`, so workspace consumers (tests, examples, docs) always resolve the raw TypeScript source with no build step in between.
+- The top-level `exports` points at `./src/*.ts`, so workspace consumers (tests, examples, docs) always resolve the raw TypeScript source with no build step in between.
 - `publishConfig.exports` points at `dist/`. pnpm applies `publishConfig` when packing or publishing (`pnpm pack` / `pnpm publish` — never `npm pack`, which skips the rewrite entirely), so the tarball people install resolves the built output.
 
 Two details of the published map are deliberate:
@@ -88,11 +88,11 @@ Two details of the published map are deliberate:
 
 #### The config, option by option
 
-[`tsdown.config.mts`](./packages/cva/tsdown.config.mts) documents each option's rationale as a comment directly above it — read those before changing `platform`, `target`, `dts`, `outExtensions`, `exports`, or the `publint`/`attw`/`unused` gates, rather than looking here.
+Each package's `tsdown.config.mts` documents each option's rationale as a comment directly above it — read those before changing `platform`, `target`, `dts`, `outExtensions`, `exports`, or the `publint`/`attw`/`unused` gates, rather than looking here.
 
-What tsdown does **not** own: `size-limit` remains the bundle-size budget (tsdown's per-file gzip size report is informational only), `check:tsc` remains the source type check, and version bumps stay manual per [Releases](#releases).
+What tsdown does **not** own: `size-limit` remains the bundle-size budget (tsdown's per-file gzip size report is informational only), the `tsc --noEmit` check remains the source type check, and version bumps stay manual per [Releases](#releases).
 
-Day to day: `pnpm --filter cva dev` runs the build in watch mode, and because the root `prepare:packages` script builds on every `pnpm install`, the publish-shape gates run then too — a broken manifest fails fast on your machine rather than in CI. If that per-install cost ever becomes a problem, `attw: 'ci-only'` in the config confines the slowest gate to CI.
+Day to day: `pnpm --filter <package> dev` runs the build in watch mode, and because the root `prepare:packages` script builds on every `pnpm install`, the publish-shape gates run then too — a broken manifest fails fast on your machine rather than in CI. If that per-install cost ever becomes a problem, `attw: 'ci-only'` in the config confines the slowest gate to CI.
 
 ## Releases
 
