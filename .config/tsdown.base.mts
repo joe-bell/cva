@@ -4,8 +4,10 @@
 import type { UserConfig } from "tsdown";
 
 export const base = {
-  entry: ["src/index.ts"],
   format: ["esm", "cjs"],
+  // Also determines the output extensions: "neutral" emits the packages'
+  // historical `.js`/`.mjs` layout, "node" would rename CJS output to
+  // `.cjs`/`.d.cts`.
   platform: "neutral",
   // Keep in sync with `tsconfig.base.json`.
   target: "es2019",
@@ -14,12 +16,6 @@ export const base = {
   dts: true,
   sourcemap: true,
   clean: true,
-  // The packages' historical published layout (tsdown defaults CJS to
-  // `.cjs`/`.d.cts`).
-  outExtensions: ({ format }) => ({
-    js: format === "cjs" ? ".js" : ".mjs",
-    dts: format === "cjs" ? ".d.ts" : ".d.mts",
-  }),
   // Regenerates package.json's `exports` (dev, `src/`) and
   // `publishConfig.exports` (publish, `dist/`) on every build - don't
   // hand-edit those blocks.

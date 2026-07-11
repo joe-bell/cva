@@ -72,7 +72,7 @@ CI runs `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `t
 
 ### Build & publish (`packages/*`)
 
-Both published packages (`packages/cva` and `packages/class-variance-authority`) build with [tsdown](https://tsdown.dev). The shared options live in [`.config/tsdown.base.mts`](./.config/tsdown.base.mts) (alongside the repo's other shared tool config), and each package's `tsdown.config.mts` spreads that base and adds only its genuine deltas — entry points and sourcemaps. One `pnpm --filter <package> build` emits the whole dual-format output to `dist/` — `index.js` + `index.d.ts` (CommonJS) and `index.mjs` + `index.d.mts` (ESM), the packages' historical published shape, pinned by the base config's `outExtensions` callback (tsdown would otherwise default the CommonJS side to `.cjs`/`.d.cts`).
+Both published packages (`packages/cva` and `packages/class-variance-authority`) build with [tsdown](https://tsdown.dev). The shared options live in [`.config/tsdown.base.mts`](./.config/tsdown.base.mts) (alongside the repo's other shared tool config), and each package's `tsdown.config.mts` spreads that base and adds only its genuine deltas — entry points and sourcemaps. One `pnpm --filter <package> build` emits the whole dual-format output to `dist/` — `index.js` + `index.d.ts` (CommonJS) and `index.mjs` + `index.d.mts` (ESM). Those are tsdown's default extensions for a `platform: "neutral"` package without `"type": "module"`, and they happen to match the packages' historical published shape exactly (with `platform: "node"` tsdown would default the CommonJS side to `.cjs`/`.d.cts` instead — so `platform` changes the emitted filenames, not just resolution).
 
 #### How the packages transform for publish
 
@@ -88,7 +88,7 @@ Two details of the published map are deliberate:
 
 #### The config, option by option
 
-[`.config/tsdown.base.mts`](./.config/tsdown.base.mts) documents each shared option's rationale as a comment directly above it — read those before changing `platform`, `target`, `dts`, `outExtensions`, `exports`, or the `publint`/`attw` gates, rather than looking here. The per-package configs carry the same style of comments for their deltas.
+[`.config/tsdown.base.mts`](./.config/tsdown.base.mts) documents each shared option's rationale as a comment directly above it — read those before changing `platform`, `target`, `dts`, `exports`, or the `publint`/`attw` gates, rather than looking here. The per-package configs carry the same style of comments for their deltas.
 
 What tsdown does **not** own: `size-limit` remains the bundle-size budget (tsdown's per-file gzip size report is informational only), the `tsc --noEmit` check remains the source type check, and version bumps stay manual per [Releases](#releases).
 
