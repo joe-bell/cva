@@ -136,6 +136,10 @@ const packageDir = path.join(
 const implementations = await loadImplementations<typeof local>(
   "cva",
   packageDir,
+  // Guards `registerBenchmarks` against export drift in an old baseline:
+  // it calls `mod.cva`/`mod.cx` at registration time, and an undefined
+  // export there would fail the whole bench file, not just the baseline.
+  (mod) => typeof mod.cva === "function" && typeof mod.cx === "function",
 );
 
 for (const impl of implementations) {

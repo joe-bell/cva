@@ -2,10 +2,13 @@
  * Shared harness for the per-package `test/bench/*.bench.ts` files.
  *
  * Both the "local" implementation and every installed baseline are loaded
- * from built `dist/index.mjs` output — never from `src` — so the comparison
- * is apples-to-apples: baselines are published SWC output, and benching
- * local `src` through vitest/esbuild's transform instead would compare two
- * different toolchains, not two versions of the same code.
+ * from built `dist/index.mjs` output — never from `src` — so the local
+ * column measures what would actually ship, rather than vitest/esbuild's
+ * on-the-fly transform of `src`. One caveat remains: a baseline's dist was
+ * built by whatever toolchain its release used (SWC before the tsdown
+ * migration, with a different down-leveling target), so a delta that spans
+ * a toolchain or target change partly measures the toolchain, not the
+ * source — treat it as indicative, not exact.
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -31,14 +34,17 @@ async function importDist<Mod>(distPath: string): Promise<Mod> {
  *
  * The local build is required — if `dist/index.mjs` is missing or stale,
  * that's a real problem (run `pnpm build`), so it throws rather than
- * silently omitting the local column. A baseline that fails to import
- * (API drift in an older published version, or a missing dist layout) is
- * skipped instead: report.ts renders that as a note in the comparison
- * table rather than failing the whole benchmark run.
+ * silently omitting the local column. A baseline that fails to import, or
+ * that imports but fails the caller's `isUsable` probe (API drift in an
+ * older published version — e.g. a renamed or missing export that would
+ * otherwise throw at benchmark-registration time and take the whole bench
+ * file down with it), is skipped instead: report.ts renders that as a note
+ * in the comparison table rather than failing the whole benchmark run.
  */
 export async function loadImplementations<Mod>(
   pkg: string,
   packageDir: string,
+  isUsable?: (mod: Mod) => boolean,
 ): Promise<Implementation<Mod>[]> {
   const localPkgJson = JSON.parse(
     readFileSync(path.join(packageDir, "package.json"), "utf8"),
@@ -82,6 +88,7 @@ export async function loadImplementations<Mod>(
           "dist/index.mjs",
         ),
       );
+      if (isUsable && !isUsable(mod)) continue;
       implementations.push({ label: entry.label, version: entry.version, mod });
     } catch {
       // API drift or an unexpected dist layout in an older published
