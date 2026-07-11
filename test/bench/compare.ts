@@ -307,7 +307,16 @@ function renderPackageSection(result: BenchmarkResult): string {
   lines.push(`| ${header.join(" | ")} |`);
   lines.push(`| ${alignment.join(" | ")} |`);
 
-  const taskNames = local?.tasks?.map((t) => t.name) ?? [];
+  // Union across every implementation (local first), not just local — with
+  // local missing, baseline columns must still render their rows instead
+  // of silently dropping the whole table body.
+  const taskNames = [
+    ...new Set(
+      result.implementations.flatMap(
+        (impl) => impl.tasks?.map((t) => t.name) ?? [],
+      ),
+    ),
+  ];
   for (const name of taskNames) {
     const localTask = local?.tasks?.find((t) => t.name === name);
     const row: string[] = [

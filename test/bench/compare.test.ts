@@ -1,6 +1,10 @@
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+
 import { describe, expect, it } from "vitest";
 
-import { renderMarkdown, validateResult } from "./compare";
+import { renderMarkdown, validateResult, validateResults } from "./compare";
 
 function validResult(overrides: Partial<Record<string, unknown>> = {}) {
   return {
@@ -232,5 +236,68 @@ describe("renderMarkdown", () => {
       .find((line) => line.includes("cva: create"));
     expect(row).toBeDefined();
     expect(row).not.toMatch(/Infinity|NaN/);
+  });
+
+  it("still renders baseline rows when the local implementation is skipped", () => {
+    const result = validResult({
+      implementations: [
+        { label: "local", version: "1.0.0-beta.5", skipped: "build missing" },
+        {
+          label: "prerelease",
+          version: "1.0.0-beta.4",
+          tasks: [
+            {
+              name: "cva: create",
+              hz: 90,
+              mean: 0.011,
+              rme: 0.6,
+              samples: 900,
+            },
+          ],
+        },
+      ],
+    });
+    const validated = validateResult(result, "cva");
+    const markdown = renderMarkdown([validated]);
+    const row = markdown
+      .split("\n")
+      .find((line) => line.includes("cva: create"));
+    expect(row).toBeDefined();
+    expect(row).toContain("90 ops/s");
+    expect(row).toContain("| — |");
+    expect(markdown).toContain("No local benchmark results");
+  });
+});
+
+describe("validateResults", () => {
+  function writeResultDir(files: Record<string, string>) {
+    const dir = mkdtempSync(path.join(tmpdir(), "cva-compare-test-"));
+    for (const [name, content] of Object.entries(files)) {
+      writeFileSync(path.join(dir, name), content);
+    }
+    return dir;
+  }
+
+  it("reads only allowlisted filenames, ignoring strays", () => {
+    const dir = writeResultDir({
+      "benchmark-cva.json": JSON.stringify(validResult()),
+      "meta.json": '{ "pr": 1 }',
+      "vitest-bench.json": "{}",
+      "benchmark-evil.json": '{"not": "validated"}',
+    });
+    const results = validateResults(dir);
+    expect(results).toHaveLength(1);
+    expect(results[0].package).toBe("cva");
+  });
+
+  it("rejects an allowlisted file over the size cap", () => {
+    const oversized = JSON.stringify(validResult()).padEnd(513 * 1024, " ");
+    const dir = writeResultDir({ "benchmark-cva.json": oversized });
+    expect(() => validateResults(dir)).toThrow(/byte cap/);
+  });
+
+  it("fails loudly when no benchmark files are present", () => {
+    const dir = writeResultDir({ "meta.json": '{ "pr": 1 }' });
+    expect(() => validateResults(dir)).toThrow(/no benchmark result files/);
   });
 });
