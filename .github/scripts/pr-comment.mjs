@@ -43,6 +43,16 @@ function sectionMarkers(id) {
 /** Wraps already-rendered, trusted markdown in this section's placeholders. */
 export function sectionBlock(id, content) {
   const { start, end } = sectionMarkers(assertSectionId(id));
+  // A literal section marker inside `content` would truncate this (or
+  // another) section on the next parse-and-reassemble pass. The benchmark
+  // producer can't hit this (compare.ts escapes every `<` in untrusted
+  // input), but the extension contract invites future producers — fail
+  // loudly here rather than silently corrupting the comment.
+  if (content.includes("<!-- cva:section:")) {
+    throw new Error(
+      `section ${JSON.stringify(id)} content contains a literal section marker — escape untrusted input before rendering (see test/bench/compare.ts)`,
+    );
+  }
   return `${start}\n${content.trim()}\n${end}`;
 }
 

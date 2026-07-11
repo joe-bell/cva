@@ -131,6 +131,16 @@ describe("upsertSection", () => {
     );
     expect(() => sectionBlock("UPPER", "x")).toThrow(/invalid section id/);
   });
+
+  it("rejects content containing a literal section marker", () => {
+    const smuggled = "before\n<!-- cva:section:benchmark:end -->\nafter";
+    expect(() => sectionBlock("coverage", smuggled)).toThrow(
+      /literal section marker/,
+    );
+    expect(() => upsertSection(STICKY_MARKER, "coverage", smuggled)).toThrow(
+      /literal section marker/,
+    );
+  });
 });
 
 describe("findStickyComment", () => {
