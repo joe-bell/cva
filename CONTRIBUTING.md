@@ -72,11 +72,11 @@ CI runs `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `t
 
 ### Build & publish (`packages/*`)
 
-Both published packages (`packages/cva` and `packages/class-variance-authority`) build with [tsdown](https://tsdown.dev), each configured by its own `tsdown.config.mts` (e.g. [`packages/cva/tsdown.config.mts`](./packages/cva/tsdown.config.mts)). One `pnpm --filter <package> build` emits the whole dual-format output to `dist/` — `index.js` + `index.d.ts` (CommonJS) and `index.mjs` + `index.d.mts` (ESM). Each config pins that package's historical published shape via its `outExtensions` callback (tsdown would otherwise default the CommonJS side to `.cjs`/`.d.cts`), so the two configs differ only where the packages genuinely differ (entry points, sourcemaps, gate options — the comments in each config explain the differences).
+Both published packages (`packages/cva` and `packages/class-variance-authority`) build with [tsdown](https://tsdown.dev). The shared options live in [`.config/tsdown.base.mts`](./.config/tsdown.base.mts) (alongside the repo's other shared tool config), and each package's `tsdown.config.mts` spreads that base and adds only its genuine deltas — entry points, sourcemaps, unused-check options. One `pnpm --filter <package> build` emits the whole dual-format output to `dist/` — `index.js` + `index.d.ts` (CommonJS) and `index.mjs` + `index.d.mts` (ESM), the packages' historical published shape, pinned by the base config's `outExtensions` callback (tsdown would otherwise default the CommonJS side to `.cjs`/`.d.cts`).
 
 #### How the packages transform for publish
 
-The `exports` and `publishConfig.exports` blocks in each package's `package.json` are **machine-generated**: the config's `exports: { devExports: true }` makes tsdown rewrite both on every build. **Never hand-edit them** — the next build silently overwrites your change; adjust that package's `tsdown.config.mts` instead. (One exception: `class-variance-authority`'s `publishConfig.typesVersions` — the node10 fallback for its `./types` subpath — is hand-maintained; tsdown doesn't generate it but preserves it across rebuilds.) The two blocks implement a dev/publish split:
+The `exports` and `publishConfig.exports` blocks in each package's `package.json` are **machine-generated**: the config's `exports: { devExports: true }` makes tsdown rewrite both on every build. **Never hand-edit them** — the next build silently overwrites your change; adjust that package's `tsdown.config.mts` (or the shared base) instead. (One exception: `class-variance-authority`'s `publishConfig.typesVersions` — the node10 fallback for its `./types` subpath — is hand-maintained; tsdown doesn't generate it but preserves it across rebuilds.) The two blocks implement a dev/publish split:
 
 - The top-level `exports` points at `./src/*.ts`, so workspace consumers (tests, examples, docs) always resolve the raw TypeScript source with no build step in between.
 - `publishConfig.exports` points at `dist/`. pnpm applies `publishConfig` when packing or publishing (`pnpm pack` / `pnpm publish` — never `npm pack`, which skips the rewrite entirely), so the tarball people install resolves the built output.
@@ -88,7 +88,7 @@ Two details of the published map are deliberate:
 
 #### The config, option by option
 
-Each package's `tsdown.config.mts` documents each option's rationale as a comment directly above it — read those before changing `platform`, `target`, `dts`, `outExtensions`, `exports`, or the `publint`/`attw`/`unused` gates, rather than looking here.
+[`.config/tsdown.base.mts`](./.config/tsdown.base.mts) documents each shared option's rationale as a comment directly above it — read those before changing `platform`, `target`, `dts`, `outExtensions`, `exports`, or the `publint`/`attw` gates, rather than looking here. The per-package configs carry the same style of comments for their deltas.
 
 What tsdown does **not** own: `size-limit` remains the bundle-size budget (tsdown's per-file gzip size report is informational only), the `tsc --noEmit` check remains the source type check, and version bumps stay manual per [Releases](#releases).
 
