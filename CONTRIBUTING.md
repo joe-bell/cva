@@ -72,7 +72,7 @@ CI runs `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `t
 
 ### Build & publish (`packages/*`)
 
-Both published packages (`packages/cva` and `packages/class-variance-authority`) build with [tsdown](https://tsdown.dev). The shared options live in [`.config/tsdown.base.mts`](./.config/tsdown.base.mts) (alongside the repo's other shared tool config), and each package's `tsdown.config.mts` spreads that base and adds only its genuine deltas — entry points, sourcemaps, unused-check options. One `pnpm --filter <package> build` emits the whole dual-format output to `dist/` — `index.js` + `index.d.ts` (CommonJS) and `index.mjs` + `index.d.mts` (ESM), the packages' historical published shape, pinned by the base config's `outExtensions` callback (tsdown would otherwise default the CommonJS side to `.cjs`/`.d.cts`).
+Both published packages (`packages/cva` and `packages/class-variance-authority`) build with [tsdown](https://tsdown.dev). The shared options live in [`.config/tsdown.base.mts`](./.config/tsdown.base.mts) (alongside the repo's other shared tool config), and each package's `tsdown.config.mts` spreads that base and adds only its genuine deltas — entry points and sourcemaps. One `pnpm --filter <package> build` emits the whole dual-format output to `dist/` — `index.js` + `index.d.ts` (CommonJS) and `index.mjs` + `index.d.mts` (ESM), the packages' historical published shape, pinned by the base config's `outExtensions` callback (tsdown would otherwise default the CommonJS side to `.cjs`/`.d.cts`).
 
 #### How the packages transform for publish
 
