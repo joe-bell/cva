@@ -11,9 +11,9 @@ What's changed since `class-variance-authority@0.*`?
 
 ### 1. `defineConfig`
 
-Extend `cva` via the new [`defineConfig` API](/beta/api-reference#defineconfig).
+Roll your own `cva` via the new [`defineConfig` API in `cva/core`](/beta/api-reference#cvacore).
 
-Use `cva`/`cx` with `tailwind-merge` via the new [`hooks.onComplete` option](/beta/getting-started/installation#handling-style-conflicts).
+Use `cva`/`cx` with `tailwind-merge` or a drop-in like `cnfast` via the [`cx` option](/beta/getting-started/installation#handling-style-conflicts).
 
 ### 2. `composes`
 
@@ -24,6 +24,10 @@ This [replaces the `compose` function](#1-compose--composes).
 ### 3. `getSchema`
 
 Extract a plain-object schema (variant names, values and defaults) from a `cva` component via the new [`getSchema` utility](/beta/getting-started/utilities). Use it to generate Storybook controls or any other UI that reads a component's variants.
+
+### 4. Bring your own concatenator with `cva/core`
+
+The `cva` package is now a preset over a lean core: importing from `cva` gives you `cva`/`cx` wired up with `clsx`, exactly like `class-variance-authority`. The new [`cva/core` entry point](/beta/api-reference#cvacore) exposes the same engine with no concatenator wired up, so you can swap in `tailwind-merge`, `cnfast`, `clsx/lite`, or your own function via the required `cx` option, and optionally [augment `CVARegistry`](/beta/api-reference#cvaregistry) to type your variants against your concatenator's own input grammar.
 
 ## Deprecations
 

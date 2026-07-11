@@ -488,6 +488,9 @@ importers:
       '@types/react-dom':
         specifier: 19.2.3
         version: 19.2.3(@types/react@19.2.14)
+      cnfast:
+        specifier: 0.0.8
+        version: 0.0.8
       publint:
         specifier: 0.3.21
         version: 0.3.21
@@ -500,6 +503,9 @@ importers:
       size-limit:
         specifier: ^12.1.0
         version: 12.1.0(jiti@2.7.0)
+      tailwind-merge:
+        specifier: 3.6.0
+        version: 3.6.0
       tsdown:
         specifier: 0.22.4
         version: 0.22.4(@arethetypeswrong/core@0.18.2)(publint@0.3.21)(typescript@6.0.3)(unplugin-unused@0.5.7(esbuild@0.28.1)(rolldown@1.1.5)(vite@8.1.0(@types/node@24.13.2)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.8.4)))(vue-tsc@3.2.8(typescript@6.0.3))
@@ -2477,6 +2483,10 @@ packages:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
 
+  cnfast@0.0.8:
+    resolution: {integrity: sha512-EjXKMfGfdwtV4AcNSQ6AwQaVzpC1B7IxeiwA3FlhTXz+YFlMKVi4c1JX9tgD2QOlahQXjB8KUXrBaYG+3v871Q==}
+    hasBin: true
+
   collapse-white-space@2.1.0:
     resolution: {integrity: sha512-loKTxY1zCOuG4j9f6EPnuyyYkf58RnhhWTvRoZEokgB+WbdXehfjFviyOVYkqzEWz1Q5kRiZdBYS5SwxbQYwzw==}
 
@@ -4093,6 +4103,9 @@ packages:
     resolution: {integrity: sha512-8aCVifg97m3hig1dnDwvGSPk6g/SDMzYRDjyL58c7l74gq8BCpUFmJrZZUL/9w6kGrnHxl6HsqUeOVja4ZpqTA==}
     engines: {node: '>=14.17.0'}
     hasBin: true
+
+  tailwind-merge@3.6.0:
+    resolution: {integrity: sha512-uxL7qAVQriqRQPAyK3pj66VqskWqoZ37PW94jwOTwNfq/z9oyu1V+eqrZqtR2+fCiXdYOZe/Modt8GtvqNzu+w==}
 
   tailwindcss@4.2.4:
     resolution: {integrity: sha512-HhKppgO81FQof5m6TEnuBWCZGgfRAWbaeOaGT00KOy/Pf/j6oUihdvBpA7ltCeAvZpFhW3j0PTclkxsd4IXYDA==}
@@ -6540,6 +6553,8 @@ snapshots:
 
   clsx@2.1.1: {}
 
+  cnfast@0.0.8: {}
+
   collapse-white-space@2.1.0: {}
 
   color-convert@2.0.1:
@@ -8750,6 +8765,8 @@ snapshots:
       syncpack-linux-x64-musl: 15.0.0
       syncpack-windows-arm64: 15.0.0
       syncpack-windows-x64: 15.0.0
+
+  tailwind-merge@3.6.0: {}
 
   tailwindcss@4.2.4: {}
 

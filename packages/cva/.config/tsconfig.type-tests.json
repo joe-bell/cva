@@ -1,0 +1,15 @@
+{
+  "extends": "../../../.config/tsconfig.base.json",
+  "include": ["../type-tests/**/*.ts"],
+  "compilerOptions": {
+    "noEmit": true,
+    "incremental": false,
+    // Resolve the package's own name to source (relative to this tsconfig),
+    // so the fixtures read (and augment) exactly like consumer code:
+    // `declare module "cva/core"`.
+    "paths": {
+      "cva": ["../src/index.ts"],
+      "cva/core": ["../src/core.ts"]
+    }
+  }
+}

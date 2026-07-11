@@ -1,6 +1,6 @@
 ---
 title: API Reference
-description: Reference for the cva, cx, getSchema, and defineConfig functions.
+description: Reference for the cva, cx, and getSchema functions, and the cva/core entry point with defineConfig and CVARegistry.
 ---
 
 ## `cva`
@@ -28,7 +28,7 @@ A `cva` component function
 
 ## `cx`
 
-Concatenates class names (an alias of [`clsx`](https://github.com/lukeed/clsx))
+Concatenates class names (an alias of [`clsx`](https://github.com/lukeed/clsx); swap in your own concatenator via [`cva/core`](#cvacore))
 
 ```ts
 import { cx } from "cva";
@@ -89,7 +89,11 @@ An object keyed by variant name. Each entry has:
 - `values`: a readonly array of the variant's possible values
 - `defaultValue`: present only if the variant has a `defaultVariants` entry
 
-## `defineConfig`
+## `cva/core`
+
+The `cva` package is a preset: [`cva`](#cva), [`cx`](#cx), and [`getSchema`](#getschema) wired up with `clsx`. `cva/core` is the same engine with nothing wired up, for rolling your own configuration.
+
+### `defineConfig`
 
 Generate `cva` and `cx` functions based on your preferred configuration.
 
@@ -97,13 +101,30 @@ Store in a `cva.config.ts` file, and import across your project.
 
 ```ts
 // cva.config.ts
-import { defineConfig } from "cva";
+import { defineConfig } from "cva/core";
 
 export const { cva, cx } = defineConfig(options);
 ```
 
 1. `options`
+   - `cx` (**required**): the class name concatenator used by `cva`, `cx`, and `compose`. It owns the class name grammar entirely: `cva` assembles the authored values (composed component outputs, `base`, matched variant and compound variant values, `class`/`className`) and passes them through verbatim, one argument each, without interpreting them. See [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for worked examples with `tailwind-merge`, `cnfast`, and `clsx/lite`.
    - `hooks`
-     - `onComplete`: returns a concatenated class string of all classes passed to `cx` or `cva`.
+     - `onComplete` (deprecated, use `cx` instead): returns a concatenated class string of all classes passed to `cx` or `cva`.
 
 `defineConfig` also returns a deprecated `compose` function for migrating from `class-variance-authority`; use the `composes` property on `cva` instead. See [What's new?](/beta/getting-started/whats-new#1-compose--composes).
+
+For backwards compatibility, `defineConfig` is still re-exported from `cva` (with `cx` optional, defaulting to `clsx`), but it's deprecated there: import it from `cva/core` instead.
+
+### `CVARegistry`
+
+By default the `cx` option and the authoring surface (`base`, variant values, `class`/`className`) are typed with `cva`'s clsx-flavored `ClassValue`. If your concatenator accepts a narrower input type, augment `CVARegistry` to adopt it project-wide: the `cx` option then accepts your concatenator as-is, and your variants are checked against what it actually supports.
+
+```ts
+declare module "cva/core" {
+  interface CVARegistry {
+    classValue: import("tailwind-merge").ClassNameValue;
+  }
+}
+```
+
+The registered type must be a subtype of `ClassValue`, and the registration applies to the whole project (one contract per project, not per `defineConfig` call).

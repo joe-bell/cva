@@ -22,6 +22,7 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
+    "./core": "./src/core.ts",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
@@ -34,6 +35,7 @@
     "build": "tsdown",
     "bundlesize": "pnpm build && size-limit",
     "check": "pnpm run '/^check:.*/'",
+    "check:registry": "tsc --project .config/tsconfig.type-tests.json",
     "check:tsc": "tsc --project tsconfig.json --noEmit",
     "dev": "tsdown --watch",
     "prepublishOnly": "pnpm build"
@@ -47,10 +49,12 @@
     "@types/node": "24.13.2",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
+    "cnfast": "0.0.8",
     "publint": "0.3.21",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "size-limit": "^12.1.0",
+    "tailwind-merge": "3.6.0",
     "tsdown": "0.22.4",
     "typescript": "6.0.3",
     "unplugin-unused": "0.5.7"
@@ -69,16 +73,31 @@
         "import": "./dist/index.mjs",
         "require": "./dist/index.cjs"
       },
+      "./core": {
+        "import": "./dist/core.mjs",
+        "require": "./dist/core.cjs"
+      },
       "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",
-    "types": "dist/index.d.cts"
+    "types": "dist/index.d.cts",
+    "typesVersions": {
+      "*": {
+        "core": [
+          "./dist/core.d.cts"
+        ]
+      }
+    }
   },
   "size-limit": [
     {
       "path": "dist/index.cjs",
       "limit": "1.6KB"
+    },
+    {
+      "path": "dist/core.cjs",
+      "limit": "1.2KB"
     }
   ]
 }

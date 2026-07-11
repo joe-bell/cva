@@ -1,5 +1,6 @@
 import type * as CVA from "./";
 import { compose, cva, cx, defineConfig, getSchema } from "./";
+import { defineConfig as defineCoreConfig } from "./core";
 
 describe("cx", () => {
   describe.each<CVA.CXOptions>([
@@ -2438,5 +2439,135 @@ describe("defineConfig", () => {
         expect(classListSplit[classListSplit.length - 1]).toBe(SUFFIX);
       });
     });
+  });
+
+  describe("cx", () => {
+    test("receives assembled values verbatim, one argument each", () => {
+      const calls: unknown[][] = [];
+      const recording: CVA.CX = (...inputs) => {
+        calls.push(inputs);
+        return "recorded";
+      };
+
+      const { cva: cvaExtended } = defineConfig({ cx: recording });
+
+      const child = cvaExtended({ base: "child" });
+      const badge = cvaExtended({
+        composes: [child],
+        base: ["badge", { "badge--raised": true }],
+        variants: {
+          tone: { info: { "bg-blue-500": true }, warn: "bg-yellow-500" },
+        },
+        compoundVariants: [{ tone: "info", class: "compound-info" }],
+        defaultVariants: { tone: "info" },
+      });
+
+      expect(badge({ class: "extra" })).toBe("recorded");
+      // Two calls: the composed `child` renders through the same configured
+      // `cx` first, then `badge` itself.
+      expect(calls).toHaveLength(2);
+      expect(calls[0]).toEqual(["child", undefined, undefined]);
+      // Core never interprets class values: its own arrays (composed
+      // outputs, matched variant/compound values) are spread to one argument
+      // per value, and authored values arrive untouched — the `base` array
+      // and the object-syntax variant value are passed through as-is for the
+      // concatenator's own grammar to handle.
+      expect(calls[1]).toEqual([
+        "recorded",
+        ["badge", { "badge--raised": true }],
+        { "bg-blue-500": true },
+        "compound-info",
+        undefined,
+        "extra",
+        undefined,
+      ]);
+    });
+
+    test("supports a conflict-resolving concatenator end-to-end", () => {
+      // A minimal last-wins conflict resolver — keeps only the last class
+      // within a given utility group (its first `-`-delimited segment, e.g.
+      // `bg`), standing in for cnfast/tailwind-merge's conflict resolution.
+      // Real-package coverage lives in `concatenators.test.ts`.
+      const lastWins: CVA.CX = (...inputs) => {
+        const byGroup = new Map<string, string>();
+        for (const input of inputs) {
+          if (typeof input !== "string" || !input) continue;
+          for (const className of input.split(" ")) {
+            byGroup.set(className.split("-")[0] || className, className);
+          }
+        }
+        return Array.from(byGroup.values()).join(" ");
+      };
+
+      const { cva: cvaExtended } = defineConfig({ cx: lastWins });
+
+      const button = cvaExtended({
+        base: "bg-gray-200",
+        variants: { intent: { primary: "bg-blue-500" } },
+      });
+
+      expect(button({ intent: "primary" })).toBe("bg-blue-500");
+    });
+
+    test("concatenators accepting ClassValue (or wider) are assignable", () => {
+      // Contravariance: any function accepting a supertype of `ClassValue`
+      // per argument fits the default `CX` contract — clsx, clsx/lite, and
+      // cnfast's `cn` are all typed this way (real-package pins live in
+      // `concatenators.test.ts`).
+      expectTypeOf((...inputs: CVA.ClassValue[]) =>
+        inputs.join(" "),
+      ).toMatchTypeOf<CVA.CX>();
+      expectTypeOf((...inputs: unknown[]) =>
+        inputs.join(" "),
+      ).toMatchTypeOf<CVA.CX>();
+    });
+
+    test("a bare twMerge-shaped concatenator is rejected by the default contract", () => {
+      defineConfig({
+        // @ts-expect-error — tailwind-merge's `ClassNameValue` has no
+        // objects/numbers, so it can't accept everything cva may pass;
+        // augment `CVARegistry` (see `type-tests/registry.ts`) or wrap it
+        cx: (...inputs: (string | null | undefined | 0 | false)[]) =>
+          inputs.filter(Boolean).join(" "),
+      });
+    });
+  });
+});
+
+describe("cva/core", () => {
+  test("requires a cx concatenator", () => {
+    // @ts-expect-error — core's `defineConfig` has no default concatenator
+    defineCoreConfig({});
+  });
+
+  test("forwards inputs to the concatenator and wraps with hooks", () => {
+    const join: CVA.CX = (...inputs) =>
+      inputs.filter((input) => typeof input === "string" && input).join("|");
+
+    const { cva: coreCva, cx: coreCx } = defineCoreConfig({
+      cx: join,
+      hooks: { onComplete: (className) => `(${className})` },
+    });
+
+    expect(coreCx("a", "b")).toBe("(a|b)");
+
+    const button = coreCva({
+      base: "btn",
+      variants: { size: { sm: "btn-sm" } },
+    });
+    expect(button({ size: "sm" })).toBe("(btn|btn-sm)");
+  });
+
+  test("the (deprecated) cx:done hook still wins over onComplete", () => {
+    const { cx: coreCx } = defineCoreConfig({
+      cx: (...inputs) =>
+        inputs.filter((input) => typeof input === "string").join(" "),
+      hooks: {
+        "cx:done": (className) => `done:${className}`,
+        onComplete: (className) => `complete:${className}`,
+      },
+    });
+
+    expect(coreCx("foo")).toBe("done:foo");
   });
 });
