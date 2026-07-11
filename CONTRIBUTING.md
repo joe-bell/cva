@@ -88,7 +88,7 @@ Two details of the published map are deliberate:
 
 #### The config, option by option
 
-[`.config/tsdown.base.mts`](./.config/tsdown.base.mts) documents each shared option's rationale as a comment directly above it — read those before changing `platform`, `target`, `dts`, `exports`, or the `publint`/`attw` gates, rather than looking here. The per-package configs carry the same style of comments for their deltas.
+[`.config/tsdown.base.mts`](./.config/tsdown.base.mts) sets the shared defaults: dual `esm`/`cjs` output, `platform: "neutral"` (keeps the packages browser/Node/edge-portable), `es2019` target, tsc-generated `dts`, the regenerated `exports` map, and the `publint`/`attw`/`unused` gates — with brief inline notes above the non-obvious ones. Each package's `tsdown.config.mts` spreads the base and overrides only genuine deltas. Note the `attw` gate needs every consuming package to declare its own `@arethetypeswrong/core` devDependency — it's an optional tsdown peer, so a missing one makes tsdown skip attw silently rather than fail.
 
 What tsdown does **not** own: `size-limit` remains the bundle-size budget (tsdown's per-file gzip size report is informational only), the `tsc --noEmit` check remains the source type check, and version bumps stay manual per [Releases](#releases).
 
@@ -99,3 +99,23 @@ Day to day: `pnpm --filter <package> dev` runs the build in watch mode, and beca
 A trade-off with using a personal repo is that permissions are fairly locked-down. In the mean-time releases will be made manually by the project owner.
 
 Version bumps (the `version` field in `packages/*/package.json`) are part of that manual release process — they happen only on `main`, cut by the project owner, as their own commit separate from any feature/fix work. Don't include a version bump in a feature or fix branch/PR, even if you're an agent implementing a versioned change like "cut vX.Y.Z" — leave that step to the owner on `main`.
+
+### Publishing a release (project owner)
+
+Release one package at a time, from `main`. For a package `<package>` (`cva` or `class-variance-authority`) at a new `<version>`:
+
+1. Check out `main` and make sure it's up to date: `git checkout main && git pull`.
+2. Bump the `version` field in that package's `package.json` — the only place the version changes.
+3. Commit the bump on its own, using the version as the message: `git commit -am "<package>@<version>"` (e.g. `cva@1.0.0-beta.7`).
+4. Push `main`: `git push origin main`.
+5. Tag the commit `v<version>` and push the tag:
+
+   ```sh
+   git tag v<version>          # e.g. v1.0.0-beta.7
+   git push origin v<version>
+   ```
+
+6. Publish from the package: `pnpm --filter <package> publish`. `prepublishOnly` runs the tsdown build first, so the publish-shape gates (attw, publint, unused) must pass or the publish aborts. **Publish the beta package under the `beta` dist-tag** — `pnpm --filter cva publish --tag beta` — so the prerelease doesn't overwrite `latest`; the stable package publishes to the default `latest`.
+7. Create the matching [GitHub release](https://github.com/joe-bell/cva/releases) for the `v<version>` tag.
+
+The commit message (`<package>@<version>`) and tag (`v<version>`) formats match the existing release history — keep them consistent so the two packages' releases stay legible in a shared tag namespace.
