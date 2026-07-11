@@ -41,6 +41,7 @@
     "clsx": "^2.1.1"
   },
   "devDependencies": {
+    "@arethetypeswrong/core": "0.18.2",
     "@size-limit/preset-small-lib": "^12.1.0",
     "@types/node": "24.13.2",
     "@types/react": "19.2.14",

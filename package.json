@@ -29,6 +29,7 @@
     "prettier-plugin-tailwindcss": "0.8.0",
     "skill-check": "1.2.0",
     "syncpack": "15.0.0",
+    "tsdown": "0.22.4",
     "typescript": "6.0.3",
     "vitest": "4.1.5"
   },

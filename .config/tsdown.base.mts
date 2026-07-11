@@ -21,10 +21,13 @@ export const base = {
   // hand-edit those blocks.
   exports: { devExports: true },
   // Validate the publish shape on every build: a failure here means the
-  // packed manifest broke, not the source. Switch attw to "ci-only" if the
-  // per-install cost ever bites.
+  // packed manifest broke, not the source.
   publint: { level: "error" },
   // `ignore`: cva's type-only optional peer; a no-op where absent.
   unused: { level: "error", ignore: ["typescript"] },
+  // Switch attw to "ci-only" if the per-install cost ever bites. Its
+  // `@arethetypeswrong/core` peer must be a devDependency of every package
+  // spreading this base - it's an optional tsdown peer, so a missing one
+  // makes tsdown skip attw silently rather than fail.
   attw: { profile: "strict", level: "error" },
 } satisfies UserConfig;

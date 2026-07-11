@@ -41,6 +41,9 @@ importers:
       syncpack:
         specifier: 15.0.0
         version: 15.0.0
+      tsdown:
+        specifier: 0.22.4
+        version: 0.22.4(@arethetypeswrong/core@0.18.2)(publint@0.3.21)(typescript@6.0.3)(unplugin-unused@0.5.7(esbuild@0.28.1)(rolldown@1.1.5)(vite@8.1.0(@types/node@24.13.2)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.8.4)))(vue-tsc@3.2.8(typescript@6.0.3))
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -424,6 +427,9 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
     devDependencies:
+      '@arethetypeswrong/core':
+        specifier: 0.18.2
+        version: 0.18.2
       '@size-limit/preset-small-lib':
         specifier: ^12.1.0
         version: 12.1.0(size-limit@12.1.0(jiti@2.7.0))
@@ -4720,7 +4726,7 @@ snapshots:
       cjs-module-lexer: 1.4.1
       fflate: 0.8.2
       lru-cache: 11.3.6
-      semver: 7.7.4
+      semver: 7.8.5
       typescript: 5.6.1-rc
       validate-npm-package-name: 5.0.1
 
