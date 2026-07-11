@@ -25,9 +25,12 @@ name: pr-comment
 #      test/bench/compare.ts for the pattern: exact schema, size caps,
 #      escaping.
 #   3. Cross-check the artifact's claimed PR number against
-#      `github.event.workflow_run.head_sha` before trusting it (see the
-#      benchmark section's head-SHA check below) — this is what stops a
-#      crafted artifact from getting a comment posted on an arbitrary PR.
+#      `github.event.workflow_run.head_sha` AND cross-check the producing
+#      head repo against that PR's head repo (see the benchmark section's
+#      checks below). Both are needed: the SHA check stops a crafted
+#      artifact from targeting an arbitrary PR, and the repo check stops
+#      a fork from mirroring a victim PR's (public, content-addressed)
+#      head commit to pass the SHA check with fabricated data.
 #   4. Call `upsertPrComment` from .github/scripts/pr-comment.mjs with your
 #      own `sectionId` and `createIfMissing: false` (only the first/primary
 #      producer should create the comment; every other producer waits for
@@ -93,6 +96,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
         with:
           script: |
             const fs = require("node:fs");
@@ -100,16 +104,25 @@ jobs:
               "${{ github.workspace }}/.github/scripts/pr-comment.mjs"
             );
 
-            const meta = JSON.parse(fs.readFileSync("test/bench/.output/meta.json", "utf8"));
+            // The meta file is untrusted artifact content; cap its size
+            // before parsing (its only valid payload is a tiny object).
+            const metaPath = "test/bench/.output/meta.json";
+            if (fs.statSync(metaPath).size > 64 * 1024) {
+              throw new Error("benchmark artifact meta.json exceeds the 64 KiB cap");
+            }
+            const meta = JSON.parse(fs.readFileSync(metaPath, "utf8"));
             const pr = meta.pr;
             if (!Number.isInteger(pr) || pr < 1 || pr > 1_000_000_000) {
               throw new Error(`invalid PR number in benchmark artifact: ${meta.pr}`);
             }
 
-            // The artifact claims to belong to PR `pr`. Cross-check against
-            // this run's actual head SHA before trusting that claim — this
-            // is what stops a crafted artifact from getting a comment posted
-            // on an arbitrary PR.
+            // The artifact claims to belong to PR `pr`. Cross-check both the
+            // head SHA and the head repo of the run that produced it against
+            // that PR before trusting the claim. The SHA check stops a
+            // crafted artifact from targeting an arbitrary PR; the repo
+            // check stops a fork from mirroring a victim PR's (public,
+            // content-addressed) head commit to pass the SHA check and
+            // overwrite the victim's comment with fabricated numbers.
             let pull;
             try {
               ({ data: pull } = await github.rest.pulls.get({
@@ -126,6 +139,12 @@ jobs:
             if (pull.head.sha !== process.env.HEAD_SHA) {
               console.log(
                 `head SHA mismatch for PR #${pr} (artifact run vs. current head) — skipping, a newer run will comment instead`,
+              );
+              return;
+            }
+            if (pull.head.repo?.full_name !== process.env.HEAD_REPO) {
+              console.log(
+                `head repo mismatch for PR #${pr} (artifact produced by a different fork) — skipping`,
               );
               return;
             }
