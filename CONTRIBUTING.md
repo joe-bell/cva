@@ -86,13 +86,11 @@ Two details of the published map are deliberate:
 - There are no explicit `types` conditions — TypeScript auto-pairs `index.mjs` → `index.d.mts` and `index.js` → `index.d.ts`, which means `import`-ing consumers get true ESM declarations rather than a shared CommonJS-flavoured `.d.ts`. The attw gate (below) verifies all four resolution modes stay green.
 - `"./package.json": "./package.json"` is exported because declaring an `exports` map encapsulates every unlisted subpath, which would break tooling that reads a dependency's `package.json` directly (bundler plugins, Metro, framework CLIs doing version detection). tsdown adds the line by default; it exposes nothing new — the file ships in every tarball regardless.
 
-#### The config, feature by feature
+#### The config, option by option
 
-- `platform: "neutral"` — cva is isomorphic (browser + Node) and must not assume Node built-ins.
-- `target: "es2019"` — matches the repo-wide [`tsconfig.base.json`](./.config/tsconfig.base.json).
-- `dts: true` — declarations come from the TypeScript compiler under the hood; the codebase's inferred conditional types deliberately don't satisfy `isolatedDeclarations`, so don't enable tsdown's fast isolated-declarations path without rewriting the public API's type annotations.
-- `publint`, `attw`, and `unused` all run **inside the build** at `level: "error"`, so a red build from one of them means the _publish shape_ broke, not the source: `attw` packs the tarball and validates the publishConfig-rewritten manifest across all four resolution modes (node10, node16-CJS, node16-ESM, bundler) — it replaces the old standalone `check:exports` script; `publint` checks `package.json` fields against the actual output files; `unused` flags unused `dependencies`/`peerDependencies` (the optional `typescript` peer sits in its `ignore` list because it's used only at the type level, which the check can't see).
-- What tsdown does **not** own: `size-limit` remains the bundle-size budget (tsdown's per-file gzip size report is informational only), `check:tsc` remains the source type check, and version bumps stay manual per [Releases](#releases).
+[`tsdown.config.mts`](./packages/cva/tsdown.config.mts) documents each option's rationale as a comment directly above it — read those before changing `platform`, `target`, `dts`, `outExtensions`, `exports`, or the `publint`/`attw`/`unused` gates, rather than looking here.
+
+What tsdown does **not** own: `size-limit` remains the bundle-size budget (tsdown's per-file gzip size report is informational only), `check:tsc` remains the source type check, and version bumps stay manual per [Releases](#releases).
 
 Day to day: `pnpm --filter cva dev` runs the build in watch mode, and because the root `prepare:packages` script builds on every `pnpm install`, the publish-shape gates run then too — a broken manifest fails fast on your machine rather than in CI. If that per-install cost ever becomes a problem, `attw: 'ci-only'` in the config confines the slowest gate to CI.
 
