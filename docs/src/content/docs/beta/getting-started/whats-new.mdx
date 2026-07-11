@@ -1,6 +1,6 @@
 ---
 title: What's New?
-description: What changed in cva@1.0, defineConfig, composes, getSchema, and other breaking changes since class-variance-authority@0.x.
+description: What changed in cva@1.0, defineConfig, composes, the cva/tools entry point, and other breaking changes since class-variance-authority@0.x.
 ---
 
 ---
@@ -21,9 +21,12 @@ Shallow merge one or more `cva` components into a single component via the new [
 
 This [replaces the `compose` function](#1-compose--composes).
 
-### 3. `getSchema`
+### 3. `cva/tools`
 
-Extract a plain-object schema (variant names, values and defaults) from a `cva` component via the new [`getSchema` utility](/beta/getting-started/utilities). Use it to generate Storybook controls or any other UI that reads a component's variants.
+Introspect components via the new [`cva/tools` entry point](/beta/getting-started/tools), which ships separately so it costs nothing unless you import it:
+
+- `getSchema` extracts a plain-object schema (variant names, values and defaults) from a `cva` component. Use it to generate Storybook controls or any other UI that reads a component's variants.
+- `pva` resolves a component's class string and its variant state, as `data-*` attributes (for example `data-intent="primary"`), from a single props object.
 
 ### 4. Internal variants
 
@@ -55,6 +58,15 @@ The `compose` method is deprecated in favor of the `composes` property inside `c
 :::
 
 See [Composing Components](/beta/getting-started/composing-components) for more details and migration examples.
+
+### 2. Root `getSchema` → `cva/tools`
+
+Earlier betas exported `getSchema` from the package root. That import still works, but it's deprecated: import from the [`cva/tools` entry point](/beta/getting-started/tools) instead.
+
+```diff lang="ts"
+- import { getSchema } from "cva";
++ import { getSchema } from "cva/tools";
+```
 
 ## Enhancements
 

@@ -15,6 +15,9 @@
  */
 import { clsx } from "clsx";
 
+import { getSchema as getSchemaFromTools } from "./tools";
+import type { GetSchema as ToolsGetSchema } from "./tools";
+
 /* Types
   ============================================ */
 
@@ -41,7 +44,11 @@ export type ClassArray = ClassValue[];
   ---------------------------------- */
 
 type OmitUndefined<T> = T extends undefined ? never : T;
-type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
+/**
+ * Exported so TypeScript can name this type in your generated declarations
+ * (`declaration: true`) — you shouldn't really use it directly.
+ */
+export type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
   k: infer I,
 ) => void
@@ -173,10 +180,18 @@ type CVAClassProp =
       className?: ClassValue;
     };
 
-type InternalOnlyWarning =
+/**
+ * Exported so TypeScript can name this type in your generated declarations
+ * (`declaration: true`) — you shouldn't really use it directly.
+ */
+export type InternalOnlyWarning =
   "cva's generic parameters are restricted to internal use only.";
 
-type CVAComponentConfig<
+/**
+ * Exported so TypeScript can name this type in your generated declarations
+ * (`declaration: true`) — you shouldn't really use it directly.
+ */
+export type CVAComponentConfig<
   Config,
   Variants,
   ComposedSingle extends CVAComponentShape | undefined =
@@ -533,73 +548,14 @@ export const defineConfig: DefineConfig = (options) => {
 
 export const { compose, cva, cx } = defineConfig();
 
-export interface GetSchema {
-  <_ extends InternalOnlyWarning, Component, Config, Variants>(
-    component: Component &
-      (Component extends ReturnType<CVA>
-        ? { config: CVAComponentConfig<Config, Variants> }
-        : never),
-  ): {
-    [Variant in keyof Variants as Variant extends InternalVariantKey
-      ? never
-      : Variant]: Config extends CVAComponentConfig<Config, Variants>
-      ? Variant extends keyof Config["defaultVariants"]
-        ? Config["defaultVariants"][Variant] extends undefined
-          ? never
-          : {
-              values: ReadonlyArray<StringToBoolean<keyof Variants[Variant]>>;
-              defaultValue: Readonly<
-                StringToBoolean<Config["defaultVariants"][Variant]>
-              >;
-            }
-        : {
-            values: ReadonlyArray<StringToBoolean<keyof Variants[Variant]>>;
-          }
-      : never;
-    // Iterate over the returned schema and remove any keys that have no values
-  } extends infer Schema
-    ? {
-        [K in keyof Schema as Schema[K] extends {
-          values: readonly never[];
-        }
-          ? never
-          : K]: Schema[K] extends { defaultValue: never } ? never : Schema[K];
-      }
-    : never;
-}
+/* getSchema (deprecated re-export)
+  ---------------------------------- */
 
-export const getSchema: GetSchema = (component) => {
-  if (!component.config?.variants) return {} as any;
-
-  return Object.entries(component.config.variants).reduce(
-    (acc, [key, value]) => {
-      if (key.startsWith("_")) return acc;
-
-      const defaultValue = component.config.defaultVariants?.[key];
-      const hasDefaultValue = defaultValue !== undefined;
-      const values = Object.keys(value).map((v) => {
-        if (v === "true") return true;
-        if (v === "false") return false;
-        // Normalize numeric-literal keys back to numbers, since that's how
-        // they appear in variant prop types (`keyof { 1: ... }` is `1`, not
-        // `"1"`) — object keys are always strings/symbols at runtime. The
-        // `String(n) === v` round-trip only accepts canonical numeric forms
-        // (so `"01"`, `""`, `" 1"` stay strings), covering negatives too.
-        const n = Number(v);
-        return Number.isFinite(n) && String(n) === v ? n : v;
-      }) as StringToBoolean<keyof typeof value>[];
-      const hasValues = values.length > 0;
-
-      return hasValues || hasDefaultValue
-        ? {
-            ...acc,
-            [key]: {
-              ...(hasValues ? { values } : {}),
-              ...(hasDefaultValue ? { defaultValue } : {}),
-            },
-          }
-        : acc;
-    },
-    {} as ReturnType<GetSchema>,
-  );
-};
+/**
+ * @deprecated Import `getSchema` from `cva/tools` instead.
+ */
+export const getSchema = getSchemaFromTools;
+/**
+ * @deprecated Import `GetSchema` from `cva/tools` instead.
+ */
+export type GetSchema = ToolsGetSchema;

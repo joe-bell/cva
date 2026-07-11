@@ -24,6 +24,7 @@ If you'd prefer to use a React-based API, `cva` strongly recommends using [Base 
 ```tsx
 "use client";
 import { cva, type VariantProps } from "cva";
+import { pva } from "cva/tools";
 import { useRender } from "@base-ui/react/use-render";
 import { mergeProps } from "@base-ui/react/merge-props";
 
@@ -50,11 +51,12 @@ export function Button({
   className,
   ...props
 }: ButtonProps) {
+  // Resolve the class string and variant state (e.g. `data-intent="primary"`)
+  // from one props object. See /beta/getting-started/tools#pva
+  const resolved = pva(button, { intent, className });
   const defaultProps: useRender.ElementProps<typeof _BUTTON_DEFAULT_TAG> = {
-    className: button({ intent, className }),
-    // Consider data-attributes for debugging purposes
-    ["data-button" as string]: "",
-    ["data-intent" as string]: intent,
+    className: resolved.className,
+    ...resolved.data,
   };
 
   return useRender({
@@ -71,7 +73,7 @@ export function Button({
 import { Button } from "./components/button";
 
 // Renders:
-//   <a href="/contact" class="button bg-blue-500 hover:bg-blue-600 border-transparent text-white">
+//   <a href="/contact" class="button bg-blue-500 hover:bg-blue-600 border-transparent text-white" data-intent="primary">
 //     Contact
 //   </a>
 export default () => <Button render={<a href="/contact" />}>Contact</Button>;

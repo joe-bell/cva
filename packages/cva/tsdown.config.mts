@@ -3,5 +3,5 @@ import { base } from "../../.config/tsdown.base.mts";
 
 export default defineConfig({
   ...base,
-  entry: ["src/index.ts"],
+  entry: ["src/index.ts", "src/tools.ts"],
 });
