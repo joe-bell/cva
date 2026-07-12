@@ -24,14 +24,26 @@ function validResult(overrides: Partial<Record<string, unknown>> = {}) {
         label: "local",
         version: "1.0.0-beta.5",
         tasks: [
-          { name: "cva: create", hz: 100, mean: 0.01, rme: 0.5, samples: 1000 },
+          {
+            name: "Create component (one-time setup)",
+            hz: 100,
+            mean: 0.01,
+            rme: 0.5,
+            samples: 1000,
+          },
         ],
       },
       {
         label: "prerelease",
         version: "1.0.0-beta.4",
         tasks: [
-          { name: "cva: create", hz: 90, mean: 0.011, rme: 0.6, samples: 900 },
+          {
+            name: "Create component (one-time setup)",
+            hz: 90,
+            mean: 0.011,
+            rme: 0.6,
+            samples: 900,
+          },
         ],
       },
       { label: "release", version: "0.7.1", skipped: "not published on npm" },
@@ -230,6 +242,17 @@ describe("renderMarkdown", () => {
     expect(markdown).toContain("not authenticated");
   });
 
+  it("includes guidance for reading create vs call benchmarks", () => {
+    const validated = validateResult(validResult(), "cva");
+    const markdown = renderMarkdown([validated]);
+
+    expect(markdown).toContain("### How to read this");
+    expect(markdown).toContain(
+      "Compare each package with its own published version",
+    );
+    expect(markdown).toContain("usually not part of rendering");
+  });
+
   it("renders a delta between local and a baseline", () => {
     const validated = validateResult(validResult(), "cva");
     const markdown = renderMarkdown([validated]);
@@ -259,7 +282,7 @@ describe("renderMarkdown", () => {
     const markdown = renderMarkdown([validated]);
     const row = markdown
       .split("\n")
-      .find((line) => line.includes("cva: create"));
+      .find((line) => line.includes("Create component (one-time setup)"));
     expect(row).toContain("+2.0%");
     expect(row).not.toContain("🟢");
     expect(row).not.toContain("🔴");
@@ -272,7 +295,7 @@ describe("renderMarkdown", () => {
     const markdown = renderMarkdown([validated]);
     const row = markdown
       .split("\n")
-      .find((line) => line.includes("cva: create"));
+      .find((line) => line.includes("Create component (one-time setup)"));
     expect(row).toBeDefined();
     expect(row).not.toMatch(/Infinity|NaN/);
   });
@@ -286,7 +309,7 @@ describe("renderMarkdown", () => {
           version: "1.0.0-beta.4",
           tasks: [
             {
-              name: "cva: create",
+              name: "Create component (one-time setup)",
               hz: 90,
               mean: 0.011,
               rme: 0.6,
@@ -300,7 +323,7 @@ describe("renderMarkdown", () => {
     const markdown = renderMarkdown([validated]);
     const row = markdown
       .split("\n")
-      .find((line) => line.includes("cva: create"));
+      .find((line) => line.includes("Create component (one-time setup)"));
     expect(row).toBeDefined();
     expect(row).toContain("90 ops/s");
     expect(row).toContain("| — |");

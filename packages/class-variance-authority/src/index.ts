@@ -13,8 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/** TEST ONLY: temporary change to exercise benchmark sticky PR comment CI. */
 import { clsx } from "clsx";
 
 import type {

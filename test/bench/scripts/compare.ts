@@ -32,7 +32,7 @@ const SAFE_VERSION = /^[\w.\-+]{1,64}$/;
 // PR-controlled (a fork can edit `*.bench.ts` freely), so this allowlist
 // — not just escaping — is what makes markdown link/image injection into
 // the rendered comment impossible, not just awkward.
-const SAFE_TASK_NAME = /^[\w :,._+'-]{1,80}$/;
+const SAFE_TASK_NAME = /^[\w :,._+'()-]{1,80}$/;
 // Skipped reasons are PR-controlled via the untrusted benchmark artifact.
 const SAFE_SKIPPED = /^[\w :.,_'()/-]{1,200}$/;
 // Canonical UTC instant from Date#toISOString() — no offsets, no date-only.
@@ -419,7 +419,13 @@ export function renderMarkdown(results: BenchmarkResult[]): string {
   return [
     "## Benchmarks",
     "",
-    "Comparing this PR's local benchmark run against the published npm versions (baselines resolved from each package's npm dist-tags — `beta` for `cva`, `latest` for `class-variance-authority`). Higher ops/s is better. Shared CI runners are noisy — treat deltas within ±5% as noise. Moves beyond that band are marked 🟢 (faster than the baseline) or 🔴 (slower).",
+    "Each table compares this PR's build with that package's published npm version (`beta` for `cva`, `latest` for `class-variance-authority`). Higher ops/s is better. Deltas within ±5% are treated as CI noise; larger moves are marked 🟢 (faster) or 🔴 (slower).",
+    "",
+    "### How to read this",
+    "",
+    "- **Create** measures one-time setup when defining a component. It is usually not part of rendering.",
+    "- **Call** measures class-name generation from a component that already exists. This is the usual runtime path.",
+    "- Compare each package with its own published version. `cva` and `class-variance-authority` support different features, so their absolute numbers are not directly comparable.",
     "",
     sections.join("\n\n"),
     "",

@@ -70,7 +70,7 @@ const defaultVariants = {
 
 function registerBenchmarks(mod: typeof local) {
   bench(
-    "cva: create",
+    "Create component (one-time setup)",
     () => {
       mod.cva(base, { variants, compoundVariants, defaultVariants });
     },
@@ -84,7 +84,7 @@ function registerBenchmarks(mod: typeof local) {
   });
 
   bench(
-    "cva: call defaults",
+    "Call component (default variants)",
     () => {
       buttonVariants({});
     },
@@ -92,7 +92,7 @@ function registerBenchmarks(mod: typeof local) {
   );
 
   bench(
-    "cva: call with props",
+    "Call component (with variants)",
     () => {
       buttonVariants({ intent: "primary", disabled: true } as any);
       buttonVariants({ intent: "primary", size: "medium" } as any);
@@ -108,7 +108,7 @@ function registerBenchmarks(mod: typeof local) {
   );
 
   bench(
-    "cx: many args",
+    "Join class names",
     () => {
       mod.cx(
         "button",
@@ -122,7 +122,7 @@ function registerBenchmarks(mod: typeof local) {
   );
 
   bench(
-    "compose: two components",
+    "Compose components (manual cx join)",
     () => {
       const buttonA = mod.cva(base, {
         variants,

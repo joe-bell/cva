@@ -85,7 +85,7 @@ function supportsComposes(mod: typeof local): boolean {
 
 function registerBenchmarks(mod: typeof local) {
   bench(
-    "cva: create",
+    "Create component (one-time setup)",
     () => {
       mod.cva(buttonConfig);
     },
@@ -95,7 +95,7 @@ function registerBenchmarks(mod: typeof local) {
   const buttonVariants = mod.cva(buttonConfig);
 
   bench(
-    "cva: call defaults",
+    "Call component (default variants)",
     () => {
       buttonVariants({});
     },
@@ -103,7 +103,7 @@ function registerBenchmarks(mod: typeof local) {
   );
 
   bench(
-    "cva: call with props",
+    "Call component (with variants)",
     () => {
       buttonVariants({ intent: "primary", disabled: true } as any);
       buttonVariants({ intent: "primary", size: "medium" } as any);
@@ -119,7 +119,7 @@ function registerBenchmarks(mod: typeof local) {
   );
 
   bench(
-    "cx: many args",
+    "Join class names",
     () => {
       mod.cx(
         "button",
@@ -134,7 +134,7 @@ function registerBenchmarks(mod: typeof local) {
 
   if (supportsComposes(mod)) {
     bench(
-      "composes: two components",
+      "Compose components (setup + call)",
       () => {
         const buttonA = mod.cva(buttonConfig);
         const buttonB = mod.cva({ base: "icon" });
