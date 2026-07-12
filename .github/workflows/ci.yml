@@ -25,14 +25,17 @@ jobs:
         env:
           BENCH_BASELINES_DIR: ${{ runner.temp }}/bench-baselines
         run: pnpm bench
-      # Renderer pinned to main (stdlib-only compare.ts); artifact JSON is still
-      # PR-produced. Same trust model as pr-comment.yml — blocks a fork-modified
-      # compare.ts from injecting markdown into the run summary.
+      # Check out the base repo's default branch after executing PR code. The
+      # fresh clone avoids trusting the PR checkout's mutable git config; the
+      # artifact JSON is still PR-produced.
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.event.repository.default_branch }}
+          path: .trusted-benchmark-summary
+          persist-credentials: false
       - name: Job summary
-        run: |
-          git fetch origin main --depth=1
-          git show origin/main:test/bench/scripts/compare.ts > /tmp/bench-compare.ts
-          node /tmp/bench-compare.ts --dir test/bench/.output >> "$GITHUB_STEP_SUMMARY"
+        run: node .trusted-benchmark-summary/test/bench/scripts/compare.ts --dir test/bench/.output >> "$GITHUB_STEP_SUMMARY"
       - name: Record PR number
         if: github.event_name == 'pull_request'
         env:
