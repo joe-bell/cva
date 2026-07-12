@@ -25,17 +25,12 @@ jobs:
         env:
           BENCH_BASELINES_DIR: ${{ runner.temp }}/bench-baselines
         run: pnpm bench
-      # Check out the base repo's default branch after executing PR code. The
-      # fresh clone avoids trusting the PR checkout's mutable git config; the
-      # artifact JSON is still PR-produced.
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-        with:
-          repository: ${{ github.repository }}
-          ref: ${{ github.event.repository.default_branch }}
-          path: .trusted-benchmark-summary
-          persist-credentials: false
+      # PR code has already run in this job, so do not write a summary from
+      # this runner. The separate pr-comment workflow uses a fresh runner and
+      # trusted main-branch code to post the benchmark table for every PR.
       - name: Job summary
-        run: node .trusted-benchmark-summary/test/bench/scripts/compare.ts --dir test/bench/.output >> "$GITHUB_STEP_SUMMARY"
+        if: github.event_name == 'push'
+        run: pnpm bench:compare >> "$GITHUB_STEP_SUMMARY"
       - name: Record PR number
         if: github.event_name == 'pull_request'
         env:
