@@ -344,18 +344,6 @@ function renderPackageSection(result: BenchmarkResult): string {
   lines.push(`### \`${escapeMarkdown(result.package)}\``);
   lines.push("");
 
-  const header = [
-    "Task",
-    "This PR",
-    ...baselines.flatMap((b) => [
-      `\`${escapeMarkdown(b.version)}\` (${b.label})`,
-      "Δ",
-    ]),
-  ];
-  const alignment = header.map((_, i) => (i === 0 ? "---" : "---:"));
-  lines.push(`| ${header.join(" | ")} |`);
-  lines.push(`| ${alignment.join(" | ")} |`);
-
   // Union across every implementation (local first), not just local — with
   // local missing, baseline columns must still render their rows instead
   // of silently dropping the whole table body.
@@ -366,28 +354,73 @@ function renderPackageSection(result: BenchmarkResult): string {
       ),
     ),
   ];
-  for (const name of taskNames) {
-    const localTask = local?.tasks?.find((t) => t.name === name);
-    const row: string[] = [
-      escapeMarkdown(name),
-      localTask ? formatOps(localTask.hz, localTask.rme) : "—",
+
+  const renderTable = (names: string[]) => {
+    const header = [
+      "Task",
+      "This PR",
+      ...baselines.flatMap((b) => [
+        `\`${escapeMarkdown(b.version)}\` (${b.label})`,
+        "Δ",
+      ]),
     ];
+    const alignment = header.map((_, i) => (i === 0 ? "---" : "---:"));
+    lines.push(`| ${header.join(" | ")} |`);
+    lines.push(`| ${alignment.join(" | ")} |`);
 
-    for (const baseline of baselines) {
-      const baselineTask = baseline.tasks?.find((t) => t.name === name);
-      if (!baselineTask) {
-        row.push("—", "—");
-        continue;
+    for (const name of names) {
+      const localTask = local?.tasks?.find((t) => t.name === name);
+      const row: string[] = [
+        escapeMarkdown(name),
+        localTask ? formatOps(localTask.hz, localTask.rme) : "—",
+      ];
+
+      for (const baseline of baselines) {
+        const baselineTask = baseline.tasks?.find((t) => t.name === name);
+        if (!baselineTask) {
+          row.push("—", "—");
+          continue;
+        }
+        row.push(formatOps(baselineTask.hz, baselineTask.rme));
+        row.push(
+          localTask && baselineTask.hz > 0
+            ? formatDelta(localTask.hz, baselineTask.hz)
+            : "—",
+        );
       }
-      row.push(formatOps(baselineTask.hz, baselineTask.rme));
-      row.push(
-        localTask && baselineTask.hz > 0
-          ? formatDelta(localTask.hz, baselineTask.hz)
-          : "—",
-      );
-    }
 
-    lines.push(`| ${row.join(" | ")} |`);
+      lines.push(`| ${row.join(" | ")} |`);
+    }
+  };
+
+  const setupTaskNames = taskNames.filter(
+    (name) =>
+      name.startsWith("Create component") ||
+      name.startsWith("Compose components"),
+  );
+  const runtimeTaskNames = taskNames.filter(
+    (name) => !setupTaskNames.includes(name),
+  );
+
+  if (runtimeTaskNames.length > 0) {
+    lines.push("#### Typical use");
+    lines.push("");
+    lines.push(
+      "Class-name generation from components that already exist. This is the primary runtime signal.",
+    );
+    lines.push("");
+    renderTable(runtimeTaskNames);
+  }
+
+  if (setupTaskNames.length > 0) {
+    if (runtimeTaskNames.length > 0) lines.push("");
+    lines.push("#### One-time setup");
+    lines.push("");
+    lines.push(
+      "Component creation and composition. This usually happens outside rendering.",
+    );
+    lines.push("");
+    renderTable(setupTaskNames);
   }
 
   lines.push("");
@@ -419,12 +452,12 @@ export function renderMarkdown(results: BenchmarkResult[]): string {
   return [
     "## Benchmarks",
     "",
-    "Each table compares this PR's build with that package's published npm version (`beta` for `cva`, `latest` for `class-variance-authority`). Higher ops/s is better. Deltas within ±5% are treated as CI noise; larger moves are marked 🟢 (faster) or 🔴 (slower).",
+    "Each package compares this PR's build with its published npm version (`beta` for `cva`, `latest` for `class-variance-authority`). Higher ops/s is better. Deltas within ±5% are treated as CI noise; larger moves are marked 🟢 (faster) or 🔴 (slower).",
     "",
     "### How to read this",
     "",
-    "- **Create** measures one-time setup when defining a component. It is usually not part of rendering.",
-    "- **Call** measures class-name generation from a component that already exists. This is the usual runtime path.",
+    "- **Typical use** is class-name generation from a component that already exists. It is the primary result.",
+    "- **One-time setup** is component creation and composition. It usually happens outside rendering.",
     "- Compare each package with its own published version. `cva` and `class-variance-authority` support different features, so their absolute numbers are not directly comparable.",
     "",
     sections.join("\n\n"),

@@ -242,7 +242,7 @@ describe("renderMarkdown", () => {
     expect(markdown).toContain("not authenticated");
   });
 
-  it("includes guidance for reading create vs call benchmarks", () => {
+  it("includes guidance for prioritizing typical use over setup", () => {
     const validated = validateResult(validResult(), "cva");
     const markdown = renderMarkdown([validated]);
 
@@ -250,7 +250,35 @@ describe("renderMarkdown", () => {
     expect(markdown).toContain(
       "Compare each package with its own published version",
     );
-    expect(markdown).toContain("usually not part of rendering");
+    expect(markdown).toContain("Typical use");
+    expect(markdown).toContain("One-time setup");
+  });
+
+  it("renders typical-use results before one-time setup", () => {
+    const result = validResult();
+    const tasks = (result.implementations[0] as any).tasks;
+    tasks.push({
+      name: "Call component (default variants)",
+      hz: 100,
+      mean: 0.01,
+      rme: 0.5,
+      samples: 1000,
+    });
+    (result.implementations[1] as any).tasks.push({
+      name: "Call component (default variants)",
+      hz: 90,
+      mean: 0.011,
+      rme: 0.6,
+      samples: 900,
+    });
+
+    const markdown = renderMarkdown([validateResult(result, "cva")]);
+    expect(markdown.indexOf("#### Typical use")).toBeLessThan(
+      markdown.indexOf("#### One-time setup"),
+    );
+    expect(markdown.indexOf("Call component (default variants)")).toBeLessThan(
+      markdown.indexOf("Create component (one-time setup)"),
+    );
   });
 
   it("renders a delta between local and a baseline", () => {
