@@ -25,6 +25,11 @@ jobs:
         env:
           BENCH_BASELINES_DIR: ${{ runner.temp }}/bench-baselines
         run: pnpm bench
+      # Render the same table into the Actions run summary for an
+      # at-a-glance view (safe here in the untrusted job — the PR comment is
+      # posted separately by the privileged pr-comment workflow).
+      - name: Job summary
+        run: pnpm bench:compare >> "$GITHUB_STEP_SUMMARY"
       - name: Record PR number
         if: github.event_name == 'pull_request'
         env:

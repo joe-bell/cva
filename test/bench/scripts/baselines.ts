@@ -82,6 +82,10 @@ export async function resolvePackageVersions(
   try {
     response = await fetchImpl(
       `https://registry.npmjs.org/${encodeURIComponent(pkg)}`,
+      // The abbreviated packument still carries `dist-tags` but omits the
+      // full per-version metadata, so we don't download megabytes just to
+      // read two tags.
+      { headers: { Accept: "application/vnd.npm.install-v1+json" } },
     );
   } catch (error) {
     return skippedForLabels(

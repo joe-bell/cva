@@ -16,7 +16,12 @@ describe("resolvePackageVersions", () => {
     await expect(resolvePackageVersions("cva", fetchImpl)).resolves.toEqual([
       { label: "prerelease", version: "1.0.0-beta.6" },
     ]);
-    expect(fetchImpl).toHaveBeenCalledWith("https://registry.npmjs.org/cva");
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://registry.npmjs.org/cva",
+      expect.objectContaining({
+        headers: { Accept: "application/vnd.npm.install-v1+json" },
+      }),
+    );
   });
 
   it("resolves class-variance-authority release from the latest dist-tag only", async () => {
@@ -78,5 +83,31 @@ describe("resolvePackageVersions", () => {
         skipped: "failed to resolve npm dist-tags: network unavailable",
       },
     ]);
+  });
+
+  it("marks a non-ok registry response as skipped with the status", async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response("not found", { status: 404, statusText: "Not Found" }),
+    ) as unknown as typeof fetch;
+
+    await expect(resolvePackageVersions("cva", fetchImpl)).resolves.toEqual([
+      {
+        label: "prerelease",
+        version: "unknown",
+        skipped: "npm registry returned 404 Not Found",
+      },
+    ]);
+  });
+
+  it("marks an unparseable registry body as skipped", async () => {
+    const fetchImpl = vi.fn(
+      async () => new Response("this is not json"),
+    ) as unknown as typeof fetch;
+
+    const [resolved] = await resolvePackageVersions("cva", fetchImpl);
+    expect(resolved.label).toBe("prerelease");
+    expect(resolved.version).toBe("unknown");
+    expect(resolved.skipped).toMatch(/failed to parse npm dist-tags:/);
   });
 });
