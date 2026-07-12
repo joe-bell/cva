@@ -325,6 +325,53 @@ function formatOps(hz: number, rme: number): string {
 
 const NOISE_THRESHOLD_PERCENT = 5;
 
+const TASK_PRIORITY = [
+  "Call component (default variants)",
+  "Call component (with variants)",
+  "Join class names",
+  "Create component (one-time setup)",
+  "Compose components (manual cx join)",
+  "Compose components (setup + call)",
+] as const;
+
+const TASK_DISPLAY: Record<(typeof TASK_PRIORITY)[number], string> = {
+  "Call component (default variants)":
+    "**`cva`** (runtime)<br />_component call with defaults_",
+  "Call component (with variants)":
+    "**`cva`** (runtime)<br />_component call with props_",
+  "Join class names": "**`cx`** (runtime)<br />_class join_",
+  "Create component (one-time setup)":
+    "**`cva`** (static)<br />_component definition_",
+  "Compose components (manual cx join)":
+    "**`compose`** (static + runtime)<br />_define, join and call_",
+  "Compose components (setup + call)":
+    "**`composes`** property (static + runtime)<br />_define, join and call_",
+};
+
+function sortTaskNamesByPriority(names: string[]): string[] {
+  return [...names].sort((a, b) => {
+    const ai = TASK_PRIORITY.indexOf(a as (typeof TASK_PRIORITY)[number]);
+    const bi = TASK_PRIORITY.indexOf(b as (typeof TASK_PRIORITY)[number]);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
+
+function formatTaskLabel(name: string): string {
+  return (
+    TASK_DISPLAY[name as (typeof TASK_PRIORITY)[number]] ?? escapeMarkdown(name)
+  );
+}
+
+function formatBaselineColumnHeader(baseline: Implementation): string {
+  if (baseline.label === "prerelease") {
+    return `\`${escapeMarkdown(baseline.version)}\` (\`beta\`)`;
+  }
+  return `\`${escapeMarkdown(baseline.version)}\``;
+}
+
 function formatDelta(local: number, baseline: number): string {
   const delta = ((local - baseline) / baseline) * 100;
   const sign = delta >= 0 ? "+" : "";
@@ -347,80 +394,45 @@ function renderPackageSection(result: BenchmarkResult): string {
   // Union across every implementation (local first), not just local — with
   // local missing, baseline columns must still render their rows instead
   // of silently dropping the whole table body.
-  const taskNames = [
+  const taskNames = sortTaskNamesByPriority([
     ...new Set(
       result.implementations.flatMap(
         (impl) => impl.tasks?.map((t) => t.name) ?? [],
       ),
     ),
+  ]);
+
+  const header = [
+    "Task",
+    "This PR",
+    ...baselines.flatMap((b) => [formatBaselineColumnHeader(b), "Δ"]),
   ];
+  const alignment = header.map((_, i) => (i === 0 ? "---" : "---:"));
+  lines.push(`| ${header.join(" | ")} |`);
+  lines.push(`| ${alignment.join(" | ")} |`);
 
-  const renderTable = (names: string[]) => {
-    const header = [
-      "Task",
-      "This PR",
-      ...baselines.flatMap((b) => [
-        `\`${escapeMarkdown(b.version)}\` (${b.label})`,
-        "Δ",
-      ]),
+  for (const name of taskNames) {
+    const localTask = local?.tasks?.find((t) => t.name === name);
+    const row: string[] = [
+      formatTaskLabel(name),
+      localTask ? formatOps(localTask.hz, localTask.rme) : "—",
     ];
-    const alignment = header.map((_, i) => (i === 0 ? "---" : "---:"));
-    lines.push(`| ${header.join(" | ")} |`);
-    lines.push(`| ${alignment.join(" | ")} |`);
 
-    for (const name of names) {
-      const localTask = local?.tasks?.find((t) => t.name === name);
-      const row: string[] = [
-        escapeMarkdown(name),
-        localTask ? formatOps(localTask.hz, localTask.rme) : "—",
-      ];
-
-      for (const baseline of baselines) {
-        const baselineTask = baseline.tasks?.find((t) => t.name === name);
-        if (!baselineTask) {
-          row.push("—", "—");
-          continue;
-        }
-        row.push(formatOps(baselineTask.hz, baselineTask.rme));
-        row.push(
-          localTask && baselineTask.hz > 0
-            ? formatDelta(localTask.hz, baselineTask.hz)
-            : "—",
-        );
+    for (const baseline of baselines) {
+      const baselineTask = baseline.tasks?.find((t) => t.name === name);
+      if (!baselineTask) {
+        row.push("—", "—");
+        continue;
       }
-
-      lines.push(`| ${row.join(" | ")} |`);
+      row.push(formatOps(baselineTask.hz, baselineTask.rme));
+      row.push(
+        localTask && baselineTask.hz > 0
+          ? formatDelta(localTask.hz, baselineTask.hz)
+          : "—",
+      );
     }
-  };
 
-  const setupTaskNames = taskNames.filter(
-    (name) =>
-      name.startsWith("Create component") ||
-      name.startsWith("Compose components"),
-  );
-  const runtimeTaskNames = taskNames.filter(
-    (name) => !setupTaskNames.includes(name),
-  );
-
-  if (runtimeTaskNames.length > 0) {
-    lines.push("#### Typical use");
-    lines.push("");
-    lines.push(
-      "Class-name generation from components that already exist. This is the primary runtime signal.",
-    );
-    lines.push("");
-    renderTable(runtimeTaskNames);
-  }
-
-  if (setupTaskNames.length > 0) {
-    if (runtimeTaskNames.length > 0) lines.push("");
-    lines.push("#### One-time setup");
-    lines.push("");
-    lines.push(
-      "Component creation and composition. This usually happens outside rendering.",
-    );
-    lines.push("");
-    renderTable(setupTaskNames);
+    lines.push(`| ${row.join(" | ")} |`);
   }
 
   lines.push("");
@@ -452,19 +464,15 @@ export function renderMarkdown(results: BenchmarkResult[]): string {
   return [
     "## Benchmarks",
     "",
-    "Each package compares this PR's build with its published npm version (`beta` for `cva`, `latest` for `class-variance-authority`). Higher ops/s is better. Deltas within ±5% are treated as CI noise; larger moves are marked 🟢 (faster) or 🔴 (slower).",
+    "Comparing this PR's local benchmark run against the latest published npm versions (baselines resolved from each package's npm dist-tags — `beta` for `cva`, `latest` for `class-variance-authority`)",
     "",
-    "### How to read this",
-    "",
-    "- **Typical use** is class-name generation from a component that already exists. It is the primary result.",
-    "- **One-time setup** is component creation and composition. It usually happens outside rendering.",
-    "- Compare each package with its own published version. `cva` and `class-variance-authority` support different features, so their absolute numbers are not directly comparable.",
+    "Aim for higher ops/s. Treat deltas within ±5% as noise.",
     "",
     sections.join("\n\n"),
     "",
     footer,
     "",
-    "<sub>Metrics are produced by the untrusted PR benchmark job and validated for shape only — they are not authenticated. Treat large swings as a signal to investigate locally, not as proof of a regression.</sub>",
+    "<sub>These benchmarks ran in CI on this PR's code. The comment checks that the report looks valid before posting it, but it cannot guarantee the numbers are correct. If you see a large change, re-run the benchmarks locally before treating it as a real improvement or regression.</sub>",
   ].join("\n");
 }
 

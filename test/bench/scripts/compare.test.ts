@@ -235,26 +235,27 @@ describe("renderMarkdown", () => {
     expect(markdown).toContain("not published on npm");
   });
 
-  it("includes an advisory that metrics are not authenticated", () => {
+  it("includes the contributor-facing benchmark disclaimer", () => {
     const validated = validateResult(validResult(), "cva");
     const markdown = renderMarkdown([validated]);
-    expect(markdown).toContain("validated for shape only");
-    expect(markdown).toContain("not authenticated");
+    expect(markdown).toContain("These benchmarks ran in CI on this PR's code");
+    expect(markdown).toContain("re-run the benchmarks locally");
   });
 
-  it("includes guidance for prioritizing typical use over setup", () => {
+  it("uses the simplified benchmark intro copy", () => {
     const validated = validateResult(validResult(), "cva");
     const markdown = renderMarkdown([validated]);
 
-    expect(markdown).toContain("### How to read this");
     expect(markdown).toContain(
-      "Compare each package with its own published version",
+      "Comparing this PR's local benchmark run against the latest published npm versions",
     );
-    expect(markdown).toContain("Typical use");
-    expect(markdown).toContain("One-time setup");
+    expect(markdown).toContain(
+      "Aim for higher ops/s. Treat deltas within ±5% as noise.",
+    );
+    expect(markdown).not.toContain("### How to read this");
   });
 
-  it("renders typical-use results before one-time setup", () => {
+  it("renders runtime rows before static rows with display labels", () => {
     const result = validResult();
     const tasks = (result.implementations[0] as any).tasks;
     tasks.push({
@@ -273,12 +274,21 @@ describe("renderMarkdown", () => {
     });
 
     const markdown = renderMarkdown([validateResult(result, "cva")]);
-    expect(markdown.indexOf("#### Typical use")).toBeLessThan(
-      markdown.indexOf("#### One-time setup"),
+    expect(markdown).toContain(
+      "**`cva`** (runtime)<br />_component call with defaults_",
     );
-    expect(markdown.indexOf("Call component (default variants)")).toBeLessThan(
-      markdown.indexOf("Create component (one-time setup)"),
+    expect(markdown).toContain(
+      "**`cva`** (static)<br />_component definition_",
     );
+    expect(markdown.indexOf("_component call with defaults_")).toBeLessThan(
+      markdown.indexOf("_component definition_"),
+    );
+  });
+
+  it("renders prerelease baselines with the beta dist-tag label", () => {
+    const validated = validateResult(validResult(), "cva");
+    const markdown = renderMarkdown([validated]);
+    expect(markdown).toContain("`1.0.0-beta.4` (`beta`)");
   });
 
   it("renders a delta between local and a baseline", () => {
@@ -310,7 +320,7 @@ describe("renderMarkdown", () => {
     const markdown = renderMarkdown([validated]);
     const row = markdown
       .split("\n")
-      .find((line) => line.includes("Create component (one-time setup)"));
+      .find((line) => line.includes("_component definition_"));
     expect(row).toContain("+2.0%");
     expect(row).not.toContain("🟢");
     expect(row).not.toContain("🔴");
@@ -323,7 +333,7 @@ describe("renderMarkdown", () => {
     const markdown = renderMarkdown([validated]);
     const row = markdown
       .split("\n")
-      .find((line) => line.includes("Create component (one-time setup)"));
+      .find((line) => line.includes("_component definition_"));
     expect(row).toBeDefined();
     expect(row).not.toMatch(/Infinity|NaN/);
   });
@@ -351,7 +361,7 @@ describe("renderMarkdown", () => {
     const markdown = renderMarkdown([validated]);
     const row = markdown
       .split("\n")
-      .find((line) => line.includes("Create component (one-time setup)"));
+      .find((line) => line.includes("_component definition_"));
     expect(row).toBeDefined();
     expect(row).toContain("90 ops/s");
     expect(row).toContain("| — |");
