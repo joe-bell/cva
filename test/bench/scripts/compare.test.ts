@@ -163,26 +163,29 @@ describe("validateResult", () => {
       "https://attacker.example/track";
     expect(() => validateResult(bad, "cva")).toThrow(/unexpected format/);
   });
+
+  it("rejects a skipped reason containing a bare URL", () => {
+    const bad = validResult();
+    (bad.implementations[2] as any).skipped =
+      "details at https://attacker.example/login";
+    expect(() => validateResult(bad, "cva")).toThrow(
+      /disallowed URL or mention/,
+    );
+  });
+
+  it("rejects a skipped reason containing an @mention", () => {
+    const bad = validResult();
+    (bad.implementations[2] as any).skipped = "ping @maintainer for access";
+    expect(() => validateResult(bad, "cva")).toThrow(/unexpected format/);
+  });
 });
 
 describe("renderMarkdown", () => {
-  it("escapes markdown-hostile characters in the unrestricted skipped field", () => {
-    // `task.name` is now allowlisted at validation time (see above), but
-    // `implementation.skipped` carries no character restriction — it's the
-    // field that proves escapeMarkdown itself neutralizes link/image syntax
-    // and other hostile markdown, not just that bad input got rejected
-    // earlier.
-    const result = validResult();
-    (result.implementations[2] as any).skipped =
-      "a | b `c` <script>& [click](https://phish.example)!";
-    const validated = validateResult(result, "cva");
+  it("renders skipped reasons inside inline code", () => {
+    const validated = validateResult(validResult(), "cva");
     const markdown = renderMarkdown([validated]);
 
-    expect(markdown).toContain(
-      "a \\| b 'c' &lt;script&gt;&amp; (click)(https://phish.example)!",
-    );
-    expect(markdown).not.toContain("<script>");
-    expect(markdown).not.toContain("[click]");
+    expect(markdown).toContain("— `not published on npm`._");
   });
 
   it("renders a skipped-baseline note", () => {

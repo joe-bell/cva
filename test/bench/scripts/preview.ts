@@ -18,9 +18,6 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-// These scripts run via `pnpm run --filter bench`, so the cwd is the `bench`
-// package dir (`test/bench`) rather than the workspace root. Anchor every
-// repo-relative path (and the sibling scripts this chains) to the repo root.
 const repoRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../../..",

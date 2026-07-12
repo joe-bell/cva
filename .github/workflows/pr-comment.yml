@@ -65,10 +65,6 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      # An initial checkout is needed before the local `./.github/actions/install`
-      # composite can be referenced; the composite then re-checks-out the same
-      # default-branch ref and sets up pnpm + deps. workflow_run always runs the
-      # default branch, so this never checks out or runs PR code.
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
@@ -87,10 +83,8 @@ jobs:
       # Renders trusted markdown from untrusted data: test/bench/scripts/compare.ts
       # throws (non-zero exit) on any schema violation, so a tampered or
       # malformed artifact fails this step loudly instead of silently
-      # producing a bad section. Invoked via the workspace alias for
-      # consistency with the rest of CI; `--dir` is absolute because
-      # `pnpm --filter` runs the script with the package dir (test/bench) as
-      # its cwd, not the repo root.
+      # producing a bad section. The absolute `--dir` accounts for pnpm
+      # running filtered scripts from the `test/bench` package directory.
       - name: Validate and render benchmark section
         id: render
         if: steps.download.outcome == 'success'
@@ -121,7 +115,12 @@ jobs:
               throw new Error(`invalid PR number in benchmark artifact: ${meta.pr}`);
             }
             const runPulls = context.payload.workflow_run.pull_requests ?? [];
-            if (!runPulls.some((pull) => pull.number === pr)) {
+            // GitHub omits fork PRs from this array; rely on the head SHA/repo
+            // checks below when it is empty.
+            if (
+              runPulls.length > 0 &&
+              !runPulls.some((pull) => pull.number === pr)
+            ) {
               throw new Error(
                 `artifact PR #${pr} is not associated with this workflow run`,
               );

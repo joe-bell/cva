@@ -16,9 +16,6 @@ import { fileURLToPath } from "node:url";
 import type { ManifestEntry } from "./baselines";
 import type { Implementation, Task } from "./compare";
 
-// Anchor root-relative paths to the repo root, not `process.cwd()`: these
-// scripts run via `pnpm run --filter bench`, which sets the cwd to the
-// `bench` package dir (`test/bench`), not the workspace root.
 const repoRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../../..",

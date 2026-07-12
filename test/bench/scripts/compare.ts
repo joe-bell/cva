@@ -33,6 +33,16 @@ const SAFE_VERSION = /^[\w.\-+]{1,64}$/;
 // — not just escaping — is what makes markdown link/image injection into
 // the rendered comment impossible, not just awkward.
 const SAFE_TASK_NAME = /^[\w :,._+'-]{1,80}$/;
+// Skipped reasons are PR-controlled via the untrusted benchmark artifact.
+const SAFE_SKIPPED = /^[\w :.,_'()/-]{1,200}$/;
+
+function assertSkippedReason(value: unknown): string {
+  const skipped = assertString(value, "implementation.skipped", SAFE_SKIPPED);
+  if (/https?:\/\//i.test(skipped) || skipped.includes("@")) {
+    fail('"implementation.skipped" contains a disallowed URL or mention');
+  }
+  return skipped;
+}
 
 export interface Task {
   name: string;
@@ -143,7 +153,7 @@ function validateImplementation(raw: unknown): Implementation {
   );
 
   if (hasSkipped) {
-    const skipped = assertString(impl.skipped, "implementation.skipped");
+    const skipped = assertSkippedReason(impl.skipped);
     return { label, version, skipped };
   }
 
@@ -257,6 +267,10 @@ export function validateResults(dir: string): BenchmarkResult[] {
 /* Rendering
   ============================================ */
 
+function escapeInlineCode(value: string): string {
+  return value.replace(/[\r\n]+/g, " ").replace(/`/g, "'");
+}
+
 function escapeMarkdown(value: string): string {
   return value
     .replace(/[\r\n]+/g, " ")
@@ -346,7 +360,7 @@ function renderPackageSection(result: BenchmarkResult): string {
   for (const baseline of baselines) {
     if (baseline.skipped) {
       lines.push(
-        `_\`${escapeMarkdown(result.package)}@${escapeMarkdown(baseline.version)}\` (${baseline.label}) — ${escapeMarkdown(baseline.skipped)}._`,
+        `_\`${escapeMarkdown(result.package)}@${escapeMarkdown(baseline.version)}\` (${baseline.label}) — \`${escapeInlineCode(baseline.skipped)}\`._`,
       );
     }
   }
@@ -382,8 +396,6 @@ export function renderMarkdown(results: BenchmarkResult[]): string {
   ============================================ */
 
 function parseArgs(argv: string[]) {
-  // See report.ts: cwd is the `bench` package dir under `pnpm run --filter`,
-  // so anchor the default output dir to the repo root instead.
   let dir = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     "../../../test/bench/.output",
