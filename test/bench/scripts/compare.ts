@@ -44,6 +44,29 @@ function assertSkippedReason(value: unknown): string {
   return skipped;
 }
 
+/**
+ * Normalizes a (possibly tool-generated) skip reason so it always satisfies
+ * `assertSkippedReason`. The trusted producer (test/bench/scripts/report.ts)
+ * runs its baseline skip reasons through this before writing the artifact:
+ * a real error message — a failed `pnpm add` mentioning `pkg@version`, or a
+ * registry URL from a network failure — would otherwise trip the
+ * consumer-side allowlist and suppress the entire comment instead of
+ * skipping that one baseline. The consumer keeps rejecting non-conforming
+ * reasons (a hostile artifact still fails closed); this only guarantees our
+ * own artifacts never produce one.
+ */
+export function sanitizeSkippedReason(raw: string): string {
+  const cleaned = raw
+    .replace(/https?:\/\/\S+/gi, "url")
+    .replace(/@/g, " at ")
+    .replace(/[^\w :.,_'()/-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 200)
+    .trim();
+  return cleaned.length > 0 ? cleaned : "unavailable";
+}
+
 export interface Task {
   name: string;
   hz: number;

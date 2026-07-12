@@ -4,7 +4,12 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { renderMarkdown, validateResult, validateResults } from "./compare";
+import {
+  renderMarkdown,
+  sanitizeSkippedReason,
+  validateResult,
+  validateResults,
+} from "./compare";
 
 function validResult(overrides: Partial<Record<string, unknown>> = {}) {
   return {
@@ -302,5 +307,49 @@ describe("validateResults", () => {
   it("fails loudly when no benchmark files are present", () => {
     const dir = writeResultDir({ "meta.json": '{ "pr": 1 }' });
     expect(() => validateResults(dir)).toThrow(/no benchmark result files/);
+  });
+});
+
+describe("sanitizeSkippedReason", () => {
+  // The producer (report.ts) runs baseline skip reasons through this so a
+  // real tool error can't trip validateResult's allowlist and suppress the
+  // whole comment. Each sanitized reason must round-trip cleanly.
+  const realWorldReasons = [
+    "failed to install: No matching version found for cva@9.9.9",
+    "failed to resolve npm dist-tags: request to https://registry.npmjs.org/cva failed",
+    "failed to install: GET https://registry.npmjs.org/cva: Not Found - 404",
+    "ping @maintainer",
+    "no beta dist-tag on npm",
+  ];
+
+  for (const reason of realWorldReasons) {
+    it(`produces an allowlist-valid reason for: ${reason.slice(0, 32)}…`, () => {
+      const sanitized = sanitizeSkippedReason(reason);
+      const result = {
+        schemaVersion: 1,
+        package: "cva",
+        node: "v24.0.0",
+        os: "linux x64",
+        commit: "abc1234",
+        timestamp: "2026-07-10T00:00:00.000Z",
+        implementations: [
+          { label: "prerelease", version: "1.0.0-beta.6", skipped: sanitized },
+        ],
+      };
+      expect(() => validateResult(result, "cva")).not.toThrow();
+      expect(sanitized).not.toMatch(/@|https?:\/\//);
+    });
+  }
+
+  it("never returns an empty string", () => {
+    expect(sanitizeSkippedReason("@@@")).toBe("at at at");
+    expect(sanitizeSkippedReason("")).toBe("unavailable");
+    expect(sanitizeSkippedReason("https://x")).toBe("url");
+  });
+
+  it("caps very long reasons at the allowlist limit", () => {
+    expect(sanitizeSkippedReason("x".repeat(500)).length).toBeLessThanOrEqual(
+      200,
+    );
   });
 });

@@ -14,7 +14,11 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import type { ManifestEntry } from "./baselines";
-import type { Implementation, Task } from "./compare";
+import {
+  sanitizeSkippedReason,
+  type Implementation,
+  type Task,
+} from "./compare.ts";
 
 const repoRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -145,7 +149,11 @@ function main() {
         implementations.push({
           label: entry.label,
           version: entry.version,
-          skipped: entry.skipped,
+          // Baseline skip reasons carry tool-generated text (e.g. a failed
+          // `pnpm add` mentioning `pkg@version` or a registry URL); sanitize
+          // so they can't trip compare.ts's skip-reason allowlist and
+          // suppress the whole comment. See sanitizeSkippedReason.
+          skipped: sanitizeSkippedReason(entry.skipped),
         });
         continue;
       }
