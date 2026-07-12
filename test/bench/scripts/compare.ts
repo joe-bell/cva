@@ -35,6 +35,8 @@ const SAFE_VERSION = /^[\w.\-+]{1,64}$/;
 const SAFE_TASK_NAME = /^[\w :,._+'-]{1,80}$/;
 // Skipped reasons are PR-controlled via the untrusted benchmark artifact.
 const SAFE_SKIPPED = /^[\w :.,_'()/-]{1,200}$/;
+// Canonical UTC instant from Date#toISOString() — no offsets, no date-only.
+const CANONICAL_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
 function assertSkippedReason(value: unknown): string {
   const skipped = assertString(value, "implementation.skipped", SAFE_SKIPPED);
@@ -113,6 +115,18 @@ function assertString(
     fail(`"${field}" has an unexpected format`);
   }
   return value;
+}
+
+function assertCanonicalTimestamp(value: unknown, field: string): string {
+  const timestamp = assertString(value, field, CANONICAL_TIMESTAMP, 30);
+  const parsed = new Date(timestamp);
+  if (Number.isNaN(parsed.getTime())) {
+    fail(`"${field}" is not a valid date`);
+  }
+  if (parsed.toISOString() !== timestamp) {
+    fail(`"${field}" must be a canonical UTC instant`);
+  }
+  return timestamp;
 }
 
 function assertFiniteNumber(value: unknown, field: string): number {
@@ -223,9 +237,7 @@ export function validateResult(
   const node = assertString(data.node, "node", SAFE_SHORT, 64);
   const os = assertString(data.os, "os", SAFE_SHORT, 64);
   const commit = assertString(data.commit, "commit", SAFE_COMMIT, 40);
-  const timestamp = assertString(data.timestamp, "timestamp", undefined, 40);
-  if (Number.isNaN(Date.parse(timestamp)))
-    fail('"timestamp" is not a valid date');
+  const timestamp = assertCanonicalTimestamp(data.timestamp, "timestamp");
 
   if (
     !Array.isArray(data.implementations) ||
@@ -412,6 +424,8 @@ export function renderMarkdown(results: BenchmarkResult[]): string {
     sections.join("\n\n"),
     "",
     footer,
+    "",
+    "<sub>Metrics are produced by the untrusted PR benchmark job and validated for shape only — they are not authenticated. Treat large swings as a signal to investigate locally, not as proof of a regression.</sub>",
   ].join("\n");
 }
 

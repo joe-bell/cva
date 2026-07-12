@@ -31,8 +31,9 @@ name: pr-comment
 #      artifact from targeting an arbitrary PR, and the repo check stops
 #      a fork from mirroring a victim PR's (public, content-addressed)
 #      head commit to pass the SHA check with fabricated data.
-#   4. Call `upsertPrComment` from .github/scripts/pr-comment.mjs with your
-#      own `sectionId` and `createIfMissing: false` (only the first/primary
+#   4. Call `processBenchmarkPrComment` from
+#      .github/scripts/process-pr-comment.mjs (or `upsertPrComment` from
+#      pr-comment.mjs for a custom binding) with your own `sectionId` and `createIfMissing: false` (only the first/primary
 #      producer should create the comment; every other producer waits for
 #      it via `retries`/`retryDelayMs` so producers never race to create
 #      duplicate comments).
@@ -104,74 +105,18 @@ jobs:
           HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
         with:
           script: |
-            const fs = require("node:fs");
-            const { upsertPrComment } = await import(
-              "${{ github.workspace }}/.github/scripts/pr-comment.mjs"
+            const { processBenchmarkPrComment } = await import(
+              "${{ github.workspace }}/.github/scripts/process-pr-comment.mjs"
             );
 
-            // The meta file is untrusted artifact content; cap its size
-            // before parsing (its only valid payload is a tiny object).
-            const metaPath = "test/bench/.output/meta.json";
-            if (fs.statSync(metaPath).size > 64 * 1024) {
-              throw new Error("benchmark artifact meta.json exceeds the 64 KiB cap");
-            }
-            const meta = JSON.parse(fs.readFileSync(metaPath, "utf8"));
-            const pr = meta.pr;
-            if (!Number.isInteger(pr) || pr < 1 || pr > 1_000_000_000) {
-              throw new Error(`invalid PR number in benchmark artifact: ${meta.pr}`);
-            }
-            const runPulls = context.payload.workflow_run.pull_requests ?? [];
-            // GitHub omits fork PRs from this array; rely on the head SHA/repo
-            // checks below when it is empty.
-            if (
-              runPulls.length > 0 &&
-              !runPulls.some((pull) => pull.number === pr)
-            ) {
-              throw new Error(
-                `artifact PR #${pr} is not associated with this workflow run`,
-              );
-            }
-
-            // The workflow-run payload binds the artifact to PR `pr`.
-            // Cross-check the head SHA and repo as well: the SHA check stops
-            // stale artifacts, while the repo check stops a fork from
-            // mirroring a victim PR's public, content-addressed head commit.
-            let pull;
-            try {
-              ({ data: pull } = await github.rest.pulls.get({
-                ...context.repo,
-                pull_number: pr,
-              }));
-            } catch (error) {
-              if (error.status === 404) {
-                console.log(`PR #${pr} no longer exists — skipping`);
-                return;
-              }
-              throw error;
-            }
-            if (pull.head.sha !== process.env.HEAD_SHA) {
-              console.log(
-                `head SHA mismatch for PR #${pr} (artifact run vs. current head) — skipping, a newer run will comment instead`,
-              );
-              return;
-            }
-            if (pull.head.repo?.full_name !== process.env.HEAD_REPO) {
-              console.log(
-                `head repo mismatch for PR #${pr} (artifact produced by a different fork) — skipping`,
-              );
-              return;
-            }
-
-            const sectionContent = fs.readFileSync("benchmark-section.md", "utf8");
-            const result = await upsertPrComment({
+            const result = await processBenchmarkPrComment({
               github,
               context,
-              issueNumber: pr,
-              sectionId: "benchmark",
-              sectionContent,
-              // The benchmark section is today's only producer, so it's the
-              // one allowed to create the comment. A future second producer
-              // should leave this false and rely on retries to wait for it.
-              createIfMissing: true,
+              metaPath: "test/bench/.output/meta.json",
+              sectionContentPath: "benchmark-section.md",
+              headSha: process.env.HEAD_SHA,
+              headRepo: process.env.HEAD_REPO,
+              workflowRunPulls:
+                context.payload.workflow_run.pull_requests ?? [],
             });
             console.log(`pr-comment: ${result.action}`);

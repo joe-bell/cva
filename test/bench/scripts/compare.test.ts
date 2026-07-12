@@ -145,7 +145,31 @@ describe("validateResult", () => {
   it("rejects an invalid timestamp", () => {
     expect(() =>
       validateResult(validResult({ timestamp: "not a date" }), "cva"),
-    ).toThrow(/valid date/);
+    ).toThrow(/unexpected format/);
+  });
+
+  it("rejects a timestamp without milliseconds", () => {
+    expect(() =>
+      validateResult(validResult({ timestamp: "2026-07-10T00:00:00Z" }), "cva"),
+    ).toThrow(/unexpected format/);
+  });
+
+  it("rejects a timestamp with a numeric offset", () => {
+    expect(() =>
+      validateResult(
+        validResult({ timestamp: "2026-07-10T00:00:00.000+00:00" }),
+        "cva",
+      ),
+    ).toThrow(/unexpected format/);
+  });
+
+  it("rejects a timestamp that parses but does not round-trip toISOString()", () => {
+    expect(() =>
+      validateResult(
+        validResult({ timestamp: "2026-07-10T24:00:00.000Z" }),
+        "cva",
+      ),
+    ).toThrow(/canonical UTC/);
   });
 
   it("rejects a task name containing markdown link syntax", () => {
@@ -197,6 +221,13 @@ describe("renderMarkdown", () => {
     const validated = validateResult(validResult(), "cva");
     const markdown = renderMarkdown([validated]);
     expect(markdown).toContain("not published on npm");
+  });
+
+  it("includes an advisory that metrics are not authenticated", () => {
+    const validated = validateResult(validResult(), "cva");
+    const markdown = renderMarkdown([validated]);
+    expect(markdown).toContain("validated for shape only");
+    expect(markdown).toContain("not authenticated");
   });
 
   it("renders a delta between local and a baseline", () => {
