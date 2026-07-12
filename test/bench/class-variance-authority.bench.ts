@@ -120,6 +120,21 @@ function registerBenchmarks(mod: typeof local) {
     },
     BENCH_OPTIONS,
   );
+
+  bench(
+    "compose: two components",
+    () => {
+      const buttonA = mod.cva(base, {
+        variants,
+        compoundVariants,
+        defaultVariants,
+      });
+      const buttonB = mod.cva("icon");
+      const composed = (props: any) => mod.cx(buttonA(props), buttonB(props));
+      composed({ intent: "secondary" });
+    },
+    BENCH_OPTIONS,
+  );
 }
 
 /* Implementations
