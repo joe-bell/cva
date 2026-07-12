@@ -247,8 +247,9 @@ describe("renderMarkdown", () => {
     const markdown = renderMarkdown([validated]);
 
     expect(markdown).toContain(
-      "Comparing this PR's local benchmark run against the latest published npm versions",
+      "Comparing this PR's local benchmark run against the latest published npm versions.",
     );
+    expect(markdown).not.toContain("dist-tags");
     expect(markdown).toContain(
       "Aim for higher ops/s. Treat deltas within ±5% as noise.",
     );

@@ -464,7 +464,7 @@ export function renderMarkdown(results: BenchmarkResult[]): string {
   return [
     "## Benchmarks",
     "",
-    "Comparing this PR's local benchmark run against the latest published npm versions (baselines resolved from each package's npm dist-tags — `beta` for `cva`, `latest` for `class-variance-authority`)",
+    "Comparing this PR's local benchmark run against the latest published npm versions.",
     "",
     "Aim for higher ops/s. Treat deltas within ±5% as noise.",
     "",
