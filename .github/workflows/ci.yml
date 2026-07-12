@@ -25,11 +25,14 @@ jobs:
         env:
           BENCH_BASELINES_DIR: ${{ runner.temp }}/bench-baselines
         run: pnpm bench
-      # Render the same table into the Actions run summary for an
-      # at-a-glance view (safe here in the untrusted job — the PR comment is
-      # posted separately by the privileged pr-comment workflow).
+      # Renderer pinned to main (stdlib-only compare.ts); artifact JSON is still
+      # PR-produced. Same trust model as pr-comment.yml — blocks a fork-modified
+      # compare.ts from injecting markdown into the run summary.
       - name: Job summary
-        run: pnpm bench:compare >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          git fetch origin main --depth=1
+          git show origin/main:test/bench/scripts/compare.ts > /tmp/bench-compare.ts
+          node /tmp/bench-compare.ts --dir test/bench/.output >> "$GITHUB_STEP_SUMMARY"
       - name: Record PR number
         if: github.event_name == 'pull_request'
         env:

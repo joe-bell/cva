@@ -152,17 +152,22 @@ function installBaseline(pkg: string, version: string, dir: string) {
         private: true,
         // Matches the root package's pin (not hardcoded) so corepack
         // resolves the same pnpm version here as everywhere else in CI —
-        // see rootPackageManager().
+        // see rootPackageManager(). `--ignore-scripts` keeps npm lifecycle
+        // scripts in baseline packages from running in the untrusted CI job.
         packageManager: rootPackageManager(),
       },
       null,
       2,
     ),
   );
-  execFileSync("pnpm", ["add", `${pkg}@${version}`, "--ignore-workspace"], {
-    cwd: dir,
-    stdio: "inherit",
-  });
+  execFileSync(
+    "pnpm",
+    ["add", `${pkg}@${version}`, "--ignore-workspace", "--ignore-scripts"],
+    {
+      cwd: dir,
+      stdio: "inherit",
+    },
+  );
 }
 
 async function main() {

@@ -22,7 +22,20 @@ export const STICKY_MARKER = "<!-- cva:pr-comment -->";
  */
 export const SECTION_ORDER = ["benchmark"];
 
+/** GitHub caps issue/PR comment bodies at 65536 characters. */
+export const MAX_COMMENT_CHARS = 65536;
+
 const SAFE_SECTION_ID = /^[a-z0-9-]+$/;
+
+/** Fails before hitting the API when a rendered section would exceed GitHub's limit. */
+export function assertCommentBodySize(body) {
+  if (typeof body !== "string" || body.length > MAX_COMMENT_CHARS) {
+    throw new Error(
+      `comment body exceeds GitHub's ${MAX_COMMENT_CHARS}-character limit (${typeof body === "string" ? body.length : "non-string"} characters)`,
+    );
+  }
+  return body;
+}
 
 function assertSectionId(id) {
   if (typeof id !== "string" || !SAFE_SECTION_ID.test(id)) {
@@ -160,11 +173,13 @@ export async function upsertPrComment({
   });
 
   if (existing) {
-    const body = upsertSection(
-      existing.body ?? STICKY_MARKER,
-      sectionId,
-      sectionContent,
-      order,
+    const body = assertCommentBodySize(
+      upsertSection(
+        existing.body ?? STICKY_MARKER,
+        sectionId,
+        sectionContent,
+        order,
+      ),
     );
     await github.rest.issues.updateComment({
       ...context.repo,
@@ -178,7 +193,9 @@ export async function upsertPrComment({
     return { action: "skipped-no-comment" };
   }
 
-  const body = upsertSection(STICKY_MARKER, sectionId, sectionContent, order);
+  const body = assertCommentBodySize(
+    upsertSection(STICKY_MARKER, sectionId, sectionContent, order),
+  );
   const created = await github.rest.issues.createComment({
     ...context.repo,
     issue_number: issueNumber,

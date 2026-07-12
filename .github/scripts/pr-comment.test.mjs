@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  assertCommentBodySize,
   findStickyComment,
+  MAX_COMMENT_CHARS,
   sectionBlock,
   STICKY_MARKER,
   upsertPrComment,
@@ -204,6 +206,19 @@ describe("findStickyComment", () => {
   });
 });
 
+describe("assertCommentBodySize", () => {
+  it("accepts a body within GitHub's limit", () => {
+    const body = "x".repeat(MAX_COMMENT_CHARS);
+    expect(assertCommentBodySize(body)).toBe(body);
+  });
+
+  it("rejects a body over GitHub's limit", () => {
+    expect(() =>
+      assertCommentBodySize("x".repeat(MAX_COMMENT_CHARS + 1)),
+    ).toThrow(/exceeds GitHub's 65536-character limit/);
+  });
+});
+
 describe("upsertPrComment", () => {
   it("creates the comment when missing and createIfMissing is true", async () => {
     const github = fakeGithub([]);
@@ -259,5 +274,20 @@ describe("upsertPrComment", () => {
     const body = github.rest.issues.updateComment.mock.calls[0][0].body;
     expect(body).toContain("old benchmark content");
     expect(body).toContain("## Coverage");
+  });
+
+  it("rejects a rendered comment body over GitHub's limit", async () => {
+    const github = fakeGithub([]);
+    await expect(
+      upsertPrComment({
+        github,
+        context,
+        issueNumber: 42,
+        sectionId: "benchmark",
+        sectionContent: "x".repeat(MAX_COMMENT_CHARS),
+        createIfMissing: true,
+      }),
+    ).rejects.toThrow(/exceeds GitHub's 65536-character limit/);
+    expect(github.rest.issues.createComment).not.toHaveBeenCalled();
   });
 });
