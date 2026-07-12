@@ -1,5 +1,5 @@
 /**
- * Validates `benchmark-<package>.json` files (see test/bench/report.ts) and
+ * Validates `benchmark-<package>.json` files (see test/bench/scripts/report.ts) and
  * renders them as a markdown comparison table.
  *
  * This module is intentionally Node-stdlib-only with zero dependencies: it's
@@ -29,7 +29,7 @@ const SAFE_SHORT = /^[\w.\- ]{1,64}$/;
 const SAFE_COMMIT = /^(unknown|[0-9a-f]{7,40})$/i;
 const SAFE_VERSION = /^[\w.\-+]{1,64}$/;
 // Deliberately excludes `[ ] ( ) ! /` and bare URLs: task names are
-// PR-controlled (a fork can edit `index.bench.ts` freely), so this allowlist
+// PR-controlled (a fork can edit `*.bench.ts` freely), so this allowlist
 // — not just escaping — is what makes markdown link/image injection into
 // the rendered comment impossible, not just awkward.
 const SAFE_TASK_NAME = /^[\w :,._+'-]{1,80}$/;
@@ -382,7 +382,12 @@ export function renderMarkdown(results: BenchmarkResult[]): string {
   ============================================ */
 
 function parseArgs(argv: string[]) {
-  let dir = "test/bench/.output";
+  // See report.ts: cwd is the `bench` package dir under `pnpm run --filter`,
+  // so anchor the default output dir to the repo root instead.
+  let dir = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../../../test/bench/.output",
+  );
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--dir" && argv[i + 1]) dir = argv[++i];
   }

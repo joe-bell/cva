@@ -50,7 +50,7 @@ export function sectionBlock(id, content) {
   // loudly here rather than silently corrupting the comment.
   if (content.includes("<!-- cva:section:")) {
     throw new Error(
-      `section ${JSON.stringify(id)} content contains a literal section marker — escape untrusted input before rendering (see test/bench/compare.ts)`,
+      `section ${JSON.stringify(id)} content contains a literal section marker — escape untrusted input before rendering (see test/bench/scripts/compare.ts)`,
     );
   }
   return `${start}\n${content.trim()}\n${end}`;

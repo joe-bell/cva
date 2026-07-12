@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { bench, describe } from "vitest";
 
-import type * as local from "../../packages/cva/src/index";
+import type * as local from "cva";
 
 import { BENCH_OPTIONS, loadImplementations } from "./harness";
 
@@ -151,7 +151,7 @@ function registerBenchmarks(mod: typeof local) {
 
 const packageDir = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
-  "../../packages/cva",
+  "../../../packages/cva",
 );
 const implementations = await loadImplementations<typeof local>(
   "cva",

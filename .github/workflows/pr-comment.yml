@@ -22,7 +22,7 @@ name: pr-comment
 #      then validates it strictly and renders it to markdown yourself in
 #      trusted code running from main — the artifact is hostile input and
 #      must never be embedded as markdown verbatim. See
-#      test/bench/compare.ts for the pattern: exact schema, size caps,
+#      test/bench/scripts/compare.ts for the pattern: exact schema, size caps,
 #      escaping.
 #   3. Cross-check the artifact's claimed PR number against
 #      `github.event.workflow_run.head_sha` AND cross-check the producing
@@ -65,12 +65,14 @@ jobs:
       contents: read
       pull-requests: write
     steps:
+      # An initial checkout is needed before the local `./.github/actions/install`
+      # composite can be referenced; the composite then re-checks-out the same
+      # default-branch ref and sets up pnpm + deps. workflow_run always runs the
+      # default branch, so this never checks out or runs PR code.
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        with:
-          node-version-file: .nvmrc
+      - uses: ./.github/actions/install
 
       - name: Download benchmark artifact
         id: download
@@ -82,14 +84,17 @@ jobs:
           github-token: ${{ github.token }}
           path: test/bench/.output
 
-      # Renders trusted markdown from untrusted data: test/bench/compare.ts
+      # Renders trusted markdown from untrusted data: test/bench/scripts/compare.ts
       # throws (non-zero exit) on any schema violation, so a tampered or
       # malformed artifact fails this step loudly instead of silently
-      # producing a bad section.
+      # producing a bad section. Invoked via the workspace alias for
+      # consistency with the rest of CI; `--dir` is absolute because
+      # `pnpm --filter` runs the script with the package dir (test/bench) as
+      # its cwd, not the repo root.
       - name: Validate and render benchmark section
         id: render
         if: steps.download.outcome == 'success'
-        run: node test/bench/compare.ts --dir test/bench/.output > benchmark-section.md
+        run: pnpm bench:compare --dir "$GITHUB_WORKSPACE/test/bench/.output" > benchmark-section.md
 
       - name: Upsert benchmark section
         if: success() && steps.download.outcome == 'success'

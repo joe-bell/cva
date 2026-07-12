@@ -1,7 +1,7 @@
 /**
  * One-command local preview of the benchmark table that gets posted as the
- * sticky PR comment. Chains the existing pieces — test/bench/baselines.ts,
- * `pnpm bench`, and test/bench/compare.ts — so the rendered markdown comes
+ * sticky PR comment. Chains the existing pieces — test/bench/scripts/baselines.ts,
+ * `pnpm bench`, and test/bench/scripts/compare.ts — so the rendered markdown comes
  * from the same `compare.ts` the privileged sticky-comment workflow uses;
  * this file adds no rendering of its own.
  *
@@ -16,17 +16,27 @@ import { writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
+
+// These scripts run via `pnpm run --filter bench`, so the cwd is the `bench`
+// package dir (`test/bench`) rather than the workspace root. Anchor every
+// repo-relative path (and the sibling scripts this chains) to the repo root.
+const repoRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../..",
+);
+const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 
 const baselinesDir = path.join(os.tmpdir(), "cva-bench-baselines-preview");
-const previewPath = "test/bench/.output/preview.md";
+const previewPath = path.join(repoRoot, "test/bench/.output/preview.md");
 
 function run(command: string, args: string[], env = process.env) {
-  execFileSync(command, args, { stdio: "inherit", env });
+  execFileSync(command, args, { stdio: "inherit", env, cwd: repoRoot });
 }
 
 let haveBaselines = false;
 try {
-  run("node", ["test/bench/baselines.ts", "--out", baselinesDir]);
+  run("node", [path.join(scriptsDir, "baselines.ts"), "--out", baselinesDir]);
   haveBaselines = true;
 } catch {
   console.warn(
@@ -44,8 +54,9 @@ run(
 
 // Render through the same compare.ts CLI the sticky comment uses, so the
 // preview is byte-identical to what a PR would show.
-const markdown = execFileSync("node", ["test/bench/compare.ts"], {
+const markdown = execFileSync("node", [path.join(scriptsDir, "compare.ts")], {
   encoding: "utf8",
+  cwd: repoRoot,
 });
 writeFileSync(previewPath, markdown);
 

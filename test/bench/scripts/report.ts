@@ -1,9 +1,9 @@
 /**
  * Converts a `vitest bench --outputJson` report plus the baselines manifest
- * (see test/bench/baselines.ts) into one minimal, stable
+ * (see test/bench/scripts/baselines.ts) into one minimal, stable
  * `benchmark-<package>.json` file per workspace package. This is the only
  * schema that crosses the trust boundary into the privileged sticky-comment
- * workflow (see test/bench/compare.ts), so it deliberately carries nothing
+ * workflow (see test/bench/scripts/compare.ts), so it deliberately carries nothing
  * beyond what's needed to render a table.
  */
 import { execFileSync } from "node:child_process";
@@ -11,9 +11,18 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 
 import type { ManifestEntry } from "./baselines";
 import type { Implementation, Task } from "./compare";
+
+// Anchor root-relative paths to the repo root, not `process.cwd()`: these
+// scripts run via `pnpm run --filter bench`, which sets the cwd to the
+// `bench` package dir (`test/bench`), not the workspace root.
+const repoRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../..",
+);
 
 const PACKAGES = ["cva", "class-variance-authority"];
 
@@ -40,9 +49,9 @@ interface VitestReport {
 }
 
 function parseArgs(argv: string[]) {
-  let vitestJson = "test/bench/.output/vitest-bench.json";
+  let vitestJson = path.join(repoRoot, "test/bench/.output/vitest-bench.json");
   let baselinesDir = process.env.BENCH_BASELINES_DIR;
-  let outDir = "test/bench/.output";
+  let outDir = path.join(repoRoot, "test/bench/.output");
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--vitest-json" && argv[i + 1]) vitestJson = argv[++i];
     if (argv[i] === "--baselines" && argv[i + 1]) baselinesDir = argv[++i];
@@ -57,7 +66,7 @@ function packageNameFromFilepath(filepath: string): string | undefined {
 }
 
 function localVersion(pkg: string): string {
-  const pkgJsonPath = path.join("packages", pkg, "package.json");
+  const pkgJsonPath = path.join(repoRoot, "packages", pkg, "package.json");
   const pkgJson = JSON.parse(readFileSync(pkgJsonPath, "utf8"));
   return pkgJson.version;
 }

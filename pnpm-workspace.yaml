@@ -10,6 +10,7 @@ packages:
   - "docs"
   - "examples/**"
   - "packages/**"
+  - "test/**"
 
 enablePrePostScripts: true
 

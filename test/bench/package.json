@@ -1,3 +1,19 @@
 {
-  "type": "module"
+  "name": "bench",
+  "type": "module",
+  "scripts": {
+    "baselines": "node scripts/baselines.ts",
+    "check": "tsc --project tsconfig.json --noEmit",
+    "compare": "node scripts/compare.ts",
+    "preview": "node scripts/preview.ts",
+    "report": "node scripts/report.ts"
+  },
+  "dependencies": {
+    "class-variance-authority": "workspace:*",
+    "cva": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.2",
+    "typescript": "6.0.3"
+  }
 }

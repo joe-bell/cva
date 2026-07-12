@@ -20,7 +20,7 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/install
       - name: Install published baselines
-        run: node test/bench/baselines.ts --out "$RUNNER_TEMP/bench-baselines"
+        run: pnpm bench:baselines --out "$RUNNER_TEMP/bench-baselines"
       - name: Run benchmarks
         env:
           BENCH_BASELINES_DIR: ${{ runner.temp }}/bench-baselines
