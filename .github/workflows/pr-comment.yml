@@ -65,10 +65,15 @@ jobs:
       contents: read
       pull-requests: write
     steps:
+      # Deliberately minimal: this is the privileged `pull-requests: write`
+      # job, so it does NOT `pnpm install`/build (no lifecycle scripts, no
+      # cache) — it only needs Node to run the dependency-free renderer.
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
-      - uses: ./.github/actions/install
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: .nvmrc
 
       - name: Download benchmark artifact
         id: download
@@ -83,12 +88,13 @@ jobs:
       # Renders trusted markdown from untrusted data: test/bench/scripts/compare.ts
       # throws (non-zero exit) on any schema violation, so a tampered or
       # malformed artifact fails this step loudly instead of silently
-      # producing a bad section. The absolute `--dir` accounts for pnpm
-      # running filtered scripts from the `test/bench` package directory.
+      # producing a bad section. Invoked directly with `node` (the script is
+      # Node-stdlib-only) rather than `pnpm bench:compare`, so this job needs
+      # no workspace install.
       - name: Validate and render benchmark section
         id: render
         if: steps.download.outcome == 'success'
-        run: pnpm bench:compare --dir "$GITHUB_WORKSPACE/test/bench/.output" > benchmark-section.md
+        run: node test/bench/scripts/compare.ts --dir test/bench/.output > benchmark-section.md
 
       - name: Upsert benchmark section
         if: success() && steps.download.outcome == 'success'
