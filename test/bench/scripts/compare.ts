@@ -335,9 +335,7 @@ const NOISE_THRESHOLD_PERCENT = 5;
 const PACKAGE_NOTES: Record<string, string> = {
   "class-variance-authority": [
     "> [!NOTE]",
-    "> `class-variance-authority` is in maintenance mode, and its latest" +
-      " `npm` baseline predates the `tsdown` build migration. Treat the" +
-      " deltas here as indicative.",
+    "> `class-variance-authority` is in maintenance mode, and its latest `npm` baseline predates the `tsdown` build migration. Treat the deltas here as indicative.",
   ].join("\n"),
 };
 
