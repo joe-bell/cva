@@ -293,7 +293,7 @@ describe("renderMarkdown", () => {
     ]);
 
     expect(markdown).toContain("> [!NOTE]");
-    expect(markdown).toContain("pre-`tsdown` toolchain");
+    expect(markdown).toContain("predates the `tsdown` build migration");
     // The note sits under the heading, above the table.
     expect(markdown.indexOf("> [!NOTE]")).toBeLessThan(
       markdown.indexOf("| Task |"),
