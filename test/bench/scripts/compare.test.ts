@@ -256,6 +256,84 @@ describe("renderMarkdown", () => {
     expect(markdown).not.toContain("### How to read this");
   });
 
+  it("renders the maintenance-mode toolchain note for class-variance-authority", () => {
+    const result = validResult({
+      package: "class-variance-authority",
+      implementations: [
+        {
+          label: "local",
+          version: "0.7.1",
+          tasks: [
+            {
+              name: "Join class names",
+              hz: 100,
+              mean: 0.01,
+              rme: 0.5,
+              samples: 1000,
+            },
+          ],
+        },
+        {
+          label: "release",
+          version: "0.7.1",
+          tasks: [
+            {
+              name: "Join class names",
+              hz: 90,
+              mean: 0.011,
+              rme: 0.6,
+              samples: 900,
+            },
+          ],
+        },
+      ],
+    });
+    const markdown = renderMarkdown([
+      validateResult(result, "class-variance-authority"),
+    ]);
+
+    expect(markdown).toContain("> [!NOTE]");
+    expect(markdown).toContain("pre-`tsdown` toolchain");
+    // The note sits under the heading, above the table.
+    expect(markdown.indexOf("> [!NOTE]")).toBeLessThan(
+      markdown.indexOf("| Task |"),
+    );
+  });
+
+  it("omits the toolchain note when the release baseline is skipped", () => {
+    const result = validResult({
+      package: "class-variance-authority",
+      implementations: [
+        {
+          label: "local",
+          version: "0.7.1",
+          tasks: [
+            {
+              name: "Join class names",
+              hz: 100,
+              mean: 0.01,
+              rme: 0.5,
+              samples: 1000,
+            },
+          ],
+        },
+        { label: "release", version: "0.7.1", skipped: "not published on npm" },
+      ],
+    });
+    const markdown = renderMarkdown([
+      validateResult(result, "class-variance-authority"),
+    ]);
+
+    expect(markdown).not.toContain("> [!NOTE]");
+  });
+
+  it("does not render the toolchain note for cva", () => {
+    const validated = validateResult(validResult(), "cva");
+    const markdown = renderMarkdown([validated]);
+
+    expect(markdown).not.toContain("> [!NOTE]");
+  });
+
   it("renders runtime rows before static rows with display labels", () => {
     const result = validResult();
     const tasks = (result.implementations[0] as any).tasks;

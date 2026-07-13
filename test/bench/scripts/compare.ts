@@ -325,6 +325,24 @@ function formatOps(hz: number, rme: number): string {
 
 const NOISE_THRESHOLD_PERCENT = 5;
 
+// Package-scoped callouts rendered under the heading, before the table.
+// `class-variance-authority` is in maintenance mode: its published `latest`
+// baseline still comes from the pre-`tsdown` (SWC) build, so part of any delta
+// against it measures that one-time build-toolchain/target change rather than
+// the source (which is unchanged since 0.7.1). See the toolchain caveat in
+// test/bench/scripts/harness.ts. Drop this entry once a `tsdown`-built
+// `class-variance-authority` release ships and re-baselines the comparison.
+const PACKAGE_NOTES: Record<string, string> = {
+  "class-variance-authority": [
+    "> [!NOTE]",
+    "> `class-variance-authority` is in maintenance mode. Its `latest` npm" +
+      " baseline was built with the pre-`tsdown` toolchain (a different" +
+      " down-leveling target), so part of any delta here reflects that" +
+      " one-time build change, not the source — treat it as indicative. The" +
+      " next published release re-baselines it.",
+  ].join("\n"),
+};
+
 const TASK_PRIORITY = [
   "Call component (default variants)",
   "Call component (with variants)",
@@ -390,6 +408,14 @@ function renderPackageSection(result: BenchmarkResult): string {
   const lines: string[] = [];
   lines.push(`### \`${escapeMarkdown(result.package)}\``);
   lines.push("");
+
+  // Only render the note when there's an actual baseline column to caveat —
+  // no rendered comparison, nothing to qualify.
+  const note = PACKAGE_NOTES[result.package];
+  if (note && baselines.some((b) => b.tasks && b.tasks.length > 0)) {
+    lines.push(note);
+    lines.push("");
+  }
 
   // Union across every implementation (local first), not just local — with
   // local missing, baseline columns must still render their rows instead
