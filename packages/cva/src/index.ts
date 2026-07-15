@@ -83,6 +83,25 @@ type RightMerge<A, B> = {
       : never;
 };
 
+// Mirrors the runtime `mergeVariants`: a right-biased (local wins),
+// one-level-deep merge of composed variants with local ones. A plain
+// intersection (`Local & Composed`) breaks down when both sides declare the
+// same option key with incompatible class values — e.g. a normalized
+// shorthand's `false: null` intersected with a composed `false: string`
+// collapses the whole variant map to `never`, whose `keyof` is
+// `string | number | symbol`, poisoning the props type.
+type MergeVariantShapes<Composed, Local> = [Composed] extends [CVAVariantShape]
+  ? {
+      [K in keyof Composed | keyof Local]: K extends keyof Local
+        ? K extends keyof Composed
+          ? RightMerge<Composed[K], Local[K]>
+          : Local[K]
+        : K extends keyof Composed
+          ? Composed[K]
+          : never;
+    }
+  : Local;
+
 // `D` infers as `undefined` (not absent) when a component declares no
 // `defaultVariants` at all. `NonNullable<undefined>` would give `never`,
 // and `keyof never` is `string | number | symbol` (not `never`) — poisoning
@@ -154,8 +173,40 @@ type CVAComponentConfigBase = { base?: ClassValue };
  * (`declaration: true`) — you shouldn't really use it directly.
  */
 export type CVAVariantShape = Record<string, Record<string, ClassValue>>;
-type CVAVariantSchema<V extends CVAVariantShape> = {
-  [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
+// Boolean-variant shorthand: any variant value that is *not* a plain object
+// is treated as `{ true: value, false: null }`. Discrimination has to happen
+// on the non-object side — a clsx `ClassDictionary` structurally overlaps a
+// variant map, so plain objects must always stay variant maps (wrap a
+// dictionary in an array to use it as shorthand). `boolean`/`undefined` are
+// deliberately excluded as shorthand values.
+type CVAVariantShorthandValue = string | number | bigint | ClassArray | null;
+type CVAVariantInputShape = Record<
+  string,
+  Record<string, ClassValue> | CVAVariantShorthandValue
+>;
+// Guarded rather than bare-homomorphic: `unknown` (a variant-less
+// `cva({ base })`) must pass through unchanged — `CVAComponentShape`'s
+// guards depend on `variants: unknown` (see `CVAComponentShape` below).
+type NormalizeVariants<V> = V extends CVAVariantInputShape
+  ? {
+      [K in keyof V]: [V[K]] extends [Record<string, ClassValue>]
+        ? V[K]
+        : { true: V[K]; false: null };
+    }
+  : V;
+// Prop values for one raw variant entry: map entries accept their
+// (boolean-ized) keys, shorthand entries accept `boolean`. The conditionals
+// here and in `NormalizeVariants` check the map side — mirroring the runtime
+// `isVariantMap` — and MUST be non-distributive (`[T] extends [...]`): a
+// distributive check over the bare type parameter stays deferred during
+// contextual typing of `defaultVariants`, widening literal values (e.g. `-1`
+// to `number`). Never `keyof` a shorthand value — `keyof string` is the
+// string method names.
+type CVAVariantValue<T> = [T] extends [Record<string, ClassValue>]
+  ? StringToBoolean<keyof T>
+  : boolean;
+type CVAVariantSchema<V extends CVAVariantInputShape> = {
+  [Variant in keyof V]?: CVAVariantValue<V[Variant]> | undefined;
 };
 type CVAClassProp =
   | {
@@ -180,16 +231,16 @@ type CVAComponentConfig<
     readonly CVAComponentShape[],
 > = Config & {
   composes?: ComposedSingle | readonly [...ComposedList];
-} & (Variants extends CVAVariantShape
+} & (Variants extends CVAVariantInputShape
     ? CVAComponentConfigBase & {
         variants?: Variants;
-        compoundVariants?: (Variants extends CVAVariantShape
+        compoundVariants?: (Variants extends CVAVariantInputShape
           ? (
               | CVAVariantSchema<Variants>
               | {
                   [Variant in keyof Variants]?:
-                    | StringToBoolean<keyof Variants[Variant]>
-                    | StringToBoolean<keyof Variants[Variant]>[]
+                    | CVAVariantValue<Variants[Variant]>
+                    | CVAVariantValue<Variants[Variant]>[]
                     | undefined;
                 }
             ) &
@@ -251,9 +302,15 @@ export interface CVA {
   >(
     config: CVAComponentConfig<Config, Variants, ComposedSingle, ComposedList>,
   ): CVAComponent<
-    Omit<Config, "defaultVariants"> & {
-      variants: Variants &
-        MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>;
+    // `variants` must be replaced wholesale (not intersected with `Config`'s
+    // raw slot): for a shorthand entry the raw/normalized intersection
+    // (e.g. `"opacity-50" & { true: ...; false: null }`) collapses to an
+    // unusable type, breaking `getSchema` inference downstream.
+    Omit<Config, "defaultVariants" | "variants"> & {
+      variants: MergeVariantShapes<
+        MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>,
+        NormalizeVariants<Variants>
+      >;
       // Local `defaultVariants` win over composed ones on key conflicts,
       // matching the runtime spread order. A plain intersection would collapse
       // a conflicting key's value to `never` (e.g. `"sm" & "lg"`), which then
@@ -264,7 +321,10 @@ export interface CVA {
       > &
         CVADefaultVariants<Config>;
     },
-    Variants & MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>
+    MergeVariantShapes<
+      MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>,
+      NormalizeVariants<Variants>
+    >
   >;
 }
 
@@ -305,6 +365,26 @@ export interface DefineConfig {
 
 const falsyToString = <T extends unknown>(value: T) =>
   typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
+
+const isVariantMap = (value: unknown): value is Record<string, ClassValue> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+// Expands the boolean-variant shorthand (any non-map value becomes
+// `{ true: value, false: null }`) so every downstream consumer — variant
+// resolution, composition merging, `component.config`, `getSchema` — only
+// ever sees `{ true, false }` maps.
+const normalizeVariants = (
+  variants: Record<string, Record<string, ClassValue> | ClassValue>,
+): CVAVariantShape => {
+  const normalized: CVAVariantShape = {};
+  for (const key of Object.keys(variants)) {
+    const value = variants[key];
+    normalized[key] = isVariantMap(value)
+      ? value
+      : { true: value, false: null };
+  }
+  return normalized;
+};
 
 // Shared across every non-composed call, rather than allocating a fresh `[]`
 // per call — `cx` (clsx) treats an empty array identically to an absent one.
@@ -356,9 +436,18 @@ export const defineConfig: DefineConfig = (options) => {
         mergeVariants(acc, component.config?.variants),
       {} as CVAVariantShape,
     );
+    const localVariants =
+      config?.variants == null
+        ? undefined
+        : normalizeVariants(
+            config.variants as Record<
+              string,
+              Record<string, ClassValue> | ClassValue
+            >,
+          );
     const mergedVariants = mergeVariants(
       mergedVariantsFromComposed,
-      config?.variants as CVAVariantShape | undefined,
+      localVariants,
     );
     const mergedDefaultVariantsFromComposed = components.reduce(
       (acc: Record<string, unknown>, component: CVAComponentShape) => ({
@@ -383,7 +472,7 @@ export const defineConfig: DefineConfig = (options) => {
       // below. Only built when something consumes it — a plain component with
       // no `composes` and no `variants` skips the work entirely.
       const definedPropsWithoutClass =
-        components.length || config?.variants != null
+        components.length || localVariants != null
           ? Object.fromEntries(
               Object.entries(props || {}).filter(
                 ([key, value]) =>
@@ -403,7 +492,7 @@ export const defineConfig: DefineConfig = (options) => {
           )
         : emptyClassNames;
 
-      if (config?.variants == null) {
+      if (localVariants == null) {
         return cx(
           getComposedClassNames,
           config?.base,
@@ -412,7 +501,10 @@ export const defineConfig: DefineConfig = (options) => {
         );
       }
 
-      const { variants } = config;
+      // Resolve against the normalized local variants — raw `config.variants`
+      // may still hold shorthand values, which would be string-indexed
+      // character-by-character below.
+      const variants = localVariants;
 
       // Resolve against the *merged* defaults (composed + local) so a variant
       // redeclared locally over a composed key uses the same effective default
@@ -566,7 +658,10 @@ export interface GetSchema {
 export const getSchema: GetSchema = (component) => {
   if (!component.config?.variants) return {} as any;
 
-  return Object.entries(component.config.variants).reduce(
+  // `config.variants` is stored normalized (shorthand already expanded to
+  // `{ true, false }` maps), even though the config *type* still carries the
+  // raw input union.
+  return Object.entries(component.config.variants as CVAVariantShape).reduce(
     (acc, [key, value]) => {
       const defaultValue = component.config.defaultVariants?.[key];
       const hasDefaultValue = defaultValue !== undefined;

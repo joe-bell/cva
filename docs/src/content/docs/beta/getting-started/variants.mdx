@@ -114,6 +114,63 @@ const button = cva({
 });
 ```
 
+## Boolean variants
+
+Declare an on/off variant by assigning a class value directly to the variant name. String, array, and `null` values are shorthand for a `true`/`false` map.
+
+```ts
+import { cva } from "cva";
+
+const button = cva({
+  base: "button",
+  variants: {
+    disabled: "button--disabled",
+  },
+});
+
+button({ disabled: true });
+// => "button button--disabled"
+
+button({ disabled: false });
+// => "button"
+```
+
+The shorthand above expands to:
+
+```ts
+const button = cva({
+  base: "button",
+  variants: {
+    disabled: {
+      true: "button--disabled",
+      false: null,
+    },
+  },
+});
+```
+
+Use `null` to declare a boolean variant with no classes of its own, for example to target it from `compoundVariants`:
+
+```ts
+import { cva } from "cva";
+
+const button = cva({
+  base: "button",
+  variants: {
+    busy: null,
+    disabled: "button--disabled",
+  },
+  compoundVariants: [{ busy: true, disabled: true, class: "button--locked" }],
+});
+
+button({ busy: true, disabled: true });
+// => "button button--disabled button--locked"
+```
+
+:::note
+A plain object is always read as a variant map. To use a [`clsx` object](https://github.com/lukeed/clsx#input) as a shorthand value, wrap it in an array: `loading: [{ "cursor-wait": true }]`.
+:::
+
 ## Disabling variants
 
 To disable a variant completely, provide an option with a value of `null`.
