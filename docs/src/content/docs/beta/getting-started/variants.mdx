@@ -140,7 +140,9 @@ button({ intent: "unset" });
 
 ## Internal variants
 
-A variant name prefixed with `_` is internal: the component still accepts it, and it's still settable via `defaultVariants` and matchable in `compoundVariants`, but it's omitted from [`VariantProps`](/beta/getting-started/typescript#extracting-variant-types) and from [`getSchema`](/beta/api-reference#getschema).
+A variant name prefixed with `_` is treated as internal.
+
+The component still accepts it, it's still settable via `defaultVariants` and matchable in `compoundVariants`, but it's omitted from [`VariantProps`](/beta/getting-started/typescript#extracting-variant-types) and from [`getSchema`](/beta/api-reference#getschema).
 
 ```ts
 import { cva, type VariantProps } from "cva";

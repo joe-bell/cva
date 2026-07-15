@@ -27,10 +27,10 @@ Extract a plain-object schema (variant names, values and defaults) from a `cva` 
 
 ### 4. Internal variants
 
-A variant name prefixed with `_` is now [internal](/beta/getting-started/variants#internal-variants). It stays off a wrapping component's public props because `VariantProps` and `getSchema` omit it, while the `cva` component still accepts it.
+A variant name prefixed with `_` is now treated as [internal](/beta/getting-started/variants#internal-variants). It stays off a wrapping component's public props because `VariantProps` and `getSchema` omit it, while the `cva` component still accepts it.
 
 :::caution[Breaking change]
-If a component already declared a variant with a leading underscore (`_state`, `_internal`, etc.), that variant now disappears from `VariantProps` and from `getSchema` results. The component still accepts it directly, but rename it if you relied on `VariantProps` exposing it as a public prop.
+If a component already declared a variant with a leading underscore (`_state`, `_internal`, etc.), that variant now disappears from `VariantProps` and from `getSchema` results. The component still accepts it directly, but you'll need to rename it if you exposed it as a public prop.
 :::
 
 ## Deprecations
