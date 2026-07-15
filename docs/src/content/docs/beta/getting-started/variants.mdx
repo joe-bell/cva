@@ -66,7 +66,7 @@ button({ intent: "secondary", size: "small" });
 
 A variant name prefixed with `_` is treated as internal.
 
-The component still accepts it, it's still settable via `defaultVariants` and matchable in `compoundVariants`, but it's omitted from [`VariantProps`](/beta/getting-started/typescript#extracting-variant-types) and from [`getSchema`](/beta/api-reference#getschema).
+Internal variants remain available to the component. You can set them via `defaultVariants` and match them in `compoundVariants`. Both [`VariantProps`](/beta/getting-started/typescript#extracting-variant-types) and [`getSchema`](/beta/api-reference#getschema) omit them.
 
 ```ts
 import { cva, type VariantProps } from "cva";
@@ -74,14 +74,8 @@ import { cva, type VariantProps } from "cva";
 const button = cva({
   base: "button",
   variants: {
-    _intent: {
-      primary: "button--primary",
-      secondary: "button--secondary",
-    },
-    size: {
-      small: "button--small",
-      medium: "button--medium",
-    },
+    _intent: { primary: "button--primary", secondary: "button--secondary" },
+    size: { small: "button--small", medium: "button--medium" },
   },
   defaultVariants: {
     _intent: "primary",
@@ -89,11 +83,11 @@ const button = cva({
   },
 });
 
-// `_intent` is omitted from the public props...
+// `_intent` is omitted from the public props.
 type ButtonProps = VariantProps<typeof button>;
 // => { size?: "small" | "medium" | undefined }
 
-// ...but the component still accepts it directly.
+// The component still accepts `_intent` directly.
 button({ _intent: "secondary", size: "small" });
 // => "button button--secondary button--small"
 ```
