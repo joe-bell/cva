@@ -99,6 +99,38 @@ describe("compose", () => {
       }),
     ).toBe("shadow-md gap-3 adhoc-class");
   });
+
+  test("should accept internal variant props", () => {
+    const base = cva({
+      variants: {
+        _tone: {
+          quiet: "tone-quiet",
+          loud: "tone-loud",
+        },
+      },
+      defaultVariants: { _tone: "quiet" },
+    });
+
+    const stack = cva({
+      variants: {
+        gap: {
+          1: "gap-1",
+          2: "gap-2",
+        },
+      },
+      defaultVariants: { gap: 1 },
+    });
+
+    const card = compose(base, stack);
+
+    expectTypeOf(card).parameter(0).toMatchTypeOf<
+      | {
+          _tone?: "quiet" | "loud" | undefined;
+          gap?: 1 | 2 | undefined;
+        }
+      | undefined
+    >();
+  });
 });
 
 describe("cva — composes", () => {
@@ -472,14 +504,10 @@ describe("cva — internal variants", () => {
 
     expect(button()).toBe("button intent-primary size-sm");
 
-    // `_intent` is omitted from `VariantProps` (e.g. a wrapping React
-    // component's public props)...
     expectTypeOf<CVA.VariantProps<typeof button>>().toEqualTypeOf<{
       size?: "sm" | "lg" | undefined;
     }>();
 
-    // ...but the component itself still accepts it (no cast needed), so a
-    // wrapper can drive it internally.
     expect(button({ _intent: "secondary" })).toBe(
       "button intent-secondary size-sm",
     );
@@ -572,12 +600,9 @@ describe("cva — internal variants", () => {
 
     expect(card()).toBe("tone-quiet pad-sm");
 
-    // A composed internal variant is omitted from the composer's
-    // `VariantProps` too...
     expectTypeOf<CVA.VariantProps<typeof card>>().toEqualTypeOf<{
       pad?: "sm" | "lg" | undefined;
     }>();
-    // ...but the composer still accepts it directly.
     expect(card({ _tone: "loud" })).toBe("tone-loud pad-sm");
 
     expect(getSchema(card)).toStrictEqual({
@@ -596,9 +621,6 @@ describe("cva — internal variants", () => {
       defaultVariants: { _tone: "quiet" },
     });
 
-    // Redeclaring `_tone` locally is required to override its default from
-    // the composer — the same pre-existing rule that applies to any
-    // composed-only variant (public or internal).
     const card = cva({
       composes: base,
       variants: { _tone: { loud: "loud-local" } },

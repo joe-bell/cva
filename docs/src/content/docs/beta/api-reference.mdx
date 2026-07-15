@@ -17,7 +17,7 @@ const component = cva(options);
 
 1. `options`
    - `base`: the base class name (`string`, `string[]` or other [`clsx` value](https://github.com/lukeed/clsx#input))
-   - `variants`: your variants schema. A variant name prefixed with `_` is [internal](/beta/getting-started/variants#internal-variants): omitted from `VariantProps` and from `getSchema`, but still accepted by the component and settable via `defaultVariants`/`compoundVariants`
+   - `variants`: your variants schema. Names prefixed with `_` are [internal](/beta/getting-started/variants#internal-variants)
    - `compoundVariants`: variants based on a combination of previously defined variants
    - `defaultVariants`: set default values for previously defined variants
    - `composes`: shallow merge one or more other `cva` components into this one, as a single component or an array (see [Composing Components](/beta/getting-started/composing-components))

@@ -140,9 +140,7 @@ button({ intent: "unset" });
 
 ## Internal variants
 
-A variant name prefixed with `_` is internal: the component still accepts it, and it's still drivable via `defaultVariants` and matchable in `compoundVariants`, but it's omitted from [`VariantProps`](/beta/getting-started/typescript#extracting-variant-types) and from [`getSchema`](/beta/api-reference#getschema).
-
-Use this for a variant you set inside a component but don't want on its public props: `VariantProps` (the type you spread into a wrapping component's props) drops it, while the `cva` component keeps accepting it directly.
+A variant name prefixed with `_` is internal: the component still accepts it, and it's still settable via `defaultVariants` and matchable in `compoundVariants`, but it's omitted from [`VariantProps`](/beta/getting-started/typescript#extracting-variant-types) and from [`getSchema`](/beta/api-reference#getschema).
 
 ```ts
 import { cva, type VariantProps } from "cva";
@@ -198,10 +196,6 @@ function Button({ active, size, className, ...props }: Props) {
   );
 }
 ```
-
-:::note
-Internal variants are omitted from the derived surface (`VariantProps` and `getSchema`), not from the component itself: the component's own call signature still accepts `_intent`, and its value still resolves into the emitted class list.
-:::
 
 A composed-only internal variant is omitted from the composer's `VariantProps` too. To change its default from the composer, redeclare it locally: the same rule applies to any composed-only variant (see [Extending variants](/beta/getting-started/composing-components#extending-variants)).
 

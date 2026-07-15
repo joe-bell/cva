@@ -103,9 +103,14 @@ type MergedDefaultVariants<T extends readonly unknown[]> = T extends readonly [
   ? RightMerge<DefaultsOf<Head>, MergedDefaultVariants<Rest>>
   : {};
 
-export type VariantProps<Component extends (...args: any) => any> = Omit<
+type ComponentProps<Component extends (...args: any) => any> = Omit<
   OmitUndefined<Parameters<Component>[0]>,
-  "class" | "className" | InternalVariantKey
+  "class" | "className"
+>;
+
+export type VariantProps<Component extends (...args: any) => any> = Omit<
+  ComponentProps<Component>,
+  InternalVariantKey
 >;
 
 /* compose
@@ -126,7 +131,7 @@ export interface Compose {
     props?: (
       | UnionToIntersection<
           {
-            [K in keyof T]: VariantProps<T[K]>;
+            [K in keyof T]: ComponentProps<T[K]>;
           }[number]
         >
       | undefined
@@ -157,9 +162,6 @@ export type CVAVariantShape = Record<string, Record<string, ClassValue>>;
 type CVAVariantSchema<V extends CVAVariantShape> = {
   [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
 };
-// A variant name prefixed with `_` is internal: the component still accepts
-// it, but it's omitted from `VariantProps` (so it stays out of a wrapping
-// component's public props) and from `getSchema`.
 type InternalVariantKey = `_${string}`;
 type CVAClassProp =
   | {
@@ -571,7 +573,6 @@ export const getSchema: GetSchema = (component) => {
 
   return Object.entries(component.config.variants).reduce(
     (acc, [key, value]) => {
-      // Mirrors the `InternalVariantKey` type-level filter above.
       if (key.startsWith("_")) return acc;
 
       const defaultValue = component.config.defaultVariants?.[key];
