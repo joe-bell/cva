@@ -62,82 +62,6 @@ button({ intent: "secondary", size: "small" });
 // => "rounded border font-semibold border-gray-400 bg-white text-gray-800 hover:bg-gray-100 px-2 py-1 text-sm"
 ```
 
-## Compound variants
-
-Variants that apply when multiple other variant conditions are met.
-
-```ts
-// components/button.ts
-import { cva } from "cva";
-
-const button = cva({
-  base: "…",
-  variants: {
-    intent: { primary: "…", secondary: "…" },
-    size: { small: "…", medium: "…" },
-  },
-  compoundVariants: [
-    // Applied via:
-    //   `button({ intent: "primary", size: "medium" })`
-    {
-      intent: "primary",
-      size: "medium",
-      class: "…",
-    },
-  ],
-});
-```
-
-### Targeting multiple variant conditions
-
-```ts
-// components/button.ts
-import { cva } from "cva";
-
-const button = cva({
-  base: "…",
-  variants: {
-    intent: { primary: "…", secondary: "…" },
-    size: { small: "…", medium: "…" },
-  },
-  compoundVariants: [
-    // Applied via:
-    //   `button({ intent: "primary", size: "medium" })`
-    //     or
-    //   `button({ intent: "secondary", size: "medium" })`
-    {
-      intent: ["primary", "secondary"],
-      size: "medium",
-      class: "…",
-    },
-  ],
-});
-```
-
-## Disabling variants
-
-To disable a variant completely, provide an option with a value of `null`.
-
-If you're stuck on naming, we recommend setting an explicit `"unset"` option ([similar to the CSS keyword](https://developer.mozilla.org/en-US/docs/Web/CSS/unset)).
-
-```ts
-import { cva } from "cva";
-
-const button = cva({
-  base: "button",
-  variants: {
-    intent: {
-      unset: null,
-      primary: "button--primary",
-      secondary: "button--secondary",
-    },
-  },
-});
-
-button({ intent: "unset" });
-// => "button"
-```
-
 ## Internal variants
 
 A variant name prefixed with `_` is treated as internal.
@@ -217,4 +141,80 @@ const card = cva({
 
 card();
 // => "tone-loud loud-local"
+```
+
+## Compound variants
+
+Variants that apply when multiple other variant conditions are met.
+
+```ts
+// components/button.ts
+import { cva } from "cva";
+
+const button = cva({
+  base: "…",
+  variants: {
+    intent: { primary: "…", secondary: "…" },
+    size: { small: "…", medium: "…" },
+  },
+  compoundVariants: [
+    // Applied via:
+    //   `button({ intent: "primary", size: "medium" })`
+    {
+      intent: "primary",
+      size: "medium",
+      class: "…",
+    },
+  ],
+});
+```
+
+### Targeting multiple variant conditions
+
+```ts
+// components/button.ts
+import { cva } from "cva";
+
+const button = cva({
+  base: "…",
+  variants: {
+    intent: { primary: "…", secondary: "…" },
+    size: { small: "…", medium: "…" },
+  },
+  compoundVariants: [
+    // Applied via:
+    //   `button({ intent: "primary", size: "medium" })`
+    //     or
+    //   `button({ intent: "secondary", size: "medium" })`
+    {
+      intent: ["primary", "secondary"],
+      size: "medium",
+      class: "…",
+    },
+  ],
+});
+```
+
+## Disabling variants
+
+To disable a variant completely, provide an option with a value of `null`.
+
+If you're stuck on naming, we recommend setting an explicit `"unset"` option ([similar to the CSS keyword](https://developer.mozilla.org/en-US/docs/Web/CSS/unset)).
+
+```ts
+import { cva } from "cva";
+
+const button = cva({
+  base: "button",
+  variants: {
+    intent: {
+      unset: null,
+      primary: "button--primary",
+      secondary: "button--secondary",
+    },
+  },
+});
+
+button({ intent: "unset" });
+// => "button"
 ```
