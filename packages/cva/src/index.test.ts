@@ -451,7 +451,7 @@ describe("cva — composes", () => {
 });
 
 describe("cva — internal variants", () => {
-  test("should hide a variant prefixed with `_` from props, but still apply it via defaults", () => {
+  test("should omit a variant prefixed with `_` from VariantProps, but still accept it on the component", () => {
     const button = cva({
       base: "button",
       variants: {
@@ -472,12 +472,17 @@ describe("cva — internal variants", () => {
 
     expect(button()).toBe("button intent-primary size-sm");
 
+    // `_intent` is omitted from `VariantProps` (e.g. a wrapping React
+    // component's public props)...
     expectTypeOf<CVA.VariantProps<typeof button>>().toEqualTypeOf<{
       size?: "sm" | "lg" | undefined;
     }>();
 
-    // @ts-expect-error — `_intent` is internal and hidden from props
-    button({ _intent: "secondary" });
+    // ...but the component itself still accepts it (no cast needed), so a
+    // wrapper can drive it internally.
+    expect(button({ _intent: "secondary" })).toBe(
+      "button intent-secondary size-sm",
+    );
   });
 
   test("should still match compound variants against an internal variant", () => {
@@ -517,25 +522,6 @@ describe("cva — internal variants", () => {
     expect(button()).toBe("button intent-primary size-sm intent-any-sm");
   });
 
-  test("should still resolve an internal variant passed at runtime by an untyped caller", () => {
-    const button = cva({
-      base: "button",
-      variants: {
-        _intent: {
-          primary: "intent-primary",
-          secondary: "intent-secondary",
-        },
-      },
-      defaultVariants: { _intent: "primary" },
-    });
-
-    // Hiding is type-level only — an untyped/cast caller can still drive the
-    // internal variant directly, e.g. from a wrapper component.
-    expect((button as any)({ _intent: "secondary" })).toBe(
-      "button intent-secondary",
-    );
-  });
-
   test("should omit an internal variant from getSchema, at runtime and in its type", () => {
     const button = cva({
       base: "button",
@@ -565,7 +551,7 @@ describe("cva — internal variants", () => {
     }>();
   });
 
-  test("should hide a composed-only internal variant from the composer's props and schema", () => {
+  test("should omit a composed-only internal variant from the composer's VariantProps and schema", () => {
     const base = cva({
       variants: {
         _tone: {
@@ -586,11 +572,13 @@ describe("cva — internal variants", () => {
 
     expect(card()).toBe("tone-quiet pad-sm");
 
+    // A composed internal variant is omitted from the composer's
+    // `VariantProps` too...
     expectTypeOf<CVA.VariantProps<typeof card>>().toEqualTypeOf<{
       pad?: "sm" | "lg" | undefined;
     }>();
-    // @ts-expect-error — `_tone` is internal, even when composed in
-    card({ _tone: "loud" });
+    // ...but the composer still accepts it directly.
+    expect(card({ _tone: "loud" })).toBe("tone-loud pad-sm");
 
     expect(getSchema(card)).toStrictEqual({
       pad: { values: ["sm", "lg"], defaultValue: "sm" },

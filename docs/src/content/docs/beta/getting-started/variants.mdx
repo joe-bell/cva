@@ -140,12 +140,12 @@ button({ intent: "unset" });
 
 ## Internal variants
 
-A variant name prefixed with `_` is internal: it's still declarable in `variants`, drivable via `defaultVariants`, and matchable in `compoundVariants`, but hidden from the component's props type and from [`getSchema`](/beta/api-reference#getschema).
+A variant name prefixed with `_` is internal: the component still accepts it, and it's still drivable via `defaultVariants` and matchable in `compoundVariants`, but it's omitted from [`VariantProps`](/beta/getting-started/typescript#extracting-variant-types) and from [`getSchema`](/beta/api-reference#getschema).
 
-Use this for a variant an author drives (state, composition wiring), not one a consumer of the component should set directly.
+Use this for a variant you set inside a component but don't want on its public props: `VariantProps` (the type you spread into a wrapping component's props) drops it, while the `cva` component keeps accepting it directly.
 
 ```ts
-import { cva } from "cva";
+import { cva, type VariantProps } from "cva";
 
 const button = cva({
   base: "button",
@@ -165,19 +165,45 @@ const button = cva({
   },
 });
 
-button({ size: "small" });
-// => "button button--primary button--small"
+// `_intent` is omitted from the public props...
+type ButtonProps = VariantProps<typeof button>;
+// => { size?: "small" | "medium" | undefined }
 
-button({ _intent: "secondary" });
-// Type error: object literal may only specify known properties, and
-// '_intent' does not exist in type '{ size?: "small" | "medium" }'
+// ...but the component still accepts it directly.
+button({ _intent: "secondary", size: "small" });
+// => "button button--secondary button--small"
 ```
 
-:::caution
-Hiding is type-level only. `_intent` still resolves at runtime through `defaultVariants` (or a matching `compoundVariants` entry), and an untyped caller, or one that casts around the type, can still set it directly. Internal variants keep a prop out of your typed API; they don't keep it out of the emitted class list.
+In a React component, extend `VariantProps` for the public props, then set the internal variant yourself:
+
+```tsx
+interface Props
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof button> {
+  active?: boolean;
+}
+
+// `_intent` never appears in `Props`, so a consumer can't set it.
+function Button({ active, size, className, ...props }: Props) {
+  return (
+    <button
+      className={button({
+        size,
+        _intent: active ? "primary" : "secondary",
+        class: className,
+      })}
+      {...props}
+    />
+  );
+}
+```
+
+:::note
+Internal variants are omitted from the derived surface (`VariantProps` and `getSchema`), not from the component itself: the component's own call signature still accepts `_intent`, and its value still resolves into the emitted class list.
 :::
 
-A composed-only internal variant is hidden from the composer's props too. To change its default from the composer, redeclare it locally: the same rule applies to any composed-only variant (see [Extending variants](/beta/getting-started/composing-components#extending-variants)).
+A composed-only internal variant is omitted from the composer's `VariantProps` too. To change its default from the composer, redeclare it locally: the same rule applies to any composed-only variant (see [Extending variants](/beta/getting-started/composing-components#extending-variants)).
 
 ```ts
 const base = cva({

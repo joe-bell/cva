@@ -105,7 +105,7 @@ type MergedDefaultVariants<T extends readonly unknown[]> = T extends readonly [
 
 export type VariantProps<Component extends (...args: any) => any> = Omit<
   OmitUndefined<Parameters<Component>[0]>,
-  "class" | "className"
+  "class" | "className" | InternalVariantKey
 >;
 
 /* compose
@@ -157,14 +157,10 @@ export type CVAVariantShape = Record<string, Record<string, ClassValue>>;
 type CVAVariantSchema<V extends CVAVariantShape> = {
   [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
 };
-// A variant name prefixed with `_` is internal: settable via
-// `defaultVariants`/`compoundVariants`, but hidden from the public props API.
+// A variant name prefixed with `_` is internal: the component still accepts
+// it, but it's omitted from `VariantProps` (so it stays out of a wrapping
+// component's public props) and from `getSchema`.
 type InternalVariantKey = `_${string}`;
-type CVAVariantPropsSchema<V extends CVAVariantShape> = {
-  [Variant in keyof V as Variant extends InternalVariantKey
-    ? never
-    : Variant]?: StringToBoolean<keyof V[Variant]> | undefined;
-};
 type CVAClassProp =
   | {
       class?: ClassValue;
@@ -218,7 +214,7 @@ type CVAComponentConfig<
 export interface CVAComponent<Config, Variants> {
   (
     props?: Variants extends CVAVariantShape
-      ? CVAVariantPropsSchema<Variants> & CVAClassProp
+      ? CVAVariantSchema<Variants> & CVAClassProp
       : CVAClassProp,
   ): string;
   /** @internal */
