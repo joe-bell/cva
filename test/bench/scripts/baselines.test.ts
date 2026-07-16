@@ -1,7 +1,8 @@
-import type { execFileSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -179,10 +180,25 @@ describe("parseArgs", () => {
 });
 
 describe("rootPackageManager", () => {
-  it("returns the root package.json packageManager pin", () => {
-    // vitest runs with the repo root as cwd, which is the same way the
-    // script itself resolves package.json.
-    expect(rootPackageManager()).toMatch(/^pnpm@/);
+  it("returns the root package.json packageManager pin from the bench cwd", () => {
+    const benchDir = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "..",
+    );
+    const rootPackage = JSON.parse(
+      readFileSync(path.resolve(benchDir, "../..", "package.json"), "utf8"),
+    );
+    const output = execFileSync(
+      process.execPath,
+      [
+        "--input-type=module",
+        "--eval",
+        'import { rootPackageManager } from "./scripts/baselines.ts"; process.stdout.write(rootPackageManager());',
+      ],
+      { cwd: benchDir, encoding: "utf8" },
+    );
+
+    expect(output).toBe(rootPackage.packageManager);
   });
 });
 

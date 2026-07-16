@@ -14,6 +14,10 @@ import { fileURLToPath } from "node:url";
 
 const PACKAGES = ["cva", "class-variance-authority"];
 const LABELS = ["release", "prerelease"] as const;
+const REPO_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../..",
+);
 
 type Label = (typeof LABELS)[number];
 
@@ -138,7 +142,9 @@ export async function resolvePackageVersions(
 }
 
 export function rootPackageManager(): string {
-  const rootPkgJson = JSON.parse(readFileSync("package.json", "utf8"));
+  const rootPkgJson = JSON.parse(
+    readFileSync(path.join(REPO_ROOT, "package.json"), "utf8"),
+  );
   return rootPkgJson.packageManager;
 }
 
