@@ -1727,7 +1727,7 @@ describe("compound variants declaring class and className together", () => {
       },
     },
     compoundVariants: [
-      // @ts-expect-error — `class` and `className` are mutually exclusive at
+      // @ts-expect-error: `class` and `className` are mutually exclusive at
       // the type level, but the runtime honors both when present.
       {
         intent: "primary",
@@ -1760,7 +1760,7 @@ describe("unmatched variant values", () => {
   });
 
   test("falls through without variant classes for an unknown value", () => {
-    // @ts-expect-error — deliberately outside the variant's typed values
+    // @ts-expect-error: deliberately outside the variant's typed values
     expect(button({ intent: "bogus" })).toBe("button button--small");
   });
 });

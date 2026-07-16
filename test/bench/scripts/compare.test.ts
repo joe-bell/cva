@@ -1,8 +1,9 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   main,
@@ -53,6 +54,15 @@ function validResult(overrides: Partial<Record<string, unknown>> = {}) {
     ...overrides,
   };
 }
+
+const tempDirs: string[] = [];
+
+afterEach(() => {
+  for (const dir of tempDirs.splice(0)) {
+    rmSync(dir, { recursive: true, force: true });
+  }
+  vi.restoreAllMocks();
+});
 
 describe("validateResult", () => {
   it("accepts a well-formed result", () => {
@@ -456,7 +466,7 @@ describe("renderMarkdown", () => {
     expect(markdown).toMatch(/\+\d+\.\d%/);
   });
 
-  it("marks a delta beyond +5% with 🟢 (local is 100, baseline is 90 — +11.1%)", () => {
+  it("marks a delta beyond +5% with 🟢 (local is 100, baseline is 90, +11.1%)", () => {
     const validated = validateResult(validResult(), "cva");
     const markdown = renderMarkdown([validated]);
     expect(markdown).toContain("🟢 +11.1%");
@@ -485,7 +495,7 @@ describe("renderMarkdown", () => {
     expect(row).not.toContain("🔴");
   });
 
-  it("renders — instead of a delta when the baseline hz is zero", () => {
+  it("renders an em dash instead of a delta when the baseline hz is zero", () => {
     const result = validResult();
     (result.implementations[1] as any).tasks[0].hz = 0;
     const validated = validateResult(result, "cva");
@@ -531,6 +541,7 @@ describe("renderMarkdown", () => {
 describe("validateResults", () => {
   function writeResultDir(files: Record<string, string>) {
     const dir = mkdtempSync(path.join(tmpdir(), "cva-compare-test-"));
+    tempDirs.push(dir);
     for (const [name, content] of Object.entries(files)) {
       writeFileSync(path.join(dir, name), content);
     }
@@ -580,9 +591,6 @@ describe("validateResults", () => {
 });
 
 describe("sanitizeSkippedReason", () => {
-  // The producer (report.ts) runs baseline skip reasons through this so a
-  // real tool error can't trip validateResult's allowlist and suppress the
-  // whole comment. Each sanitized reason must round-trip cleanly.
   const realWorldReasons = [
     "failed to install: No matching version found for cva@9.9.9",
     "failed to resolve npm dist-tags: request to https://registry.npmjs.org/cva failed",
@@ -627,7 +635,7 @@ describe("parseArgs", () => {
   it("defaults to the repo's bench output directory", () => {
     expect(parseArgs([]).dir).toBe(
       path.resolve(
-        path.dirname(new URL(import.meta.url).pathname),
+        path.dirname(fileURLToPath(import.meta.url)),
         "../../../test/bench/.output",
       ),
     );
@@ -646,6 +654,7 @@ describe("main", () => {
   it("renders validated results to stdout and returns 0", () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     const dir = mkdtempSync(path.join(tmpdir(), "cva-compare-cli-"));
+    tempDirs.push(dir);
     writeFileSync(
       path.join(dir, "benchmark-cva.json"),
       JSON.stringify(validResult()),
@@ -653,17 +662,16 @@ describe("main", () => {
 
     expect(main(["--dir", dir])).toBe(0);
     expect(log).toHaveBeenCalledWith(expect.stringContaining("## Benchmarks"));
-    vi.restoreAllMocks();
   });
 
   it("reports a validation failure to stderr and returns 1", () => {
     const error = vi.spyOn(console, "error").mockImplementation(() => {});
     const dir = mkdtempSync(path.join(tmpdir(), "cva-compare-cli-empty-"));
+    tempDirs.push(dir);
 
     expect(main(["--dir", dir])).toBe(1);
     expect(error).toHaveBeenCalledWith(
       expect.stringContaining("no benchmark result files"),
     );
-    vi.restoreAllMocks();
   });
 });

@@ -57,7 +57,7 @@ describe("compose", () => {
     });
     const plainFunction = () => "plain";
 
-    // @ts-expect-error — not a cva()-created component (no `.config`), which
+    // @ts-expect-error: not a cva()-created component (no `.config`), which
     // compose tolerates at runtime.
     const card = compose(box, plainFunction);
 
@@ -830,20 +830,18 @@ describe("getSchema", () => {
     // @ts-expect-error — `compose()`'s result has no `.config`, so it can't
     // be introspected by `getSchema`. Use the `composes` property instead.
     getSchema(composed);
-    // Rejected at the type level, but still safe at runtime: a component
-    // without an introspectable `.config` produces an empty schema.
-    // @ts-expect-error — not a cva()-created component at all
+    // @ts-expect-error: not a cva()-created component at all
     expect(getSchema(plainFunction)).toStrictEqual({});
   });
 
   test("should keep a defaulted variant that has no values", () => {
     const component = cva({
       variants: { size: {} },
-      // @ts-expect-error — an empty variant has no values to default to
+      // @ts-expect-error: an empty variant has no values to default to
       defaultVariants: { size: "md" },
     });
 
-    // @ts-expect-error — rejected at the type level for the same reason,
+    // @ts-expect-error: rejected at the type level for the same reason,
     // but the runtime schema still reports the default.
     expect(getSchema(component)).toStrictEqual({
       size: { defaultValue: "md" },
@@ -2538,9 +2536,9 @@ describe("cva", () => {
   });
 });
 
-describe("cva — zero-valued variant keys", () => {
+describe("cva, zero-valued variant keys", () => {
   // `falsyToString` must normalize a `0` prop/default to the `"0"` object
-  // key — `variants.gap[0]` and `variants.gap["0"]` are the same property
+  // key; `variants.gap[0]` and `variants.gap["0"]` are the same property
   // at runtime, but a bare `0` would short-circuit the `||` fallback chain.
   const spacer = cva({
     base: "spacer",

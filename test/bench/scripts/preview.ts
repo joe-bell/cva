@@ -1,13 +1,13 @@
 /**
  * One-command local preview of the benchmark table that gets posted as the
- * sticky PR comment. Chains the existing pieces — test/bench/scripts/baselines.ts,
- * `pnpm bench`, and test/bench/scripts/compare.ts — so the rendered markdown comes
- * from the same `compare.ts` the privileged sticky-comment workflow uses;
- * this file adds no rendering of its own.
+ * sticky PR comment. Chains test/bench/scripts/baselines.ts, `pnpm bench`, and
+ * test/bench/scripts/compare.ts so the rendered markdown comes from the same
+ * `compare.ts` the privileged sticky-comment workflow uses; this file adds no
+ * rendering of its own.
  *
  * Installs the published npm baselines into an outside-the-workspace temp
  * dir (the workspace `overrides` would otherwise swap them for local
- * source). If that fails — no network or npm unreachable — it warns and
+ * source). If that fails (no network or npm unreachable), it warns and
  * renders a local-only preview instead of erroring, so the command always
  * produces output.
  */
@@ -42,7 +42,7 @@ export function main({
     haveBaselines = true;
   } catch {
     console.warn(
-      "\nCouldn't install npm baselines (offline, or npm unreachable) — rendering a local-only preview.\n",
+      "\nCouldn't install npm baselines (offline, or npm unreachable); rendering a local-only preview.\n",
     );
   }
 
@@ -52,8 +52,7 @@ export function main({
     haveBaselines ? { ...env, BENCH_BASELINES_DIR: baselinesDir } : env,
   );
 
-  // Render through the same compare.ts CLI the sticky comment uses, so the
-  // preview is byte-identical to what a PR would show.
+  // Render through the same compare.ts CLI the sticky comment uses.
   const markdown = exec("node", [path.join(scriptsDir, "compare.ts")], {
     encoding: "utf8",
     cwd: repoRoot,

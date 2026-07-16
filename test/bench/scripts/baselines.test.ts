@@ -1,9 +1,9 @@
 import type { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   installBaseline,
@@ -12,6 +12,15 @@ import {
   resolvePackageVersions,
   rootPackageManager,
 } from "./baselines";
+
+const tempDirs: string[] = [];
+
+afterEach(() => {
+  for (const dir of tempDirs.splice(0)) {
+    rmSync(dir, { recursive: true, force: true });
+  }
+  vi.restoreAllMocks();
+});
 
 describe("resolvePackageVersions", () => {
   it("resolves cva prerelease from the beta dist-tag only", async () => {
@@ -183,6 +192,7 @@ describe("installBaseline", () => {
       mkdtempSync(path.join(tmpdir(), "baselines-test-")),
       "cva-prerelease",
     );
+    tempDirs.push(path.dirname(dir));
     const execImpl = vi.fn() as unknown as typeof execFileSync;
 
     installBaseline("cva", "1.0.0-beta.4", dir, execImpl);
@@ -222,6 +232,7 @@ describe("main", () => {
   it("installs resolved versions and writes their manifest entries", async () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     const out = mkdtempSync(path.join(tmpdir(), "baselines-main-"));
+    tempDirs.push(out);
     const execImpl = vi.fn() as unknown as typeof execFileSync;
 
     await main(["--out", out], { fetchImpl: distTagsFetch(), execImpl });
@@ -250,12 +261,12 @@ describe("main", () => {
     expect(log).toHaveBeenCalledWith(
       expect.stringContaining("cva prerelease@1.0.0-beta.4: installed"),
     );
-    vi.restoreAllMocks();
   });
 
   it("passes skipped resolutions through without installing", async () => {
     vi.spyOn(console, "log").mockImplementation(() => {});
     const out = mkdtempSync(path.join(tmpdir(), "baselines-main-skip-"));
+    tempDirs.push(out);
     const fetchImpl = vi.fn(async () => {
       throw new Error("offline");
     }) as unknown as typeof fetch;
@@ -268,12 +279,12 @@ describe("main", () => {
       expect(entry.skipped).toMatch(/failed to resolve npm dist-tags/);
       expect(entry.dir).toBeUndefined();
     }
-    vi.restoreAllMocks();
   });
 
   it("marks an entry as skipped when the install fails", async () => {
     vi.spyOn(console, "log").mockImplementation(() => {});
     const out = mkdtempSync(path.join(tmpdir(), "baselines-main-fail-"));
+    tempDirs.push(out);
     const execImpl = vi.fn(() => {
       throw new Error("registry timeout");
     }) as unknown as typeof execFileSync;
@@ -284,6 +295,5 @@ describe("main", () => {
       expect(entry.skipped).toBe("failed to install: registry timeout");
       expect(entry.dir).toBeUndefined();
     }
-    vi.restoreAllMocks();
   });
 });
