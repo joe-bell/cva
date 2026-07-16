@@ -1,10 +1,12 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
+  main,
+  parseArgs,
   renderMarkdown,
   sanitizeSkippedReason,
   validateResult,
@@ -175,6 +177,36 @@ describe("validateResult", () => {
     ).toThrow(/unexpected format/);
   });
 
+  it("rejects a timestamp that matches the format but is not a real date", () => {
+    expect(() =>
+      validateResult(
+        validResult({ timestamp: "2026-13-45T99:99:99.999Z" }),
+        "cva",
+      ),
+    ).toThrow(/not a valid date/);
+  });
+
+  it("rejects a non-object root value", () => {
+    expect(() => validateResult(null, "cva")).toThrow(
+      /root value must be an object/,
+    );
+    expect(() => validateResult([validResult()], "cva")).toThrow(
+      /root value must be an object/,
+    );
+  });
+
+  it("rejects a non-object implementation", () => {
+    expect(() =>
+      validateResult(validResult({ implementations: [42] }), "cva"),
+    ).toThrow(/implementation must be an object/);
+  });
+
+  it("rejects a non-object task", () => {
+    const bad = validResult();
+    (bad.implementations[0] as any).tasks = ["nope"];
+    expect(() => validateResult(bad, "cva")).toThrow(/task must be an object/);
+  });
+
   it("rejects a timestamp that parses but does not round-trip toISOString()", () => {
     expect(() =>
       validateResult(
@@ -227,6 +259,54 @@ describe("renderMarkdown", () => {
     const markdown = renderMarkdown([validated]);
 
     expect(markdown).toContain("— `not published on npm`._");
+  });
+
+  it("sorts unknown task names after known ones, alphabetically", () => {
+    const task = (name: string) => ({
+      name,
+      hz: 100,
+      mean: 0.01,
+      rme: 0.5,
+      samples: 10,
+    });
+    const validated = validateResult(
+      validResult({
+        implementations: [
+          {
+            label: "local",
+            version: "1.0.0-beta.5",
+            tasks: [
+              task("zzz custom task"),
+              task("Join class names"),
+              task("aaa custom task"),
+            ],
+          },
+        ],
+      }),
+      "cva",
+    );
+
+    const markdown = renderMarkdown([validated]);
+    const knownIndex = markdown.indexOf("class join");
+    const aaaIndex = markdown.indexOf("aaa custom task");
+    const zzzIndex = markdown.indexOf("zzz custom task");
+    expect(knownIndex).toBeGreaterThan(-1);
+    expect(aaaIndex).toBeGreaterThan(knownIndex);
+    expect(zzzIndex).toBeGreaterThan(aaaIndex);
+  });
+
+  it("sorts package sections alphabetically", () => {
+    const markdown = renderMarkdown([
+      validateResult(validResult(), "cva"),
+      validateResult(
+        validResult({ package: "class-variance-authority" }),
+        "class-variance-authority",
+      ),
+    ]);
+
+    expect(markdown.indexOf("### `class-variance-authority`")).toBeLessThan(
+      markdown.indexOf("### `cva`"),
+    );
   });
 
   it("renders a skipped-baseline note", () => {
@@ -469,6 +549,24 @@ describe("validateResults", () => {
     expect(results[0].package).toBe("cva");
   });
 
+  it("skips an allowlisted name that is a directory, not a file", () => {
+    const dir = writeResultDir({
+      "benchmark-class-variance-authority.json": JSON.stringify(
+        validResult({ package: "class-variance-authority" }),
+      ),
+    });
+    mkdirSync(path.join(dir, "benchmark-cva.json"));
+
+    const results = validateResults(dir);
+    expect(results).toHaveLength(1);
+    expect(results[0].package).toBe("class-variance-authority");
+  });
+
+  it("rejects an allowlisted file that is not valid JSON", () => {
+    const dir = writeResultDir({ "benchmark-cva.json": "not json" });
+    expect(() => validateResults(dir)).toThrow(/is not valid JSON/);
+  });
+
   it("rejects an allowlisted file over the size cap", () => {
     const oversized = JSON.stringify(validResult()).padEnd(513 * 1024, " ");
     const dir = writeResultDir({ "benchmark-cva.json": oversized });
@@ -522,5 +620,50 @@ describe("sanitizeSkippedReason", () => {
     expect(sanitizeSkippedReason("x".repeat(500)).length).toBeLessThanOrEqual(
       200,
     );
+  });
+});
+
+describe("parseArgs", () => {
+  it("defaults to the repo's bench output directory", () => {
+    expect(parseArgs([]).dir).toBe(
+      path.resolve(
+        path.dirname(new URL(import.meta.url).pathname),
+        "../../../test/bench/.output",
+      ),
+    );
+  });
+
+  it("reads a --dir override", () => {
+    expect(parseArgs(["--dir", "/tmp/results"]).dir).toBe("/tmp/results");
+  });
+
+  it("ignores a --dir flag with no value", () => {
+    expect(parseArgs(["--dir"]).dir).toBe(parseArgs([]).dir);
+  });
+});
+
+describe("main", () => {
+  it("renders validated results to stdout and returns 0", () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const dir = mkdtempSync(path.join(tmpdir(), "cva-compare-cli-"));
+    writeFileSync(
+      path.join(dir, "benchmark-cva.json"),
+      JSON.stringify(validResult()),
+    );
+
+    expect(main(["--dir", dir])).toBe(0);
+    expect(log).toHaveBeenCalledWith(expect.stringContaining("## Benchmarks"));
+    vi.restoreAllMocks();
+  });
+
+  it("reports a validation failure to stderr and returns 1", () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const dir = mkdtempSync(path.join(tmpdir(), "cva-compare-cli-empty-"));
+
+    expect(main(["--dir", dir])).toBe(1);
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining("no benchmark result files"),
+    );
+    vi.restoreAllMocks();
   });
 });

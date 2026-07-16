@@ -11,8 +11,44 @@ export default defineConfig(({ mode }) => ({
       outputJson: "test/bench/.output/vitest-bench.json",
     },
     coverage: {
-      include: ["packages/*/src/**/*.ts"],
-      exclude: ["**/coverage/**"],
+      include: [
+        "packages/*/src/**/*.ts",
+        "test/bench/scripts/**/*.ts",
+        ".github/scripts/**/*.mjs",
+      ],
+      exclude: [
+        "**/coverage/**",
+        // Vitest excludes test files by default; explicit for clarity.
+        "**/*.test.{ts,mjs}",
+        // Benchmark definitions only run under `vitest bench` (serial mode,
+        // against built dists) and measure timing, not correctness; their
+        // orchestration logic lives in harness.ts, which is tested.
+        "test/bench/scripts/*.bench.ts",
+      ],
+      reporter: ["text", "html"],
+      thresholds: {
+        // Applies to packages/*/src only: files matched by a glob threshold
+        // below are removed from this global calculation.
+        statements: 100,
+        branches: 100,
+        functions: 100,
+        lines: 100,
+        // Repo tooling currently measures 100% too; if a future defensive
+        // `?.`/`??` half-branch proves untestable, prefer lowering these
+        // globs' `branches` over adding v8-ignore comments.
+        "test/bench/scripts/**/*.ts": {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+        },
+        ".github/scripts/**/*.mjs": {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+        },
+      },
     },
   },
 }));

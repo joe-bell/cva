@@ -501,7 +501,7 @@ export function renderMarkdown(results: BenchmarkResult[]): string {
 /* CLI
   ============================================ */
 
-function parseArgs(argv: string[]) {
+export function parseArgs(argv: string[]) {
   let dir = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     "../../../test/bench/.output",
@@ -512,6 +512,20 @@ function parseArgs(argv: string[]) {
   return { dir };
 }
 
+export function main(argv: string[] = process.argv.slice(2)): number {
+  const { dir } = parseArgs(argv);
+  try {
+    const results = validateResults(dir);
+    console.log(renderMarkdown(results));
+    return 0;
+  } catch (error) {
+    console.error((error as Error).message);
+    return 1;
+  }
+}
+
+/* v8 ignore start -- process entrypoint, exercised by `node
+   test/bench/scripts/compare.ts` in CI; subprocess coverage isn't collected. */
 function isMainModule(): boolean {
   return (
     process.argv[1] !== undefined &&
@@ -520,12 +534,6 @@ function isMainModule(): boolean {
 }
 
 if (isMainModule()) {
-  const { dir } = parseArgs(process.argv.slice(2));
-  try {
-    const results = validateResults(dir);
-    console.log(renderMarkdown(results));
-  } catch (error) {
-    console.error((error as Error).message);
-    process.exit(1);
-  }
+  process.exitCode = main();
 }
+/* v8 ignore stop */
