@@ -489,6 +489,10 @@ export const defineConfig: DefineConfig = (options) => {
       );
     };
 
+    // Assigned once and treated as immutable from here on: `cva/tools`
+    // caches data derived from `config`, keyed by component identity, so
+    // any future mutate-in-place API must invalidate that cache (see
+    // `dataAttributesCache` in `tools.ts`).
     component.config = {
       ...config,
       variants: mergedVariants,

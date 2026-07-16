@@ -82,6 +82,8 @@ pva(button);
 
 The class string is returned under both `class` and `className`, so destructure whichever your framework expects (`class` for Vue, Svelte, and Astro; `className` for React). Data attributes are nested under `data` rather than spread at the root, so there's no ambiguity about which key holds the class string.
 
+Define components at module scope, not inside a render function: `pva` caches per-component work (like kebab-casing attribute names) keyed by the component's identity, so a fresh `cva()` on every render defeats the cache.
+
 ```tsx
 export const Button = (props: VariantProps<typeof button>) => {
   const { className, data } = pva(button, props);

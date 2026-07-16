@@ -70,6 +70,16 @@ export interface GetSchema {
     : never;
 }
 
+/**
+ * Extracts a plain-object schema (variant names, possible values, and
+ * default values) from a `cva` component — for Storybook controls,
+ * documentation, or any other UI that reads a component's variants without
+ * re-declaring them.
+ *
+ * @example
+ * getSchema(button);
+ * // => { intent: { values: ["primary", "secondary"], defaultValue: "primary" } }
+ */
 export const getSchema: GetSchema = (component) => {
   if (!component.config?.variants) return {} as any;
 
@@ -150,46 +160,74 @@ interface GetDataAttributes {
 const camelToKebab = (value: string) =>
   value.replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`);
 
-// Per-component precompute: [variantKey, attributeName, stringifiedDefault?].
+// Must stay in lockstep with `falsyToString` in `index.ts` — the attributes
+// below must always report exactly the variant key that class resolution
+// selected, so both sides need the same falsy-fallback semantics (a falsy
+// resolved prop — `undefined`, `null`, `""`, `NaN` — falls back to the
+// default; `false` and `0` resolve as themselves).
+const falsyToString = <T extends unknown>(value: T) =>
+  typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
+
+// Per-component precompute, keyed by component identity:
+//
+// - `defaults`: resolved default attributes (kebab-cased attribute name to
+//   stringified default value), spread first on every call.
+// - `byKey`: variant name to attribute name, for overriding defaults from
+//   props. Null prototype, so an own `__proto__` key in (untyped) props can
+//   never resolve to a junk attribute.
+//
 // Kebab-casing and default stringification run once per component instead of
 // on every render — the regex work dominates the cost of this function
-// otherwise. Keyed by component identity: `cva` attaches `config` once at
-// construction and never mutates it, so entries stay valid (and are collected
-// with the component) for its whole lifetime.
+// otherwise. `cva` attaches `config` once at construction and never mutates
+// it (see the invariant note at the `component.config` assignment in
+// `index.ts`), so entries stay valid — and are collected with the
+// component — for its whole lifetime.
 const dataAttributesCache = new WeakMap<
   CVAComponentShape,
-  [key: string, attribute: string, defaultValue: string | undefined][]
+  { defaults: Record<string, string>; byKey: Record<string, string> }
 >();
 
 const getDataAttributes: GetDataAttributes = (component, props) => {
   // The generic parameter can't be proven to be a `CVAComponentShape` at
   // declaration time (the guard is a deferred conditional), hence the cast.
   const cacheKey = component as unknown as CVAComponentShape;
-  let entries = dataAttributesCache.get(cacheKey);
+  let cached = dataAttributesCache.get(cacheKey);
 
-  if (!entries) {
+  if (!cached) {
+    const defaults: Record<string, string> = {};
+    const byKey: Record<string, string> = Object.create(null);
     const variants = component.config?.variants;
-    entries = variants
-      ? Object.keys(variants).map((key) => {
-          const defaultValue = component.config.defaultVariants?.[key];
-          return [
-            key,
-            `data-${camelToKebab(key)}`,
-            defaultValue === undefined ? undefined : String(defaultValue),
-          ];
-        })
-      : [];
-    dataAttributesCache.set(cacheKey, entries);
+    if (variants) {
+      for (const key of Object.keys(variants)) {
+        const attribute = `data-${camelToKebab(key)}`;
+        byKey[key] = attribute;
+        const defaultValue = falsyToString(
+          component.config.defaultVariants?.[key],
+        );
+        // `!= null` (loose): class resolution looks its fallback key up
+        // as-is, so a falsy-but-present default still resolves there, while
+        // `null`/`undefined` behave like "unset".
+        if (defaultValue != null) defaults[attribute] = String(defaultValue);
+      }
+    }
+    cached = { defaults, byKey };
+    dataAttributesCache.set(cacheKey, cached);
   }
 
-  const attributes: Record<string, string> = {};
-  for (const [key, attribute, defaultValue] of entries) {
-    const prop = (props as Record<string, unknown> | undefined)?.[key];
-    // Same precedence as class resolution: an explicit prop wins, an omitted
-    // (or `undefined`) prop falls back to the default, and a variant with
-    // neither contributes no attribute at all.
-    const value = prop === undefined ? defaultValue : String(prop);
-    if (value !== undefined) attributes[attribute] = value;
+  const attributes: Record<string, string> = { ...cached.defaults };
+  if (props) {
+    // Iterate the (typically fewer) own props keys rather than every
+    // variant; non-variant keys (`class`/`className`, unknowns) miss
+    // `byKey` and fall through.
+    for (const key of Object.keys(props)) {
+      const attribute = cached.byKey[key];
+      if (attribute === undefined) continue;
+      // Same precedence as class resolution's
+      // `falsyToString(prop) || falsyToString(default)`: a truthy resolved
+      // prop wins; a falsy one leaves the default (already spread) in place.
+      const value = falsyToString((props as Record<string, unknown>)[key]);
+      if (value) attributes[attribute] = String(value);
+    }
   }
 
   return attributes as ReturnType<GetDataAttributes>;
@@ -219,6 +257,18 @@ export interface PVA {
   };
 }
 
+/**
+ * Prop Variant Authority: glue that merges your props. Resolves a
+ * component's class string and its variant state, as `data-*` attributes,
+ * from a single props object — the data attributes always report exactly
+ * the variant values class resolution selected.
+ *
+ * @example
+ * const { className, data } = pva(button, { intent: "secondary" });
+ * // className => "button button--secondary"
+ * // data      => { "data-intent": "secondary" }
+ * <button className={className} {...data} />
+ */
 export const pva: PVA = (component, props) => {
   const className = (component as (props?: unknown) => string)(props);
   return {

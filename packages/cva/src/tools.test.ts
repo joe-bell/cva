@@ -436,6 +436,89 @@ describe("pva", () => {
     });
   });
 
+  describe("class-resolution parity", () => {
+    // `.data` must always report exactly the variant key class resolution
+    // selected — both sides share `falsyToString`'s fallback semantics
+    // (see the lockstep comments in `tools.ts` and `index.ts`).
+    const button = cva({
+      base: "button",
+      variants: {
+        intent: {
+          primary: "button--primary",
+          secondary: "button--secondary",
+        },
+      },
+      defaultVariants: { intent: "primary" },
+    });
+
+    test("null and empty-string props fall back to the default, like the class string", () => {
+      // Both are rejected by the types, so this is JS-consumer territory —
+      // but both are falsy through `falsyToString`, so class resolution
+      // falls back to the default and `.data` must agree with the classes
+      // actually rendered.
+
+      // @ts-expect-error — `null` is not a valid `intent` value
+      const nullProp = pva(button, { intent: null });
+      expect(nullProp.class).toBe("button button--primary");
+      expect(nullProp.data).toStrictEqual({ "data-intent": "primary" });
+
+      // @ts-expect-error — `""` is not a valid `intent` value
+      const emptyProp = pva(button, { intent: "" });
+      expect(emptyProp.class).toBe("button button--primary");
+      expect(emptyProp.data).toStrictEqual({ "data-intent": "primary" });
+    });
+
+    test("false, zero, and negative values resolve as themselves", () => {
+      const toggle = cva({
+        variants: {
+          pressed: { true: "t", false: "f" },
+          offset: { [-1]: "-mt-1", 0: "mt-0", 1: "mt-1" },
+        },
+        defaultVariants: { pressed: true, offset: 1 },
+      });
+
+      // `false` and `0` are falsy values with meaning — `falsyToString`
+      // stringifies them before the fallback check, so they must never
+      // fall through to the defaults.
+      const result = pva(toggle, { pressed: false, offset: 0 });
+      expect(result.class).toBe("f mt-0");
+      expect(result.data).toStrictEqual({
+        "data-pressed": "false",
+        "data-offset": "0",
+      });
+      expect(pva(toggle, { offset: -1 }).data).toStrictEqual({
+        "data-pressed": "true",
+        "data-offset": "-1",
+      });
+    });
+
+    test("an own __proto__ key in untyped props never leaks an attribute", () => {
+      // JSON-sourced props can carry an own `__proto__` key; the cached
+      // lookup table has a null prototype, so the key can't accidentally
+      // resolve to `Object.prototype` and emit a junk attribute.
+      const props = JSON.parse(
+        '{ "__proto__": { "polluted": true }, "intent": "secondary" }',
+      );
+      expect(pva(button, props).data).toStrictEqual({
+        "data-intent": "secondary",
+      });
+      expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    });
+  });
+
+  test("should kebab-case a leading uppercase letter into a double dash", () => {
+    const card = cva({
+      variants: { Tone: { dark: "tone--dark", light: "tone--light" } },
+      defaultVariants: { Tone: "dark" },
+    });
+
+    // `data--tone` looks odd but is the spec-correct `dataset` encoding of
+    // a capitalized name: `dataset.Tone` reads and writes `data--tone`.
+    const data = pva(card).data;
+    expect(data).toStrictEqual({ "data--tone": "dark" });
+    expectTypeOf(data).toEqualTypeOf<{ "data--tone"?: "dark" | "light" }>();
+  });
+
   test("should reject components not created by cva()", () => {
     const box = cva({
       variants: { shadow: { sm: "shadow-sm" } },

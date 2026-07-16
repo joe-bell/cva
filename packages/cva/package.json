@@ -94,7 +94,7 @@
     },
     {
       "path": "dist/tools.cjs",
-      "limit": "0.6KB"
+      "limit": "0.7KB"
     }
   ]
 }
