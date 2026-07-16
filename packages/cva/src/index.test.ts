@@ -434,6 +434,24 @@ describe("cva — composes", () => {
     });
   });
 
+  test("should keep prop types when composed components declare conflicting option values", () => {
+    // Regression: `MergedVariants` used to intersect composed variant maps,
+    // and TS reduces `null & "u"` to `never` — poisoning the prop type to
+    // `string | number | symbol` and the `getSchema` values with it.
+    const muted = cva({ variants: { intent: { unset: null } } });
+    const unset = cva({ variants: { intent: { unset: "u" } } });
+    const combined = cva({ composes: [muted, unset] });
+
+    expect(combined({ intent: "unset" })).toBe("u");
+    expect(getSchema(combined)).toStrictEqual({
+      intent: { values: ["unset"] },
+    });
+
+    expectTypeOf<CVA.VariantProps<typeof combined>>().toEqualTypeOf<{
+      intent?: "unset" | undefined;
+    }>();
+  });
+
   test("should reject values that aren't cva() components", () => {
     const box = cva({ variants: { shadow: { sm: "shadow-sm" } } });
     const stack = cva({ variants: { gap: { 1: "gap-1" } } });
@@ -640,6 +658,121 @@ describe("cva — boolean variant shorthand", () => {
     }>();
   });
 
+  test("supports number and empty-string values", () => {
+    const indented = cva({ variants: { indent: 4 } });
+    expect(indented({ indent: true })).toBe("4");
+    expect(indented({ indent: false })).toBe("");
+
+    const labeled = cva({ base: "button", variants: { labeled: "" } });
+    expect(labeled({ labeled: true })).toBe("button");
+    expect(labeled({ labeled: false })).toBe("button");
+
+    expectTypeOf<CVA.VariantProps<typeof indented>>().toEqualTypeOf<{
+      indent?: boolean | undefined;
+    }>();
+  });
+
+  test("tolerates type-rejected values at runtime", () => {
+    // `boolean`/`undefined` shorthand is a type error (see "rejects invalid
+    // shorthand usage"), but the runtime still expands it and clsx renders
+    // nothing — pinned here so the latitude stays deliberate.
+    const bool = cva({ variants: { disabled: true } } as any) as any;
+    expect(bool({ disabled: true })).toBe("");
+    expect(bool()).toBe("");
+
+    const undef = cva({ variants: { disabled: undefined } } as any) as any;
+    expect(undef({ disabled: true })).toBe("");
+    expect(getSchema(undef)).toStrictEqual({
+      disabled: { values: [true, false] },
+    });
+  });
+
+  test("explicit undefined falls back to the shorthand default", () => {
+    const button = cva({
+      variants: { disabled: "opacity-50" },
+      defaultVariants: { disabled: true },
+    });
+
+    expect(button({ disabled: undefined })).toBe("opacity-50");
+    expect(button({ disabled: false })).toBe("");
+  });
+
+  test("supports compound array selectors", () => {
+    const button = cva({
+      variants: {
+        disabled: "opacity-50",
+        intent: { primary: "button--primary" },
+      },
+      compoundVariants: [
+        { disabled: [true, false], intent: "primary", class: "outlined" },
+      ],
+    });
+
+    expect(button({ disabled: true, intent: "primary" })).toBe(
+      "opacity-50 button--primary outlined",
+    );
+    expect(button({ disabled: false, intent: "primary" })).toBe(
+      "button--primary outlined",
+    );
+    // No `disabled` prop and no default: the selector array has nothing to
+    // match against, so the compound class is withheld.
+    expect(button({ intent: "primary" })).toBe("button--primary");
+  });
+
+  test("merges conflicting shorthands across composed components", () => {
+    // Regression: `MergedVariants` used to intersect composed variant maps;
+    // two shorthands of the same variant with different classes conflict on
+    // `true` (`"a-disabled" & "b-disabled"` is `never`), which poisoned
+    // `VariantProps` and `getSchema` to `string | number | symbol`.
+    const a = cva({ variants: { disabled: "a-disabled" } });
+    const b = cva({ variants: { disabled: "b-disabled" } });
+    const combined = cva({ composes: [a, b] });
+
+    expect(combined({ disabled: true })).toBe("a-disabled b-disabled");
+    expect(combined({ disabled: false })).toBe("");
+    expect(getSchema(combined)).toStrictEqual({
+      disabled: { values: [true, false] },
+    });
+
+    expectTypeOf<CVA.VariantProps<typeof combined>>().toEqualTypeOf<{
+      disabled?: boolean | undefined;
+    }>();
+
+    // `null` shorthand against a classed shorthand collapses the same way.
+    const quiet = cva({ variants: { hidden: null } });
+    const loud = cva({ variants: { hidden: "invisible" } });
+    const merged = cva({ composes: [quiet, loud] });
+
+    expect(merged({ hidden: true })).toBe("invisible");
+
+    expectTypeOf<CVA.VariantProps<typeof merged>>().toEqualTypeOf<{
+      hidden?: boolean | undefined;
+    }>();
+  });
+
+  test("appears in getSchema when composed with defaults", () => {
+    const base = cva({
+      variants: { disabled: "b-disabled" },
+      defaultVariants: { disabled: false },
+    });
+    const extended = cva({
+      variants: { hidden: null },
+      composes: base,
+      defaultVariants: { hidden: true },
+    });
+
+    const schema = getSchema(extended);
+
+    expect(schema).toStrictEqual({
+      disabled: { values: [true, false], defaultValue: false },
+      hidden: { values: [true, false], defaultValue: true },
+    });
+    expectTypeOf(schema).toEqualTypeOf<{
+      disabled: { values: readonly boolean[]; defaultValue: false };
+      hidden: { values: readonly boolean[]; defaultValue: true };
+    }>();
+  });
+
   test("rejects invalid shorthand usage", () => {
     const button = cva({ variants: { disabled: "opacity-50" } });
 
@@ -666,6 +799,12 @@ describe("cva — boolean variant shorthand", () => {
     cva({
       // @ts-expect-error — `undefined` isn't a valid shorthand value
       variants: { disabled: undefined },
+    });
+
+    cva({
+      // @ts-expect-error — bigints aren't valid shorthand values: clsx
+      // silently drops them, so the variant could never render
+      variants: { count: BigInt(5) },
     });
   });
 });

@@ -58,6 +58,24 @@ combined({ style: "primary" });
 // => "a a-primary b b-primary"
 ```
 
+[Boolean shorthand](/beta/getting-started/variants#boolean-variants) variants compose exactly like their longhand expansion. Two components declaring the same shorthand variant extend one another:
+
+```ts
+const toggle = cva({
+  base: "toggle",
+  variants: { disabled: "toggle--disabled" },
+});
+const button = cva({
+  base: "button",
+  variants: { disabled: "button--disabled" },
+});
+
+const combined = cva({ composes: [toggle, button] });
+
+combined({ disabled: true });
+// => "toggle toggle--disabled button button--disabled"
+```
+
 `defaultVariants` follow a last-wins merge. If multiple composed components declare a default for the same variant, the last one in the array wins. A local `defaultVariants` on the composing component wins over all of them. `cva` applies that value to every composed component, not just the one that declared it:
 
 ```ts

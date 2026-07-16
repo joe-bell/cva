@@ -342,6 +342,7 @@ const PACKAGE_NOTES: Record<string, string> = {
 const TASK_PRIORITY = [
   "Call component (default variants)",
   "Call component (with variants)",
+  "Call component (boolean shorthand)",
   "Join class names",
   "Create component (one-time setup)",
   "Compose components (manual cx join)",
@@ -353,6 +354,8 @@ const TASK_DISPLAY: Record<(typeof TASK_PRIORITY)[number], string> = {
     "**`cva`** (runtime)<br />_component call with defaults_",
   "Call component (with variants)":
     "**`cva`** (runtime)<br />_component call with props_",
+  "Call component (boolean shorthand)":
+    "**`cva`** (runtime)<br />_component call with boolean shorthand_",
   "Join class names": "**`cx`** (runtime)<br />_class join_",
   "Create component (one-time setup)":
     "**`cva`** (static)<br />_component definition_",

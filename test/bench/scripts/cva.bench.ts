@@ -64,6 +64,25 @@ const buttonConfig = {
   },
 } as any;
 
+const shorthandButtonConfig = {
+  base: "button font-semibold border rounded",
+  variants: {
+    disabled: "button--disabled opacity-50 cursor-not-allowed",
+    loading: [
+      "button--loading",
+      ["animate-pulse", { "pointer-events-none": true }],
+    ],
+    size: {
+      small: "button--small text-sm py-1 px-2",
+      medium: "button--medium text-base py-2 px-4",
+    },
+  },
+  defaultVariants: {
+    disabled: false,
+    size: "medium",
+  },
+} as any;
+
 /* Scenarios
   ============================================ */
 
@@ -78,6 +97,19 @@ function supportsComposes(mod: typeof local): boolean {
       composes: mod.cva({ base: "probe" }),
     } as any);
     return probe({}).includes("probe");
+  } catch {
+    return false;
+  }
+}
+
+// Published versions without the boolean shorthand treat a bare class value
+// as a variant map and resolve `"x"["true"]` to undefined — no throw, just
+// an empty string — so benching it there would measure a silent no-op and
+// render a meaningless delta. Same guard rationale as `supportsComposes`.
+function supportsBooleanShorthand(mod: typeof local): boolean {
+  try {
+    const probe = mod.cva({ variants: { probe: "probe" } } as any);
+    return (probe as any)({ probe: true }) === "probe";
   } catch {
     return false;
   }
@@ -140,6 +172,21 @@ function registerBenchmarks(mod: typeof local) {
         const buttonB = mod.cva({ base: "icon" });
         const composed = mod.cva({ composes: [buttonA, buttonB] } as any);
         composed({ intent: "secondary" } as any);
+      },
+      BENCH_OPTIONS,
+    );
+  }
+
+  if (supportsBooleanShorthand(mod)) {
+    const shorthandVariants = mod.cva(shorthandButtonConfig);
+
+    bench(
+      "Call component (boolean shorthand)",
+      () => {
+        shorthandVariants({} as any);
+        shorthandVariants({ disabled: true } as any);
+        shorthandVariants({ disabled: true, loading: true } as any);
+        shorthandVariants({ loading: false, size: "small" } as any);
       },
       BENCH_OPTIONS,
     );

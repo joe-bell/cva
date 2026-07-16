@@ -59,16 +59,6 @@ type ComposedTuple<
   L extends readonly CVAComponentShape[],
 > = [S] extends [CVAComponentShape] ? [S] : L;
 
-type MergedVariants<T extends readonly unknown[]> = UnionToIntersection<
-  {
-    [K in keyof T]: T[K] extends {
-      config: { variants?: infer V extends CVAVariantShape };
-    }
-      ? V
-      : never;
-  }[number]
->;
-
 // Right-biased merge (`B`'s keys win on conflicts) implemented as a mapped
 // type rather than `Omit<A, keyof B> & B`: the latter stays an unresolved
 // deferred type when `A`/`B` are themselves generic (as they are here, via
@@ -101,6 +91,31 @@ type MergeVariantShapes<Composed, Local> = [Composed] extends [CVAVariantShape]
           : never;
     }
   : Local;
+
+// Extracts a composed component's (already-normalized) variant map;
+// `unknown` — not `never` — when it has none (`variants: unknown`), so a
+// variant-less component is transparent in the fold below.
+type VariantsOf<Component> = Component extends {
+  config: { variants?: infer V extends CVAVariantShape };
+}
+  ? V
+  : unknown;
+
+// Mirrors the runtime `components.reduce(mergeVariants, {})`: a left-to-right
+// fold over the composed tuple, reusing `MergeVariantShapes` per step so
+// per-variant option keys union across components while a later component's
+// class value wins per option key. A plain `UnionToIntersection` here
+// collapsed any conflicting option value (e.g. two shorthands' expanded
+// `true: "x"` vs `true: "y"`, or a longhand `unset: null` vs `unset: "u"`)
+// to `never`, whose `keyof` is `string | number | symbol` — poisoning both
+// the props type and `getSchema`. The base case is `unknown` — not `{}` —
+// so the no-composes path keeps `variants: unknown` (see `CVAComponentShape`).
+type MergedVariants<T extends readonly unknown[]> = T extends readonly [
+  infer Head,
+  ...infer Rest,
+]
+  ? MergeVariantShapes<VariantsOf<Head>, MergedVariants<Rest>>
+  : unknown;
 
 // `D` infers as `undefined` (not absent) when a component declares no
 // `defaultVariants` at all. `NonNullable<undefined>` would give `never`,
@@ -178,8 +193,11 @@ export type CVAVariantShape = Record<string, Record<string, ClassValue>>;
 // on the non-object side — a clsx `ClassDictionary` structurally overlaps a
 // variant map, so plain objects must always stay variant maps (wrap a
 // dictionary in an array to use it as shorthand). `boolean`/`undefined` are
-// deliberately excluded as shorthand values.
-type CVAVariantShorthandValue = string | number | bigint | ClassArray | null;
+// deliberately excluded as shorthand values, and so is `bigint` — it's a
+// `ClassValue` only because those types mirror clsx's, whose runtime
+// silently drops bigints, so accepting it here would typecheck a variant
+// that can never render.
+type CVAVariantShorthandValue = string | number | ClassArray | null;
 type CVAVariantInputShape = Record<
   string,
   Record<string, ClassValue> | CVAVariantShorthandValue
@@ -366,16 +384,26 @@ export interface DefineConfig {
 const falsyToString = <T extends unknown>(value: T) =>
   typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
 
+// Any non-array object counts as a variant map — including class instances
+// and `Object.create(null)` maps, whose enumerable keys become option keys.
+// Configs are developer-authored, so no stricter plain-object check is done.
 const isVariantMap = (value: unknown): value is Record<string, ClassValue> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 // Expands the boolean-variant shorthand (any non-map value becomes
 // `{ true: value, false: null }`) so every downstream consumer — variant
 // resolution, composition merging, `component.config`, `getSchema` — only
-// ever sees `{ true, false }` maps.
+// ever sees `{ true, false }` maps. The parameter type is deliberately
+// looser than `CVAVariantInputShape`: values the types reject (`boolean`,
+// `undefined`) are still expanded rather than thrown on, and then render
+// nothing (pinned by tests). Returns the input unchanged when no value is
+// shorthand — safe because callers never mutate the result and
+// `mergeVariants` copies before anything reaches `component.config`.
 const normalizeVariants = (
   variants: Record<string, Record<string, ClassValue> | ClassValue>,
 ): CVAVariantShape => {
+  if (Object.values(variants).every(isVariantMap))
+    return variants as CVAVariantShape;
   const normalized: CVAVariantShape = {};
   for (const key of Object.keys(variants)) {
     const value = variants[key];
@@ -445,6 +473,9 @@ export const defineConfig: DefineConfig = (options) => {
               Record<string, ClassValue> | ClassValue
             >,
           );
+    // Runs even with no composed components: the copy it makes keeps
+    // `component.config.variants` from aliasing caller-owned objects (which
+    // `normalizeVariants`'s no-shorthand fast path may return as-is).
     const mergedVariants = mergeVariants(
       mergedVariantsFromComposed,
       localVariants,

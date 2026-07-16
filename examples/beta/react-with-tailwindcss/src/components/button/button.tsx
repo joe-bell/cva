@@ -12,10 +12,8 @@ const button = cva({
       small: ["text-sm", "py-1", "px-2"],
       medium: ["text-base", "py-2", "px-4"],
     },
-    disabled: {
-      false: null,
-      true: ["opacity-50", "cursor-not-allowed"],
-    },
+    // Boolean shorthand for `{ true: [...], false: null }`
+    disabled: ["opacity-50", "cursor-not-allowed"],
   },
   compoundVariants: [
     {
