@@ -13,6 +13,12 @@
       "skillPath": "skills/find-skills/SKILL.md",
       "computedHash": "17fc4ab95ca0d788041f9581605a22932244aa938b7a50faa9d875342741f1fa"
     },
+    "i-have-adhd": {
+      "source": "ayghri/i-have-adhd",
+      "sourceType": "github",
+      "skillPath": "skills/i-have-adhd/SKILL.md",
+      "computedHash": "9ade0e2863c9570c2987955c8ea2f14f48d4149dec937ade0360dc99b1829eaa"
+    },
     "security-review": {
       "source": "getsentry/skills",
       "sourceType": "github",
