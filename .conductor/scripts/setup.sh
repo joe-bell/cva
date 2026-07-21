@@ -3,9 +3,9 @@
 # Local: put the pinned Node + corepack pnpm on PATH, install deps.
 # Cloud: provision the pinned Node via the shared cloud setup script.
 if [ "${CONDUCTOR_IS_LOCAL:-1}" != "0" ]; then
-  . "$(git rev-parse --show-toplevel)/scripts/ensure-node.sh" || exit $?
+  . "$(git rev-parse --show-toplevel)/scripts/setup-node.sh" || exit $?
   # --frozen-lockfile: a fresh workspace starts from the remote branch, so
-  # this is the more reproducible choice here too (matches cloud-setup.sh).
+  # this is the more reproducible choice here too (matches setup-cloud.sh).
   exec pnpm install --frozen-lockfile
 fi
-exec "${CONDUCTOR_WORKSPACE_PATH:-.}/scripts/cloud-setup.sh"
+exec "${CONDUCTOR_WORKSPACE_PATH:-.}/scripts/setup-cloud.sh"

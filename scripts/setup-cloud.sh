@@ -99,7 +99,7 @@ fi
 # but the platform wrapper must remain to install dependencies (see AGENTS.md).
 if [ "$current_major" = "$required_major" ]; then
   echo "Node v$current_major already matches the repo pin with no provisioning needed."
-  echo "Keep the platform wrapper for dependency installation; once both platforms ship Node $required_major, remove only the provisioning logic from cloud-setup.sh — see AGENTS.md."
+  echo "Keep the platform wrapper for dependency installation; once both platforms ship Node $required_major, remove only the provisioning logic from setup-cloud.sh — see AGENTS.md."
 fi
 
 echo "Using $(node -v) at $(command -v node)"

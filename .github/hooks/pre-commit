@@ -1,5 +1,5 @@
 #!/bin/sh
 
-. "$(git rev-parse --show-toplevel)/scripts/ensure-node.sh"
+. "$(git rev-parse --show-toplevel)/scripts/setup-node.sh"
 
 pnpm lint-staged

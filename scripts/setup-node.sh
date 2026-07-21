@@ -5,9 +5,9 @@
 # node/pnpm but don't load nvm from an interactive shell profile — git hooks,
 # Conductor, and other agent shells:
 #
-#   . "$(git rev-parse --show-toplevel)/scripts/ensure-node.sh"
+#   . "$(git rev-parse --show-toplevel)/scripts/setup-node.sh"
 #
-# Prefer the exact runtime provisioned by cloud-setup.sh. Otherwise use nvm
+# Prefer the exact runtime provisioned by setup-cloud.sh. Otherwise use nvm
 # when available; machines on asdf/system node remain unaffected.
 
 # Resolve the repo root so `nvm use` reads the right .nvmrc regardless of CWD.
