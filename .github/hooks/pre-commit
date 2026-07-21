@@ -2,4 +2,11 @@
 
 . "$(git rev-parse --show-toplevel)/scripts/setup-node.sh"
 
+# In a linked worktree, lint-staged's re-stage step misresolves the ambient
+# GIT_INDEX_FILE git sets for hooks (gitWorkflow.js falls back to a hardcoded
+# ".git/index.lock", which isn't a real path when ".git" is a file) and
+# silently fails, leaving task fixes (e.g. prettier) uncommitted. Unsetting it
+# makes lint-staged fall back to git's own index resolution, which handles
+# worktrees correctly.
+unset GIT_INDEX_FILE
 pnpm lint-staged
