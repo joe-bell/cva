@@ -4,7 +4,7 @@
 # script provisions it, persists PATH via CLAUDE_ENV_FILE, and installs deps.
 set -euo pipefail
 if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
-  "${CLAUDE_PROJECT_DIR:-.}/scripts/link-worktree-envs.sh"
+  "${CLAUDE_PROJECT_DIR:-.}/scripts/setup-worktree.sh"
   exit 0
 fi
 exec "${CLAUDE_PROJECT_DIR:-.}/scripts/setup-cloud.sh"

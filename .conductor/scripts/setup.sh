@@ -3,7 +3,7 @@
 # Local: link env files, put the pinned Node + corepack pnpm on PATH, install.
 # Cloud: provision the pinned Node via the shared cloud setup script.
 if [ "${CONDUCTOR_IS_LOCAL:-1}" != "0" ]; then
-  "$(git rev-parse --show-toplevel)/scripts/link-worktree-envs.sh"
+  "$(git rev-parse --show-toplevel)/scripts/setup-worktree.sh"
   . "$(git rev-parse --show-toplevel)/scripts/setup-node.sh" || exit $?
   # --frozen-lockfile: a fresh workspace starts from the remote branch, so
   # this is the more reproducible choice here too (matches setup-cloud.sh).
