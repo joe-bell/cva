@@ -16,7 +16,7 @@
     "@astrojs/starlight": "0.41.1",
     "@astrojs/starlight-tailwind": "^5.0.0",
     "@astrojs/ts-plugin": "1.10.9",
-    "astro": "7.0.3",
+    "astro": "7.1.0",
     "cva": "workspace:*",
     "date-fns": "4.1.0",
     "starlight-llms-txt": "0.10.0",
