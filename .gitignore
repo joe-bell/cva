@@ -8,4 +8,6 @@ test/bench/.output
 .env
 .claude/*
 !.claude/skills
+!.claude/settings.json
+!.claude/hooks
 */**/.claude/

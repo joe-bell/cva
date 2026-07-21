@@ -1,0 +1,14 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+setup = "bash .conductor/scripts/setup.sh"
+run_mode = "concurrent"
+
+[scripts.run.docs]
+command = "sh .conductor/scripts/run.sh pnpm --filter ./docs dev --port $CONDUCTOR_PORT"
+default = true
+icon = "globe"
+
+[scripts.run.test]
+command = "sh .conductor/scripts/run.sh pnpm dev"
+icon = "test-tube"
