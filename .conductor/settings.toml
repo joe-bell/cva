@@ -7,8 +7,20 @@ run_mode = "concurrent"
 [scripts.run.docs]
 command = "sh .conductor/scripts/run.sh pnpm --filter ./docs dev --port $CONDUCTOR_PORT"
 default = true
-icon = "globe"
+icon = "book-open"
+
+[scripts.run.dev]
+command = "sh .conductor/scripts/run.sh pnpm dev"
+icon = "play"
+
+[scripts.run.build]
+command = "sh .conductor/scripts/run.sh pnpm build"
+icon = "package"
 
 [scripts.run.test]
-command = "sh .conductor/scripts/run.sh pnpm dev"
-icon = "test-tube"
+command = "sh .conductor/scripts/run.sh pnpm test"
+icon = "flask-conical"
+
+[scripts.run.check]
+command = "sh .conductor/scripts/run.sh pnpm check"
+icon = "brush-cleaning"
