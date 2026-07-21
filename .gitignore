@@ -6,6 +6,7 @@ test/bench/.output
 .swc
 *.tsbuildinfo
 .env
+.env.local
 .claude/*
 !.claude/skills
 !.claude/settings.json
