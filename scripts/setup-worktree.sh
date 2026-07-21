@@ -9,7 +9,7 @@ resolve_dir() {
 
 if [ -n "${CONDUCTOR_ROOT_PATH:-}" ]; then
   PRIMARY=$CONDUCTOR_ROOT_PATH
-  TARGET=${CONDUCTOR_WORKSPACE_PATH:-$PWD}
+  TARGET=${CONDUCTOR_WORKSPACE_PATH:-$(git rev-parse --show-toplevel 2>/dev/null || printf '%s\n' "$PWD")}
 else
   git_dir=$(git rev-parse --git-dir)
   case $git_dir in
@@ -32,8 +32,15 @@ link_env() {
   rel=${src#"$PRIMARY"/}
   dest=$TARGET/$rel
 
+  # Preserve worktree-local regular files; refresh existing symlinks.
+  if [ -L "$dest" ]; then
+    [ "$(readlink "$dest")" = "$src" ] && return 0
+  elif [ -e "$dest" ]; then
+    return 0
+  fi
+
   mkdir -p "$(dirname "$dest")"
-  ln -sf "$src" "$dest"
+  ln -sfn "$src" "$dest"
   echo "linked $rel"
   linked=$((linked + 1))
 }
