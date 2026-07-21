@@ -43,7 +43,7 @@ if [ "$current_major" != "$required_major" ] && ! node_dir_is_usable "$node_dir"
   esac
   # Newest release for the required major, via the tiny latest-vN.x alias
   # (grepping the full dist index.json would download every release ever).
-  version="$(curl -fsSL "https://nodejs.org/dist/latest-v${required_major}.x/SHASUMS256.txt" \
+  version="$(curl --retry 3 -fsSL "https://nodejs.org/dist/latest-v${required_major}.x/SHASUMS256.txt" \
     | grep -o "node-v${required_major}\.[0-9.]*-linux" | head -1 \
     | sed 's/^node-//; s/-linux$//' || true)"
   # Fail loudly: continuing under the wrong Node major only defers to a
@@ -57,14 +57,18 @@ if [ "$current_major" != "$required_major" ] && ! node_dir_is_usable "$node_dir"
   # can't leave a half-toolchain that later sessions mistake for installed.
   rm -rf "${node_dir}" "${node_dir}".partial.*
   tmp_dir="${node_dir}.partial.$$"
+  tmp_archive="${tmp_dir}.tar.gz"
   mkdir -p "$tmp_dir"
   # .tar.gz, not .tar.xz: xz isn't preinstalled on every cloud base image
   # (e.g. Amazon Linux 2023), whereas gzip/tar -z is universal.
-  if curl -fsSL "https://nodejs.org/dist/${version}/node-${version}-linux-${arch}.tar.gz" \
-    | tar -xzf - -C "$tmp_dir" --strip-components=1; then
+  if curl --retry 3 -fsSL \
+    "https://nodejs.org/dist/${version}/node-${version}-linux-${arch}.tar.gz" \
+    -o "$tmp_archive" \
+    && tar -xzf "$tmp_archive" -C "$tmp_dir" --strip-components=1; then
+    rm -f "$tmp_archive"
     mv "$tmp_dir" "$node_dir"
   else
-    rm -rf "$tmp_dir"
+    rm -rf "$tmp_dir" "$tmp_archive"
     echo "cloud-setup: Node ${version} download failed — cannot provision the pinned Node" >&2
     exit 1
   fi
