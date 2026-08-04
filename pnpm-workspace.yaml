@@ -4,7 +4,7 @@ overrides:
   "mdast-util-directive>mdast-util-to-markdown": "2.1.2"
   "vite": "^8.1.0"
 
-minimumReleaseAge: 1440
+minimumReleaseAge: 4320
 
 packages:
   - "docs"
