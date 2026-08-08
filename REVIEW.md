@@ -1,0 +1,84 @@
+# Review guide
+
+What a reviewer — human or `@claude` — should look for in a pull request here.
+
+CI gates `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `test` (see [`.github/workflows/ci.yml`](./.github/workflows/ci.yml)), runs an informational `benchmark` job alongside them, and `pnpm test` enforces 100% coverage. **This file deliberately covers only what those jobs cannot catch.** Don't ask a reviewer to re-run a machine. If something here becomes mechanically enforced, delete it.
+
+Two facts set the stakes: both packages are published to npm and depended on by other people's builds, and this repo takes outside contributions. A mistake in the public API or the published artifact ships to strangers, and a mistake in CI privileges is exploitable by a pull request.
+
+## Public API and type inference (`packages/cva`)
+
+The highest-stakes surface in the repo. Types are the product here as much as the runtime is.
+
+- **A newly-nameable internal type must be exported.** Per [`CONTRIBUTING.md`](./CONTRIBUTING.md#style-guide): a type that appears _named_ in a consumer's generated `.d.ts` under `declaration: true` breaks their build with a `TS4023`/`TS2459`-family error if it isn't exported from `src/index.ts` — while `cva`'s own build stays green. The `describe("exported types", …)` and `describe("CVAVariantShape", …)` blocks in `packages/cva/src/index.test.ts` pin the _existing_ portability exports (`CVAComponent`, `CVAComponentShape`, `CVAVariantShape`), so losing one fails `pnpm --filter cva check:tsc`. Nothing detects a _newly_ required one. If a PR reshapes a public signature, ask for the packed-artifact verification documented in [`AGENTS.md`](./AGENTS.md#learnings) — `pnpm pack` (never `npm pack`), extract, compile a real consumer with `--module nodenext`.
+- Not everything reachable needs exporting — TypeScript structurally expands some helpers instead of naming them. Export the minimum a real consumer build fails without, mark it with the same "you shouldn't really use it directly" JSDoc the existing three carry, and don't add docs-site coverage for it.
+- **Inference can widen silently and still compile.** `pnpm check` only proves `tsc` is happy. Whether `VariantProps<typeof x>` still resolves to a literal union rather than `string`, or `getSchema` still names every variant, is pinned only by the `expectTypeOf(…).toEqualTypeOf<…>()` assertions in the test files. Treat a loosened assertion (`toEqualTypeOf` → `toMatchTypeOf`), a deleted one, or a deleted `@ts-expect-error` as part of the diff to review, not as test housekeeping.
+- **The awkward generics are load-bearing, and each says why in a comment.** `ComposedTuple` splits inference across two type parameters so an array literal stays a tuple instead of collapsing to a union (which silently drops structurally-subtyped components). `RightMerge` is a mapped type rather than `Omit<A, keyof B> & B` because the latter stays deferred and breaks `any`-narrowing downstream. `DefaultsOf` normalises `undefined` to `{}` because `keyof never` is `string | number | symbol` and poisons the key union. `CVAComponentShape` takes `any` arguments on purpose — a shaped `config` rejects every real component via props contravariance. A PR that "simplifies" any of these should demonstrate the documented failure no longer applies.
+
+## Runtime and type-level semantics must move together
+
+`cva`'s composition rules are written twice — once in the types, once in `defineConfig` — and nothing cross-checks them. A change to one side typechecks fine and usually still passes the existing tests.
+
+- Local `defaultVariants` beat composed ones. Type side: the `Omit<MergedDefaultVariants<…>, keyof CVADefaultVariants<Config>> & CVADefaultVariants<Config>` in the `CVA` interface. Runtime side: the last spread into `mergedDefaultVariants`. Same rule, two places.
+- Variants merge one level deep so overlapping keys union their values (`mergeVariants` at runtime, `MergedVariants`/`UnionToIntersection` in the types). Check merge depth and direction on both sides.
+- Internal `_`-prefixed variants are filtered in three places: `InternalVariantKey` in `VariantProps`, the key remap in the `GetSchema` interface, and the `key.startsWith("_")` guard in `getSchema`'s implementation. All three, or none.
+- Prop normalisation is subtle and looks like dead weight: `definedPropsWithoutClass` drops an explicit `undefined` so it falls back to the default; `falsyToString` maps `false` → `"false"` and `0` → `"0"`; `getSchema` round-trips numeric keys through `String(n) === v` so `"01"` and `" 1"` stay strings. Each has an observable consequence for consumers.
+- `emptyClassNames` is a module-level array shared across every non-composed call, as an allocation optimisation. Anything that mutates a class-name array in place would corrupt every later call.
+
+## Two packages, two audiences
+
+- `packages/class-variance-authority` (`0.7.x`) is stable and in **maintenance mode**; `packages/cva` (`1.0.0-beta.x`) is where features go. Flag feature work that lands in the stable package, and flag a beta change mirrored into stable by reflex — [`AGENTS.md`](./AGENTS.md) is explicit that the two are intentionally separate and a change to one does not imply a change to the other.
+- `cva@beta` is not covered by semver and may change without warning. `class-variance-authority` is, and has the large installed base — a behaviour change there needs to be a bug fix, not a redesign.
+- The two have independent release lines and dist-tags: `cva` parks npm `latest` at `0.0.0` and publishes to `beta`; `class-variance-authority` publishes to `latest` and has no `beta` tag (see `PACKAGE_BASELINES` in `test/bench/scripts/baselines.ts`). Anything assuming one repository tag identifies both packages is wrong.
+
+## The published artifact
+
+CI's `build` job runs tsdown's `publint`/`attw`/`unused` gates, so a genuinely _broken_ publish shape fails on its own. What it can't see:
+
+- **A hand-edit to `exports` or `publishConfig.exports` that happens to be valid.** Both blocks are regenerated on every build (`exports: { devExports: true }` in [`.config/tsdown.base.mts`](./.config/tsdown.base.mts)), so the edit is silently reverted by the next build and the intent is lost. A diff to either block with no matching change to that package's `tsdown.config.mts` or the shared base is the tell.
+- **`class-variance-authority`'s `publishConfig.typesVersions`** — the node10 fallback for its `./types` subpath — is the one hand-maintained field in those manifests. tsdown preserves it but doesn't generate it, so a deletion never comes back.
+- **The published packages deliberately omit `engines.node`** so they don't constrain consumers ([`CONTRIBUTING.md`](./CONTRIBUTING.md#nodejs-versions)). syncpack treats the field as optional and only snaps a declared one to the root, so an added `"24"` sails through — still wrong for a published package.
+
+## Size and dependency budget
+
+- `bundlesize` enforces the numbers, not the choice of numbers. The `size-limit` blocks cap `cva` at `1.6KB` and `class-variance-authority` at `1.2KB`. A PR that raises its own limit to fit gets a green job — that is a review decision, weighed against the "performance & minimal footprint" project goal.
+- `clsx` is the only runtime dependency of either package. Anything added to `dependencies` under `packages/*` is a headline change, not a detail.
+- [`pnpm-workspace.yaml`](./pnpm-workspace.yaml) carries two supply-chain protections that a PR can quietly weaken: `minimumReleaseAge`, and the explicit `allowBuilds` allowlist (adding a package there grants it install-time script execution). Removing or lowering `minimumReleaseAge` to work around an `ERR_PNPM_MISSING_TIME` is the specific anti-fix called out in [`AGENTS.md`](./AGENTS.md#learnings) — the right answer is to re-run the install.
+- Dependabot is configured for `github-actions` only ([`.github/dependabot.yml`](./.github/dependabot.yml)), so npm bumps arrive by hand and carry no automated provenance.
+
+## The CI privilege boundary
+
+The split between trusted and untrusted CI here is deliberate and documented, and a well-meaning workflow change can undo it without failing anything.
+
+- `ci.yml` runs contributor code and holds `contents: read` only. `pr-comment.yml` holds `pull-requests: write` and lives on `workflow_run` precisely so it never checks out or executes PR code — which is what makes benchmark comments work for fork PRs at all. **Any new job that combines a write permission with running contributor code breaks that**, as does a `pull_request_target` trigger.
+- Every `actions/checkout` in the repo sets `persist-credentials: false`, and every third-party action is SHA-pinned with a version comment — that pinning is what makes the Dependabot config meaningful. An unpinned `@v4`-style ref, or a checkout that keeps credentials, is a regression.
+- **Artifacts are hostile input.** `test/bench/scripts/compare.ts` validates schema and escapes strings before anything is rendered as markdown, and `.github/scripts/process-pr-comment.mjs` cross-checks the artifact's claimed PR against _both_ `head_sha` and the head repository. A new PR-comment section that skips either check is exploitable; the header of [`.github/workflows/pr-comment.yml`](./.github/workflows/pr-comment.yml) spells out the full contract for adding one.
+- **Benchmark numbers are informational and unauthenticated.** A regression doesn't fail CI, and the renderer validates the artifact's _shape_ without authenticating its _metrics_ — a PR author can upload fabricated ops/s from their own branch ([`CONTRIBUTING.md`](./CONTRIBUTING.md#benchmarks) says so explicitly). Reproduce a large swing locally with `pnpm bench:preview` rather than taking the comment as proof either way.
+- The `benchmark` job writes an Actions job summary only on `push`. Restoring it for pull requests would let PR code — which ran earlier on the same runner — influence a trusted summary.
+- `test/bench/scripts/baselines.ts` installs published baselines with `pnpm add --ignore-scripts`, into a directory outside the repo. Both details are load-bearing: the flag stops npm lifecycle scripts running in the untrusted job, and the location stops the workspace `overrides` silently resolving baselines back to local source.
+- **`pr-comment.yml` cannot be exercised by the PR that changes it** — GitHub always runs a `workflow_run` workflow as it exists on the default branch. Changes to it are unreviewable by CI and need the scratch-fork verification described in [`AGENTS.md`](./AGENTS.md#learnings). Review it accordingly: this is the file where CI green means least.
+
+## Coverage escape hatches
+
+100% thresholds cover `packages/*/src`, `test/bench/scripts`, and `.github/scripts`, so missing tests fail on their own. Two ways to pass without being covered:
+
+- **A new `v8 ignore` comment.** The sanctioned set is the `isMainModule()` entry guards plus one unreachable fallback in `pr-comment.mjs`. [`AGENTS.md`](./AGENTS.md#learnings) says to lower that glob's `branches` threshold instead of adding ignores, so a new one is always a review item.
+- **Code outside `coverage.include`.** Vitest only measures matching files, so a new tooling directory that isn't added to `coverage.include` in [`.config/vitest.config.ts`](./.config/vitest.config.ts), with a matching threshold, is invisible rather than failing.
+- Bench and CI scripts stay import-safe via `isMainModule()` entry guards and injected `execImpl`/`fetchImpl` parameters rather than `vi.mock`. A `vi.mock` in a new script is a smell — it means the script isn't structured the way the rest are.
+
+## Docs, examples, and the live embeds
+
+- **`docs/src/components/stackblitz.astro` hardcodes `branch = "main"`** and builds both the GitHub link and the StackBlitz iframe from its `dir`/`file` props. Renaming or moving anything under `examples/**`, or changing a filename an `.mdx` page points at, silently 404s a live embed on cva.style. Nothing in CI resolves those URLs — grep the docs for the old path.
+- **A green `build:examples` is not evidence the embed works.** In-repo, `pnpm-workspace.yaml`'s `overrides` pin `cva` and `class-variance-authority` to `workspace:*`, so the examples build against local source no matter what their `package.json` declares. StackBlitz opens the example directory in isolation and installs the published `beta`/`latest` versions instead. The two can diverge, and only the published side is what visitors see.
+- **The docs are versioned, and the split matters.** Stable content lives at `docs/src/content/docs/**`; beta content lives under `docs/src/content/docs/beta/**` with its own sidebar in `docs/src/content/versions/beta.json`. A `packages/cva` change documented in the stable tree ships beta behaviour to stable users; a new beta page missing from `beta.json` is unreachable from the sidebar.
+- **Docs build watch paths live in the Cloudflare dashboard**, not in the repo (see [Deployment](./docs/README.md#-deployment)). A PR that makes the docs build depend on a new root-level input won't trigger a redeploy until those paths are updated — flag it rather than assuming it's wired.
+- Prose: `// =>` output comments are claims about real behaviour and should be verified, not assumed. Markdown is **never** hard-wrapped — Prettier runs with `proseWrap: "preserve"`, so `prettier --check` passes on hard wraps and commits them as noisy diffs. Content under `docs/src/content/docs/**` also follows the `writing-guidelines` house style (US English, no em/en-dash punctuation, preserved author voice in the FAQs and What's New pages).
+
+## Things nothing in this repo enforces
+
+- **Agent-config mirrors drift silently.** `.claude/skills/<name>` must stay a relative symlink into `.agents/skills/`; `.cursor/mcp.json` must stay a symlink to `../.mcp.json`; `.vscode/mcp.json` (schema: `servers`) and the `context_servers` block in `.zed/settings.json` are hand-mirrored and must change in the same commit as `.mcp.json`. [`AGENTS.md`](./AGENTS.md) states outright that none of this is checked — a real file committed under `.claude/skills/` looks fine to both git and `pnpm lint:skills`.
+- **A skill is instructions an agent will follow.** Review an added or updated `SKILL.md` and its `references/` the way you'd review a dependency, and never let a changed `source` in `skills-lock.json` pass silently. Vendored skill files are Prettier-ignored so the committed bytes match the recorded hash — a formatting diff there means something rewrote them.
+- **No version bumps in a PR.** The `version` field in `packages/*/package.json` changes only on `main`, as the owner's own commit ([Releases](./CONTRIBUTING.md#releases)). Nothing stops one landing on a feature branch, even when a PR is titled as a release.
+- **This repository is public.** No private repository names, URLs, or file paths in code, docs, commit messages, or PR text — ported work is described neutrally.
+- **`AGENTS.md` moves with the change.** A PR that establishes or changes a convention, or that cost someone a wrong turn worth warning about, should update [`AGENTS.md`](./AGENTS.md) in the same commit. A guidance entry that the PR makes wrong should be deleted in that same commit — stale guidance is worse than none.
+- **The PR title and body are the squash-merge commit.** Commits follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) and changelogs are generated from them, so the title needs the right type and scope, and the body needs to describe the final diff rather than the first push.

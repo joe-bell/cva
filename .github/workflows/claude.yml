@@ -1,0 +1,61 @@
+name: claude
+
+# Interactive Claude Code, triggered by an `@claude` mention in an issue, a PR
+# comment, or a PR review. There is deliberately no `prompt` input, so the
+# action only ever responds to a mention and never runs unattended (and so it
+# can't self-trigger from its own comments). Auth is the
+# `CLAUDE_CODE_OAUTH_TOKEN` repository secret, alongside the Claude GitHub App
+# installed on this repo.
+#
+# The `./.github/actions/install` step gives Claude a working toolchain, so it
+# can actually run `pnpm test` / `pnpm check` / `pnpm bundlesize` when asked
+# rather than reasoning about the diff alone. Note it installs from the
+# default branch (its own checkout uses the triggering ref); if Claude then
+# switches to a PR branch that changed the lockfile, re-run `pnpm i` there.
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  claude:
+    # Public repo: only Joe can trigger Claude. github.actor covers all four
+    # event types uniformly and is stricter than the action's built-in
+    # write-access check, which repo collaborators would also pass.
+    if: |
+      github.actor == 'joe-bell' && (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+        (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write # push commits to branches
+      pull-requests: write # open PRs, comment
+      issues: write # comment on issues
+      id-token: write # the action's GitHub App auth
+      actions: read # read CI results on PRs
+    steps:
+      # Needed before the local composite action below can be resolved.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/install
+      - uses: anthropics/claude-code-action@6b082c41935b4c8a3b8b0ef85ba4ba4d9eeb8975 # v1.0.189
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
