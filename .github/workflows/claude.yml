@@ -7,13 +7,20 @@ name: claude
 # `CLAUDE_CODE_OAUTH_TOKEN` repository secret, alongside the Claude GitHub App
 # installed on this repo.
 #
-# The `./.github/actions/install` step gives Claude a working toolchain, so it
-# can attempt `pnpm test` / `pnpm check` / `pnpm bundlesize` when asked rather
-# than reasoning about the diff alone. Both its checkout and the one above are
-# pinned to the default branch, so the toolchain is installed from trusted
-# code; if Claude later switches to a PR branch that changed the lockfile,
-# `pnpm i` has to be re-run there — against contributor-controlled files, so
-# treat that as a deliberate act rather than a routine one.
+# The `./.github/actions/install` step provisions a toolchain, and both its
+# checkout and the one above are pinned to the default branch so that happens
+# from trusted code.
+#
+# It does NOT, on its own, let Claude run the test suite. In tag mode the
+# action allows only Glob/Grep/LS/Read, its comment tool, and specific
+# `Bash(git …)` commands — no general Bash — so `pnpm test`, `pnpm check` and
+# `pnpm bundlesize` are denied unless granted explicitly, e.g.
+# `claude_args: --allowedTools "Bash(pnpm test),Bash(pnpm check)"`.
+#
+# That grant is deliberately absent. This repo is public: allowing pnpm here
+# would mean executing a contributor's test code once Claude moves to their
+# branch, which is the exposure the pins above exist to remove. Add it only
+# with that trade-off in mind.
 
 on:
   issue_comment:
