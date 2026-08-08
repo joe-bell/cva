@@ -35,8 +35,12 @@ jobs:
     # Public repo: only Joe can trigger Claude. github.actor covers all four
     # event types uniformly and is stricter than the action's built-in
     # write-access check, which repo collaborators would also pass.
+    # `triggering_actor` is checked too: a re-run keeps `github.actor` as
+    # whoever sent the original event and names the re-runner separately, so
+    # actor alone would let a future collaborator replay a write-capable job
+    # from one of Joe's comments.
     if: |
-      github.actor == 'joe-bell' && (
+      github.actor == 'joe-bell' && github.triggering_actor == 'joe-bell' && (
         (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
@@ -46,9 +50,9 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: write # push commits to branches
-      pull-requests: write # open PRs, comment
-      issues: write # comment on issues
-      id-token: write # the action's GitHub App auth
+      pull-requests: write # read PR data, post review comments
+      issues: write # comment on issues, and on PR conversations via the issues API
+      id-token: write # OIDC exchange for the action's app token
       actions: read # read CI results on PRs
     steps:
       # Needed before the local composite action below can be resolved — and
