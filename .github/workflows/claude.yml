@@ -8,10 +8,12 @@ name: claude
 # installed on this repo.
 #
 # The `./.github/actions/install` step gives Claude a working toolchain, so it
-# can actually run `pnpm test` / `pnpm check` / `pnpm bundlesize` when asked
-# rather than reasoning about the diff alone. Note it installs from the
-# default branch (its own checkout uses the triggering ref); if Claude then
-# switches to a PR branch that changed the lockfile, re-run `pnpm i` there.
+# can attempt `pnpm test` / `pnpm check` / `pnpm bundlesize` when asked rather
+# than reasoning about the diff alone. Both its checkout and the one above are
+# pinned to the default branch, so the toolchain is installed from trusted
+# code; if Claude later switches to a PR branch that changed the lockfile,
+# `pnpm i` has to be re-run there — against contributor-controlled files, so
+# treat that as a deliberate act rather than a routine one.
 
 on:
   issue_comment:
