@@ -118,6 +118,10 @@ goals, setup, scripts, and conventions (Conventional Commits, Prettier,
 TypeScript) — follow it rather than duplicating its guidance here. All
 participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.md).
 
+### Reviewing a pull request
+
+[`REVIEW.md`](./REVIEW.md) is the review guide: what can go wrong in _this_ repo, scoped deliberately to what CI can't catch. Read it before reviewing a diff — unlike this file it isn't loaded automatically, so an agent asked to review (via the `@claude` mention workflow in [`.github/workflows/claude.yml`](./.github/workflows/claude.yml) or otherwise) has to open it. Keep it current the same way as this file: if a rule there becomes mechanically enforced by CI, delete it rather than leaving a reviewer duplicating a machine.
+
 ### Commit workflow: the pre-commit hook is mandatory
 
 This is policy, not a suggestion. Read it before every commit; it applies to every agent, every session, and every commit, with no exceptions.
