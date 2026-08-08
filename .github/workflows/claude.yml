@@ -73,6 +73,16 @@ jobs:
       - uses: ./.github/actions/install
         with:
           ref: ${{ github.event.repository.default_branch }}
+      # `pnpm i` above runs `prepare:hooks`, which points `core.hooksPath` at
+      # `.github/hooks`. That directory is not restored from the base branch, so
+      # once the action checks out a contributor's PR head, any commit Claude
+      # makes would execute *their* `pre-commit` — which sources
+      # `scripts/setup-node.sh`, also PR-controlled — with a write-capable
+      # token. Unset it: CI enforces formatting regardless, so the hook buys
+      # nothing here.
+      - name: Drop the repo git-hooks path for this job
+        shell: bash
+        run: git config --unset-all core.hooksPath || true
       - uses: anthropics/claude-code-action@6b082c41935b4c8a3b8b0ef85ba4ba4d9eeb8975 # v1.0.189
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
