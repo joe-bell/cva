@@ -1,5 +1,5 @@
 #!/bin/sh
-# Put the repo's pinned Node (.nvmrc) and corepack-managed pnpm on PATH.
+# Put the repo's pinned Node (.node-version) and corepack-managed pnpm on PATH.
 #
 # Source (don't execute) from non-interactive entry points that need
 # node/pnpm but don't load nvm from an interactive shell profile — git hooks,
@@ -7,14 +7,14 @@
 #
 #   . "$(git rev-parse --show-toplevel)/scripts/setup-node.sh"
 #
-# Prefer the exact runtime provisioned by setup-cloud.sh. Otherwise use nvm
-# when available; machines on asdf/system node remain unaffected.
+# Prefer the exact runtime provisioned by setup-cloud.sh. Otherwise use fnm,
+# falling back to nvm; machines on a system node remain unaffected.
 
-# Resolve the repo root so `nvm use` reads the right .nvmrc regardless of CWD.
+# Resolve the repo root so `nvm use` reads the right .node-version regardless of CWD.
 _ensure_node_root=$(git rev-parse --show-toplevel 2>/dev/null) || _ensure_node_root=$PWD
 
 # Major only: tolerate `24`, `v24`, `24.x.y` and take just the major.
-_ensure_node_major=$(sed -n 's/^v\{0,1\}\([0-9][0-9]*\).*/\1/p' "$_ensure_node_root/.nvmrc" 2>/dev/null)
+_ensure_node_major=$(sed -n 's/^v\{0,1\}\([0-9][0-9]*\).*/\1/p' "$_ensure_node_root/.node-version" 2>/dev/null)
 _ensure_node_cloud_dir="$HOME/.local/share/node/v${_ensure_node_major}"
 
 # A file-exists-and-executable-bit check isn't enough: a stale or
@@ -27,11 +27,27 @@ if [ -n "$_ensure_node_major" ] && [ -x "$_ensure_node_cloud_dir/bin/node" ] \
   export PATH="$_ensure_node_cloud_dir/bin:$PATH"
 fi
 
+# fnm (local dev). Its shell integration is an `eval` in an interactive profile,
+# which a hook's `sh` never runs, so activate it explicitly. `--shell bash` is
+# required: bare `fnm env` infers the shell from its parent process and fails
+# with "Can't infer shell" under `sh`. Its bash output is POSIX-compatible.
+# Pass the version explicitly rather than relying on cwd — this file is sourced
+# from arbitrary directories.
+_ensure_node_fnm_used=false
+if [ "$_ensure_node_cloud_dir_usable" != true ] && command -v fnm >/dev/null 2>&1; then
+  eval "$(fnm env --shell bash)"
+  if fnm use --install-if-missing "$(cat "$_ensure_node_root/.node-version" 2>/dev/null)" \
+    >/dev/null 2>&1; then
+    _ensure_node_fnm_used=true
+  fi
+fi
+
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-if [ "$_ensure_node_cloud_dir_usable" != true ] && [ -s "$NVM_DIR/nvm.sh" ]; then
+if [ "$_ensure_node_cloud_dir_usable" != true ] && [ "$_ensure_node_fnm_used" != true ] \
+  && [ -s "$NVM_DIR/nvm.sh" ]; then
   . "$NVM_DIR/nvm.sh"
-  # nvm accepts a bare major, so the raw .nvmrc contents work as-is.
-  nvm use --silent "$(cat "$_ensure_node_root/.nvmrc" 2>/dev/null)" >/dev/null 2>&1 \
+  # nvm accepts a bare major, so the raw .node-version contents work as-is.
+  nvm use --silent "$(cat "$_ensure_node_root/.node-version" 2>/dev/null)" >/dev/null 2>&1 \
     || (cd "$_ensure_node_root" && nvm use --silent >/dev/null 2>&1) \
     || true
 fi
