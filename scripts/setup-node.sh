@@ -34,11 +34,19 @@ fi
 # Pass the version explicitly rather than relying on cwd — this file is sourced
 # from arbitrary directories.
 _ensure_node_fnm_used=false
+_ensure_node_saved_path="$PATH"
 if [ "$_ensure_node_cloud_dir_usable" != true ] && command -v fnm >/dev/null 2>&1; then
   eval "$(fnm env --shell bash)"
   if fnm use --install-if-missing "$(cat "$_ensure_node_root/.node-version" 2>/dev/null)" \
     >/dev/null 2>&1; then
     _ensure_node_fnm_used=true
+  else
+    # `fnm env` has already prepended its multishell dir, which points at fnm's
+    # *default* version. Leaving it would shadow a perfectly good system or nvm
+    # Node — and this file is sourced, so it would leak into the caller.
+    PATH="$_ensure_node_saved_path"
+    export PATH
+    unset FNM_MULTISHELL_PATH
   fi
 fi
 
@@ -54,3 +62,8 @@ fi
 
 # Activate the `packageManager` shim (no-op if already enabled / absent).
 command -v corepack >/dev/null 2>&1 && corepack enable >/dev/null 2>&1 || true
+
+# This file is sourced, so its scratch variables would otherwise persist in the
+# caller's shell.
+unset _ensure_node_root _ensure_node_major _ensure_node_cloud_dir
+unset _ensure_node_cloud_dir_usable _ensure_node_fnm_used _ensure_node_saved_path
