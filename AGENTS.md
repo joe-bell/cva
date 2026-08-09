@@ -29,10 +29,10 @@ This file is a living document, and keeping it accurate is part of the work — 
 ## Architecture
 
 This is a [pnpm](https://pnpm.io) workspace (Node `24`, see
-[`.nvmrc`](./.nvmrc)). pnpm is enforced via `only-allow` — don't use npm or
+[`.node-version`](./.node-version), with [`.nvmrc`](./.nvmrc) as a symlink for nvm compatibility). pnpm is enforced via `only-allow` — don't use npm or
 yarn.
 
-The dev/CI toolchain pins `engines.node` to the [`.nvmrc`](./.nvmrc) version. The `examples/` use a permissive range because they run on StackBlitz WebContainers, which ship an older, fixed Node, and the published library packages omit `engines.node` so they don't constrain consumers. Before changing any `engines.node` field, read the [Node.js versions](./CONTRIBUTING.md#nodejs-versions) section of [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+The dev/CI toolchain pins `engines.node` to the [`.node-version`](./.node-version) version (`.node-version` is canonical and read by fnm, mise, actions/setup-node; `.nvmrc` is a symlink kept for nvm users since nvm has declined to support `.node-version` directly). The `examples/` use a permissive range because they run on StackBlitz WebContainers, which ship an older, fixed Node, and the published library packages omit `engines.node` so they don't constrain consumers. Before changing any `engines.node` field, read the [Node.js versions](./CONTRIBUTING.md#nodejs-versions) section of [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
 | Path                                | What it is                                                                                                                                                                     |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
