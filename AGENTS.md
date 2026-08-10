@@ -67,11 +67,11 @@ Project skills live in `.agents/skills/` — the **single source of truth**; age
 Supported agent mirrors:
 
 - **Claude Code** — `.claude/skills/<name>` is a relative symlink (`../../.agents/skills/<name>`), committed to git as a symlink. Don't edit `.claude/skills/` directly or add real files there — nothing mechanical blocks a real file under `.claude/skills/` (git tracks the whole subtree), so it's on you not to commit one.
-- **Everything else** (Cursor, Codex, Amp, …) — reads the universal `.agents/skills/` directory natively; no mirror needed. Add a mirror entry here if we ever adopt an agent that needs one.
+- **Everything else** (Codex, Amp, …) — reads the universal `.agents/skills/` directory natively; no mirror needed. Add a mirror entry here if we ever adopt an agent that needs one.
 
 The symlink wiring is **not mechanically enforced right now** — a structural drift check may be added later; only `skill-check` runs in lint. Until then, keeping the mirrors correct is on you: whenever you add, remove, rename, or update a skill, fix the `.claude/skills/` symlinks in the same change and keep the list below accurate. If you notice drift you didn't cause (a missing/orphaned/real-file entry in `.claude/skills/`, or this doc disagreeing with the directories), **warn about it in your summary** and fix it in the same change.
 
-Note the committed symlinks (here and in [MCP servers](#mcp-servers-mcpjson)) require a symlink-capable checkout: on Windows without Developer Mode (`core.symlinks=false`), git materializes them as plain text files and the mirrors silently stop working.
+Note the committed symlinks require a symlink-capable checkout: on Windows without Developer Mode (`core.symlinks=false`), git materializes them as plain text files and the mirrors silently stop working.
 
 Vendored skill files are excluded from Prettier ([`.prettierignore`](./.prettierignore)) so the committed bytes stay exactly what `npx skills` installed and the `skills-lock.json` hashes remain valid — don't format or hand-edit them beyond deliberate, documented tweaks (and re-run `npx skills` tooling rather than editing hashes by hand; if you must recompute, use the CLI's folder-hash algorithm).
 
@@ -101,11 +101,10 @@ There is deliberately no `astro` skill: Astro guidance comes from the official A
 
 [`.mcp.json`](./.mcp.json) at the repo root is the **single source of truth** for project MCP server config (Claude Code reads it directly); editor-specific configs only ever mirror it:
 
-- **Cursor** — `.cursor/mcp.json` is a committed relative symlink to `../.mcp.json` (Cursor shares the `mcpServers` schema). Don't replace it with a real file.
 - **VS Code** — [`.vscode/mcp.json`](./.vscode/mcp.json) **cannot be a symlink**: VS Code expects a different schema (`servers` instead of `mcpServers`) and silently ignores configs in the wrong one, so it's a real file — plain JSON, no comments — kept in sync **by hand**. When changing `.mcp.json`, mirror the change there in the same commit.
 - **Zed** — the `context_servers` block in [`.zed/settings.json`](./.zed/settings.json) **cannot be a symlink either**: Zed uses its own schema (`context_servers`, with `url` for remote servers) inside its general project-settings file, so it's also kept in sync **by hand** in the same commit as any `.mcp.json` change.
 
-None of this is mechanically enforced either — the same drift rule as the [skills mirrors](#task-specific-skills-agentsskills) applies here: keep the Cursor symlink intact, keep the VS Code and Zed mirrors in sync in the same commit, keep this section accurate, and warn about drift you didn't cause. Add a mirror entry here if we ever support another editor/agent config.
+None of this is mechanically enforced either — the same drift rule as the [skills mirrors](#task-specific-skills-agentsskills) applies here: keep the VS Code and Zed mirrors in sync in the same commit, keep this section accurate, and warn about drift you didn't cause. Add a mirror entry here if we ever support another editor/agent config.
 
 Currently configured: the official [Astro Docs MCP server](https://github.com/withastro/docs-mcp) (streamable HTTP at `https://mcp.docs.astro.build/mcp`), replacing an `astro` skill.
 
