@@ -30,7 +30,7 @@ Introspect components via the new [`cva/tools` entry point](/beta/getting-starte
 
 ### 4. Internal variants
 
-A variant name prefixed with `_` is now treated as [internal](/beta/getting-started/variants#internal-variants). It stays off a wrapping component's public props because `VariantProps` and `getSchema` omit it, while the `cva` component still accepts it.
+A variant name prefixed with `_` is now treated as [internal](/beta/getting-started/variants#internal-variants). It stays off a wrapping component's public props because `VariantProps`, `getSchema`, and `pva`'s `data` output omit it, while the `cva` component still accepts it.
 
 :::caution[Breaking change]
 If a component already declared a variant with a leading underscore (`_state`, `_internal`, etc.), that variant now disappears from `VariantProps` and from `getSchema` results. The component still accepts it directly, but you'll need to rename it if you exposed it as a public prop.

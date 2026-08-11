@@ -140,7 +140,7 @@ An object with:
 - `class` and `className`: the same resolved class string, under both keys
 - `data`: an object mapping `data-*` attribute names to their resolved string values
 
-`data`'s keys are the kebab-cased variant names (`iconPosition` becomes `data-icon-position`), and values are always strings. Each value resolves exactly like class resolution: an explicit prop wins, an omitted prop falls back to `defaultVariants`, and a variant with neither contributes no attribute.
+`data`'s keys are the kebab-cased variant names (`iconPosition` becomes `data-icon-position`), and values are always strings. Each value resolves exactly like class resolution: an explicit prop wins, an omitted prop falls back to `defaultVariants`, and a variant with neither contributes no attribute. [Internal variants](/beta/getting-started/variants#internal-variants) are omitted, matching `getSchema`.
 
 ## `defineConfig`
 

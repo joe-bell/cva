@@ -180,8 +180,33 @@ describe("getSchema", () => {
     // @ts-expect-error — `compose()`'s result has no `.config`, so it can't
     // be introspected by `getSchema`. Use the `composes` property instead.
     getSchema(composed);
-    // @ts-expect-error — not a cva()-created component at all
-    getSchema(plainFunction);
+    // @ts-expect-error — not a cva()-created component at all, which the
+    // runtime tolerates with an empty schema
+    expect(getSchema(plainFunction)).toStrictEqual({});
+  });
+
+  test("should keep a defaulted variant that has no values", () => {
+    const component = cva({
+      variants: { size: {} },
+      // @ts-expect-error: an empty variant has no values to default to
+      defaultVariants: { size: "md" },
+    });
+
+    // @ts-expect-error: rejected at the type level for the same reason,
+    // but the runtime schema still reports the default.
+    expect(getSchema(component)).toStrictEqual({
+      size: { defaultValue: "md" },
+    });
+  });
+
+  test("should drop a variant with neither values nor a default", () => {
+    const component = cva({
+      variants: { size: {}, intent: { primary: "button--primary" } },
+    });
+
+    expect(getSchema(component)).toStrictEqual({
+      intent: { values: ["primary"] },
+    });
   });
 
   test("should normalize numeric variant keys, including negatives", () => {
@@ -504,6 +529,32 @@ describe("pva", () => {
       });
       expect(({} as Record<string, unknown>).polluted).toBeUndefined();
     });
+  });
+
+  test("should omit internal variants from .data while they still resolve classes", () => {
+    const button = cva({
+      base: "button",
+      variants: {
+        _tone: { quiet: "tone-quiet", loud: "tone-loud" },
+        intent: { primary: "intent-primary", secondary: "intent-secondary" },
+      },
+      defaultVariants: { _tone: "quiet", intent: "primary" },
+    });
+
+    // An internal (`_`-prefixed) variant resolves classes normally, from its
+    // default and from an explicit prop, but never emits a data attribute —
+    // mirroring `getSchema`'s omission, at runtime and in the type.
+    const fromDefault = pva(button);
+    expect(fromDefault.class).toBe("button tone-quiet intent-primary");
+    expect(fromDefault.data).toStrictEqual({ "data-intent": "primary" });
+
+    const fromProp = pva(button, { _tone: "loud", intent: "secondary" });
+    expect(fromProp.class).toBe("button tone-loud intent-secondary");
+    expect(fromProp.data).toStrictEqual({ "data-intent": "secondary" });
+
+    expectTypeOf(fromDefault.data).toEqualTypeOf<{
+      "data-intent"?: "primary" | "secondary";
+    }>();
   });
 
   test("should kebab-case a leading uppercase letter into a double dash", () => {

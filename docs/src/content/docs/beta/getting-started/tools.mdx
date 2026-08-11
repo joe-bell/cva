@@ -91,11 +91,12 @@ export const Button = (props: VariantProps<typeof button>) => {
 };
 ```
 
-Three rules govern `.data`:
+Four rules govern `.data`:
 
 - Values resolve exactly like class resolution: an explicit prop wins, an omitted prop falls back to `defaultVariants`, and a variant with neither is left out entirely.
 - Attribute names are kebab-cased (`iconPosition` becomes `data-icon-position`), so they round-trip through the DOM's camelCase `dataset` API.
 - Values are stringified: boolean and numeric variants render as `data-pressed="true"` or `data-offset="0"`.
+- [Internal variants](/beta/getting-started/variants#internal-variants) are omitted, matching `getSchema`; their classes still apply.
 
 ```ts
 const toggle = cva({

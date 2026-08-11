@@ -132,11 +132,14 @@ type CamelToKebab<S extends string> = S extends `${infer First}${infer Rest}`
 
 // Shared between `GetDataAttributes` and `PVA` so the two can't drift.
 type CVADataAttributes<Variants> = {
-  // A variant with no values (e.g. `empty: {}`) can never resolve, so its
-  // attribute is removed — mirroring `GetSchema`'s empty-variant filter.
-  [Variant in keyof Variants as [keyof Variants[Variant]] extends [never]
+  // Internal (`_`-prefixed) variants are hidden from introspection, and a
+  // variant with no values (e.g. `empty: {}`) can never resolve — both are
+  // removed, mirroring `GetSchema`'s filters.
+  [Variant in keyof Variants as Variant extends InternalVariantKey
     ? never
-    : `data-${CamelToKebab<`${Extract<Variant, string | number>}`>}`]?: `${Exclude<
+    : [keyof Variants[Variant]] extends [never]
+      ? never
+      : `data-${CamelToKebab<`${Extract<Variant, string | number>}`>}`]?: `${Exclude<
     StringToBoolean<keyof Variants[Variant]>,
     symbol
   >}`;
@@ -199,6 +202,11 @@ const getDataAttributes: GetDataAttributes = (component, props) => {
     const variants = component.config?.variants;
     if (variants) {
       for (const key of Object.keys(variants)) {
+        // Internal variants are hidden from introspection (mirroring
+        // `getSchema`): no default attribute, and no `byKey` entry means a
+        // prop can't emit one either.
+        if (key.startsWith("_")) continue;
+
         const attribute = `data-${camelToKebab(key)}`;
         byKey[key] = attribute;
         const defaultValue = falsyToString(
