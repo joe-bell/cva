@@ -22,6 +22,7 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
+    "./tools": "./src/tools.ts",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
@@ -69,16 +70,31 @@
         "import": "./dist/index.mjs",
         "require": "./dist/index.cjs"
       },
+      "./tools": {
+        "import": "./dist/tools.mjs",
+        "require": "./dist/tools.cjs"
+      },
       "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",
-    "types": "dist/index.d.cts"
+    "types": "dist/index.d.cts",
+    "typesVersions": {
+      "*": {
+        "tools": [
+          "./dist/tools.d.cts"
+        ]
+      }
+    }
   },
   "size-limit": [
     {
       "path": "dist/index.cjs",
       "limit": "1.6KB"
+    },
+    {
+      "path": "dist/tools.cjs",
+      "limit": "0.7KB"
     }
   ]
 }

@@ -1,0 +1,127 @@
+---
+title: Tools
+description: Introspect a component's variants with getSchema and pva from cva/tools.
+---
+
+The `cva/tools` entry point contains utilities that read a component's variants at runtime. It ships separately from `cva` itself and pulls in no other code, so importing a tool adds nothing to components that don't use it.
+
+## `getSchema`
+
+Re-declaring variants for a Storybook story or prop table creates a second copy to keep in sync by hand. `getSchema` extracts them from the component instead, so your config stays the single source of truth:
+
+```ts
+import { cva } from "cva";
+import { getSchema } from "cva/tools";
+
+const button = cva({
+  base: "button",
+  variants: {
+    intent: {
+      primary: "button--primary",
+      secondary: "button--secondary",
+    },
+    size: {
+      small: "button--small",
+      large: "button--large",
+    },
+  },
+  defaultVariants: {
+    intent: "primary",
+    size: "small",
+  },
+});
+
+getSchema(button);
+// => {
+//   intent: { values: ["primary", "secondary"], defaultValue: "primary" },
+//   size: { values: ["small", "large"], defaultValue: "small" },
+// }
+```
+
+The schema is fully typed: `values` narrows to the variant's literal values, and `defaultValue` only appears when the component declares one. [Internal variants](/beta/getting-started/variants#internal-variants) are omitted.
+
+For the full signature, see the [API reference](/beta/api-reference#getschema).
+
+:::note
+`getSchema` was previously exported from the package root. That import still works, but it's deprecated: import from `cva/tools` instead.
+:::
+
+## `pva`
+
+A class string tells you which styles apply, but not which variants produced them. `pva` (Prop Variant Authority: glue that merges your props) resolves a component's class string and its variant state, as `data-*` attributes, from a single props object:
+
+```ts
+import { cva } from "cva";
+import { pva } from "cva/tools";
+
+const button = cva({
+  base: "button",
+  variants: {
+    intent: {
+      primary: "button--primary",
+      secondary: "button--secondary",
+    },
+    size: {
+      small: "button--small",
+      large: "button--large",
+    },
+  },
+  defaultVariants: {
+    intent: "primary",
+    size: "small",
+  },
+});
+
+pva(button);
+// => {
+//   class: "button button--primary button--small",
+//   className: "button button--primary button--small",
+//   data: { "data-intent": "primary", "data-size": "small" },
+// }
+```
+
+The class string is returned under both `class` and `className`, so destructure whichever your framework expects (`class` for Vue, Svelte, and Astro; `className` for React). Data attributes are nested under `data` rather than spread at the root, so there's no ambiguity about which key holds the class string.
+
+Define components at module scope, not inside a render function: `pva` caches per-component work (like kebab-casing attribute names) keyed by the component's identity, so a fresh `cva()` on every render defeats the cache.
+
+```tsx
+export const Button = (props: VariantProps<typeof button>) => {
+  const { className, data } = pva(button, props);
+  return <button className={className} {...data} />;
+};
+```
+
+Four rules govern `.data`:
+
+- Values resolve exactly like class resolution: an explicit prop wins, an omitted prop falls back to `defaultVariants`, and a variant with neither is left out entirely.
+- Attribute names are kebab-cased (`iconPosition` becomes `data-icon-position`), so they round-trip through the DOM's camelCase `dataset` API.
+- Values are stringified: boolean and numeric variants render as `data-pressed="true"` or `data-offset="0"`.
+- [Internal variants](/beta/getting-started/variants#internal-variants) are omitted, matching `getSchema`; their classes still apply.
+
+```ts
+const toggle = cva({
+  base: "toggle",
+  variants: {
+    iconPosition: {
+      left: "toggle--icon-left",
+      right: "toggle--icon-right",
+    },
+    pressed: {
+      true: "toggle--pressed",
+      false: "toggle--idle",
+    },
+  },
+  defaultVariants: { pressed: false },
+});
+
+pva(toggle, { iconPosition: "left", pressed: true }).data;
+// => { "data-icon-position": "left", "data-pressed": "true" }
+```
+
+With the attributes in place, styles can target variant state directly. In Tailwind CSS, use the [`data-*` variant](https://tailwindcss.com/docs/hover-focus-and-other-states#data-attributes):
+
+```html
+<span class="hidden data-[pressed=true]:inline">Pressed</span>
+```
+
+For the full signature, see the [API reference](/beta/api-reference#pva).

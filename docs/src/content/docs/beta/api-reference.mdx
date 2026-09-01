@@ -1,6 +1,6 @@
 ---
 title: API Reference
-description: Reference for the cva, cx, getSchema, and defineConfig functions.
+description: Reference for the cva, cx, getSchema, pva, and defineConfig functions.
 ---
 
 ## `cva`
@@ -46,10 +46,11 @@ const className = cx(classes);
 
 ## `getSchema`
 
-Extracts a plain-object schema (variant names, possible values, and default values) from a `cva` component. Use it to generate Storybook controls, documentation, or any other UI that reads a component's variants without re-declaring them. See [Utilities](/beta/getting-started/utilities) for use cases.
+Extracts a plain-object schema (variant names, possible values, and default values) from a `cva` component. Use it to generate Storybook controls, documentation, or any other UI that reads a component's variants without re-declaring them. See [Tools](/beta/getting-started/tools) for use cases.
 
 ```ts
-import { cva, getSchema } from "cva";
+import { cva } from "cva";
+import { getSchema } from "cva/tools";
 
 const button = cva({
   base: "button",
@@ -88,6 +89,58 @@ An object keyed by variant name. Each entry has:
 
 - `values`: a readonly array of the variant's possible values
 - `defaultValue`: present only if the variant has a `defaultVariants` entry
+
+:::note
+`getSchema` is also re-exported from the package root for backwards compatibility, but that import is deprecated: import from `cva/tools` instead.
+:::
+
+## `pva`
+
+Resolves a component's class string and its variant state, as `data-*` attributes, from a single props object (avoids passing `props` to two separate calls). Short for Prop Variant Authority. See [Tools](/beta/getting-started/tools) for use cases.
+
+```ts
+import { cva } from "cva";
+import { pva } from "cva/tools";
+
+const button = cva({
+  base: "button",
+  variants: {
+    intent: {
+      primary: "button--primary",
+      secondary: "button--secondary",
+    },
+    disabled: {
+      true: "button--disabled",
+      false: "button--enabled",
+    },
+  },
+  defaultVariants: {
+    intent: "primary",
+    disabled: false,
+  },
+});
+
+pva(button, { disabled: true });
+// => {
+//   class: "button button--primary button--disabled",
+//   className: "button button--primary button--disabled",
+//   data: { "data-intent": "primary", "data-disabled": "true" },
+// }
+```
+
+### Parameters
+
+1. `component`: a component created by `cva` (including components composed via [`composes`](#cva))
+2. `props` (optional): the same props you pass to the component call
+
+### Returns
+
+An object with:
+
+- `class` and `className`: the same resolved class string, under both keys
+- `data`: an object mapping `data-*` attribute names to their resolved string values
+
+`data`'s keys are the kebab-cased variant names (`iconPosition` becomes `data-icon-position`), and values are always strings. Each value resolves exactly like class resolution: an explicit prop wins, an omitted prop falls back to `defaultVariants`, and a variant with neither contributes no attribute. [Internal variants](/beta/getting-started/variants#internal-variants) are omitted, matching `getSchema`.
 
 ## `defineConfig`
 
