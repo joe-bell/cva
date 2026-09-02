@@ -125,7 +125,7 @@ You can enable autocompletion inside `cva` using the steps below:
 
 ### Handling style conflicts
 
-If you want to merge Tailwind CSS classes without conflicts, swap `cva`'s concatenator via [`defineConfig` from `cva/core`](../api-reference#cvacore): pass [`tailwind-merge`](https://github.com/dcastil/tailwind-merge), a drop-in like [`cnfast`](https://github.com/aidenybai/cnfast), or your own function as the `cx` option.
+If you want to merge Tailwind CSS classes without conflicts, swap `cva`'s concatenator via [`defineConfig` from `cva/core`](../api-reference#cvacore): pass [`tailwind-merge`](https://github.com/dcastil/tailwind-merge), a drop-in like [`cn`](https://github.com/shadcn-ui/cn), or your own function as the `cx` option.
 
 Your concatenator owns the class name grammar entirely: `cva` assembles the authored values (base, matched variants, `class`/`className`) and passes them through verbatim, one argument each. The authoring surface adopts your concatenator's input type automatically, so your variants are checked against exactly what it supports.
 
@@ -175,14 +175,14 @@ cx("bg-gray-200", "bg-blue-500");
 
 <details>
 
-<summary>Example with cnfast</summary>
+<summary>Example with cn</summary>
 
-`cnfast`'s `cn` combines clsx and tailwind-merge behavior in one function, and its input type matches `cva`'s default contract, so it drops straight in with objects and arrays intact.
+[`cn`](https://github.com/shadcn-ui/cn) combines clsx and tailwind-merge behavior in one function, and its input type matches `cva`'s default contract, so it drops straight in with objects and arrays intact.
 
 ```ts
 // cva.config.ts
 import { defineConfig } from "cva/core";
-import { cn } from "cnfast";
+import { cn } from "cn";
 
 export const { cva, cx } = defineConfig({
   cx: cn,

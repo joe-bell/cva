@@ -48,7 +48,7 @@
     "@types/node": "24.13.2",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
-    "cnfast": "0.0.8",
+    "cn": "0.2.2",
     "publint": "0.3.21",
     "react": "19.2.6",
     "react-dom": "19.2.6",

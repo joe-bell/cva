@@ -13,7 +13,7 @@ What's changed since `class-variance-authority@0.*`?
 
 Roll your own `cva` via the new [`defineConfig` API in `cva/core`](/beta/api-reference#cvacore).
 
-Use `cva`/`cx` with `tailwind-merge` or a drop-in like `cnfast` via the [`cx` option](/beta/getting-started/installation#handling-style-conflicts).
+Use `cva`/`cx` with `tailwind-merge` or a drop-in like `cn` via the [`cx` option](/beta/getting-started/installation#handling-style-conflicts).
 
 ### 2. `composes`
 
@@ -27,7 +27,7 @@ Extract a plain-object schema (variant names, values and defaults) from a `cva` 
 
 ### 4. Bring your own concatenator with `cva/core`
 
-The `cva` package is now a preset over a lean core: importing from `cva` gives you `cva`/`cx` wired up with `clsx`, exactly like `class-variance-authority`. The new [`cva/core` entry point](/beta/api-reference#cvacore) exposes the same engine with no concatenator wired up, so you can swap in `tailwind-merge`, `cnfast`, `clsx/lite`, or your own function via the required `cx` option. The authoring surface adopts your concatenator's input type automatically, so your variants are typechecked against exactly what it supports.
+The `cva` package is now a preset over a lean core: importing from `cva` gives you `cva`/`cx` wired up with `clsx`, exactly like `class-variance-authority`. The new [`cva/core` entry point](/beta/api-reference#cvacore) exposes the same engine with no concatenator wired up, so you can swap in `tailwind-merge`, `cn`, `clsx/lite`, or your own function via the required `cx` option. The authoring surface adopts your concatenator's input type automatically, so your variants are typechecked against exactly what it supports.
 
 ## Deprecations
 

@@ -6,7 +6,7 @@
  */
 import { clsx } from "clsx";
 import { clsx as clsxLite } from "clsx/lite";
-import { cn } from "cnfast";
+import { cn } from "cn";
 import { twMerge } from "tailwind-merge";
 import type * as CVA from "./";
 import { cva, cx } from "./";
@@ -151,13 +151,12 @@ describe("tailwind-merge", () => {
   });
 });
 
-describe("cnfast", () => {
+describe("cn", () => {
   const { cva: cnCva, cx: cnCx } = defineConfig({ cx: cn });
 
   test("infers the full ClassValue authoring surface", () => {
-    // `cn` is overloaded (tagged-template form first, variadic last) —
-    // `Parameters` picks the last overload, cnfast's own `ClassValue[]`,
-    // which is structurally identical to cva's.
+    // `cn`'s own `ClassValue` is structurally identical to cva's, so the
+    // authoring surface is unchanged from the clsx default.
     expectTypeOf(cn).toMatchTypeOf<CVA.CX>();
     expectTypeOf<CVA.CXInput<typeof cn>>().toEqualTypeOf<CVA.ClassValue>();
   });

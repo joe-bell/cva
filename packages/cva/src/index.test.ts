@@ -2486,7 +2486,7 @@ describe("defineConfig", () => {
     test("supports a conflict-resolving concatenator end-to-end", () => {
       // A minimal last-wins conflict resolver — keeps only the last class
       // within a given utility group (its first `-`-delimited segment, e.g.
-      // `bg`), standing in for cnfast/tailwind-merge's conflict resolution.
+      // `bg`), standing in for cn/tailwind-merge's conflict resolution.
       // Real-package coverage lives in `concatenators.test.ts`.
       const lastWins: CVA.CX = (...inputs) => {
         const byGroup = new Map<string, string>();
@@ -2566,6 +2566,18 @@ describe("defineConfig", () => {
       expectTypeOf<
         CVA.CXInput<(...inputs: string[]) => string>
       >().toEqualTypeOf<string>();
+    });
+
+    test("infers from the last signature of an overloaded concatenator", () => {
+      // `Parameters` resolves to an overloaded function's *last* signature,
+      // so a concatenator publishing a narrow form ahead of its variadic
+      // one still infers from the variadic one.
+      interface OverloadedCX {
+        (strings: TemplateStringsArray, ...values: string[]): string;
+        (...inputs: CVA.ClassValue[]): string;
+      }
+
+      expectTypeOf<CVA.CXInput<OverloadedCX>>().toEqualTypeOf<CVA.ClassValue>();
     });
   });
 });
