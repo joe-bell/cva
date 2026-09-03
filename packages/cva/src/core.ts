@@ -153,7 +153,7 @@ export type VariantProps<Component extends (...args: any) => any> = Omit<
  * const card = cva({ composes: [box, stack] })
  */
 export interface Compose<T extends ClassValue = ClassValue> {
-  <Components extends ReturnType<CVA>[]>(
+  <Components extends ReturnType<CVA<T>>[]>(
     ...components: [...Components]
   ): (
     props?: (
@@ -274,11 +274,17 @@ export interface CVAComponent<
 // `ReturnType<CVA>` instantiates this constraint inside the
 // `Compose`/`GetSchema` guards, where the shaped form rejects every real
 // component via props contravariance.
+//
+// The class value parameter must be `any` too: a component authored under a
+// narrowing concatenator (e.g. `twMerge`, whose `ClassNameValue` excludes
+// objects) has a narrower `class`/`className` prop than the `ClassValue`
+// default, and props contravariance would reject it from `composes` and
+// `getSchema` otherwise.
 /**
  * Exported so TypeScript can name this type in your generated declarations
  * (`declaration: true`) — you shouldn't really use it directly.
  */
-export type CVAComponentShape = CVAComponent<any, any>;
+export type CVAComponentShape = CVAComponent<any, any, any>;
 
 type CVADefaultVariants<Config> = Config extends { defaultVariants?: infer D }
   ? D
@@ -603,7 +609,7 @@ export const defineConfig = ((options: DefineConfigOptions) => {
 export interface GetSchema {
   <_ extends InternalOnlyWarning, Component, Config, Variants>(
     component: Component &
-      (Component extends ReturnType<CVA>
+      (Component extends ReturnType<CVA<any>>
         ? { config: CVAComponentConfig<Config, Variants> }
         : never),
   ): {

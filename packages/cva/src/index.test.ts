@@ -2338,7 +2338,7 @@ describe("exported types", () => {
     // Each name below must be reachable through the `CVA.` namespace
     // import, or this fails to compile. See AGENTS.md Learnings.
     expectTypeOf<CVA.CVAComponentShape>().toEqualTypeOf<
-      CVA.CVAComponent<any, any>
+      CVA.CVAComponent<any, any, any>
     >();
     expectTypeOf<CVA.CVAVariantShape>().toEqualTypeOf<
       Record<string, Record<string, CVA.ClassValue>>

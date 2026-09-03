@@ -10,7 +10,7 @@ import { cn } from "cn";
 import { twMerge } from "tailwind-merge";
 import type * as CVA from "./";
 import { cva, cx } from "./";
-import { defineConfig } from "./core";
+import { defineConfig, getSchema } from "./core";
 
 describe("clsx (the `cva` preset default)", () => {
   test("infers the full ClassValue authoring surface", () => {
@@ -101,7 +101,13 @@ describe("tailwind-merge", () => {
   // Bare `twMerge` works out of the box: the authoring surface is inferred
   // from its parameters (`ClassNameValue` — strings and arrays, no objects
   // or numbers) and enforced at compile time; see the inference test below.
-  const { cva: twCva, cx: twCx } = defineConfig({ cx: twMerge });
+  const {
+    cva: twCva,
+    cx: twCx,
+    compose: twCompose,
+  } = defineConfig({
+    cx: twMerge,
+  });
 
   test("narrows the authoring surface to twMerge's own ClassNameValue", () => {
     expectTypeOf<CVA.CXInput<typeof twMerge>>().toEqualTypeOf<
@@ -148,6 +154,51 @@ describe("tailwind-merge", () => {
 
     expect(badge({ tone: "info" })).toBe("px-2 py-1 bg-blue-500");
     expect(twCx("bg-gray-200", ["bg-blue-500"])).toBe("bg-blue-500");
+  });
+
+  test("narrowed components still compose and introspect", () => {
+    // The narrowed `class`/`className` prop must not reject a component
+    // from `composes`, `compose`, or `getSchema` via props contravariance.
+    const box = twCva({
+      base: "p-4 bg-gray-100",
+      variants: { pad: { none: "p-0" } },
+    });
+    const button = twCva({
+      composes: [box],
+      base: "font-semibold",
+      variants: { intent: { primary: "bg-blue-500", secondary: "bg-white" } },
+      defaultVariants: { intent: "primary" },
+    });
+    const card = twCompose(box, button);
+
+    // Conflict resolution still runs across the composed output: the
+    // variant `bg-*` strips the composed `bg-gray-100`.
+    expect(button({ pad: "none", class: "text-white" })).toBe(
+      "p-0 font-semibold bg-blue-500 text-white",
+    );
+    expect(card({ pad: "none", intent: "secondary" })).toBe(
+      "p-0 font-semibold bg-white",
+    );
+    expectTypeOf<CVA.VariantProps<typeof button>>().toEqualTypeOf<{
+      pad?: "none" | undefined;
+      intent?: "primary" | "secondary" | undefined;
+    }>();
+    // @ts-expect-error — the narrowed class prop survives composition
+    button({ class: { "text-white": true } });
+    // @ts-expect-error — and the deprecated `compose` too
+    card({ class: { "text-white": true } });
+
+    expect(getSchema(button)).toEqual({
+      pad: { values: ["none"] },
+      intent: { values: ["primary", "secondary"], defaultValue: "primary" },
+    });
+    expectTypeOf(getSchema(button)).toEqualTypeOf<{
+      pad: { values: readonly "none"[] };
+      intent: {
+        values: readonly ("primary" | "secondary")[];
+        defaultValue: "primary";
+      };
+    }>();
   });
 });
 
