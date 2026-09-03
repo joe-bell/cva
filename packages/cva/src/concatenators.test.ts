@@ -9,7 +9,7 @@ import { clsx as clsxLite } from "clsx/lite";
 import { cn } from "cn";
 import { twMerge } from "tailwind-merge";
 import type * as CVA from "./";
-import { compose, cva, cx } from "./";
+import { cva, cx } from "./";
 import { defineConfig, getSchema } from "./core";
 
 describe("clsx (the `cva` preset default)", () => {
@@ -101,13 +101,7 @@ describe("tailwind-merge", () => {
   // Bare `twMerge` works out of the box: the authoring surface is inferred
   // from its parameters (`ClassNameValue` — strings and arrays, no objects
   // or numbers) and enforced at compile time; see the inference test below.
-  const {
-    cva: twCva,
-    cx: twCx,
-    compose: twCompose,
-  } = defineConfig({
-    cx: twMerge,
-  });
+  const { cva: twCva, cx: twCx } = defineConfig({ cx: twMerge });
 
   test("narrows the authoring surface to twMerge's own ClassNameValue", () => {
     expectTypeOf<CVA.CXInput<typeof twMerge>>().toEqualTypeOf<
@@ -158,7 +152,7 @@ describe("tailwind-merge", () => {
 
   test("narrowed components still compose and introspect", () => {
     // The narrowed `class`/`className` prop must not reject a component
-    // from `composes`, `compose`, or `getSchema` via props contravariance.
+    // from `composes` or `getSchema` via props contravariance.
     const box = twCva({
       base: "p-4 bg-gray-100",
       variants: { pad: { none: "p-0" } },
@@ -169,15 +163,10 @@ describe("tailwind-merge", () => {
       variants: { intent: { primary: "bg-blue-500", secondary: "bg-white" } },
       defaultVariants: { intent: "primary" },
     });
-    const card = twCompose(box, button);
-
     // Conflict resolution still runs across the composed output: the
     // variant `bg-*` strips the composed `bg-gray-100`.
     expect(button({ pad: "none", class: "text-white" })).toBe(
       "p-0 font-semibold bg-blue-500 text-white",
-    );
-    expect(card({ pad: "none", intent: "secondary" })).toBe(
-      "p-0 font-semibold bg-white",
     );
     expectTypeOf<CVA.VariantProps<typeof button>>().toEqualTypeOf<{
       pad?: "none" | undefined;
@@ -185,8 +174,6 @@ describe("tailwind-merge", () => {
     }>();
     // @ts-expect-error — the narrowed class prop survives composition
     button({ class: { "text-white": true } });
-    // @ts-expect-error — and the deprecated `compose` too
-    card({ class: { "text-white": true } });
 
     expect(getSchema(button)).toEqual({
       pad: { values: ["none"] },
@@ -250,14 +237,14 @@ describe("cn", () => {
 // reads as one API rather than a union of differently-narrowed configs.
 type Row = {
   name: string;
-  api: { cva: CVA.CVA<string>; compose: CVA.Compose<string> };
+  api: { cva: CVA.CVA<string> };
   resolves: boolean;
 };
 
 const rows: Row[] = [
   {
     name: "clsx (the `cva` preset default)",
-    api: { cva, compose },
+    api: { cva },
     resolves: false,
   },
   {
@@ -303,20 +290,17 @@ describe.each(rows)(
       },
       defaultVariants: { direction: "column", pad: "none" },
     });
-    // No overlap with `box`, for the deprecated `compose` (which intersects
-    // props, so overlapping keys with different values would collapse to
-    // `never` by that API's own contract).
-    const flex = api.cva({
-      base: "flex",
-      variants: { direction: { row: "flex-row", column: "flex-col" } },
-      defaultVariants: { direction: "column" },
-    });
 
     test("composes merges variants and defaults, local declarations winning", () => {
       const card = api.cva({
         composes: [box, stack],
         base: "card",
         variants: { tone: { loud: "text-black bg-blue-500" } },
+        // Compound variants may target keys that only composed components
+        // declare, matched against the merged defaults and props.
+        compoundVariants: [
+          { pad: "none", direction: "row", class: "compound" },
+        ],
         defaultVariants: { tone: "loud" },
       });
 
@@ -333,7 +317,9 @@ describe.each(rows)(
       // `tone: "muted"` is only declared by `box`, so it renders there; the
       // local `tone` variant contributes nothing for that value.
       expect(card({ pad: "none", direction: "row", tone: "muted" })).toBe(
-        output("box bg-gray-100 text-gray-500 stack flex-row p-0 card"),
+        output(
+          "box bg-gray-100 text-gray-500 stack flex-row p-0 card compound",
+        ),
       );
       expect(card({ pad: "lg", class: "extra" })).toBe(
         output(
@@ -385,27 +371,18 @@ describe.each(rows)(
         };
       }>();
 
-      // Non-composed components introspect too.
+      // Non-composed and variant-less components introspect too.
       expect(getSchema(box)).toStrictEqual({
         pad: { values: ["sm", "lg"], defaultValue: "sm" },
         tone: { values: ["muted"] },
       });
-    });
-
-    test("the deprecated compose still joins components", () => {
-      const card = api.compose(box, flex);
-
-      expect(card({ pad: "lg", direction: "row" })).toBe(
-        output("box bg-gray-100 p-4 flex flex-row"),
-      );
-      expect(card({ class: "extra" })).toBe(
-        output("box bg-gray-100 p-1 flex flex-col extra"),
-      );
-      expectTypeOf<CVA.VariantProps<typeof card>>().toEqualTypeOf<{
-        pad?: "sm" | "lg" | undefined;
-        tone?: "muted" | undefined;
-        direction?: "row" | "column" | undefined;
-      }>();
+      const plain = getSchema(api.cva({ base: "plain" }));
+      expect(plain).toStrictEqual({});
+      expectTypeOf(plain).toEqualTypeOf<{}>();
+      // Composing into a variant-less component still surfaces the merge.
+      expect(
+        getSchema(api.cva({ composes: box, base: "panel" })),
+      ).toStrictEqual(getSchema(box));
     });
   },
 );

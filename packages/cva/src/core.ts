@@ -609,8 +609,16 @@ export const defineConfig = ((options: DefineConfigOptions) => {
 export interface GetSchema {
   <_ extends InternalOnlyWarning, Component, Config, Variants>(
     component: Component &
-      (Component extends ReturnType<CVA<any>>
-        ? { config: CVAComponentConfig<Config, Variants> }
+      (Component extends CVAComponentShape
+        ? Component extends { config: { variants: infer V } }
+          ? // A variant-less component carries `variants: unknown` and a
+            // `defaultVariants: {}` that no `CVAComponentConfig` branch
+            // accepts; leave `Variants` uninferred so the schema maps over
+            // `keyof unknown` (`never`) to `{}`.
+            unknown extends V
+            ? unknown
+            : { config: CVAComponentConfig<Config, Variants> }
+          : { config: CVAComponentConfig<Config, Variants> }
         : never),
   ): {
     [Variant in keyof Variants]: Config extends CVAComponentConfig<
@@ -642,36 +650,37 @@ export interface GetSchema {
     : never;
 }
 
-export const getSchema: GetSchema = (component) => {
-  if (!component.config?.variants) return {} as any;
+// Typed against the loose component shape and cast to `GetSchema`: the
+// public signature's conditional parameter type doesn't narrow inside the
+// implementation, and the runtime is the same for every component.
+export const getSchema = ((component: CVAComponentShape) => {
+  const variants: CVAVariantShape | undefined = component.config?.variants;
+  if (!variants) return {};
 
-  return Object.entries(component.config.variants).reduce(
-    (acc, [key, value]) => {
-      const defaultValue = component.config.defaultVariants?.[key];
-      const hasDefaultValue = defaultValue !== undefined;
-      const values = Object.keys(value).map((v) => {
-        if (v === "true") return true;
-        if (v === "false") return false;
-        // Normalize numeric-literal keys back to numbers, since that's how
-        // they appear in variant prop types (`keyof { 1: ... }` is `1`, not
-        // `"1"`) — object keys are always strings/symbols at runtime. The
-        // `String(n) === v` round-trip only accepts canonical numeric forms
-        // (so `"01"`, `""`, `" 1"` stay strings), covering negatives too.
-        const n = Number(v);
-        return Number.isFinite(n) && String(n) === v ? n : v;
-      }) as StringToBoolean<keyof typeof value>[];
-      const hasValues = values.length > 0;
+  return Object.entries(variants).reduce((acc, [key, value]) => {
+    const defaultValue = component.config.defaultVariants?.[key];
+    const hasDefaultValue = defaultValue !== undefined;
+    const values = Object.keys(value).map((v) => {
+      if (v === "true") return true;
+      if (v === "false") return false;
+      // Normalize numeric-literal keys back to numbers, since that's how
+      // they appear in variant prop types (`keyof { 1: ... }` is `1`, not
+      // `"1"`) — object keys are always strings/symbols at runtime. The
+      // `String(n) === v` round-trip only accepts canonical numeric forms
+      // (so `"01"`, `""`, `" 1"` stay strings), covering negatives too.
+      const n = Number(v);
+      return Number.isFinite(n) && String(n) === v ? n : v;
+    }) as StringToBoolean<keyof typeof value>[];
+    const hasValues = values.length > 0;
 
-      return hasValues || hasDefaultValue
-        ? {
-            ...acc,
-            [key]: {
-              ...(hasValues ? { values } : {}),
-              ...(hasDefaultValue ? { defaultValue } : {}),
-            },
-          }
-        : acc;
-    },
-    {} as ReturnType<GetSchema>,
-  );
-};
+    return hasValues || hasDefaultValue
+      ? {
+          ...acc,
+          [key]: {
+            ...(hasValues ? { values } : {}),
+            ...(hasDefaultValue ? { defaultValue } : {}),
+          },
+        }
+      : acc;
+  }, {} as ReturnType<GetSchema>);
+}) as GetSchema;
