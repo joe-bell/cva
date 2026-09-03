@@ -35,7 +35,7 @@ If a component already declared a variant with a leading underscore (`_state`, `
 
 ### 5. Bring your own concatenator with `cva/core`
 
-The `cva` package is now a preset over a lean core: importing from `cva` gives you `cva`/`cx` wired up with `clsx`, exactly like `class-variance-authority`. The new [`cva/core` entry point](/beta/api-reference#cvacore) exposes the same engine with no concatenator wired up, so you can swap in `tailwind-merge`, `cn`, `clsx/lite`, or your own function via the required `cx` option. The authoring surface adopts your concatenator's input type automatically, so your variants are typechecked against exactly what it supports.
+The `cva` package is a preset over a lean core: it wires `cva` and `cx` to `clsx`, like `class-variance-authority`. Use `cva/core` with a required `cx` option to configure `tailwind-merge`, `cn`, `clsx/lite`, or your own concatenator.
 
 ## Deprecations
 

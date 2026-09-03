@@ -72,9 +72,9 @@ const b = cva({
   defaultVariants: { style: "secondary" },
 });
 
-const combined = cva({ composes: [a, b] });
+const combinedWithDefaults = cva({ composes: [a, b] });
 
-combined();
+combinedWithDefaults();
 // => "a b b-secondary"
 ```
 

@@ -3,10 +3,7 @@ import type { VariantProps } from "cva";
 import { cva } from "../../cva.config";
 
 const button = cva({
-  // `bg-gray-200` and `text-gray-800` here are safe defaults: whenever an
-  // `intent` sets a conflicting `bg-*`/`text-*`, `tailwind-merge` (see
-  // `cva.config.ts`) drops the base value so the variant wins. A consumer's
-  // `className` wins over both for the same reason.
+  // Variant and `className` conflicts override base values via `tailwind-merge`.
   base: "font-semibold border rounded bg-gray-200 text-gray-800",
   variants: {
     intent: {

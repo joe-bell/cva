@@ -38,7 +38,7 @@ function App() {
               )}
               <th scope="row">{size || "default"}</th>
               {intents.map((intent) => (
-                <td key={intent || "default"} scope="col">
+                <td key={intent || "default"}>
                   <Button
                     {...(intent && { intent })}
                     {...(size && { size })}
