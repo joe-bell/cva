@@ -125,7 +125,7 @@ You can enable autocompletion inside `cva` using the steps below:
 
 ### Handling style conflicts
 
-Configure [`defineConfig` from `cva/core`](../api-reference#cvacore) with [`tailwind-merge`](https://github.com/dcastil/tailwind-merge), a drop-in like [`cn`](https://github.com/shadcn-ui/cn), or your own function to resolve Tailwind CSS class conflicts.
+Configure [`defineConfig` from `cva/core`](../api-reference#cvacore) with a concatenator that resolves Tailwind CSS class conflicts: [`tailwind-merge`](https://github.com/dcastil/tailwind-merge), [`cn`](https://github.com/shadcn-ui/cn), or your own function.
 
 Your [concatenator defines cva's class name grammar and authoring input type](../api-reference#cvacore).
 
@@ -144,6 +144,19 @@ export const { cva, cx } = defineConfig({
 ```
 
 `twMerge` accepts strings and arrays but not objects, so this `cva`'s variants are typechecked against tailwind-merge's own input type: object syntax becomes a compile error instead of a silently dropped class.
+
+To keep object syntax available, compose `tailwind-merge` with [`clsx`](https://github.com/lukeed/clsx). An unannotated inline function keeps `cva`'s full `ClassValue` grammar, since nothing narrower can be inferred from it:
+
+```ts
+// cva.config.ts
+import { defineConfig } from "cva/core";
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export const { cva, cx } = defineConfig({
+  cx: (...inputs) => twMerge(clsx(inputs)),
+});
+```
 
 ```ts
 // components/button.ts
@@ -177,7 +190,7 @@ cx("bg-gray-200", "bg-blue-500");
 
 <summary>Example with cn</summary>
 
-[`cn`](https://github.com/shadcn-ui/cn) combines clsx and tailwind-merge behavior in one function, and its input type matches `cva`'s default contract, so it drops straight in with objects and arrays intact.
+[`cn`](https://github.com/shadcn-ui/cn) is a single function for conditional class joining and Tailwind CSS conflict resolution, an alternative to composing `clsx` with `tailwind-merge`. Its input type matches `cva`'s default contract, so objects and arrays stay available.
 
 ```ts
 // cva.config.ts
@@ -191,21 +204,6 @@ export const { cva, cx } = defineConfig({
 cx("bg-gray-200", { "bg-blue-500": true });
 // => "bg-blue-500"
 ```
-
-You can write the same `clsx` + `tailwind-merge` helper yourself:
-
-```ts
-// cva.config.ts
-import { defineConfig } from "cva/core";
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export const { cva, cx } = defineConfig({
-  cx: (...inputs) => twMerge(clsx(inputs)),
-});
-```
-
-An unannotated inline function like this keeps `cva`'s full `ClassValue` grammar, since nothing narrower can be inferred from it.
 
 </details>
 
