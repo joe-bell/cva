@@ -9,7 +9,7 @@ import { clsx as clsxLite } from "clsx/lite";
 import { cn } from "cn";
 import { twMerge } from "tailwind-merge";
 import type * as CVA from "./";
-import { cva, cx } from "./";
+import { compose, cva, cx } from "./";
 import { defineConfig, getSchema } from "./core";
 
 describe("clsx (the `cva` preset default)", () => {
@@ -234,5 +234,211 @@ describe("cn", () => {
     );
 
     expect(cnCx("bg-gray-200", { "bg-blue-500": true })).toBe("bg-blue-500");
+  });
+});
+
+/* Composition and introspection across the matrix
+  ============================================ */
+
+// `composes` and `getSchema` are first-class, so every concatenator runs the
+// same composition suite: string-only authoring is the common denominator
+// (clsx/lite and twMerge accept nothing richer), and each row's `output`
+// normalizes the concatenator's own class conflict resolution — the
+// assertions pin cva's assembly order, and the resolver is the row's own
+// contract. Concatenator-specific grammar coverage lives in the suites above.
+// Rows are typed against the string-only authoring surface so the matrix
+// reads as one API rather than a union of differently-narrowed configs.
+type Row = {
+  name: string;
+  api: { cva: CVA.CVA<string>; compose: CVA.Compose<string> };
+  resolves: boolean;
+};
+
+const rows: Row[] = [
+  {
+    name: "clsx (the `cva` preset default)",
+    api: { cva, compose },
+    resolves: false,
+  },
+  {
+    name: "clsx/lite",
+    api: defineConfig({ cx: clsxLite }),
+    resolves: false,
+  },
+  {
+    name: "tailwind-merge",
+    api: defineConfig({ cx: twMerge }),
+    resolves: true,
+  },
+  { name: "cn", api: defineConfig({ cx: cn }), resolves: true },
+  {
+    name: "an unannotated inline concatenator",
+    api: defineConfig({ cx: (...inputs) => twMerge(clsx(inputs)) }),
+    resolves: true,
+  },
+];
+
+describe.each(rows)(
+  "$name: composition and introspection",
+  ({ api, resolves }) => {
+    // Runs `twMerge` over the expected assembly for the resolving rows, so the
+    // same literal documents both the raw order and the resolved output.
+    const output = (assembled: string) =>
+      resolves ? twMerge(assembled) : assembled;
+
+    const box = api.cva({
+      base: "box bg-gray-100",
+      variants: {
+        pad: { sm: "p-1", lg: "p-4" },
+        tone: { muted: "text-gray-500" },
+      },
+      defaultVariants: { pad: "sm" },
+    });
+    const stack = api.cva({
+      base: "stack",
+      variants: {
+        direction: { row: "flex-row", column: "flex-col" },
+        // Overlaps `box`'s `pad`, contributing an extra value to the merge.
+        pad: { none: "p-0" },
+      },
+      defaultVariants: { direction: "column", pad: "none" },
+    });
+    // No overlap with `box`, for the deprecated `compose` (which intersects
+    // props, so overlapping keys with different values would collapse to
+    // `never` by that API's own contract).
+    const flex = api.cva({
+      base: "flex",
+      variants: { direction: { row: "flex-row", column: "flex-col" } },
+      defaultVariants: { direction: "column" },
+    });
+
+    test("composes merges variants and defaults, local declarations winning", () => {
+      const card = api.cva({
+        composes: [box, stack],
+        base: "card",
+        variants: { tone: { loud: "text-black bg-blue-500" } },
+        defaultVariants: { tone: "loud" },
+      });
+
+      // `stack`'s `pad: "none"` overrides `box`'s `pad: "sm"` (last composed
+      // wins) and renders through `stack`; the local `tone` default applies
+      // to the merged `tone` variant.
+      expect(card()).toBe(
+        output(
+          "box bg-gray-100 stack flex-col p-0 card text-black bg-blue-500",
+        ),
+      );
+      // Props flow through to every composed component that declares them,
+      // including a value only one of them knows about.
+      // `tone: "muted"` is only declared by `box`, so it renders there; the
+      // local `tone` variant contributes nothing for that value.
+      expect(card({ pad: "none", direction: "row", tone: "muted" })).toBe(
+        output("box bg-gray-100 text-gray-500 stack flex-row p-0 card"),
+      );
+      expect(card({ pad: "lg", class: "extra" })).toBe(
+        output(
+          "box bg-gray-100 p-4 stack flex-col card text-black bg-blue-500 extra",
+        ),
+      );
+
+      expectTypeOf<CVA.VariantProps<typeof card>>().toEqualTypeOf<{
+        pad?: "sm" | "lg" | "none" | undefined;
+        tone?: "muted" | "loud" | undefined;
+        direction?: "row" | "column" | undefined;
+      }>();
+      // @ts-expect-error — values are checked against the merged variants
+      card({ pad: "xl" });
+    });
+
+    test("composes accepts a single component", () => {
+      const panel = api.cva({ composes: box, base: "panel" });
+
+      expect(panel({ pad: "lg" })).toBe(output("box bg-gray-100 p-4 panel"));
+      expectTypeOf<CVA.VariantProps<typeof panel>>().toEqualTypeOf<{
+        pad?: "sm" | "lg" | undefined;
+        tone?: "muted" | undefined;
+      }>();
+    });
+
+    test("getSchema reflects the merged variants and defaults", () => {
+      const card = api.cva({
+        composes: [box, stack],
+        variants: { tone: { loud: "text-black" } },
+        defaultVariants: { tone: "loud" },
+      });
+      const schema = getSchema(card);
+
+      expect(schema).toStrictEqual({
+        pad: { values: ["sm", "lg", "none"], defaultValue: "none" },
+        tone: { values: ["muted", "loud"], defaultValue: "loud" },
+        direction: { values: ["row", "column"], defaultValue: "column" },
+      });
+      expectTypeOf(schema).toEqualTypeOf<{
+        pad: {
+          values: readonly ("sm" | "lg" | "none")[];
+          defaultValue: "none";
+        };
+        tone: { values: readonly ("muted" | "loud")[]; defaultValue: "loud" };
+        direction: {
+          values: readonly ("row" | "column")[];
+          defaultValue: "column";
+        };
+      }>();
+
+      // Non-composed components introspect too.
+      expect(getSchema(box)).toStrictEqual({
+        pad: { values: ["sm", "lg"], defaultValue: "sm" },
+        tone: { values: ["muted"] },
+      });
+    });
+
+    test("the deprecated compose still joins components", () => {
+      const card = api.compose(box, flex);
+
+      expect(card({ pad: "lg", direction: "row" })).toBe(
+        output("box bg-gray-100 p-4 flex flex-row"),
+      );
+      expect(card({ class: "extra" })).toBe(
+        output("box bg-gray-100 p-1 flex flex-col extra"),
+      );
+      expectTypeOf<CVA.VariantProps<typeof card>>().toEqualTypeOf<{
+        pad?: "sm" | "lg" | undefined;
+        tone?: "muted" | undefined;
+        direction?: "row" | "column" | undefined;
+      }>();
+    });
+  },
+);
+
+describe("composition across configs", () => {
+  const { cva: twCva } = defineConfig({ cx: twMerge });
+
+  test("a preset component composes into a narrowed cva, and vice versa", () => {
+    // Shared component libraries author against the `cva` preset; a
+    // consumer wiring `twMerge` must still be able to compose them (the
+    // composed output is a string, which every concatenator accepts).
+    const presetBox = cva({
+      base: ["box", { "bg-gray-100": true }],
+      variants: { pad: { sm: "p-1" } },
+      defaultVariants: { pad: "sm" },
+    });
+    const twCard = twCva({
+      composes: presetBox,
+      base: "card bg-blue-500",
+    });
+    expect(twCard()).toBe("box p-1 card bg-blue-500");
+    expect(getSchema(twCard)).toStrictEqual({
+      pad: { values: ["sm"], defaultValue: "sm" },
+    });
+    // The narrowed class prop still applies to the composing component.
+    // @ts-expect-error — objects aren't part of tailwind-merge's grammar
+    twCard({ class: { extra: true } });
+
+    const twBox = twCva({ base: "box", variants: { pad: { sm: "p-1" } } });
+    const presetCard = cva({ composes: twBox, base: { card: true } });
+    expect(presetCard({ pad: "sm", class: { extra: true } })).toBe(
+      "box p-1 card extra",
+    );
+    expect(getSchema(presetCard)).toStrictEqual({ pad: { values: ["sm"] } });
   });
 });
