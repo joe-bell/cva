@@ -20,11 +20,7 @@
 /* ClassValue
   ---------------------------------- */
 
-// Structurally identical to clsx's `ClassValue` — cva's default authoring
-// grammar is deliberately clsx-compatible. Declared here (rather than
-// imported) so this module has zero dependencies and compiles standalone
-// under `declaration: true` without the TS2742 error deep type re-exports
-// trigger.
+// Mirrors clsx's `ClassValue`; local to keep `core` dependency-free (TS2742).
 
 export type ClassValue =
   | ClassArray
@@ -51,14 +47,9 @@ export type AnyCX = (...inputs: any[]) => string;
  * parameters — `defineConfig` uses this to type the authoring surface
  * (`base`, variant values, `class`/`className`) against the configured
  * concatenator's own input grammar.
- *
- * Falls back to `ClassValue` when nothing narrower can be inferred: `any`
- * (e.g. an unannotated inline function, which TypeScript contextually
- * types as `any[]`) and `never` both land on the default, so inline
- * concatenators keep the full clsx-flavored grammar.
  */
 export type CXInput<TCX extends AnyCX> = Parameters<TCX>[number] extends infer P
-  ? // `0 extends 1 & P` is only true when `P` is `any`.
+  ? // `0 extends 1 & P` detects `any`; `any`/`never` use `ClassValue`.
     0 extends 1 & P
     ? ClassValue
     : [P] extends [never]
@@ -187,8 +178,8 @@ export interface Compose<T extends ClassValue = ClassValue> {
 /* cx
   ---------------------------------- */
 
-export interface CX<TClassValue extends ClassValue = ClassValue> {
-  (...inputs: TClassValue[]): string;
+export interface CX<T extends ClassValue = ClassValue> {
+  (...inputs: T[]): string;
 }
 
 export type CXOptions = Parameters<CX>;
@@ -231,18 +222,12 @@ type CVAComponentConfig<
   ComposedList extends readonly CVAComponentShape[] =
     readonly CVAComponentShape[],
   T extends ClassValue = ClassValue,
-  // The variants `defaultVariants` and `compoundVariants` are checked
-  // against: `cva` passes the local variants merged with the composed
-  // components' (so a default can override a composed one, and a compound
-  // variant can target a composed-only key, without redeclaring the variant
-  // locally). Defaults to the local variants for the introspection guards.
+  // `defaultVariants` and `compoundVariants` are checked against local variants
+  // merged with composed variants. Defaults to local variants for introspection
+  // guards.
   //
-  // Two inference traps, both verified: gating on `Merged extends
-  // CVAVariantShape` loses the contextual literal types of authored defaults
-  // (they widen to `string`, and with them `getSchema`'s `defaultValue`), so
-  // the gate is on `keyof Merged` instead; and mapping over `Merged` without
-  // `Uninferred` lets TypeScript reverse-infer `Variants` from the authored
-  // `defaultVariants`/`compoundVariants`, which then accepts any value.
+  // Gate on `keyof Merged` to preserve literal defaults, and wrap in
+  // `Uninferred` to prevent reverse inference from authored values.
   Merged = Variants,
 > = Config & {
   composes?: ComposedSingle | readonly [...ComposedList];
@@ -301,11 +286,8 @@ export interface CVAComponent<
 // `Compose`/`GetSchema` guards, where the shaped form rejects every real
 // component via props contravariance.
 //
-// The class value parameter must be `any` too: a component authored under a
-// narrowing concatenator (e.g. `twMerge`, whose `ClassNameValue` excludes
-// objects) has a narrower `class`/`className` prop than the `ClassValue`
-// default, and props contravariance would reject it from `composes` and
-// `getSchema` otherwise.
+// Its class-value parameter must be `any`: narrowed components otherwise fail
+// props contravariance in `composes` and `getSchema`.
 /**
  * Exported so TypeScript can name this type in your generated declarations
  * (`declaration: true`) — you shouldn't really use it directly.
@@ -409,26 +391,16 @@ const falsyToString = <T extends unknown>(value: T) =>
 // per call — spreading an empty array contributes no arguments.
 const emptyClassNames: string[] = [];
 
-// The implementation is typed against the `ClassValue` defaults and cast to
-// the generic `DefineConfig` — the narrowing lives entirely in the types
-// (`CXInput`); the runtime is identical for every concatenator.
+// Cast to `DefineConfig`: runtime uses `ClassValue`; `CXInput` is type-only.
 export const defineConfig = ((options: DefineConfigOptions) => {
   const cx: CX = (...inputs) => {
-    // Absent positions (`base`, `class`/`className`, unmatched variants)
-    // are dropped rather than forwarded as `undefined`, so a concatenator
-    // typed narrower than cva's grammar (e.g. `(...inputs: string[]) =>
-    // string`) only ever receives values its own type accepts.
+    // Drop absent values so a narrower concatenator never receives `undefined`.
     const className = options.cx(
       ...inputs.filter((input) => input !== undefined),
     );
 
-    if (typeof options?.hooks?.["cx:done"] !== "undefined")
-      return options.hooks["cx:done"](className);
-
-    if (typeof options?.hooks?.onComplete !== "undefined")
-      return options.hooks.onComplete(className);
-
-    return className;
+    const hook = options.hooks?.["cx:done"] ?? options.hooks?.onComplete;
+    return hook ? hook(className) : className;
   };
 
   const cva = (<
@@ -491,9 +463,9 @@ export const defineConfig = ((options: DefineConfigOptions) => {
       // matching. An explicit `{ variant: undefined }` is dropped so it falls
       // back to the (possibly composed) default, matching variant resolution
       // below. Only built when something consumes it — a plain component with
-      // no `composes` and no `variants` skips the work entirely.
+      // no `composes` and no `compoundVariants` skips the work entirely.
       const definedPropsWithoutClass =
-        components.length || config?.variants || config?.compoundVariants
+        components.length || config?.compoundVariants
           ? Object.fromEntries(
               Object.entries(props || {}).filter(
                 ([key, value]) =>
@@ -513,11 +485,6 @@ export const defineConfig = ((options: DefineConfigOptions) => {
           )
         : emptyClassNames;
 
-      // Core never interprets class values: its own arrays (composed
-      // outputs, matched variant/compound values) are spread so the
-      // concatenator receives one argument per authored value, and authored
-      // values themselves pass through verbatim.
-      //
       // Compound variants may target composed-only keys, so a component with
       // no local `variants` still resolves them.
       if (!config?.variants && !config?.compoundVariants) {
@@ -549,33 +516,34 @@ export const defineConfig = ((options: DefineConfigOptions) => {
         ...definedPropsWithoutClass,
       };
 
-      const getCompoundVariantClassNames = config?.compoundVariants?.reduce(
-        (
-          acc: ClassValue[],
-          {
-            class: cvClass,
-            className: cvClassName,
-            ...cvConfig
-          }: CVAClassProp & Record<string, unknown>,
-        ) =>
-          Object.entries(cvConfig).every(([cvKey, cvSelector]) => {
-            const selector =
-              defaultsAndProps[cvKey as keyof typeof defaultsAndProps];
+      const getCompoundVariantClassNames =
+        config?.compoundVariants?.reduce(
+          (
+            acc: ClassValue[],
+            {
+              class: cvClass,
+              className: cvClassName,
+              ...cvConfig
+            }: CVAClassProp & Record<string, unknown>,
+          ) =>
+            Object.entries(cvConfig).every(([cvKey, cvSelector]) => {
+              const selector =
+                defaultsAndProps[cvKey as keyof typeof defaultsAndProps];
 
-            return Array.isArray(cvSelector)
-              ? cvSelector.includes(selector)
-              : selector === cvSelector;
-          })
-            ? [...acc, cvClass, cvClassName]
-            : acc,
-        [] as ClassValue[],
-      );
+              return Array.isArray(cvSelector)
+                ? cvSelector.includes(selector)
+                : selector === cvSelector;
+            })
+              ? [...acc, cvClass, cvClassName]
+              : acc,
+          [] as ClassValue[],
+        ) ?? emptyClassNames;
 
       return cx(
         ...getComposedClassNames,
         config?.base,
         ...getVariantClassNames,
-        ...(getCompoundVariantClassNames ?? emptyClassNames),
+        ...getCompoundVariantClassNames,
         props?.class,
         props?.className,
       );
@@ -681,9 +649,7 @@ export interface GetSchema {
     : never;
 }
 
-// Typed against the loose component shape and cast to `GetSchema`: the
-// public signature's conditional parameter type doesn't narrow inside the
-// implementation, and the runtime is the same for every component.
+// Cast to `GetSchema`: its conditional parameter type cannot narrow here.
 export const getSchema = ((component: CVAComponentShape) => {
   const variants: CVAVariantShape | undefined = component.config?.variants;
   if (!variants) return {};

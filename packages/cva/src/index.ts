@@ -43,17 +43,11 @@ export type {
 } from "./core.js";
 export { getSchema } from "./core.js";
 
-/* defineConfig
-  ---------------------------------- */
-
 export interface DefineConfigOptions<TCX extends AnyCX = CX> extends Omit<
   CoreDefineConfigOptions<TCX>,
   "cx"
 > {
-  /**
-   * The class name concatenator used by `cva`, `cx`, and `compose`.
-   * Defaults to `clsx`.
-   */
+  /** Defaults to `clsx`. */
   cx?: TCX;
 }
 
