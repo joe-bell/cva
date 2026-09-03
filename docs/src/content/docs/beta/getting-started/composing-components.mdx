@@ -78,6 +78,19 @@ combined();
 // => "a b b-secondary"
 ```
 
+The composing component can set `defaultVariants` and `compoundVariants` for composed variants without redeclaring them. Both are typechecked against the merged variants, so only values a composed component declares are accepted:
+
+```ts
+const combined = cva({
+  composes: [a, b],
+  compoundVariants: [{ style: "primary", class: "combined-primary" }],
+  defaultVariants: { style: "primary" },
+});
+
+combined();
+// => "a a-primary b b-primary combined-primary"
+```
+
 :::caution
 Pass components to `composes` as an inline array literal, or one marked `as const`. A pre-declared, mutable array variable (`const list = [a, b]`) loses the tuple inference `composes` relies on, which can silently widen or drop variant types.
 :::

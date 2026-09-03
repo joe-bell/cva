@@ -297,8 +297,8 @@ describe.each(rows)(
         base: "card",
         variants: {
           tone: { loud: "text-black bg-blue-500" },
-          // Redeclared locally so the local default can override the
-          // composed ones (`box`'s `sm`, then `stack`'s `none`).
+          // Redeclared locally with a new value; the local default below
+          // overrides the composed ones (`box`'s `sm`, then `stack`'s `none`).
           pad: { xl: "p-8" },
         },
         // Compound variants may target keys that only composed components
@@ -338,6 +338,48 @@ describe.each(rows)(
       }>();
       // @ts-expect-error — values are checked against the merged variants
       card({ pad: "xxl" });
+    });
+
+    test("defaults and compound variants target composed keys without redeclaring them", () => {
+      const card = api.cva({
+        composes: [box, stack],
+        base: "card",
+        // Neither `pad` nor `direction` is declared locally: the default
+        // overrides the composed ones, and the compound variant matches on
+        // the composed keys' values.
+        compoundVariants: [{ pad: "lg", direction: "row", class: "compound" }],
+        defaultVariants: { pad: "lg", direction: "row" },
+      });
+
+      expect(card()).toBe(
+        output("box bg-gray-100 p-4 stack flex-row card compound"),
+      );
+      expect(card({ direction: "column" })).toBe(
+        output("box bg-gray-100 p-4 stack flex-col card"),
+      );
+      expect(getSchema(card)).toStrictEqual({
+        pad: { values: ["sm", "lg", "none"], defaultValue: "lg" },
+        tone: { values: ["muted"] },
+        direction: { values: ["row", "column"], defaultValue: "row" },
+      });
+      // The authored defaults keep their literal types through the merge.
+      expectTypeOf(getSchema(card).pad.defaultValue).toEqualTypeOf<"lg">();
+      expectTypeOf(
+        getSchema(card).direction.defaultValue,
+      ).toEqualTypeOf<"row">();
+
+      api.cva({
+        composes: box,
+        // @ts-expect-error — defaults are checked against the merged values
+        defaultVariants: { pad: "xl" },
+      });
+      api.cva({
+        composes: box,
+        // @ts-expect-error — and so are compound variant selectors
+        compoundVariants: [{ pad: "xl", class: "nope" }],
+      });
+      // @ts-expect-error — no variants anywhere, so no defaults
+      api.cva({ base: "plain", defaultVariants: { pad: "sm" } });
     });
 
     test("composes accepts a single component", () => {

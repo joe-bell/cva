@@ -187,7 +187,10 @@ type CVAComponentConfigBase<T extends ClassValue = ClassValue> = { base?: T };
  * (`declaration: true`) — you shouldn't really use it directly.
  */
 export type CVAVariantShape = Record<string, Record<string, ClassValue>>;
-type CVAVariantSchema<V extends CVAVariantShape> = {
+// Unconstrained so it can map over the merged (local plus composed)
+// variants, which is only known to be an intersection, not a
+// `CVAVariantShape`.
+type CVAVariantSchema<V> = {
   [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
 };
 type CVAClassProp<T extends ClassValue = ClassValue> =
@@ -212,34 +215,41 @@ type CVAComponentConfig<
   ComposedList extends readonly CVAComponentShape[] =
     readonly CVAComponentShape[],
   T extends ClassValue = ClassValue,
+  // The variants `defaultVariants` and `compoundVariants` are checked
+  // against: `cva` passes the local variants merged with the composed
+  // components' (so a default can override a composed one, and a compound
+  // variant can target a composed-only key, without redeclaring the variant
+  // locally). Defaults to the local variants for the introspection guards.
+  //
+  // Two inference traps, both verified: gating on `Merged extends
+  // CVAVariantShape` loses the contextual literal types of authored defaults
+  // (they widen to `string`, and with them `getSchema`'s `defaultValue`), so
+  // the gate is on `keyof Merged` instead; and mapping over `Merged` without
+  // `NoInfer` lets TypeScript reverse-infer `Variants` from the authored
+  // `defaultVariants`/`compoundVariants`, which then accepts any value.
+  Merged = Variants,
 > = Config & {
   composes?: ComposedSingle | readonly [...ComposedList];
   // The gate checks variant values against the configured concatenator's
   // input type, so e.g. object syntax fails here (on the `variants` key)
   // under a concatenator that doesn't accept objects.
 } & (Variants extends Record<string, Record<string, T>>
-    ? CVAComponentConfigBase<T> & {
-        variants?: Variants;
-        compoundVariants?: (Variants extends CVAVariantShape
-          ? (
-              | CVAVariantSchema<Variants>
-              | {
-                  [Variant in keyof Variants]?:
-                    | StringToBoolean<keyof Variants[Variant]>
-                    | StringToBoolean<keyof Variants[Variant]>[]
-                    | undefined;
-                }
-            ) &
-              CVAClassProp<T>
-          : CVAClassProp<T>)[];
-        defaultVariants?: Variants extends CVAVariantShape
-          ? CVAVariantSchema<Variants>
-          : never;
-      }
-    : CVAComponentConfigBase<T> & {
-        variants?: never;
-        compoundVariants?: never;
-        defaultVariants?: never;
+    ? CVAComponentConfigBase<T> & { variants?: Variants }
+    : CVAComponentConfigBase<T> & { variants?: never }) &
+  ([keyof Merged] extends [never]
+    ? { compoundVariants?: never; defaultVariants?: never }
+    : {
+        compoundVariants?: ((
+          | CVAVariantSchema<NoInfer<Merged>>
+          | {
+              [Variant in keyof NoInfer<Merged>]?:
+                | StringToBoolean<keyof NoInfer<Merged>[Variant]>
+                | StringToBoolean<keyof NoInfer<Merged>[Variant]>[]
+                | undefined;
+            }
+        ) &
+          CVAClassProp<T>)[];
+        defaultVariants?: CVAVariantSchema<NoInfer<Merged>>;
       });
 
 /**
@@ -303,7 +313,8 @@ export interface CVA<T extends ClassValue = ClassValue> {
       Variants,
       ComposedSingle,
       ComposedList,
-      T
+      T,
+      Variants & MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>
     >,
   ): CVAComponent<
     Omit<Config, "defaultVariants"> & {
@@ -460,7 +471,7 @@ export const defineConfig = ((options: DefineConfigOptions) => {
       // below. Only built when something consumes it — a plain component with
       // no `composes` and no `variants` skips the work entirely.
       const definedPropsWithoutClass =
-        components.length || config?.variants != null
+        components.length || config?.variants || config?.compoundVariants
           ? Object.fromEntries(
               Object.entries(props || {}).filter(
                 ([key, value]) =>
@@ -484,7 +495,10 @@ export const defineConfig = ((options: DefineConfigOptions) => {
       // outputs, matched variant/compound values) are spread so the
       // concatenator receives one argument per authored value, and authored
       // values themselves pass through verbatim.
-      if (config?.variants == null) {
+      //
+      // Compound variants may target composed-only keys, so a component with
+      // no local `variants` still resolves them.
+      if (!config?.variants && !config?.compoundVariants) {
         return cx(
           ...getComposedClassNames,
           config?.base,
@@ -493,24 +507,20 @@ export const defineConfig = ((options: DefineConfigOptions) => {
         );
       }
 
-      const { variants } = config;
+      const variants = (config.variants ?? {}) as CVAVariantShape;
 
       // Resolve against the *merged* defaults (composed + local) so a variant
       // redeclared locally over a composed key uses the same effective default
       // the composed components and `getSchema` see.
-      const getVariantClassNames = Object.keys(variants).map(
-        (variant: keyof typeof variants) => {
-          const variantProp = props?.[variant as keyof typeof props];
-          const defaultVariantProp = mergedDefaultVariants[variant as string];
+      const getVariantClassNames = Object.keys(variants).map((variant) => {
+        const variantProp = props?.[variant as keyof typeof props];
+        const defaultVariantProp = mergedDefaultVariants[variant];
 
-          const variantKey = (falsyToString(variantProp) ||
-            falsyToString(
-              defaultVariantProp,
-            )) as keyof (typeof variants)[typeof variant];
+        const variantKey = (falsyToString(variantProp) ||
+          falsyToString(defaultVariantProp)) as string;
 
-          return variants[variant][variantKey];
-        },
-      );
+        return variants[variant][variantKey];
+      });
 
       const defaultsAndProps = {
         ...mergedDefaultVariants,
