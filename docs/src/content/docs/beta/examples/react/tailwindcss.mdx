@@ -32,6 +32,6 @@ This example follows shadcn/ui's popular [`cn` helper](https://ui.shadcn.com/doc
 
 ## Merging Tailwind classes with cn
 
-The published [`cn`](https://github.com/shadcn-ui/cn) package bundles `clsx` and `tailwind-merge`, and its input type matches `cva`'s. Configure [`cva/core`](/beta/api-reference#cvacore) with `defineConfig({ cx: cn })` to preserve object and array authoring; see [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for details.
+The published [`cn`](https://github.com/shadcn-ui/cn) package bundles `clsx` and `tailwind-merge`, and its input type matches `cva`'s. Configure [`cva/core`](/beta/api-reference#cvacore) with `defineConfig({ cx: cn })` to preserve object and array authoring, then re-export `cx` as `cn`; see [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for details.
 
 <StackBlitz dir="examples/beta/react-with-cn" file="src/cva.config.ts" />
