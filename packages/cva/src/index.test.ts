@@ -45,6 +45,26 @@ describe("cx", () => {
 });
 
 describe("compose", () => {
+  test("should merge non-variant config values and tolerate a missing config", () => {
+    // `base` is a string (not a mergeable object), so it overwrites rather
+    // than merges when configs are folded together.
+    const box = cva({
+      base: "box",
+      variants: {
+        shadow: {
+          sm: "shadow-sm",
+        },
+      },
+    });
+    const plainFunction = () => "plain";
+
+    // @ts-expect-error: not a cva()-created component (no `.config`), which
+    // compose tolerates at runtime.
+    const card = compose(box, plainFunction);
+
+    expect(card({ shadow: "sm" })).toBe("box shadow-sm plain");
+  });
+
   test("should merge into a single component", () => {
     const box = cva({
       variants: {
@@ -99,6 +119,38 @@ describe("compose", () => {
         className: "adhoc-class",
       }),
     ).toBe("shadow-md gap-3 adhoc-class");
+  });
+
+  test("should accept internal variant props", () => {
+    const base = cva({
+      variants: {
+        _tone: {
+          quiet: "tone-quiet",
+          loud: "tone-loud",
+        },
+      },
+      defaultVariants: { _tone: "quiet" },
+    });
+
+    const stack = cva({
+      variants: {
+        gap: {
+          1: "gap-1",
+          2: "gap-2",
+        },
+      },
+      defaultVariants: { gap: 1 },
+    });
+
+    const card = compose(base, stack);
+
+    expectTypeOf(card).parameter(0).toMatchTypeOf<
+      | {
+          _tone?: "quiet" | "loud" | undefined;
+          gap?: 1 | 2 | undefined;
+        }
+      | undefined
+    >();
   });
 });
 
@@ -451,6 +503,156 @@ describe("cva — composes", () => {
   });
 });
 
+describe("cva — internal variants", () => {
+  test("should omit a variant prefixed with `_` from VariantProps, but still accept it on the component", () => {
+    const button = cva({
+      base: "button",
+      variants: {
+        _intent: {
+          primary: "intent-primary",
+          secondary: "intent-secondary",
+        },
+        size: {
+          sm: "size-sm",
+          lg: "size-lg",
+        },
+      },
+      defaultVariants: {
+        _intent: "primary",
+        size: "sm",
+      },
+    });
+
+    expect(button()).toBe("button intent-primary size-sm");
+
+    expectTypeOf<CVA.VariantProps<typeof button>>().toEqualTypeOf<{
+      size?: "sm" | "lg" | undefined;
+    }>();
+
+    expect(button({ _intent: "secondary" })).toBe(
+      "button intent-secondary size-sm",
+    );
+  });
+
+  test("should still match compound variants against an internal variant", () => {
+    const button = cva({
+      base: "button",
+      variants: {
+        _intent: {
+          primary: "intent-primary",
+          secondary: "intent-secondary",
+        },
+        size: {
+          sm: "size-sm",
+          lg: "size-lg",
+        },
+      },
+      compoundVariants: [
+        {
+          _intent: "primary",
+          size: "lg",
+          class: "intent-primary-lg",
+        },
+        {
+          _intent: ["primary", "secondary"],
+          size: "sm",
+          class: "intent-any-sm",
+        },
+      ],
+      defaultVariants: {
+        _intent: "primary",
+        size: "sm",
+      },
+    });
+
+    expect(button({ size: "lg" })).toBe(
+      "button intent-primary size-lg intent-primary-lg",
+    );
+    expect(button()).toBe("button intent-primary size-sm intent-any-sm");
+  });
+
+  test("should omit an internal variant from getSchema, at runtime and in its type", () => {
+    const button = cva({
+      base: "button",
+      variants: {
+        _intent: {
+          primary: "intent-primary",
+          secondary: "intent-secondary",
+        },
+        size: {
+          sm: "size-sm",
+          lg: "size-lg",
+        },
+      },
+      defaultVariants: {
+        _intent: "primary",
+        size: "sm",
+      },
+    });
+
+    const schema = getSchema(button);
+
+    expect(schema).toStrictEqual({
+      size: { values: ["sm", "lg"], defaultValue: "sm" },
+    });
+    expectTypeOf(schema).toEqualTypeOf<{
+      size: { values: readonly ("sm" | "lg")[]; defaultValue: "sm" };
+    }>();
+  });
+
+  test("should omit a composed-only internal variant from the composer's VariantProps and schema", () => {
+    const base = cva({
+      variants: {
+        _tone: {
+          quiet: "tone-quiet",
+          loud: "tone-loud",
+        },
+      },
+      defaultVariants: { _tone: "quiet" },
+    });
+
+    const card = cva({
+      composes: base,
+      variants: {
+        pad: { sm: "pad-sm", lg: "pad-lg" },
+      },
+      defaultVariants: { pad: "sm" },
+    });
+
+    expect(card()).toBe("tone-quiet pad-sm");
+
+    expectTypeOf<CVA.VariantProps<typeof card>>().toEqualTypeOf<{
+      pad?: "sm" | "lg" | undefined;
+    }>();
+    expect(card({ _tone: "loud" })).toBe("tone-loud pad-sm");
+
+    expect(getSchema(card)).toStrictEqual({
+      pad: { values: ["sm", "lg"], defaultValue: "sm" },
+    });
+  });
+
+  test("should let a composer retune a composed-only internal default by redeclaring it locally", () => {
+    const base = cva({
+      variants: {
+        _tone: {
+          quiet: "tone-quiet",
+          loud: "tone-loud",
+        },
+      },
+      defaultVariants: { _tone: "quiet" },
+    });
+
+    const card = cva({
+      composes: base,
+      variants: { _tone: { loud: "loud-local" } },
+      defaultVariants: { _tone: "loud" },
+    });
+
+    expect(card()).toBe("tone-loud loud-local");
+    expect(getSchema(card)).toStrictEqual({});
+  });
+});
+
 describe("getSchema", () => {
   test("should return the schema for a component", () => {
     const buttonWithoutBaseWithDefaultsString = cva({
@@ -629,8 +831,32 @@ describe("getSchema", () => {
     // @ts-expect-error — `compose()`'s result has no `.config`, so it can't
     // be introspected by `getSchema`. Use the `composes` property instead.
     getSchema(composed);
-    // @ts-expect-error — not a cva()-created component at all
-    getSchema(plainFunction);
+    // @ts-expect-error: not a cva()-created component at all
+    expect(getSchema(plainFunction)).toStrictEqual({});
+  });
+
+  test("should keep a defaulted variant that has no values", () => {
+    const component = cva({
+      variants: { size: {} },
+      // @ts-expect-error: an empty variant has no values to default to
+      defaultVariants: { size: "md" },
+    });
+
+    // @ts-expect-error: rejected at the type level for the same reason,
+    // but the runtime schema still reports the default.
+    expect(getSchema(component)).toStrictEqual({
+      size: { defaultValue: "md" },
+    });
+  });
+
+  test("should drop a variant with neither values nor a default", () => {
+    const component = cva({
+      variants: { size: {}, intent: { primary: "button--primary" } },
+    });
+
+    expect(getSchema(component)).toStrictEqual({
+      intent: { values: ["primary"] },
+    });
   });
 
   test("should normalize numeric variant keys, including negatives", () => {
@@ -2311,6 +2537,36 @@ describe("cva", () => {
   });
 });
 
+describe("cva, zero-valued variant keys", () => {
+  // `falsyToString` must normalize a `0` prop/default to the `"0"` object
+  // key; `variants.gap[0]` and `variants.gap["0"]` are the same property
+  // at runtime, but a bare `0` would short-circuit the `||` fallback chain.
+  const spacer = cva({
+    base: "spacer",
+    variants: {
+      gap: {
+        0: "gap-0",
+        1: "gap-1",
+      },
+    },
+    defaultVariants: {
+      gap: 0,
+    },
+  });
+
+  test("applies a zero default variant", () => {
+    expect(spacer({})).toBe("spacer gap-0");
+  });
+
+  test("applies an explicit zero variant prop", () => {
+    expect(spacer({ gap: 0 })).toBe("spacer gap-0");
+  });
+
+  test("applies a non-zero variant prop over the zero default", () => {
+    expect(spacer({ gap: 1 })).toBe("spacer gap-1");
+  });
+});
+
 describe("CVAVariantShape", () => {
   test("types a standalone variants config passed to cva", () => {
     const variants = {
@@ -2437,6 +2693,92 @@ describe("defineConfig", () => {
         expectTypeOf(classList).toBeString();
         expect(classListSplit[0]).toBe(PREFIX);
         expect(classListSplit[classListSplit.length - 1]).toBe(SUFFIX);
+      });
+    });
+
+    describe("cx:done (deprecated)", () => {
+      const PREFIX = "we-know-the-game";
+      const SUFFIX = "and-were-gonna-play-it";
+
+      const cxDoneHandler = (className: string) =>
+        [PREFIX, className, SUFFIX].join(" ");
+
+      test("should extend compose", () => {
+        const { compose: composeExtended } = defineConfig({
+          hooks: {
+            "cx:done": cxDoneHandler,
+          },
+        });
+
+        const box = cva({
+          variants: {
+            shadow: {
+              sm: "shadow-sm",
+              md: "shadow-md",
+            },
+          },
+          defaultVariants: {
+            shadow: "sm",
+          },
+        });
+        const stack = cva({
+          variants: {
+            gap: {
+              unset: null,
+              1: "gap-1",
+            },
+          },
+          defaultVariants: {
+            gap: "unset",
+          },
+        });
+        const card = composeExtended(box, stack);
+
+        const cardClassListSplit = card({ shadow: "md", gap: 1 }).split(" ");
+        expect(cardClassListSplit[0]).toBe(PREFIX);
+        expect(cardClassListSplit[cardClassListSplit.length - 1]).toBe(SUFFIX);
+      });
+
+      test("should extend cva", () => {
+        const { cva: cvaExtended } = defineConfig({
+          hooks: {
+            "cx:done": cxDoneHandler,
+          },
+        });
+
+        const component = cvaExtended({
+          base: "foo",
+          variants: { intent: { primary: "bar" } },
+        });
+        const componentClassListSplit = component({
+          intent: "primary",
+        }).split(" ");
+
+        expect(componentClassListSplit[0]).toBe(PREFIX);
+        expect(
+          componentClassListSplit[componentClassListSplit.length - 1],
+        ).toBe(SUFFIX);
+      });
+
+      test("should extend cx", () => {
+        const { cx: cxExtended } = defineConfig({
+          hooks: {
+            "cx:done": cxDoneHandler,
+          },
+        });
+
+        expect(cxExtended("foo", "bar")).toBe(`${PREFIX} foo bar ${SUFFIX}`);
+      });
+
+      test("should take precedence over onComplete when both are set", () => {
+        const { cx: cxExtended } = defineConfig({
+          hooks: {
+            "cx:done": cxDoneHandler,
+            onComplete: (className) => `on-complete ${className}`,
+          },
+        });
+
+        expect(cxExtended("foo")).toBe(`${PREFIX} foo ${SUFFIX}`);
       });
     });
   });

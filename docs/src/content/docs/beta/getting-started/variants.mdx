@@ -62,6 +62,81 @@ button({ intent: "secondary", size: "small" });
 // => "rounded border font-semibold border-gray-400 bg-white text-gray-800 hover:bg-gray-100 px-2 py-1 text-sm"
 ```
 
+## Internal variants
+
+A variant name prefixed with `_` is treated as internal.
+
+Internal variants remain available to the component. You can set them via `defaultVariants` and match them in `compoundVariants`. Both [`VariantProps`](/beta/getting-started/typescript#extracting-variant-types) and [`getSchema`](/beta/api-reference#getschema) omit them.
+
+```ts
+import { cva, type VariantProps } from "cva";
+
+const button = cva({
+  base: "button",
+  variants: {
+    _intent: { primary: "button--primary", secondary: "button--secondary" },
+    size: { small: "button--small", medium: "button--medium" },
+  },
+  defaultVariants: {
+    _intent: "primary",
+    size: "medium",
+  },
+});
+
+// `_intent` is omitted from the public props.
+type ButtonProps = VariantProps<typeof button>;
+// => { size?: "small" | "medium" | undefined }
+
+// The component still accepts `_intent` directly.
+button({ _intent: "secondary", size: "small" });
+// => "button button--secondary button--small"
+```
+
+In a React component, extend `VariantProps` for the public props, then set the internal variant yourself:
+
+```tsx
+interface Props
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof button> {
+  active?: boolean;
+}
+
+// `_intent` never appears in `Props`, so a consumer can't set it.
+function Button({ active, size, className, ...props }: Props) {
+  return (
+    <button
+      className={button({
+        size,
+        _intent: active ? "primary" : "secondary",
+        class: className,
+      })}
+      {...props}
+    />
+  );
+}
+```
+
+A composed-only internal variant is omitted from the composer's `VariantProps` too. To change its default from the composer, redeclare it locally: the same rule applies to any composed-only variant (see [Extending variants](/beta/getting-started/composing-components#extending-variants)).
+
+```ts
+const base = cva({
+  variants: {
+    _tone: { quiet: "tone-quiet", loud: "tone-loud" },
+  },
+  defaultVariants: { _tone: "quiet" },
+});
+
+const card = cva({
+  composes: base,
+  variants: { _tone: { loud: "loud-local" } },
+  defaultVariants: { _tone: "loud" },
+});
+
+card();
+// => "tone-loud loud-local"
+```
+
 ## Compound variants
 
 Variants that apply when multiple other variant conditions are met.

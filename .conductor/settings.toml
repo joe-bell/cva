@@ -1,0 +1,26 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+setup = "bash .conductor/scripts/setup.sh"
+run_mode = "concurrent"
+
+[scripts.run.docs]
+command = "sh .conductor/scripts/run.sh pnpm --filter ./docs dev --port $CONDUCTOR_PORT"
+default = true
+icon = "book-open"
+
+[scripts.run.dev]
+command = "sh .conductor/scripts/run.sh pnpm dev"
+icon = "play"
+
+[scripts.run.build]
+command = "sh .conductor/scripts/run.sh pnpm build"
+icon = "package"
+
+[scripts.run.test]
+command = "sh .conductor/scripts/run.sh pnpm test"
+icon = "flask-conical"
+
+[scripts.run.check]
+command = "sh .conductor/scripts/run.sh pnpm check"
+icon = "brush-cleaning"

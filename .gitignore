@@ -5,7 +5,10 @@ test/bench/.output
 .next
 .swc
 *.tsbuildinfo
-.env
+.env*
+!.env.example
 .claude/*
 !.claude/skills
+!.claude/settings.json
+!.claude/hooks
 */**/.claude/

@@ -5,7 +5,9 @@ description: Extract variant types with VariantProps and require specific varian
 
 ## Extracting variant types
 
-`cva` offers the `VariantProps` helper to extract variant types
+`cva` offers the `VariantProps` helper to extract variant types.
+
+`VariantProps` omits variant names prefixed with `_`; see [Internal variants](/beta/getting-started/variants#internal-variants).
 
 ```ts
 // components/button.ts
