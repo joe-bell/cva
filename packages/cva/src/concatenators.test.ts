@@ -295,21 +295,25 @@ describe.each(rows)(
       const card = api.cva({
         composes: [box, stack],
         base: "card",
-        variants: { tone: { loud: "text-black bg-blue-500" } },
+        variants: {
+          tone: { loud: "text-black bg-blue-500" },
+          // Redeclared locally so the local default can override the
+          // composed ones (`box`'s `sm`, then `stack`'s `none`).
+          pad: { xl: "p-8" },
+        },
         // Compound variants may target keys that only composed components
-        // declare, matched against the merged defaults and props.
-        compoundVariants: [
-          { pad: "none", direction: "row", class: "compound" },
-        ],
-        defaultVariants: { tone: "loud" },
+        // declare (`direction`), matched against the merged defaults and
+        // props.
+        compoundVariants: [{ direction: "row", class: "compound" }],
+        defaultVariants: { tone: "loud", pad: "xl" },
       });
 
-      // `stack`'s `pad: "none"` overrides `box`'s `pad: "sm"` (last composed
-      // wins) and renders through `stack`; the local `tone` default applies
-      // to the merged `tone` variant.
+      // The local `pad: "xl"` default wins over both composed defaults and
+      // renders through `card`; the local `tone` default applies to the
+      // merged `tone` variant.
       expect(card()).toBe(
         output(
-          "box bg-gray-100 stack flex-col p-0 card text-black bg-blue-500",
+          "box bg-gray-100 stack flex-col card text-black bg-blue-500 p-8",
         ),
       );
       // Props flow through to every composed component that declares them,
@@ -328,12 +332,12 @@ describe.each(rows)(
       );
 
       expectTypeOf<CVA.VariantProps<typeof card>>().toEqualTypeOf<{
-        pad?: "sm" | "lg" | "none" | undefined;
+        pad?: "sm" | "lg" | "none" | "xl" | undefined;
         tone?: "muted" | "loud" | undefined;
         direction?: "row" | "column" | undefined;
       }>();
       // @ts-expect-error — values are checked against the merged variants
-      card({ pad: "xl" });
+      card({ pad: "xxl" });
     });
 
     test("composes accepts a single component", () => {
@@ -349,20 +353,20 @@ describe.each(rows)(
     test("getSchema reflects the merged variants and defaults", () => {
       const card = api.cva({
         composes: [box, stack],
-        variants: { tone: { loud: "text-black" } },
-        defaultVariants: { tone: "loud" },
+        variants: { tone: { loud: "text-black" }, pad: { xl: "p-8" } },
+        defaultVariants: { tone: "loud", pad: "xl" },
       });
       const schema = getSchema(card);
 
       expect(schema).toStrictEqual({
-        pad: { values: ["sm", "lg", "none"], defaultValue: "none" },
+        pad: { values: ["sm", "lg", "none", "xl"], defaultValue: "xl" },
         tone: { values: ["muted", "loud"], defaultValue: "loud" },
         direction: { values: ["row", "column"], defaultValue: "column" },
       });
       expectTypeOf(schema).toEqualTypeOf<{
         pad: {
-          values: readonly ("sm" | "lg" | "none")[];
-          defaultValue: "none";
+          values: readonly ("sm" | "lg" | "none" | "xl")[];
+          defaultValue: "xl";
         };
         tone: { values: readonly ("muted" | "loud")[]; defaultValue: "loud" };
         direction: {
