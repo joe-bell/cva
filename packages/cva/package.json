@@ -96,7 +96,7 @@
     },
     {
       "path": "dist/core.cjs",
-      "limit": "1KB"
+      "limit": "1.05KB"
     }
   ]
 }

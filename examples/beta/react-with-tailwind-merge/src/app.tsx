@@ -21,14 +21,16 @@ function App() {
           <th></th>
           <th></th>
           {intents.map((intent) => (
-            <th scope="col">{intent || "default"}</th>
+            <th key={intent || "default"} scope="col">
+              {intent || "default"}
+            </th>
           ))}
         </tr>
       </thead>
       <tbody>
-        {isDisabled.map((disabled) =>
+        {isDisabled.flatMap((disabled) =>
           sizes.map((size, index) => (
-            <tr>
+            <tr key={`${disabled}-${size || "default"}`}>
               {index === 0 && (
                 <th scope="rowgroup" rowSpan={3}>
                   {disabled ? "disabled" : "enabled"}
@@ -36,7 +38,7 @@ function App() {
               )}
               <th scope="row">{size || "default"}</th>
               {intents.map((intent) => (
-                <td scope="col">
+                <td key={intent || "default"} scope="col">
                   <Button
                     {...(intent && { intent })}
                     {...(size && { size })}

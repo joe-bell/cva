@@ -143,7 +143,22 @@ export const { cva, cx } = defineConfig({
 });
 ```
 
-`twMerge` accepts strings and arrays but not objects, so this `cva`'s variants are typechecked against tailwind-merge's own input type: object syntax becomes a compile error instead of a silently dropped class. Prefer to keep clsx's object syntax available? Compose the two instead: `cx: (...inputs) => twMerge(clsx(inputs))`.
+`twMerge` accepts strings and arrays but not objects, so this `cva`'s variants are typechecked against tailwind-merge's own input type: object syntax becomes a compile error instead of a silently dropped class.
+
+Prefer to keep clsx's object syntax available? Install `clsx` alongside `tailwind-merge` and compose the two, which is what shadcn/ui's `cn` helper does:
+
+```ts
+// cva.config.ts
+import { defineConfig } from "cva/core";
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export const { cva, cx } = defineConfig({
+  cx: (...inputs) => twMerge(clsx(inputs)),
+});
+```
+
+An unannotated inline function like this keeps `cva`'s full `ClassValue` grammar, since nothing narrower can be inferred from it.
 
 ```ts
 // components/button.ts

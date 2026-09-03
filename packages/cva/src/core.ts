@@ -63,17 +63,24 @@ export type CXInput<TCX extends AnyCX> = Parameters<TCX>[number] extends infer P
     ? ClassValue
     : [P] extends [never]
       ? ClassValue
-      : // A concatenator accepting more than cva's grammar (e.g.
-        // `unknown`) can't widen the authoring surface beyond it.
-        [P] extends [ClassValue]
+      : [P] extends [ClassValue]
         ? P
-        : ClassValue
+        : // A concatenator accepting more than cva's grammar (e.g. `string |
+          // URL`) narrows to the subset it shares with it, since the surface
+          // can't widen beyond what the concatenator accepts; when nothing is
+          // shared (e.g. `unknown`), the full grammar applies.
+          [Extract<P, ClassValue>] extends [never]
+          ? ClassValue
+          : Extract<P, ClassValue>
   : ClassValue;
 
 /* Utils
   ---------------------------------- */
 
 type OmitUndefined<T> = T extends undefined ? never : T;
+// Blocks inference from a site that merely *checks* a type parameter
+// (TypeScript's built-in `NoInfer` needs 5.4, above the supported floor).
+type Uninferred<T> = [T][T extends any ? 0 : never];
 type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
   k: infer I,
@@ -234,7 +241,7 @@ type CVAComponentConfig<
   // CVAVariantShape` loses the contextual literal types of authored defaults
   // (they widen to `string`, and with them `getSchema`'s `defaultValue`), so
   // the gate is on `keyof Merged` instead; and mapping over `Merged` without
-  // `NoInfer` lets TypeScript reverse-infer `Variants` from the authored
+  // `Uninferred` lets TypeScript reverse-infer `Variants` from the authored
   // `defaultVariants`/`compoundVariants`, which then accepts any value.
   Merged = Variants,
 > = Config & {
@@ -249,16 +256,16 @@ type CVAComponentConfig<
     ? { compoundVariants?: never; defaultVariants?: never }
     : {
         compoundVariants?: ((
-          | CVAVariantSchema<NoInfer<Merged>>
+          | CVAVariantSchema<Uninferred<Merged>>
           | {
-              [Variant in keyof NoInfer<Merged>]?:
-                | StringToBoolean<keyof NoInfer<Merged>[Variant]>
-                | StringToBoolean<keyof NoInfer<Merged>[Variant]>[]
+              [Variant in keyof Uninferred<Merged>]?:
+                | StringToBoolean<keyof Uninferred<Merged>[Variant]>
+                | StringToBoolean<keyof Uninferred<Merged>[Variant]>[]
                 | undefined;
             }
         ) &
           CVAClassProp<T>)[];
-        defaultVariants?: CVAVariantSchema<NoInfer<Merged>>;
+        defaultVariants?: CVAVariantSchema<Uninferred<Merged>>;
       });
 
 /**
@@ -407,7 +414,13 @@ const emptyClassNames: string[] = [];
 // (`CXInput`); the runtime is identical for every concatenator.
 export const defineConfig = ((options: DefineConfigOptions) => {
   const cx: CX = (...inputs) => {
-    const className = options.cx(...inputs);
+    // Absent positions (`base`, `class`/`className`, unmatched variants)
+    // are dropped rather than forwarded as `undefined`, so a concatenator
+    // typed narrower than cva's grammar (e.g. `(...inputs: string[]) =>
+    // string`) only ever receives values its own type accepts.
+    const className = options.cx(
+      ...inputs.filter((input) => input !== undefined),
+    );
 
     if (typeof options?.hooks?.["cx:done"] !== "undefined")
       return options.hooks["cx:done"](className);

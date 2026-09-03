@@ -2808,20 +2808,20 @@ describe("defineConfig", () => {
       // Two calls: the composed `child` renders through the same configured
       // `cx` first, then `badge` itself.
       expect(calls).toHaveLength(2);
-      expect(calls[0]).toEqual(["child", undefined, undefined]);
+      expect(calls[0]).toEqual(["child"]);
       // Core never interprets class values: its own arrays (composed
       // outputs, matched variant/compound values) are spread to one argument
       // per value, and authored values arrive untouched — the `base` array
       // and the object-syntax variant value are passed through as-is for the
-      // concatenator's own grammar to handle.
+      // concatenator's own grammar to handle. Absent positions (`className`
+      // here, `base`/`class` on `child`) are dropped, never sent as
+      // `undefined`.
       expect(calls[1]).toEqual([
         "recorded",
         ["badge", { "badge--raised": true }],
         { "bg-blue-500": true },
         "compound-info",
-        undefined,
         "extra",
-        undefined,
       ]);
     });
 
@@ -2908,6 +2908,29 @@ describe("defineConfig", () => {
       expectTypeOf<
         CVA.CXInput<(...inputs: string[]) => string>
       >().toEqualTypeOf<string>();
+      // A wider-than-grammar parameter narrows to the shared subset rather
+      // than reopening values the concatenator rejects. (Object types such
+      // as `URL` already satisfy `ClassDictionary`, so they stay.)
+      expectTypeOf<
+        CVA.CXInput<(...inputs: (string | symbol)[]) => string>
+      >().toEqualTypeOf<string>();
+    });
+
+    test("a string-only concatenator never receives undefined", () => {
+      const { cva: strictCva, cx: strictCx } = defineConfig({
+        cx: (...inputs: string[]) =>
+          inputs.map((input) => input.toUpperCase()).join(" "),
+      });
+
+      const box = strictCva({ base: "box" });
+      const button = strictCva({
+        composes: box,
+        variants: { intent: { primary: "primary" }, size: { sm: "sm" } },
+      });
+
+      expect(box()).toBe("BOX");
+      expect(button({ intent: "primary" })).toBe("BOX PRIMARY");
+      expect(strictCx("a", "b")).toBe("A B");
     });
 
     test("infers from the last signature of an overloaded concatenator", () => {
