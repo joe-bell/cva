@@ -91,7 +91,7 @@ An object keyed by variant name. Each entry has:
 
 ## `cva/core`
 
-The `cva` package is a preset: [`cva`](#cva), [`cx`](#cx), and [`getSchema`](#getschema) wired up with `clsx`. `cva/core` is the same engine with nothing wired up, for rolling your own configuration.
+The `cva` package is a preset: [`cva`](#cva) and [`cx`](#cx) use `clsx`. `cva/core` is the same engine without a configured concatenator.
 
 ### `defineConfig`
 
@@ -107,7 +107,10 @@ export const { cva, cx } = defineConfig(options);
 ```
 
 1. `options`
-   - `cx` (**required**): the class name concatenator used by `cva`, `cx`, and `compose`. It owns the class name grammar entirely: `cva` assembles the authored values (composed component outputs, `base`, matched variant and compound variant values, `class`/`className`) and passes them through verbatim, one argument each, without interpreting them. The authoring surface adopts the concatenator's parameter type automatically: pass `twMerge` and your variants are checked against tailwind-merge's `ClassNameValue` (object syntax becomes a compile error), pass `clsx` or any function whose parameters don't narrow further and you keep the full clsx-flavored `ClassValue` grammar. See [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for worked examples with `tailwind-merge`, `cn`, and `clsx/lite`.
+   - `cx` (**required**): the class name concatenator used by `cva`, `cx`, and `compose`
+     - It owns the class name grammar: `cva` passes composed outputs, `base`, matched variant and compound-variant values, and `class`/`className` through verbatim, one argument each.
+     - The authoring surface adopts its parameter type: `twMerge` rejects object syntax, while `clsx` keeps the full clsx-flavored `ClassValue` grammar.
+     - See [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for `tailwind-merge`, `cn`, and `clsx/lite` examples.
    - `hooks`
      - `onComplete` (deprecated, use `cx` instead): returns a concatenated class string of all classes passed to `cx` or `cva`.
 
