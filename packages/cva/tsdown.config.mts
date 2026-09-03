@@ -3,8 +3,6 @@ import { base } from "../../.config/tsdown.base.mts";
 
 export default defineConfig({
   ...base,
-  // `./core` is the unconfigured engine (`defineConfig` with a required
-  // `cx` concatenator); its node10 fallback (`publishConfig.typesVersions`)
-  // is hand-maintained.
+  // Hand-maintained node10 `typesVersions` fallback for `./core`.
   entry: ["src/index.ts", "src/core.ts"],
 });
