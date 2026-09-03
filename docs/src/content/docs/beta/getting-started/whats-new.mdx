@@ -25,7 +25,15 @@ This [replaces the `compose` function](#1-compose--composes).
 
 Extract a plain-object schema (variant names, values and defaults) from a `cva` component via the new [`getSchema` utility](/beta/getting-started/utilities). Use it to generate Storybook controls or any other UI that reads a component's variants.
 
-### 4. Bring your own concatenator with `cva/core`
+### 4. Internal variants
+
+A variant name prefixed with `_` is now treated as [internal](/beta/getting-started/variants#internal-variants). It stays off a wrapping component's public props because `VariantProps` and `getSchema` omit it, while the `cva` component still accepts it.
+
+:::caution[Breaking change]
+If a component already declared a variant with a leading underscore (`_state`, `_internal`, etc.), that variant now disappears from `VariantProps` and from `getSchema` results. The component still accepts it directly, but you'll need to rename it if you exposed it as a public prop.
+:::
+
+### 5. Bring your own concatenator with `cva/core`
 
 The `cva` package is now a preset over a lean core: importing from `cva` gives you `cva`/`cx` wired up with `clsx`, exactly like `class-variance-authority`. The new [`cva/core` entry point](/beta/api-reference#cvacore) exposes the same engine with no concatenator wired up, so you can swap in `tailwind-merge`, `cn`, `clsx/lite`, or your own function via the required `cx` option. The authoring surface adopts your concatenator's input type automatically, so your variants are typechecked against exactly what it supports.
 

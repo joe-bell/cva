@@ -49,7 +49,7 @@ interface VitestReport {
   files: VitestFile[];
 }
 
-function parseArgs(argv: string[]) {
+export function parseArgs(argv: string[]) {
   let vitestJson = path.join(repoRoot, "test/bench/.output/vitest-bench.json");
   let baselinesDir = process.env.BENCH_BASELINES_DIR;
   let outDir = path.join(repoRoot, "test/bench/.output");
@@ -61,20 +61,20 @@ function parseArgs(argv: string[]) {
   return { vitestJson, baselinesDir, outDir };
 }
 
-function packageNameFromFilepath(filepath: string): string | undefined {
+export function packageNameFromFilepath(filepath: string): string | undefined {
   const basename = path.basename(filepath, ".bench.ts");
   return PACKAGES.includes(basename) ? basename : undefined;
 }
 
-function localVersion(pkg: string): string {
+export function localVersion(pkg: string): string {
   const pkgJsonPath = path.join(repoRoot, "packages", pkg, "package.json");
   const pkgJson = JSON.parse(readFileSync(pkgJsonPath, "utf8"));
   return pkgJson.version;
 }
 
-function gitSha(): string {
+export function gitSha(execImpl: typeof execFileSync = execFileSync): string {
   try {
-    return execFileSync("git", ["rev-parse", "HEAD"], {
+    return execImpl("git", ["rev-parse", "HEAD"], {
       encoding: "utf8",
     }).trim();
   } catch {
@@ -82,7 +82,7 @@ function gitSha(): string {
   }
 }
 
-function findGroup(
+export function findGroup(
   files: VitestFile[],
   pkg: string,
   describeName: string,
@@ -97,7 +97,7 @@ function findGroup(
   return undefined;
 }
 
-function toTasks(group: VitestGroup): Task[] {
+export function toTasks(group: VitestGroup): Task[] {
   return group.benchmarks.map((b) => ({
     name: b.name,
     hz: b.hz,
@@ -107,8 +107,8 @@ function toTasks(group: VitestGroup): Task[] {
   }));
 }
 
-function main() {
-  const { vitestJson, baselinesDir, outDir } = parseArgs(process.argv.slice(2));
+export function main(argv: string[] = process.argv.slice(2)) {
+  const { vitestJson, baselinesDir, outDir } = parseArgs(argv);
 
   const report: VitestReport = JSON.parse(readFileSync(vitestJson, "utf8"));
 
@@ -200,4 +200,16 @@ function main() {
   }
 }
 
-main();
+/* v8 ignore start -- process entrypoint, exercised by `node
+   test/bench/scripts/report.ts` in CI; subprocess coverage isn't collected. */
+function isMainModule(): boolean {
+  return (
+    process.argv[1] !== undefined &&
+    path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+  );
+}
+
+if (isMainModule()) {
+  main();
+}
+/* v8 ignore stop */

@@ -136,9 +136,18 @@ type MergedDefaultVariants<T extends readonly unknown[]> = T extends readonly [
   ? RightMerge<DefaultsOf<Head>, MergedDefaultVariants<Rest>>
   : {};
 
-export type VariantProps<Component extends (...args: any) => any> = Omit<
+type ComponentProps<Component extends (...args: any) => any> = Omit<
   OmitUndefined<Parameters<Component>[0]>,
   "class" | "className"
+>;
+
+// A variant name prefixed with `_` is internal: the component still accepts
+// it, but `VariantProps` and `getSchema` omit it from the public surface.
+type InternalVariantKey = `_${string}`;
+
+export type VariantProps<Component extends (...args: any) => any> = Omit<
+  ComponentProps<Component>,
+  InternalVariantKey
 >;
 
 /* compose
@@ -159,7 +168,7 @@ export interface Compose<T extends ClassValue = ClassValue> {
     props?: (
       | UnionToIntersection<
           {
-            [K in keyof Components]: VariantProps<Components[K]>;
+            [K in keyof Components]: ComponentProps<Components[K]>;
           }[number]
         >
       | undefined
@@ -631,10 +640,9 @@ export interface GetSchema {
           : { config: CVAComponentConfig<Config, Variants> }
         : never),
   ): {
-    [Variant in keyof Variants]: Config extends CVAComponentConfig<
-      Config,
-      Variants
-    >
+    [Variant in keyof Variants as Variant extends InternalVariantKey
+      ? never
+      : Variant]: Config extends CVAComponentConfig<Config, Variants>
       ? Variant extends keyof Config["defaultVariants"]
         ? Config["defaultVariants"][Variant] extends undefined
           ? never
@@ -668,6 +676,8 @@ export const getSchema = ((component: CVAComponentShape) => {
   if (!variants) return {};
 
   return Object.entries(variants).reduce((acc, [key, value]) => {
+    if (key.startsWith("_")) return acc;
+
     const defaultValue = component.config.defaultVariants?.[key];
     const hasDefaultValue = defaultValue !== undefined;
     const values = Object.keys(value).map((v) => {

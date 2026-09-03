@@ -179,6 +179,24 @@ describe("processBenchmarkPrComment", () => {
     expect(github.rest.issues.createComment).not.toHaveBeenCalled();
   });
 
+  it("re-throws a non-404 error from the PR lookup", async () => {
+    const { metaPath, sectionContentPath } = writeArtifactDir();
+    const github = fakeGithub();
+    github.rest.pulls.get.mockRejectedValueOnce({ status: 500 });
+
+    await expect(
+      processBenchmarkPrComment({
+        github,
+        context,
+        metaPath,
+        sectionContentPath,
+        headSha: "abc123",
+        headRepo: "joe-bell/cva",
+      }),
+    ).rejects.toEqual({ status: 500 });
+    expect(github.rest.issues.createComment).not.toHaveBeenCalled();
+  });
+
   it("skips on head SHA mismatch without throwing", async () => {
     const { metaPath, sectionContentPath } = writeArtifactDir();
     const github = fakeGithub({ pull });

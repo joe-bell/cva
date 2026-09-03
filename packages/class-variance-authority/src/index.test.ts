@@ -1717,3 +1717,50 @@ describe("cva", () => {
     });
   });
 });
+
+describe("compound variants declaring class and className together", () => {
+  const button = cva("button", {
+    variants: {
+      intent: {
+        primary: "button--primary",
+        secondary: "button--secondary",
+      },
+    },
+    compoundVariants: [
+      // @ts-expect-error: `class` and `className` are mutually exclusive at
+      // the type level, but the runtime honors both when present.
+      {
+        intent: "primary",
+        class: "compound-class",
+        className: "compound-classname",
+      },
+    ],
+  });
+
+  test("applies both compound classes at runtime", () => {
+    expect(button({ intent: "primary" })).toBe(
+      "button button--primary compound-class compound-classname",
+    );
+  });
+});
+
+describe("unmatched variant values", () => {
+  const button = cva("button", {
+    variants: {
+      intent: {
+        primary: "button--primary",
+      },
+      size: {
+        small: "button--small",
+      },
+    },
+    defaultVariants: {
+      size: "small",
+    },
+  });
+
+  test("falls through without variant classes for an unknown value", () => {
+    // @ts-expect-error: deliberately outside the variant's typed values
+    expect(button({ intent: "bogus" })).toBe("button button--small");
+  });
+});

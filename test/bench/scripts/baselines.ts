@@ -14,6 +14,10 @@ import { fileURLToPath } from "node:url";
 
 const PACKAGES = ["cva", "class-variance-authority"];
 const LABELS = ["release", "prerelease"] as const;
+const REPO_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../..",
+);
 
 type Label = (typeof LABELS)[number];
 
@@ -25,7 +29,7 @@ export interface ManifestEntry {
   skipped?: string;
 }
 
-function parseArgs(argv: string[]) {
+export function parseArgs(argv: string[]) {
   let out = path.join(tmpdir(), "cva-bench-baselines");
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--out" && argv[i + 1]) out = argv[++i];
@@ -137,12 +141,19 @@ export async function resolvePackageVersions(
   });
 }
 
-function rootPackageManager(): string {
-  const rootPkgJson = JSON.parse(readFileSync("package.json", "utf8"));
+export function rootPackageManager(): string {
+  const rootPkgJson = JSON.parse(
+    readFileSync(path.join(REPO_ROOT, "package.json"), "utf8"),
+  );
   return rootPkgJson.packageManager;
 }
 
-function installBaseline(pkg: string, version: string, dir: string) {
+export function installBaseline(
+  pkg: string,
+  version: string,
+  dir: string,
+  execImpl: typeof execFileSync = execFileSync,
+) {
   mkdirSync(dir, { recursive: true });
   writeFileSync(
     path.join(dir, "package.json"),
@@ -160,7 +171,7 @@ function installBaseline(pkg: string, version: string, dir: string) {
       2,
     ),
   );
-  execFileSync(
+  execImpl(
     "pnpm",
     ["add", `${pkg}@${version}`, "--ignore-workspace", "--ignore-scripts"],
     {
@@ -170,14 +181,20 @@ function installBaseline(pkg: string, version: string, dir: string) {
   );
 }
 
-async function main() {
-  const { out } = parseArgs(process.argv.slice(2));
+export async function main(
+  argv: string[] = process.argv.slice(2),
+  {
+    fetchImpl = fetch,
+    execImpl = execFileSync,
+  }: { fetchImpl?: typeof fetch; execImpl?: typeof execFileSync } = {},
+) {
+  const { out } = parseArgs(argv);
   mkdirSync(out, { recursive: true });
 
   const entries: ManifestEntry[] = [];
 
   for (const pkg of PACKAGES) {
-    const versions = await resolvePackageVersions(pkg);
+    const versions = await resolvePackageVersions(pkg, fetchImpl);
     for (const resolved of versions) {
       if (resolved.skipped) {
         entries.push({ package: pkg, ...resolved });
@@ -186,7 +203,12 @@ async function main() {
 
       const dirName = `${pkg}-${resolved.label}`;
       try {
-        installBaseline(pkg, resolved.version, path.join(out, dirName));
+        installBaseline(
+          pkg,
+          resolved.version,
+          path.join(out, dirName),
+          execImpl,
+        );
         entries.push({ package: pkg, ...resolved, dir: dirName });
       } catch (error) {
         entries.push({
@@ -211,6 +233,8 @@ async function main() {
   }
 }
 
+/* v8 ignore start -- process entrypoint, exercised by `pnpm bench:baselines`
+   in CI; subprocess coverage isn't collected. */
 function isMainModule(): boolean {
   return (
     process.argv[1] !== undefined &&
@@ -221,3 +245,4 @@ function isMainModule(): boolean {
 if (isMainModule()) {
   await main();
 }
+/* v8 ignore stop */

@@ -175,6 +175,8 @@ export async function upsertPrComment({
   if (existing) {
     const body = assertCommentBodySize(
       upsertSection(
+        /* v8 ignore next -- defensive fallback: findStickyComment only
+           matches comments whose body passed `startsWith`. */
         existing.body ?? STICKY_MARKER,
         sectionId,
         sectionContent,

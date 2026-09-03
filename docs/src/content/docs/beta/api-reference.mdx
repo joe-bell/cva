@@ -17,7 +17,7 @@ const component = cva(options);
 
 1. `options`
    - `base`: the base class name (`string`, `string[]` or other [`clsx` value](https://github.com/lukeed/clsx#input))
-   - `variants`: your variants schema
+   - `variants`: your [variants schema](/beta/getting-started/variants)
    - `compoundVariants`: variants based on a combination of previously defined variants
    - `defaultVariants`: set default values for previously defined variants
    - `composes`: shallow merge one or more other `cva` components into this one, as a single component or an array (see [Composing Components](/beta/getting-started/composing-components))
@@ -76,7 +76,7 @@ getSchema(button);
 // }
 ```
 
-`getSchema` omits a variant that has no values (e.g. `variants: { empty: {} }`).
+`getSchema` omits [internal variants](/beta/getting-started/variants#internal-variants) or variants that have no values (e.g. `variants: { empty: {} }`).
 
 ### Parameters
 

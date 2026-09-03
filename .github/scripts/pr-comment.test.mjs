@@ -132,6 +132,7 @@ describe("upsertSection", () => {
       /invalid section id/,
     );
     expect(() => sectionBlock("UPPER", "x")).toThrow(/invalid section id/);
+    expect(() => sectionBlock(123, "x")).toThrow(/invalid section id/);
   });
 
   it("rejects content containing a literal section marker", () => {
@@ -162,6 +163,19 @@ describe("findStickyComment", () => {
   it("ignores a non-bot comment that happens to start with the marker", async () => {
     const github = fakeGithub([
       { id: 1, user: { type: "User" }, body: `${STICKY_MARKER}\nspoofed` },
+    ]);
+    const found = await findStickyComment({
+      github,
+      context,
+      issueNumber: 42,
+    });
+    expect(found).toBeUndefined();
+  });
+
+  it("ignores comments with no user or no body", async () => {
+    const github = fakeGithub([
+      { id: 1, body: `${STICKY_MARKER}\nno user` },
+      { id: 2, user: { type: "Bot" } },
     ]);
     const found = await findStickyComment({
       github,
@@ -216,6 +230,10 @@ describe("assertCommentBodySize", () => {
     expect(() =>
       assertCommentBodySize("x".repeat(MAX_COMMENT_CHARS + 1)),
     ).toThrow(/exceeds GitHub's 65536-character limit/);
+  });
+
+  it("rejects a non-string body", () => {
+    expect(() => assertCommentBodySize(undefined)).toThrow(/non-string/);
   });
 });
 
@@ -274,6 +292,38 @@ describe("upsertPrComment", () => {
     const body = github.rest.issues.updateComment.mock.calls[0][0].body;
     expect(body).toContain("old benchmark content");
     expect(body).toContain("## Coverage");
+  });
+
+  it("waits for another producer's comment via retries, then updates it", async () => {
+    let calls = 0;
+    const sticky = { id: 5, user: { type: "Bot" }, body: STICKY_MARKER };
+    const github = {
+      paginate: vi.fn(async () => {
+        calls += 1;
+        return calls < 2 ? [] : [sticky];
+      }),
+      rest: {
+        issues: {
+          listComments: vi.fn(),
+          updateComment: vi.fn(async () => ({})),
+          createComment: vi.fn(async () => ({ data: { id: 999 } })),
+        },
+      },
+    };
+
+    const result = await upsertPrComment({
+      github,
+      context,
+      issueNumber: 42,
+      sectionId: "coverage",
+      sectionContent: "## Coverage",
+      retries: 2,
+      retryDelayMs: 1,
+    });
+
+    expect(result).toEqual({ action: "updated", commentId: 5 });
+    expect(calls).toBe(2);
+    expect(github.rest.issues.createComment).not.toHaveBeenCalled();
   });
 
   it("rejects a rendered comment body over GitHub's limit", async () => {
