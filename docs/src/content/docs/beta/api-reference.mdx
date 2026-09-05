@@ -28,7 +28,7 @@ A `cva` component function
 
 ## `cx`
 
-Concatenates class names (an alias of [`clsx`](https://github.com/lukeed/clsx); swap in your own concatenator via [`cva/core`](#cvacore))
+Concatenates class names (an alias of [`clsx`](https://github.com/lukeed/clsx); swap in your own concatenator via [`cva/core`](#cvacore)).
 
 ```ts
 import { cx } from "cva";
@@ -38,7 +38,7 @@ const className = cx(classes);
 
 ### Parameters
 
-- `classes`: array of classes to be concatenated ([see `clsx` usage](https://github.com/lukeed/clsx#input))
+- `classes`: zero or more class values. The preset accepts [`clsx` values](https://github.com/lukeed/clsx#input); `cva/core` uses the configured concatenator's grammar
 
 ### Returns
 
@@ -111,14 +111,23 @@ export const { cva, cx } = defineConfig(options);
      - It owns the class name grammar: `cva` passes composed outputs, `base`, matched variant and compound-variant values, and `class`/`className` through verbatim, one argument each.
      - Custom callbacks must accept empty calls, variadic inputs, and composed component strings.
      - The authoring surface adopts its parameter type: `twMerge` rejects object syntax, while `clsx` keeps the full clsx-flavored `ClassValue` grammar.
-     - See [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for `tailwind-merge` and `cn` examples.
+     - See [Merging classes](/beta/getting-started/installation#merging-classes) for `cn` and `tailwind-merge` examples.
    - `hooks`
-     - `onComplete` (deprecated, use `cx` instead): returns a concatenated class string of all classes passed to `cx` or `cva`.
+     - `onComplete` and `"cx:done"` are deprecated. Each receives the concatenated string and returns a processed string. Use `cx` instead. When both hooks are set, `"cx:done"` takes precedence.
 
-`defineConfig` also returns a deprecated `compose` function for migrating from `class-variance-authority`; use the `composes` property on `cva` instead. See [What's new?](/beta/getting-started/whats-new#1-compose--composes).
+`defineConfig` also returns a deprecated `compose` function for migrating from earlier `cva@beta` releases. Use the `composes` property on `cva` instead. See [What's new?](/beta/getting-started/whats-new#1-compose--composes).
 
 For backwards compatibility, `defineConfig` is still re-exported from `cva` (with `cx` optional, defaulting to `clsx`), but it's deprecated there: import it from `cva/core` instead.
 
 ### Advanced concatenators
 
-Use [`clsx/lite`](https://github.com/lukeed/clsx#clsxlite) only when every authored value is a string and you do not need conflict resolution. Its runtime ignores arrays, objects, and numbers even though its published types accept them.
+Use [`clsx/lite`](https://github.com/lukeed/clsx#clsxlite) only when every authored value is a string and you do not need conflict resolution. Its runtime ignores arrays, objects, and numbers even though its published types accept them. Annotate a string-only wrapper so `cva` rejects those values too:
+
+```ts
+import { defineConfig } from "cva/core";
+import { clsx as clsxLite } from "clsx/lite";
+
+export const { cva, cx } = defineConfig({
+  cx: (...inputs: string[]) => clsxLite(...inputs),
+});
+```

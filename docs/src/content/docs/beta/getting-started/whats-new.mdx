@@ -3,9 +3,11 @@ title: What's New?
 description: What changed in cva@1.0, defineConfig, composes, getSchema, and other breaking changes since class-variance-authority@0.x.
 ---
 
----
-
 What's changed since `class-variance-authority@0.*`?
+
+## TypeScript 6.0
+
+TypeScript projects using `cva@beta` need TypeScript 6.0 or later. JavaScript usage is unaffected.
 
 ## Features
 
@@ -13,7 +15,7 @@ What's changed since `class-variance-authority@0.*`?
 
 Roll your own `cva` via the new [`defineConfig` API in `cva/core`](/beta/api-reference#cvacore).
 
-Use `cva`/`cx` with `tailwind-merge`, `cn`, or your own concatenator via the [`cx` option](/beta/getting-started/installation#handling-style-conflicts).
+Use `cva`/`cx` with `cn`, `tailwind-merge`, or your own concatenator via the [`cx` option](/beta/getting-started/installation#merging-classes).
 
 ### 2. `composes`
 
@@ -35,7 +37,7 @@ If a component already declared a variant with a leading underscore (`_state`, `
 
 ### 5. Bring your own concatenator with `cva/core`
 
-The `cva` package is a preset over a lean core: it wires `cva` and `cx` to `clsx`, like `class-variance-authority`. Use `cva/core` with a required `cx` option to configure `tailwind-merge`, `cn`, `clsx/lite`, or your own concatenator.
+The `cva` package is a preset over the core: it wires `cva` and `cx` to `clsx`, like `class-variance-authority`. Use `cva/core` with a required `cx` option to configure `clsx/lite`, `cn`, `tailwind-merge`, or your own concatenator.
 
 ## Deprecations
 
@@ -59,6 +61,22 @@ The `compose` method is deprecated in favor of the `composes` property inside `c
 :::
 
 See [Composing Components](/beta/getting-started/composing-components) for more details and migration examples.
+
+### 2. Preset `defineConfig` → `cva/core`
+
+The `defineConfig` function and `DefineConfig` and `DefineConfigOptions` type imports from `cva` are deprecated but still work. Move them to `cva/core`, where `cx` is required. Add `clsx` as a direct dependency with `pnpm add clsx` to preserve the preset behavior:
+
+```diff lang="ts"
+- import { defineConfig, type DefineConfigOptions } from "cva";
++ import { defineConfig, type DefineConfigOptions } from "cva/core";
++ import { clsx } from "clsx";
+
+- const config = defineConfig();
++ const options: DefineConfigOptions = { cx: clsx };
++ const config = defineConfig(options);
+```
+
+For `hooks.onComplete` and `hooks["cx:done"]`, move the equivalent postprocessing into `cx`. [Merging classes](/beta/getting-started/installation#merging-classes) shows `cn`, `clsx` with `tailwind-merge`, and a generic `clsx` wrapper.
 
 ## Enhancements
 

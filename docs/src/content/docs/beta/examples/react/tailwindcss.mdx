@@ -21,20 +21,21 @@ These examples build a React `button` component with `cva` and Tailwind CSS. The
   file="src/components/nav/nav.tsx"
 />
 
-## Merging Tailwind classes with tailwind-merge
+## Merging classes
 
-This example composes [`clsx`](https://github.com/lukeed/clsx), which resolves `cva`'s authoring grammar, with [`tailwind-merge`](https://github.com/dcastil/tailwind-merge), which dedupes conflicting Tailwind utilities. This is the pattern behind shadcn/ui's [`cn` helper](https://ui.shadcn.com/docs/installation/manual#add-a-cn-helper). It's wired in as `cva`'s concatenator via [`cva/core`](/beta/api-reference#cvacore) and re-exported as `cn`. See [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for the details.
+Both examples resolve conflicting Tailwind CSS classes and conditional inputs. See [Merging classes](/beta/getting-started/installation#merging-classes) for the configurations.
+
+### cn
+
+[`cn`](https://www.npmjs.com/package/cn) joins conditional classes and resolves Tailwind CSS conflicts in one function.
+
+<StackBlitz dir="examples/beta/react-with-cn" file="src/cva.config.ts" />
+
+### tailwind-merge
+
+[`clsx`](https://github.com/lukeed/clsx) with [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) preserves `cva`'s full `ClassValue` grammar while resolving Tailwind CSS conflicts.
 
 <StackBlitz
   dir="examples/beta/react-with-tailwind-merge"
   file="src/cva.config.ts"
 />
-
-[`cn`](https://github.com/shadcn-ui/cn) is an alternative single-function configuration:
-
-```ts
-import { cn } from "cn";
-import { defineConfig } from "cva/core";
-
-export const { cva, cx } = defineConfig({ cx: cn });
-```
