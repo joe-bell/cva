@@ -1,11 +1,11 @@
 ---
 title: React with Tailwind CSS
-description: A cva button component built with React and Tailwind CSS, including a compound-components example.
+description: A cva button component built with React and Tailwind CSS, including compound components and class conflict resolution.
 ---
 
 import StackBlitz from "../../../../../components/stackblitz.astro";
 
-These examples build a `button` component with `cva` and Tailwind CSS in a React project, including a compound-components variant.
+These examples build a React `button` component with `cva` and Tailwind CSS. They cover compound components and conflicting Tailwind classes.
 
 ## Basic component
 
@@ -19,4 +19,23 @@ These examples build a `button` component with `cva` and Tailwind CSS in a React
 <StackBlitz
   dir="examples/beta/react-with-tailwindcss-compound"
   file="src/components/nav/nav.tsx"
+/>
+
+## Merging classes
+
+Both examples resolve conflicting Tailwind CSS classes and conditional inputs. See [Merging classes](/beta/getting-started/installation#merging-classes) for the configurations.
+
+### cn
+
+[`cn`](https://www.npmjs.com/package/cn) joins conditional classes and resolves Tailwind CSS conflicts in one function.
+
+<StackBlitz dir="examples/beta/react-with-cn" file="src/cva.config.ts" />
+
+### tailwind-merge
+
+[`clsx`](https://github.com/lukeed/clsx) with [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) preserves `cva`'s full `ClassValue` grammar while resolving Tailwind CSS conflicts.
+
+<StackBlitz
+  dir="examples/beta/react-with-tailwind-merge"
+  file="src/cva.config.ts"
 />

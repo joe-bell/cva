@@ -22,6 +22,8 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
+    "./config": "./src/config.ts",
+    "./utils": "./src/utils.ts",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
@@ -47,16 +49,18 @@
     "@types/node": "24.13.2",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
+    "cn": "0.2.2",
     "publint": "0.3.21",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "size-limit": "^12.1.0",
+    "tailwind-merge": "3.6.0",
     "tsdown": "0.22.4",
     "typescript": "6.0.3",
     "unplugin-unused": "0.5.7"
   },
   "peerDependencies": {
-    "typescript": ">= 4.5.5"
+    "typescript": ">= 6.0.0"
   },
   "peerDependenciesMeta": {
     "typescript": {
@@ -69,16 +73,42 @@
         "import": "./dist/index.mjs",
         "require": "./dist/index.cjs"
       },
+      "./config": {
+        "import": "./dist/config.mjs",
+        "require": "./dist/config.cjs"
+      },
+      "./utils": {
+        "import": "./dist/utils.mjs",
+        "require": "./dist/utils.cjs"
+      },
       "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",
-    "types": "dist/index.d.cts"
+    "types": "dist/index.d.cts",
+    "typesVersions": {
+      "*": {
+        "config": [
+          "./dist/config.d.cts"
+        ],
+        "utils": [
+          "./dist/utils.d.cts"
+        ]
+      }
+    }
   },
   "size-limit": [
     {
       "path": "dist/index.cjs",
-      "limit": "1.6KB"
+      "limit": "1.35KB"
+    },
+    {
+      "path": "dist/config.cjs",
+      "limit": "1.05KB"
+    },
+    {
+      "path": "dist/utils.cjs",
+      "limit": "0.35KB"
     }
   ]
 }

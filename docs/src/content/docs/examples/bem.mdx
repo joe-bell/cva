@@ -25,7 +25,7 @@ This example applies BEM class names with `cva` instead of utility classes.
   /* */
 }
 
-.button--primary-small {
+.button--primary-medium {
   /* */
 }
 ```
@@ -45,7 +45,7 @@ const button = cva("button", {
     },
   },
   compoundVariants: [
-    { intent: "primary", size: "medium", class: "button--primary-small" },
+    { intent: "primary", size: "medium", class: "button--primary-medium" },
   ],
   defaultVariants: {
     intent: "primary",
@@ -54,7 +54,7 @@ const button = cva("button", {
 });
 
 button();
-// => "button button--primary button--medium button--primary-small"
+// => "button button--primary button--medium button--primary-medium"
 
 button({ intent: "secondary", size: "small" });
 // => "button button--secondary button--small"

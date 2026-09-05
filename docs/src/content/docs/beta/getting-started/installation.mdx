@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Install cva@beta and configure Tailwind CSS IntelliSense and tailwind-merge.
+description: Install cva@beta, configure Tailwind CSS IntelliSense, and merge conflicting utility classes.
 ---
 
 import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
@@ -123,36 +123,78 @@ You can enable autocompletion inside `cva` using the steps below:
   </TabItem>
 </Tabs>
 
-### Handling style conflicts
+<span id="handling-style-conflicts" />
 
-If you want to merge Tailwind CSS classes without conflicts, you may wish to [roll-your-own `cva`](../api-reference#defineconfig) with the [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) package:
+## Merging classes
 
-<details>
+By default, `cva` uses [`clsx`](https://github.com/lukeed/clsx) for conditional class joining. It does not resolve conflicting Tailwind CSS utilities.
 
-<summary>Example with tailwind-merge</summary>
+Both configurations accept conditional objects and arrays.
+
+### cn
+
+Install the [`cn`](https://www.npmjs.com/package/cn) package to join conditional classes and resolve Tailwind CSS conflicts in one function:
+
+```sh
+pnpm add cn
+```
 
 ```ts
 // cva.config.ts
-import { defineConfig } from "cva";
+import { defineConfig } from "cva/config";
+import { cn } from "cn";
+
+export const { cva, cx } = defineConfig({ cx: cn });
+```
+
+### tailwind-merge
+
+Install [`clsx`](https://github.com/lukeed/clsx) with [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) to preserve `cva`'s full `ClassValue` grammar while resolving Tailwind CSS conflicts:
+
+```sh
+pnpm add clsx tailwind-merge
+```
+
+```ts
+// cva.config.ts
+import { defineConfig } from "cva/config";
+import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export const { cva, cx } = defineConfig({
-  hooks: {
-    onComplete: (className) => twMerge(className),
-  },
+  cx: (...inputs) => twMerge(clsx(inputs)),
 });
 ```
+
+<details>
+
+<summary>
+  Bare <code>twMerge</code>
+</summary>
+
+Use bare `twMerge` when your authored values are strings or arrays. TypeScript rejects object syntax, but JavaScript has no compile-time protection. Exported configurations can expose tailwind-merge's `ClassNameValue` in your library declarations.
+
+```ts
+import { defineConfig } from "cva/config";
+import { twMerge } from "tailwind-merge";
+
+export const { cva, cx } = defineConfig({ cx: twMerge });
+```
+
+</details>
+
+### Use either configuration
+
+Use the configured functions throughout your project:
 
 ```ts
 // components/button.ts
 import { cx, cva } from "../cva.config";
 
 export const button = cva({
-  // 1. `twMerge` strips out `bg-gray-200`…
   base: "font-semibold bg-gray-200 border rounded",
   variants: {
     intent: {
-      // 2. …as variant `bg-*` values take precedence
       primary: "bg-blue-500 text-white border-transparent hover:bg-blue-600",
       secondary: "bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
     },
@@ -161,12 +203,20 @@ export const button = cva({
     intent: "primary",
   },
 });
+```
 
+Both configurations produce the same output:
+
+```ts
 button();
 // => "font-semibold border rounded bg-blue-500 text-white border-transparent hover:bg-blue-600"
 
-cx("bg-gray-200", "bg-blue-500");
+cx("bg-gray-200", { "bg-blue-500": true });
 // => "bg-blue-500"
 ```
 
-</details>
+For string-only authoring without conflict resolution, see [advanced concatenators](/beta/api-reference#advanced-concatenators) for `clsx/lite`.
+
+### Migrating deprecated hooks
+
+For an existing `twMerge` hook, use `cx: cn` or the `clsx` and `tailwind-merge` wrapper above to preserve conditional joining and conflict resolution. For another postprocessor, keep it and join its inputs explicitly: `cx: (...inputs) => postprocess(clsx(inputs))`.

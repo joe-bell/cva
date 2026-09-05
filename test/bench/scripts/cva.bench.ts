@@ -93,6 +93,20 @@ function registerBenchmarks(mod: typeof local) {
   );
 
   const buttonVariants = mod.cva(buttonConfig);
+  const baseOnly = mod.cva({ base: "button font-semibold border rounded" });
+  const variantsWithoutCompounds = mod.cva({
+    base: "button font-semibold border rounded",
+    variants: buttonConfig.variants,
+    defaultVariants: buttonConfig.defaultVariants,
+  });
+
+  bench(
+    "Call component (base only)",
+    () => {
+      baseOnly();
+    },
+    BENCH_OPTIONS,
+  );
 
   bench(
     "Call component (default variants)",
@@ -119,6 +133,26 @@ function registerBenchmarks(mod: typeof local) {
   );
 
   bench(
+    "Call component (variants without compounds)",
+    () => {
+      variantsWithoutCompounds({ intent: "primary", size: "medium" } as any);
+    },
+    BENCH_OPTIONS,
+  );
+
+  bench(
+    "Call component (explicit undefined props)",
+    () => {
+      buttonVariants({
+        intent: undefined,
+        disabled: undefined,
+        size: undefined,
+      } as any);
+    },
+    BENCH_OPTIONS,
+  );
+
+  bench(
     "Join class names",
     () => {
       mod.cx(
@@ -133,6 +167,18 @@ function registerBenchmarks(mod: typeof local) {
   );
 
   if (supportsComposes(mod)) {
+    const buttonA = mod.cva(buttonConfig);
+    const buttonB = mod.cva({ base: "icon" });
+    const composed = mod.cva({ composes: [buttonA, buttonB] } as any);
+
+    bench(
+      "Call composed component (prebuilt)",
+      () => {
+        composed({ intent: "secondary" } as any);
+      },
+      BENCH_OPTIONS,
+    );
+
     bench(
       "Compose components (setup + call)",
       () => {

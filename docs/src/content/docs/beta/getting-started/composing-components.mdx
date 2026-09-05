@@ -72,10 +72,23 @@ const b = cva({
   defaultVariants: { style: "secondary" },
 });
 
-const combined = cva({ composes: [a, b] });
+const combinedWithDefaults = cva({ composes: [a, b] });
+
+combinedWithDefaults();
+// => "a b b-secondary"
+```
+
+The composing component can set `defaultVariants` and `compoundVariants` for composed variants without redeclaring them. Both are typechecked against the merged variants, so only values a composed component declares are accepted:
+
+```ts
+const combined = cva({
+  composes: [a, b],
+  compoundVariants: [{ style: "primary", class: "combined-primary" }],
+  defaultVariants: { style: "primary" },
+});
 
 combined();
-// => "a b b-secondary"
+// => "a a-primary b b-primary combined-primary"
 ```
 
 :::caution
