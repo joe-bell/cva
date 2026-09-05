@@ -1,0 +1,29 @@
+{
+  "name": "example-beta-react-with-cn",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm check && vite build",
+    "check": "tsc",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "cn": "0.2.2",
+    "cva": "beta",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.4",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "tailwindcss": "^4.3.0",
+    "typescript": "6.0.3",
+    "vite": "^8.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

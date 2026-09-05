@@ -117,7 +117,7 @@ function Button({ active, size, className, ...props }: Props) {
 }
 ```
 
-A composed-only internal variant is omitted from the composer's `VariantProps` too. To change its default from the composer, redeclare it locally: the same rule applies to any composed-only variant (see [Extending variants](/beta/getting-started/composing-components#extending-variants)).
+A composed-only internal variant is omitted from the composer's `VariantProps` too. You can override its inherited default directly from the composer without redeclaring the variant (see [Extending variants](/beta/getting-started/composing-components#extending-variants)).
 
 ```ts
 const base = cva({
@@ -129,12 +129,11 @@ const base = cva({
 
 const card = cva({
   composes: base,
-  variants: { _tone: { loud: "loud-local" } },
   defaultVariants: { _tone: "loud" },
 });
 
 card();
-// => "tone-loud loud-local"
+// => "tone-loud"
 ```
 
 ## Compound variants
