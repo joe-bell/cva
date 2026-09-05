@@ -141,7 +141,7 @@ pnpm add cn
 
 ```ts
 // cva.config.ts
-import { defineConfig } from "cva/core";
+import { defineConfig } from "cva/config";
 import { cn } from "cn";
 
 export const { cva, cx } = defineConfig({ cx: cn });
@@ -157,7 +157,7 @@ pnpm add clsx tailwind-merge
 
 ```ts
 // cva.config.ts
-import { defineConfig } from "cva/core";
+import { defineConfig } from "cva/config";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -175,7 +175,7 @@ export const { cva, cx } = defineConfig({
 Use bare `twMerge` when your authored values are strings or arrays. TypeScript rejects object syntax, but JavaScript has no compile-time protection. Exported configurations can expose tailwind-merge's `ClassNameValue` in your library declarations.
 
 ```ts
-import { defineConfig } from "cva/core";
+import { defineConfig } from "cva/config";
 import { twMerge } from "tailwind-merge";
 
 export const { cva, cx } = defineConfig({ cx: twMerge });

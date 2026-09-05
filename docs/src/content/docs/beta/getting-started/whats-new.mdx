@@ -13,7 +13,7 @@ TypeScript projects using `cva@beta` need TypeScript 6.0 or later. JavaScript us
 
 ### 1. `defineConfig`
 
-Roll your own `cva` via the new [`defineConfig` API in `cva/core`](/beta/api-reference#cvacore).
+Roll your own `cva` via the new [`defineConfig` API in `cva/config`](/beta/api-reference#cvaconfig).
 
 Use `cva`/`cx` with `cn`, `tailwind-merge`, or your own concatenator via the [`cx` option](/beta/getting-started/installation#merging-classes).
 
@@ -35,9 +35,11 @@ A variant name prefixed with `_` is now treated as [internal](/beta/getting-star
 If a component already declared a variant with a leading underscore (`_state`, `_internal`, etc.), that variant now disappears from `VariantProps` and from `getSchema` results. The component still accepts it directly, but you'll need to rename it if you exposed it as a public prop.
 :::
 
-### 5. Bring your own concatenator with `cva/core`
+<span id="5-bring-your-own-concatenator-with-cvacore" />
 
-The `cva` package is a preset over the core: it wires `cva` and `cx` to `clsx`, like `class-variance-authority`. Use `cva/core` with a required `cx` option to configure `clsx/lite`, `cn`, `tailwind-merge`, or your own concatenator.
+### 5. Bring your own concatenator with `cva/config`
+
+The `cva` package is a preset over the core: it wires `cva` and `cx` to `clsx`, like `class-variance-authority`. Use `cva/config` with a required `cx` option to configure `clsx/lite`, `cn`, `tailwind-merge`, or your own concatenator.
 
 ## Deprecations
 
@@ -62,13 +64,15 @@ The `compose` method is deprecated in favor of the `composes` property inside `c
 
 See [Composing Components](/beta/getting-started/composing-components) for more details and migration examples.
 
-### 2. Preset `defineConfig` → `cva/core`
+<span id="2-preset-defineconfig--cvacore" />
 
-The `defineConfig` function and `DefineConfig` and `DefineConfigOptions` type imports from `cva` are deprecated but still work. Move them to `cva/core`, where `cx` is required. Add `clsx` as a direct dependency with `pnpm add clsx` to preserve the preset behavior:
+### 2. Preset `defineConfig` → `cva/config`
+
+The `defineConfig` function and `DefineConfig` and `DefineConfigOptions` type imports from `cva` are deprecated but still work. Move them to `cva/config`, where `cx` is required. Add `clsx` as a direct dependency with `pnpm add clsx` to preserve the preset behavior:
 
 ```diff lang="ts"
 - import { defineConfig, type DefineConfigOptions } from "cva";
-+ import { defineConfig, type DefineConfigOptions } from "cva/core";
++ import { defineConfig, type DefineConfigOptions } from "cva/config";
 + import { clsx } from "clsx";
 
 - const config = defineConfig();
@@ -77,6 +81,15 @@ The `defineConfig` function and `DefineConfig` and `DefineConfigOptions` type im
 ```
 
 For `hooks.onComplete` and `hooks["cx:done"]`, move the equivalent postprocessing into `cx`. [Merging classes](/beta/getting-started/installation#merging-classes) shows `cn`, `clsx` with `tailwind-merge`, and a generic `clsx` wrapper.
+
+### 3. Root `getSchema` → `cva/utils`
+
+`getSchema` and its `GetSchema` type are still exported from `cva`, but deprecated there. Import them from `cva/utils` instead:
+
+```diff lang="ts"
+- import { getSchema, type GetSchema } from "cva";
++ import { getSchema, type GetSchema } from "cva/utils";
+```
 
 ## Enhancements
 

@@ -10,7 +10,8 @@ import { cn } from "cn";
 import { twMerge } from "tailwind-merge";
 import type * as CVA from "./";
 import { compose, cva, cx } from "./";
-import { defineConfig, getSchema } from "./core";
+import { defineConfig } from "./config";
+import { getSchema } from "./utils";
 
 describe("clsx (the `cva` preset default)", () => {
   test("infers the full ClassValue authoring surface", () => {

@@ -8,7 +8,8 @@ description: Extract a component's variant names, values, and defaults with getS
 Re-declaring variants for a Storybook story or prop table creates a second copy to keep in sync by hand. `getSchema` extracts them from the component instead, so your config stays the single source of truth:
 
 ```ts
-import { cva, getSchema } from "cva";
+import { cva } from "cva";
+import { getSchema } from "cva/utils";
 
 const button = cva({
   base: "button",

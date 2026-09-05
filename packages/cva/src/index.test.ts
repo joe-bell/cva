@@ -1,6 +1,7 @@
 import type * as CVA from "./";
 import { compose, cva, cx, defineConfig, getSchema } from "./";
-import { defineConfig as defineCoreConfig } from "./core";
+import { defineConfig as defineCoreConfig } from "./config";
+import { getSchema as getSchemaUtils } from "./utils";
 
 describe("cx", () => {
   describe.each<CVA.CXOptions>([
@@ -654,6 +655,17 @@ describe("cva — internal variants", () => {
 });
 
 describe("getSchema", () => {
+  test("is also available from cva/utils", () => {
+    const button = cva({
+      variants: { intent: { primary: "button-primary" } },
+    });
+
+    expect(getSchemaUtils(button)).toStrictEqual({
+      intent: { values: ["primary"] },
+    });
+    expectTypeOf(getSchemaUtils).toEqualTypeOf<CVA.GetSchema>();
+  });
+
   test("should return the schema for a component", () => {
     const buttonWithoutBaseWithDefaultsString = cva({
       base: "button font-semibold border rounded",
@@ -2921,7 +2933,7 @@ describe("defineConfig", () => {
   });
 });
 
-describe("cva/core", () => {
+describe("cva/config", () => {
   test("accepts only callbacks that can receive cva's assembled calls", () => {
     const mutableRest = (...inputs: string[]) => inputs.join(" ");
     const readonlyRest = (...inputs: readonly string[]) => inputs.join(" ");
