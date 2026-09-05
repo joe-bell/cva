@@ -158,6 +158,7 @@ Agent-specific notes:
 
 Durable, hard-won lessons that don't fit a section above. See [Keeping this guide current](#keeping-this-guide-current-self-improving) for what belongs here and how to write it. Newest first; prune anything that's become wrong or obsolete.
 
+- Give deprecated value exports their own JSDoc declaration: destructuring a deprecated property into an export loses its marker in emitted declarations, even when the property and its interface are tagged. Verify editor metadata against the packed package.
 - Keep the base-only, non-composed `cx` call at fixed arity: spreading the shared empty composition array ahead of its arguments caused a repeatable throughput regression under the existing benchmark harness. Preserve the normal `cx` filtering and hook path when optimizing it.
 - Infer concatenator inputs with `readonly [...infer Inputs]`, then validate the complete callback against `string | CXInput<T>` so readonly rests and callback unions preserve the actual `cx` call contract.
 - Component-accepting guards must instantiate the class-value parameter as `any`, or narrowed components fail props contravariance; only the narrowed cases in `packages/cva/src/concatenators.test.ts` catch this, so extend them when adding a component-accepting surface. See `CXInput`'s inline comments in `src/core.ts` for its inference mechanics.

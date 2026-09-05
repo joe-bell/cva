@@ -43,6 +43,10 @@ export type {
 } from "./core.js";
 export { getSchema } from "./core.js";
 
+/**
+ * @deprecated Import `DefineConfigOptions` from `cva/core` instead and provide
+ * the required `cx` concatenator (for example, `clsx`).
+ */
 export interface DefineConfigOptions<TCX extends AnyCX = CX> extends Omit<
   CoreDefineConfigOptions<TCX>,
   "cx"
@@ -51,6 +55,10 @@ export interface DefineConfigOptions<TCX extends AnyCX = CX> extends Omit<
   cx?: CoreDefineConfigOptions<TCX>["cx"];
 }
 
+/**
+ * @deprecated Import `DefineConfig` from `cva/core` instead. Its options require
+ * a `cx` concatenator (for example, `clsx`).
+ */
 export interface DefineConfig {
   <TCX extends AnyCX = CX>(
     options?: DefineConfigOptions<TCX>,
@@ -80,4 +88,8 @@ export const defineConfig = ((options?: DefineConfigOptions) =>
     cx: options?.cx ?? clsx,
   })) as DefineConfig;
 
-export const { compose, cva, cx } = defineCoreConfig({ cx: clsx });
+const preset = defineCoreConfig({ cx: clsx });
+
+/** @deprecated Use the `composes` property inside `cva` instead. */
+export const compose = preset.compose;
+export const { cva, cx } = preset;
