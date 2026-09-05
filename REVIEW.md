@@ -36,7 +36,7 @@ The highest-stakes surface in the repo. Types are the product here as much as th
 CI's `build` job runs tsdown's `publint`/`attw`/`unused` gates, so a genuinely _broken_ publish shape fails on its own. What it can't see:
 
 - **A hand-edit to `exports` or `publishConfig.exports` that happens to be valid.** Both blocks are regenerated on every build (`exports: { devExports: true }` in [`.config/tsdown.base.mts`](./.config/tsdown.base.mts)), so the edit is silently reverted by the next build and the intent is lost. A diff to either block with no matching change to that package's `tsdown.config.mts` or the shared base is the tell.
-- **`class-variance-authority`'s `publishConfig.typesVersions`** — the node10 fallback for its `./types` subpath — is the one hand-maintained field in those manifests. tsdown preserves it but doesn't generate it, so a deletion never comes back.
+- **Published `typesVersions` fallbacks** — `class-variance-authority`'s `./types` and `cva`'s `./core` node10 fallbacks — are hand-maintained. tsdown preserves them but doesn't generate them, so a deletion never comes back.
 - **The published packages deliberately omit `engines.node`** so they don't constrain consumers ([`CONTRIBUTING.md`](./CONTRIBUTING.md#nodejs-versions)). syncpack treats the field as optional and only snaps a declared one to the root, so an added `"24"` sails through — still wrong for a published package.
 
 ## Size and dependency budget

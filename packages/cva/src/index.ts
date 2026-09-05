@@ -48,7 +48,7 @@ export interface DefineConfigOptions<TCX extends AnyCX = CX> extends Omit<
   "cx"
 > {
   /** Defaults to `clsx`. */
-  cx?: TCX;
+  cx?: CoreDefineConfigOptions<TCX>["cx"];
 }
 
 export interface DefineConfig {

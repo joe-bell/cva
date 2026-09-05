@@ -9,3 +9,5 @@
 # cva
 
 For documentation, visit [beta.cva.style](https://beta.cva.style).
+
+`cva@beta` requires TypeScript 6.0 or later.

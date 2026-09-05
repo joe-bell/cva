@@ -1,11 +1,11 @@
 ---
 title: React with Tailwind CSS
-description: A cva button component built with React and Tailwind CSS, including compound components and class conflict resolution with tailwind-merge or cn.
+description: A cva button component built with React and Tailwind CSS, including compound components and class conflict resolution.
 ---
 
 import StackBlitz from "../../../../../components/stackblitz.astro";
 
-These examples build a React `button` component with `cva` and Tailwind CSS. They cover compound components and two ways to resolve conflicting Tailwind classes: `tailwind-merge` composed with `clsx`, or `cn`.
+These examples build a React `button` component with `cva` and Tailwind CSS. They cover compound components and conflicting Tailwind classes.
 
 ## Basic component
 
@@ -30,8 +30,11 @@ This example composes [`clsx`](https://github.com/lukeed/clsx), which resolves `
   file="src/cva.config.ts"
 />
 
-## Merging Tailwind classes with cn
+[`cn`](https://github.com/shadcn-ui/cn) is an alternative single-function configuration:
 
-This example uses the [`cn`](https://github.com/shadcn-ui/cn) package, a single function for conditional class joining and Tailwind conflict resolution, as an alternative to composing `clsx` with `tailwind-merge`. Its input type matches `cva`'s, so object and array authoring stay available. It's wired in via [`cva/core`](/beta/api-reference#cvacore) with `defineConfig({ cx: cn })` and re-exported as `cn`. See [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for the details.
+```ts
+import { cn } from "cn";
+import { defineConfig } from "cva/core";
 
-<StackBlitz dir="examples/beta/react-with-cn" file="src/cva.config.ts" />
+export const { cva, cx } = defineConfig({ cx: cn });
+```
