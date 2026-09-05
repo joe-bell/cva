@@ -109,11 +109,16 @@ export const { cva, cx } = defineConfig(options);
 1. `options`
    - `cx` (**required**): the class name concatenator used by `cva`, `cx`, and `compose`
      - It owns the class name grammar: `cva` passes composed outputs, `base`, matched variant and compound-variant values, and `class`/`className` through verbatim, one argument each.
+     - Custom callbacks must accept empty calls, variadic inputs, and composed component strings.
      - The authoring surface adopts its parameter type: `twMerge` rejects object syntax, while `clsx` keeps the full clsx-flavored `ClassValue` grammar.
-     - See [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for `tailwind-merge`, `cn`, and `clsx/lite` examples.
+     - See [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for `tailwind-merge` and `cn` examples.
    - `hooks`
      - `onComplete` (deprecated, use `cx` instead): returns a concatenated class string of all classes passed to `cx` or `cva`.
 
 `defineConfig` also returns a deprecated `compose` function for migrating from `class-variance-authority`; use the `composes` property on `cva` instead. See [What's new?](/beta/getting-started/whats-new#1-compose--composes).
 
 For backwards compatibility, `defineConfig` is still re-exported from `cva` (with `cx` optional, defaulting to `clsx`), but it's deprecated there: import it from `cva/core` instead.
+
+### Advanced concatenators
+
+Use [`clsx/lite`](https://github.com/lukeed/clsx#clsxlite) only when every authored value is a string and you do not need conflict resolution. Its runtime ignores arrays, objects, and numbers even though its published types accept them.

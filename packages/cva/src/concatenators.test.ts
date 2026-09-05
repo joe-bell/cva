@@ -9,7 +9,7 @@ import { clsx as clsxLite } from "clsx/lite";
 import { cn } from "cn";
 import { twMerge } from "tailwind-merge";
 import type * as CVA from "./";
-import { cva, cx } from "./";
+import { compose, cva, cx } from "./";
 import { defineConfig, getSchema } from "./core";
 
 describe("clsx (the `cva` preset default)", () => {
@@ -434,7 +434,7 @@ describe.each(rows)(
 );
 
 describe("composition across configs", () => {
-  const { cva: twCva } = defineConfig({ cx: twMerge });
+  const { compose: twCompose, cva: twCva } = defineConfig({ cx: twMerge });
 
   test("a preset component composes into a narrowed cva, and vice versa", () => {
     // Shared component libraries author against the `cva` preset; a
@@ -463,5 +463,9 @@ describe("composition across configs", () => {
       "box p-1 card extra",
     );
     expect(getSchema(presetCard)).toStrictEqual({ pad: { values: ["sm"] } });
+
+    // The deprecated helper keeps the same cross-config component contract.
+    expect(twCompose(presetBox)({ pad: "sm" })).toBe("box bg-gray-100 p-1");
+    expect(compose(twBox)({ pad: "sm" })).toBe("box p-1");
   });
 });

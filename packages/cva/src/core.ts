@@ -42,35 +42,67 @@ export type ClassArray = ClassValue[];
  */
 export type AnyCX = (...inputs: any[]) => string;
 
+// Infer directly from a readonly rest pattern instead of `Parameters<T>[number]`:
+// the latter is `never` for zero-argument callbacks and loses readonly rest
+// element types.
+type CXInputs<TCX extends AnyCX> = TCX extends (
+  ...inputs: readonly [...infer Inputs]
+) => string
+  ? Inputs
+  : never;
+type CXInputElement<TCX extends AnyCX> = CXInputs<TCX>[number];
+
+// cva may call `cx` with no values, or with any number of authored values and
+// composed component strings. A constant callback is safe; every other
+// callback must accept arbitrary lists of its own grammar plus strings.
+type CXHasSafeArity<TCX extends AnyCX> =
+  CXInputs<TCX> extends infer Inputs
+    ? Inputs extends readonly unknown[]
+      ? Inputs extends []
+        ? true
+        : [] extends Inputs
+          ? number extends Inputs["length"]
+            ? true
+            : false
+          : false
+      : false
+    : false;
+type CXConstraint<TCX extends AnyCX> =
+  false extends CXHasSafeArity<TCX>
+    ? "cva's cx must accept zero arguments and an unbounded rest parameter."
+    : [TCX] extends [(...inputs: (string | CXInput<TCX>)[]) => string]
+      ? unknown
+      : "cva's cx must accept its inferred class values and composed strings.";
+
 /**
  * The class value type a concatenator accepts, inferred from its
  * parameters — `defineConfig` uses this to type the authoring surface
  * (`base`, variant values, `class`/`className`) against the configured
  * concatenator's own input grammar.
  */
-export type CXInput<TCX extends AnyCX> = Parameters<TCX>[number] extends infer P
-  ? // `0 extends 1 & P` detects `any`; `any`/`never` use `ClassValue`.
-    0 extends 1 & P
-    ? ClassValue
-    : [P] extends [never]
+export type CXInput<TCX extends AnyCX> =
+  CXInputElement<TCX> extends infer P
+    ? // `0 extends 1 & P` detects `any`; `any`/`never` use `ClassValue`.
+      0 extends 1 & P
       ? ClassValue
-      : [P] extends [ClassValue]
-        ? P
-        : // A concatenator accepting more than cva's grammar (e.g. `string |
-          // URL`) narrows to the subset it shares with it, since the surface
-          // can't widen beyond what the concatenator accepts; when nothing is
-          // shared (e.g. `unknown`), the full grammar applies.
-          [Extract<P, ClassValue>] extends [never]
-          ? ClassValue
-          : Extract<P, ClassValue>
-  : ClassValue;
+      : [P] extends [never]
+        ? ClassValue
+        : [P] extends [ClassValue]
+          ? P
+          : // A concatenator accepting more than cva's grammar (e.g. `string |
+            // URL`) narrows to the subset it shares with it, since the surface
+            // can't widen beyond what the concatenator accepts; when nothing is
+            // shared (e.g. `unknown`), the full grammar applies.
+            [Extract<P, ClassValue>] extends [never]
+            ? ClassValue
+            : Extract<P, ClassValue>
+    : ClassValue;
 
 /* Utils
   ---------------------------------- */
 
 type OmitUndefined<T> = T extends undefined ? never : T;
-// Blocks inference from a site that merely *checks* a type parameter
-// (TypeScript's built-in `NoInfer` needs 5.4, above the supported floor).
+// Blocks inference from a site that merely checks a type parameter.
 type Uninferred<T> = [T][T extends any ? 0 : never];
 type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
@@ -160,13 +192,16 @@ export type VariantProps<Component extends (...args: any) => any> = Omit<
  * const card = cva({ composes: [box, stack] })
  */
 export interface Compose<T extends ClassValue = ClassValue> {
-  <Components extends ReturnType<CVA<T>>[]>(
-    ...components: [...Components]
+  <Components extends readonly unknown[]>(
+    ...components: Components &
+      (Components[number] extends CVAComponentShape ? unknown : never)
   ): (
     props?: (
       | UnionToIntersection<
           {
-            [K in keyof Components]: ComponentProps<Components[K]>;
+            [K in keyof Components]: Components[K] extends CVAComponentShape
+              ? ComponentProps<Components[K]>
+              : never;
           }[number]
         >
       | undefined
@@ -350,7 +385,7 @@ export interface DefineConfigOptions<TCX extends AnyCX = CX> {
    * any function whose parameters don't narrow further) and you keep the
    * full clsx-flavored `ClassValue` grammar.
    */
-  cx: TCX;
+  cx: TCX & CXConstraint<TCX>;
   hooks?: {
     /**
      * @deprecated please use the `cx` option instead
@@ -559,7 +594,8 @@ export const defineConfig = ((options: DefineConfigOptions) => {
   }) as CVA;
 
   const compose: Compose = (...components) => {
-    const config = components.reduce(
+    const composedComponents = components as CVAComponentShape[];
+    const config = composedComponents.reduce(
       (acc, { config }) => {
         Object.entries(config || {}).forEach(([key, value]) => {
           acc[key] =
@@ -588,7 +624,7 @@ export const defineConfig = ((options: DefineConfigOptions) => {
       );
 
       return cx(
-        ...components.map((component) => component(propsWithoutClass)),
+        ...composedComponents.map((component) => component(propsWithoutClass)),
         props?.class,
         props?.className,
       );
