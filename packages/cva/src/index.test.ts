@@ -3069,6 +3069,13 @@ describe("cva/core", () => {
 
     expect(coreCx("a", "b")).toBe("(a|b)");
 
+    const baseOnly = coreCva({ base: "base" });
+    expect(baseOnly({ class: "extra" })).toBe("(base|extra)");
+    expect(baseOnly({ className: "last" })).toBe("(base|last)");
+    expect(coreCva({ composes: baseOnly, base: "parent" })()).toBe(
+      "((base)|parent)",
+    );
+
     const button = coreCva({
       base: "btn",
       variants: { size: { sm: "btn-sm" } },

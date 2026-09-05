@@ -41,7 +41,7 @@ CI's `build` job runs tsdown's `publint`/`attw`/`unused` gates, so a genuinely _
 
 ## Size and dependency budget
 
-- `bundlesize` enforces the numbers, not the choice of numbers. The `size-limit` blocks cap `cva` at `1.6KB` and `class-variance-authority` at `1.2KB`. A PR that raises its own limit to fit gets a green job — that is a review decision, weighed against the "performance & minimal footprint" project goal.
+- `bundlesize` enforces the numbers, not the choice of numbers. The `size-limit` blocks cap the `cva` preset at `1.31KB`, `cva/core` at `1.05KB`, and `class-variance-authority` at `1.2KB`. A PR that raises its own limit to fit gets a green job — that is a review decision, weighed against the "performance & minimal footprint" project goal.
 - `clsx` is the only runtime dependency of either package. Anything added to `dependencies` under `packages/*` is a headline change, not a detail.
 - [`pnpm-workspace.yaml`](./pnpm-workspace.yaml) carries two supply-chain protections that a PR can quietly weaken: `minimumReleaseAge`, and the explicit `allowBuilds` allowlist (adding a package there grants it install-time script execution). Removing or lowering `minimumReleaseAge` to work around an `ERR_PNPM_MISSING_TIME` is the specific anti-fix called out in [`AGENTS.md`](./AGENTS.md#learnings) — the right answer is to re-run the install.
 - Dependabot is configured for `github-actions` only ([`.github/dependabot.yml`](./.github/dependabot.yml)), so npm bumps arrive by hand and carry no automated provenance.
