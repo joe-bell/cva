@@ -523,12 +523,14 @@ export const defineConfig = ((options: DefineConfigOptions) => {
       // Compound variants may target composed-only keys, so a component with
       // no local `variants` still resolves them.
       if (!config?.variants && !config?.compoundVariants) {
-        return cx(
-          ...getComposedClassNames,
-          config?.base,
-          props?.class,
-          props?.className,
-        );
+        return getComposedClassNames.length
+          ? cx(
+              ...getComposedClassNames,
+              config?.base,
+              props?.class,
+              props?.className,
+            )
+          : cx(config?.base, props?.class, props?.className);
       }
 
       const variants = (config.variants ?? {}) as CVAVariantShape;

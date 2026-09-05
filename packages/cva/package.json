@@ -92,7 +92,7 @@
   "size-limit": [
     {
       "path": "dist/index.cjs",
-      "limit": "1.3KB"
+      "limit": "1.31KB"
     },
     {
       "path": "dist/core.cjs",
