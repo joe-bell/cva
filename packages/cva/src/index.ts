@@ -23,6 +23,10 @@ import {
   type CX,
   type DefineConfigOptions as CoreDefineConfigOptions,
 } from "./core.js";
+import {
+  getSchema as getSchemaUtils,
+  type GetSchema as UtilsGetSchema,
+} from "./utils.js";
 
 export type {
   AnyCX,
@@ -39,12 +43,16 @@ export type {
   CVAComponent,
   CVAComponentShape,
   CVA,
-  GetSchema,
-} from "./core.js";
-export { getSchema } from "./core.js";
+} from "./config.js";
+
+/** @deprecated Import `GetSchema` from `cva/utils` instead. */
+export type GetSchema = UtilsGetSchema;
+
+/** @deprecated Import `getSchema` from `cva/utils` instead. */
+export const getSchema: GetSchema = getSchemaUtils;
 
 /**
- * @deprecated Import `DefineConfigOptions` from `cva/core` instead and provide
+ * @deprecated Import `DefineConfigOptions` from `cva/config` instead and provide
  * the required `cx` concatenator (for example, `clsx`).
  */
 export interface DefineConfigOptions<TCX extends AnyCX = CX> extends Omit<
@@ -56,7 +64,7 @@ export interface DefineConfigOptions<TCX extends AnyCX = CX> extends Omit<
 }
 
 /**
- * @deprecated Import `DefineConfig` from `cva/core` instead. Its options require
+ * @deprecated Import `DefineConfig` from `cva/config` instead. Its options require
  * a `cx` concatenator (for example, `clsx`).
  */
 export interface DefineConfig {
@@ -78,8 +86,8 @@ export interface DefineConfig {
 }
 
 /**
- * @deprecated Import `defineConfig` from `cva/core` instead — the `cva`
- * package is the clsx preset, while `cva/core` is where custom
+ * @deprecated Import `defineConfig` from `cva/config` instead — the `cva`
+ * package is the clsx preset, while `cva/config` is where custom
  * configuration (your own `cx` concatenator, hooks) lives.
  */
 export const defineConfig = ((options?: DefineConfigOptions) =>

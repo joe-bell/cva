@@ -22,7 +22,8 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
-    "./core": "./src/core.ts",
+    "./config": "./src/config.ts",
+    "./utils": "./src/utils.ts",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
@@ -72,9 +73,13 @@
         "import": "./dist/index.mjs",
         "require": "./dist/index.cjs"
       },
-      "./core": {
-        "import": "./dist/core.mjs",
-        "require": "./dist/core.cjs"
+      "./config": {
+        "import": "./dist/config.mjs",
+        "require": "./dist/config.cjs"
+      },
+      "./utils": {
+        "import": "./dist/utils.mjs",
+        "require": "./dist/utils.cjs"
       },
       "./package.json": "./package.json"
     },
@@ -83,8 +88,11 @@
     "types": "dist/index.d.cts",
     "typesVersions": {
       "*": {
-        "core": [
-          "./dist/core.d.cts"
+        "config": [
+          "./dist/config.d.cts"
+        ],
+        "utils": [
+          "./dist/utils.d.cts"
         ]
       }
     }
@@ -92,11 +100,15 @@
   "size-limit": [
     {
       "path": "dist/index.cjs",
-      "limit": "1.31KB"
+      "limit": "1.35KB"
     },
     {
-      "path": "dist/core.cjs",
+      "path": "dist/config.cjs",
       "limit": "1.05KB"
+    },
+    {
+      "path": "dist/utils.cjs",
+      "limit": "0.35KB"
     }
   ]
 }

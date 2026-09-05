@@ -1,4 +1,4 @@
-import { defineConfig } from "cva/core";
+import { defineConfig } from "cva/config";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 

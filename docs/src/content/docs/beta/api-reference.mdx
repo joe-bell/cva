@@ -1,6 +1,6 @@
 ---
 title: API Reference
-description: Reference for the cva, cx, and getSchema functions, and the cva/core entry point with defineConfig.
+description: API reference for cva, cva/config, and cva/utils.
 ---
 
 ## `cva`
@@ -28,7 +28,7 @@ A `cva` component function
 
 ## `cx`
 
-Concatenates class names (an alias of [`clsx`](https://github.com/lukeed/clsx); swap in your own concatenator via [`cva/core`](#cvacore)).
+Concatenates class names (an alias of [`clsx`](https://github.com/lukeed/clsx); swap in your own concatenator via [`cva/config`](#cvaconfig)).
 
 ```ts
 import { cx } from "cva";
@@ -38,18 +38,21 @@ const className = cx(classes);
 
 ### Parameters
 
-- `classes`: zero or more class values. The preset accepts [`clsx` values](https://github.com/lukeed/clsx#input); `cva/core` uses the configured concatenator's grammar
+- `classes`: zero or more class values. The preset accepts [`clsx` values](https://github.com/lukeed/clsx#input); `cva/config` uses the configured concatenator's grammar
 
 ### Returns
 
 `string`
 
-## `getSchema`
+## `cva/utils`
+
+### `getSchema`
 
 Extracts a plain-object schema (variant names, possible values, and default values) from a `cva` component. Use it to generate Storybook controls, documentation, or any other UI that reads a component's variants without re-declaring them. See [Utilities](/beta/getting-started/utilities) for use cases.
 
 ```ts
-import { cva, getSchema } from "cva";
+import { cva } from "cva";
+import { getSchema } from "cva/utils";
 
 const button = cva({
   base: "button",
@@ -78,20 +81,24 @@ getSchema(button);
 
 `getSchema` omits [internal variants](/beta/getting-started/variants#internal-variants) or variants that have no values (e.g. `variants: { empty: {} }`).
 
-### Parameters
+`getSchema` and `GetSchema` remain available from `cva`, but are deprecated there. Import them from `cva/utils` instead.
+
+#### Parameters
 
 `component`: a component created by `cva` (including components composed via [`composes`](#cva))
 
-### Returns
+#### Returns
 
 An object keyed by variant name. Each entry has:
 
 - `values`: a readonly array of the variant's possible values
 - `defaultValue`: present only if the variant has a `defaultVariants` entry
 
-## `cva/core`
+<span id="cvacore" />
 
-The `cva` package is a preset: [`cva`](#cva) and [`cx`](#cx) use `clsx`. `cva/core` is the same engine without a configured concatenator.
+## `cva/config`
+
+The `cva` package is a preset: [`cva`](#cva) and [`cx`](#cx) use `clsx`. `cva/config` is the same engine without a configured concatenator.
 
 ### `defineConfig`
 
@@ -101,7 +108,7 @@ Store in a `cva.config.ts` file, and import across your project.
 
 ```ts
 // cva.config.ts
-import { defineConfig } from "cva/core";
+import { defineConfig } from "cva/config";
 
 export const { cva, cx } = defineConfig(options);
 ```
@@ -117,14 +124,14 @@ export const { cva, cx } = defineConfig(options);
 
 `defineConfig` also returns a deprecated `compose` function for migrating from earlier `cva@beta` releases. Use the `composes` property on `cva` instead. See [What's new?](/beta/getting-started/whats-new#1-compose--composes).
 
-For backwards compatibility, `defineConfig` is still re-exported from `cva` (with `cx` optional, defaulting to `clsx`), but it's deprecated there: import it from `cva/core` instead.
+For backwards compatibility, `defineConfig` is still re-exported from `cva` (with `cx` optional, defaulting to `clsx`), but it's deprecated there: import it from `cva/config` instead.
 
 ### Advanced concatenators
 
 Use [`clsx/lite`](https://github.com/lukeed/clsx#clsxlite) only when every authored value is a string and you do not need conflict resolution. Its runtime ignores arrays, objects, and numbers even though its published types accept them. Annotate a string-only wrapper so `cva` rejects those values too:
 
 ```ts
-import { defineConfig } from "cva/core";
+import { defineConfig } from "cva/config";
 import { clsx as clsxLite } from "clsx/lite";
 
 export const { cva, cx } = defineConfig({
