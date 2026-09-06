@@ -60,7 +60,7 @@ tokens), not in per-component `<style>` blocks.
 
 Docs prose (`docs/src/content/docs/**`) follows the `writing-guidelines` skill (see [Task-specific skills](#task-specific-skills-agentsskills) below) — apply it whenever writing or editing docs content, not only when explicitly asked for a review pass. It layers this repo's house style (US English, no em/en-dash punctuation, verified `// =>` output comments, the beta/stable split, preserved author voice in FAQs/What's New) on top of the fetched upstream Vercel ruleset. Every page requires a `description` in its frontmatter — `docs/src/content.config.ts` enforces this via the Starlight schema, so a missing one fails the docs build.
 
-When documenting equivalent beta integrations, present them neutrally in alphabetical order and give each independent example matching coverage.
+When documenting equivalent beta integrations, present them neutrally in alphabetical order and give each independent example matching coverage. Use Starlight-generated heading IDs and update links when headings change instead of adding manual alias anchors.
 
 ## Task-specific skills (`.agents/skills/`)
 

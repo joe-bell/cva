@@ -1,4 +1,4 @@
 import { defineConfig } from "cva/config";
-import { cn } from "cn";
+import { cn as mergeClasses } from "cn";
 
-export const { cva, cx } = defineConfig({ cx: cn });
+export const { cva, cx: cn } = defineConfig({ cx: mergeClasses });

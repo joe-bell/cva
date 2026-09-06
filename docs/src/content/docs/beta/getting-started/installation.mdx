@@ -123,8 +123,6 @@ You can enable autocompletion inside `cva` using the steps below:
   </TabItem>
 </Tabs>
 
-<span id="handling-style-conflicts" />
-
 ## Merging classes
 
 By default, `cva` uses [`clsx`](https://github.com/lukeed/clsx) for conditional class joining. It does not resolve conflicting Tailwind CSS utilities.
@@ -142,9 +140,9 @@ pnpm add cn
 ```ts
 // cva.config.ts
 import { defineConfig } from "cva/config";
-import { cn } from "cn";
+import { cn as mergeClasses } from "cn";
 
-export const { cva, cx } = defineConfig({ cx: cn });
+export const { cva, cx: cn } = defineConfig({ cx: mergeClasses });
 ```
 
 ### tailwind-merge
@@ -161,7 +159,7 @@ import { defineConfig } from "cva/config";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-export const { cva, cx } = defineConfig({
+export const { cva, cx: cn } = defineConfig({
   cx: (...inputs) => twMerge(clsx(inputs)),
 });
 ```
@@ -178,7 +176,7 @@ Use bare `twMerge` when your authored values are strings or arrays. TypeScript r
 import { defineConfig } from "cva/config";
 import { twMerge } from "tailwind-merge";
 
-export const { cva, cx } = defineConfig({ cx: twMerge });
+export const { cva, cx: cn } = defineConfig({ cx: twMerge });
 ```
 
 </details>
@@ -189,7 +187,7 @@ Use the configured functions throughout your project:
 
 ```ts
 // components/button.ts
-import { cx, cva } from "../cva.config";
+import { cn, cva } from "../cva.config";
 
 export const button = cva({
   base: "font-semibold bg-gray-200 border rounded",
@@ -211,12 +209,8 @@ Both configurations produce the same output:
 button();
 // => "font-semibold border rounded bg-blue-500 text-white border-transparent hover:bg-blue-600"
 
-cx("bg-gray-200", { "bg-blue-500": true });
+cn("bg-gray-200", { "bg-blue-500": true });
 // => "bg-blue-500"
 ```
 
 For string-only authoring without conflict resolution, see [advanced concatenators](/beta/api-reference#advanced-concatenators) for `clsx/lite`.
-
-### Migrating deprecated hooks
-
-For an existing `twMerge` hook, use `cx: cn` or the `clsx` and `tailwind-merge` wrapper above to preserve conditional joining and conflict resolution. For another postprocessor, keep it and join its inputs explicitly: `cx: (...inputs) => postprocess(clsx(inputs))`.
