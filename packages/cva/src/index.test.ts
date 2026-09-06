@@ -2817,17 +2817,10 @@ describe("defineConfig", () => {
       });
 
       expect(badge({ class: "extra" })).toBe("recorded");
-      // Two calls: the composed `child` renders through the same configured
-      // `cx` first, then `badge` itself.
+      // The child renders before its parent.
       expect(calls).toHaveLength(2);
       expect(calls[0]).toEqual(["child"]);
-      // Core never interprets class values: its own arrays (composed
-      // outputs, matched variant/compound values) are spread to one argument
-      // per value, and authored values arrive untouched — the `base` array
-      // and the object-syntax variant value are passed through as-is for the
-      // concatenator's own grammar to handle. Absent positions (`className`
-      // here, `base`/`class` on `child`) are dropped, never sent as
-      // `undefined`.
+      // Authored arrays/objects stay intact; absent values are omitted.
       expect(calls[1]).toEqual([
         "recorded",
         ["badge", { "badge--raised": true }],
@@ -2838,10 +2831,6 @@ describe("defineConfig", () => {
     });
 
     test("infers the authoring surface from the concatenator's parameters", () => {
-      // A twMerge-shaped concatenator (strings and falsy, no objects or
-      // numbers) is accepted bare, and the authoring surface narrows to
-      // exactly what it can consume (real-package pins live in
-      // `concatenators.test.ts`).
       const { cva: narrowCva, cx: narrowCx } = defineConfig({
         cx: (...inputs: (string | null | undefined | 0 | false)[]) =>
           inputs.filter(Boolean).join(" "),
@@ -2869,9 +2858,6 @@ describe("defineConfig", () => {
     });
 
     test("falls back to the full ClassValue grammar when nothing narrower is inferrable", () => {
-      // An unannotated inline concatenator is contextually typed `any[]`,
-      // and a wider-than-`ClassValue` signature can't widen the authoring
-      // surface — both land on the `ClassValue` default.
       const { cva: inlineCva } = defineConfig({
         cx: (...inputs) => inputs.filter(Boolean).join("|"),
       });
@@ -2920,9 +2906,6 @@ describe("defineConfig", () => {
     });
 
     test("infers from the last signature of an overloaded concatenator", () => {
-      // `Parameters` resolves to an overloaded function's *last* signature,
-      // so a concatenator publishing a narrow form ahead of its variadic
-      // one still infers from the variadic one.
       interface OverloadedCX {
         (strings: TemplateStringsArray, ...values: string[]): string;
         (...inputs: CVA.ClassValue[]): string;

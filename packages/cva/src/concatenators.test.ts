@@ -1,9 +1,3 @@
-/**
- * The real-package concatenator matrix: every supported swap target is
- * exercised through `cva`/`cx` with its actual published package, covering
- * both the inferred authoring surface (`CXInput`) and runtime behavior
- * using that concatenator's own features.
- */
 import { clsx } from "clsx";
 import { clsx as clsxLite } from "clsx/lite";
 import { cn } from "cn";
@@ -51,10 +45,7 @@ describe("clsx/lite", () => {
   const { cva: liteCva, cx: liteCx } = defineConfig({ cx: clsxLite });
 
   test("infers the full ClassValue authoring surface (lite's own typing)", () => {
-    // Note this is clsx/lite's own (over-broad) published typing: its
-    // runtime only understands string arguments, so inference cannot
-    // narrow further. See the dropping test below — the runtime
-    // limitation is lite's documented contract.
+    // clsx/lite publishes the full clsx types despite only accepting strings.
     expectTypeOf(clsxLite).toMatchTypeOf<CVA.CX>();
     expectTypeOf<
       CVA.CXInput<typeof clsxLite>
@@ -83,9 +74,6 @@ describe("clsx/lite", () => {
   });
 
   test("documents lite's contract: non-string authored values are dropped", () => {
-    // clsx/lite ignores anything that isn't a string, including the arrays
-    // and objects that clsx (and therefore the `cva` preset) would resolve.
-    // Authoring these under lite is a silent no-op by lite's own design.
     expect(liteCx("kept", ["dropped"], { dropped: true }, 1)).toBe("kept");
 
     const badge = liteCva({
@@ -99,9 +87,6 @@ describe("clsx/lite", () => {
 });
 
 describe("tailwind-merge", () => {
-  // Bare `twMerge` works out of the box: the authoring surface is inferred
-  // from its parameters (`ClassNameValue` — strings and arrays, no objects
-  // or numbers) and enforced at compile time; see the inference test below.
   const { cva: twCva, cx: twCx } = defineConfig({ cx: twMerge });
 
   test("narrows the authoring surface to twMerge's own ClassNameValue", () => {
@@ -131,11 +116,9 @@ describe("tailwind-merge", () => {
       defaultVariants: { intent: "primary" },
     });
 
-    // Variant `bg-*` wins over base `bg-gray-200`.
     expect(button()).toBe(
       "font-semibold border rounded bg-blue-500 text-white border-transparent",
     );
-    // The `class` prop wins over both.
     expect(button({ class: "bg-red-500" })).toBe(
       "font-semibold border rounded text-white border-transparent bg-red-500",
     );
@@ -164,8 +147,6 @@ describe("tailwind-merge", () => {
       variants: { intent: { primary: "bg-blue-500", secondary: "bg-white" } },
       defaultVariants: { intent: "primary" },
     });
-    // Conflict resolution still runs across the composed output: the
-    // variant `bg-*` strips the composed `bg-gray-100`.
     expect(button({ pad: "none", class: "text-white" })).toBe(
       "p-0 font-semibold bg-blue-500 text-white",
     );
@@ -194,8 +175,6 @@ describe("cn", () => {
   const { cva: cnCva, cx: cnCx } = defineConfig({ cx: cn });
 
   test("infers the full ClassValue authoring surface", () => {
-    // `cn`'s own `ClassValue` is structurally identical to cva's, so the
-    // authoring surface is unchanged from the clsx default.
     expectTypeOf(cn).toMatchTypeOf<CVA.CX>();
     expectTypeOf<CVA.CXInput<typeof cn>>().toEqualTypeOf<CVA.ClassValue>();
   });
@@ -212,8 +191,6 @@ describe("cn", () => {
       defaultVariants: { intent: "primary" },
     });
 
-    // Object/array authoring resolves like clsx, and the variant `bg-*`
-    // strips the conflicting base `bg-gray-200` like tailwind-merge.
     expect(button()).toBe(
       "font-semibold border rounded bg-blue-500 text-white",
     );
@@ -228,14 +205,7 @@ describe("cn", () => {
 /* Composition and introspection across the matrix
   ============================================ */
 
-// `composes` and `getSchema` are first-class, so every concatenator runs the
-// same composition suite: string-only authoring is the common denominator
-// (clsx/lite and twMerge accept nothing richer), and each row's `output`
-// normalizes the concatenator's own class conflict resolution — the
-// assertions pin cva's assembly order, and the resolver is the row's own
-// contract. Concatenator-specific grammar coverage lives in the suites above.
-// Rows are typed against the string-only authoring surface so the matrix
-// reads as one API rather than a union of differently-narrowed configs.
+// Strings are the common authoring surface; grammar-specific tests are above.
 type Row = {
   name: string;
   api: { cva: CVA.CVA<string> };
@@ -269,8 +239,7 @@ const rows: Row[] = [
 describe.each(rows)(
   "$name: composition and introspection",
   ({ api, resolves }) => {
-    // Runs `twMerge` over the expected assembly for the resolving rows, so the
-    // same literal documents both the raw order and the resolved output.
+    // Normalize expected assembly only for concatenators that resolve conflicts.
     const output = (assembled: string) =>
       resolves ? twMerge(assembled) : assembled;
 
@@ -286,7 +255,6 @@ describe.each(rows)(
       base: "stack",
       variants: {
         direction: { row: "flex-row", column: "flex-col" },
-        // Overlaps `box`'s `pad`, contributing an extra value to the merge.
         pad: { none: "p-0" },
       },
       defaultVariants: { direction: "column", pad: "none" },
@@ -298,29 +266,18 @@ describe.each(rows)(
         base: "card",
         variants: {
           tone: { loud: "text-black bg-blue-500" },
-          // Redeclared locally with a new value; the local default below
-          // overrides the composed ones (`box`'s `sm`, then `stack`'s `none`).
           pad: { xl: "p-8" },
         },
-        // Compound variants may target keys that only composed components
-        // declare (`direction`), matched against the merged defaults and
-        // props.
         compoundVariants: [{ direction: "row", class: "compound" }],
         defaultVariants: { tone: "loud", pad: "xl" },
       });
 
-      // The local `pad: "xl"` default wins over both composed defaults and
-      // renders through `card`; the local `tone` default applies to the
-      // merged `tone` variant.
       expect(card()).toBe(
         output(
           "box bg-gray-100 stack flex-col card text-black bg-blue-500 p-8",
         ),
       );
-      // Props flow through to every composed component that declares them,
-      // including a value only one of them knows about.
-      // `tone: "muted"` is only declared by `box`, so it renders there; the
-      // local `tone` variant contributes nothing for that value.
+      // Only box declares tone: "muted"; card contributes no local tone classes.
       expect(card({ pad: "none", direction: "row", tone: "muted" })).toBe(
         output(
           "box bg-gray-100 text-gray-500 stack flex-row p-0 card compound",
@@ -345,9 +302,6 @@ describe.each(rows)(
       const card = api.cva({
         composes: [box, stack],
         base: "card",
-        // Neither `pad` nor `direction` is declared locally: the default
-        // overrides the composed ones, and the compound variant matches on
-        // the composed keys' values.
         compoundVariants: [{ pad: "lg", direction: "row", class: "compound" }],
         defaultVariants: { pad: "lg", direction: "row" },
       });
@@ -363,7 +317,6 @@ describe.each(rows)(
         tone: { values: ["muted"] },
         direction: { values: ["row", "column"], defaultValue: "row" },
       });
-      // The authored defaults keep their literal types through the merge.
       expectTypeOf(getSchema(card).pad.defaultValue).toEqualTypeOf<"lg">();
       expectTypeOf(
         getSchema(card).direction.defaultValue,
@@ -418,7 +371,6 @@ describe.each(rows)(
         };
       }>();
 
-      // Non-composed and variant-less components introspect too.
       expect(getSchema(box)).toStrictEqual({
         pad: { values: ["sm", "lg"], defaultValue: "sm" },
         tone: { values: ["muted"] },
@@ -426,7 +378,6 @@ describe.each(rows)(
       const plain = getSchema(api.cva({ base: "plain" }));
       expect(plain).toStrictEqual({});
       expectTypeOf(plain).toEqualTypeOf<{}>();
-      // Composing into a variant-less component still surfaces the merge.
       expect(
         getSchema(api.cva({ composes: box, base: "panel" })),
       ).toStrictEqual(getSchema(box));
@@ -438,9 +389,7 @@ describe("composition across configs", () => {
   const { compose: twCompose, cva: twCva } = defineConfig({ cx: twMerge });
 
   test("a preset component composes into a narrowed cva, and vice versa", () => {
-    // Shared component libraries author against the `cva` preset; a
-    // consumer wiring `twMerge` must still be able to compose them (the
-    // composed output is a string, which every concatenator accepts).
+    // Composition passes strings between configs, regardless of authored values.
     const presetBox = cva({
       base: ["box", { "bg-gray-100": true }],
       variants: { pad: { sm: "p-1" } },
@@ -454,7 +403,6 @@ describe("composition across configs", () => {
     expect(getSchema(twCard)).toStrictEqual({
       pad: { values: ["sm"], defaultValue: "sm" },
     });
-    // The narrowed class prop still applies to the composing component.
     // @ts-expect-error — objects aren't part of tailwind-merge's grammar
     twCard({ class: { extra: true } });
 
