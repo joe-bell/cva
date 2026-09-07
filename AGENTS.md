@@ -162,6 +162,8 @@ Agent-specific notes:
 
 Durable, hard-won lessons that don't fit a section above. See [Keeping this guide current](#keeping-this-guide-current-self-improving) for what belongs here and how to write it. Newest first; prune anything that's become wrong or obsolete.
 
+- Type parameterized input/output test rows as exact tuples (e.g. `[CVA.ClassValue, string]`), not variadic function arguments like `CVA.CXOptions`. A variadic row accepts extra cells that the test callback silently ignores, which can hide an accidentally nested test case even at 100% coverage.
+
 - Keep size-limit's esbuild scoped override in `pnpm-workspace.yaml`: minifier updates can change compressed bundle measurements without library changes. Evaluate upgrades to that pin explicitly against the bundle budgets; docs tooling can upgrade independently.
 
 - The static docs build's Cloudflare adapter writes an asset-only `dist/client/wrangler.json`. The `workerConfig` `astro:build:done` hook restores the checked-in Worker entry point and `ASSETS` binding after validating the generated configuration; keep `session: false` so the adapter does not inject an invalid `SESSION` KV binding. Use `pnpm --filter docs preview`, which runs `wrangler dev`, to test that deployment shape rather than `astro preview`.

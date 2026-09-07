@@ -4,7 +4,7 @@ import { defineConfig as defineCoreConfig } from "./config";
 import { getSchema as getSchemaUtils } from "./utils";
 
 describe("cx", () => {
-  describe.each<CVA.CXOptions>([
+  test.each<[CVA.ClassValue, string]>([
     [null, ""],
     [undefined, ""],
     [false && "foo", ""],
@@ -29,19 +29,17 @@ describe("cx", () => {
         ],
       ],
       "foo bar baz qux quux quuz corge grault garply",
-      [
-        [
-          "foo",
-          [1 && "bar", { baz: false, bat: null }, ["hello", ["world"]]],
-          "cya",
-        ],
-        "foo bar hello world cya",
-      ],
     ],
-  ])("cx(%o)", (options, expected) => {
-    test(`returns ${expected}`, () => {
-      expect(cx(options)).toBe(expected);
-    });
+    [
+      [
+        "foo",
+        [1 && "bar", { baz: false, bat: null }, ["hello", ["world"]]],
+        "cya",
+      ],
+      "foo bar hello world cya",
+    ],
+  ])("cx(%o) returns %s", (options, expected) => {
+    expect(cx(options)).toBe(expected);
   });
 });
 

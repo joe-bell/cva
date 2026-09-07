@@ -13,16 +13,21 @@ describe("clsx (the `cva` preset default)", () => {
     expectTypeOf<CVA.CXInput<typeof clsx>>().toEqualTypeOf<CVA.ClassValue>();
   });
 
-  test("cx behaves as an alias of clsx across the full grammar", () => {
-    const inputs: CVA.ClassValue[][] = [
-      ["foo", ["bar", { baz: true, qux: false }], 1],
-      [null, undefined, false, true, ""],
-      [[[["deeply", ["nested"]]], { object: 1 }]],
-    ];
-
-    for (const input of inputs) {
-      expect(cx(...input)).toBe(clsx(...input));
-    }
+  test.each<{ name: string; inputs: CVA.ClassValue[] }>([
+    {
+      name: "mixed strings, arrays, objects, and numbers",
+      inputs: ["foo", ["bar", { baz: true, qux: false }], 1],
+    },
+    {
+      name: "empty and boolean values",
+      inputs: [null, undefined, false, true, ""],
+    },
+    {
+      name: "deeply nested arrays",
+      inputs: [[[["deeply", ["nested"]]], { object: 1 }]],
+    },
+  ])("cx matches clsx for $name", ({ inputs }) => {
+    expect(cx(...inputs)).toBe(clsx(...inputs));
   });
 
   test("components support clsx's full authoring grammar", () => {
