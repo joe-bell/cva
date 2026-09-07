@@ -55,6 +55,8 @@ jobs:
       - uses: ./.github/actions/install
       - name: Packages
         run: pnpm build
+      - name: Packed cva consumer
+        run: pnpm --filter cva verify:consumer
       - name: Examples
         run: pnpm build:examples
   bundlesize:

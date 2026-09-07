@@ -38,7 +38,8 @@
     "check": "pnpm run '/^check:.*/'",
     "check:tsc": "tsc --project tsconfig.json --noEmit",
     "dev": "tsdown --watch",
-    "prepublishOnly": "pnpm build"
+    "prepublishOnly": "pnpm build",
+    "verify:consumer": "bash ./scripts/verify-consumer.sh"
   },
   "dependencies": {
     "clsx": "^2.1.1"

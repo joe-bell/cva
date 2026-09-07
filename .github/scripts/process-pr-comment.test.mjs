@@ -1,8 +1,8 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   assertPrBoundToWorkflowRun,
@@ -31,9 +31,11 @@ function fakeGithub({ pull, comments = [] } = {}) {
 }
 
 const context = { repo: { owner: "joe-bell", repo: "cva" } };
+const tempDirs = [];
 
 function writeArtifactDir({ meta, section = "## Benchmarks\n\ntable" } = {}) {
   const dir = mkdtempSync(path.join(tmpdir(), "cva-process-pr-comment-"));
+  tempDirs.push(dir);
   writeFileSync(
     path.join(dir, "meta.json"),
     JSON.stringify(meta ?? { pr: 42 }),
@@ -44,6 +46,11 @@ function writeArtifactDir({ meta, section = "## Benchmarks\n\ntable" } = {}) {
     sectionContentPath: path.join(dir, "benchmark-section.md"),
   };
 }
+
+afterEach(() => {
+  for (const dir of tempDirs.splice(0))
+    rmSync(dir, { recursive: true, force: true });
+});
 
 describe("parseArtifactPrNumber", () => {
   it("accepts a positive integer PR number", () => {

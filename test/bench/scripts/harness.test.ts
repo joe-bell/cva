@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -9,12 +9,14 @@ import { BENCH_OPTIONS, loadImplementations } from "./harness";
 interface BenchModule {
   cva?: unknown;
 }
+const tempDirs: string[] = [];
 
 // Each fake package gets its own mkdtemp dir: ESM caches modules by URL, so
 // re-generating a dist file in place and re-importing would return the stale
 // module.
 function writePackage(version: string, source = 'export const cva = "local";') {
   const dir = mkdtempSync(path.join(tmpdir(), "harness-test-pkg-"));
+  tempDirs.push(dir);
   writeFileSync(path.join(dir, "package.json"), JSON.stringify({ version }));
   mkdirSync(path.join(dir, "dist"), { recursive: true });
   writeFileSync(path.join(dir, "dist/index.mjs"), source);
@@ -42,6 +44,8 @@ function writeManifest(baselinesDir: string, entries: unknown[]) {
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  for (const dir of tempDirs.splice(0))
+    rmSync(dir, { recursive: true, force: true });
 });
 
 describe("BENCH_OPTIONS", () => {
@@ -71,6 +75,7 @@ describe("loadImplementations", () => {
   it("throws a run-pnpm-build error when the local dist is missing", async () => {
     vi.stubEnv("BENCH_BASELINES_DIR", undefined);
     const packageDir = mkdtempSync(path.join(tmpdir(), "harness-test-nodist-"));
+    tempDirs.push(packageDir);
     writeFileSync(
       path.join(packageDir, "package.json"),
       JSON.stringify({ version: "1.2.3" }),
@@ -85,12 +90,14 @@ describe("loadImplementations", () => {
     const packageDir = writePackage("1.2.3");
 
     const emptyDir = mkdtempSync(path.join(tmpdir(), "harness-test-empty-"));
+    tempDirs.push(emptyDir);
     vi.stubEnv("BENCH_BASELINES_DIR", emptyDir);
     await expect(
       loadImplementations<BenchModule>("cva", packageDir),
     ).resolves.toHaveLength(1);
 
     const badDir = mkdtempSync(path.join(tmpdir(), "harness-test-bad-"));
+    tempDirs.push(badDir);
     writeFileSync(path.join(badDir, "manifest.json"), "not json");
     vi.stubEnv("BENCH_BASELINES_DIR", badDir);
     await expect(
@@ -101,6 +108,7 @@ describe("loadImplementations", () => {
   it("loads usable baselines and skips other-package, skipped and dirless entries", async () => {
     const packageDir = writePackage("1.2.3");
     const baselinesDir = mkdtempSync(path.join(tmpdir(), "harness-test-base-"));
+    tempDirs.push(baselinesDir);
     writeBaseline(
       baselinesDir,
       "cva-prerelease",
@@ -146,6 +154,7 @@ describe("loadImplementations", () => {
   it("skips a baseline whose dist fails to import", async () => {
     const packageDir = writePackage("1.2.3");
     const baselinesDir = mkdtempSync(path.join(tmpdir(), "harness-test-fail-"));
+    tempDirs.push(baselinesDir);
     writeManifest(baselinesDir, [
       {
         package: "cva",
@@ -166,6 +175,7 @@ describe("loadImplementations", () => {
     const baselinesDir = mkdtempSync(
       path.join(tmpdir(), "harness-test-probe-"),
     );
+    tempDirs.push(baselinesDir);
     writeBaseline(
       baselinesDir,
       "cva-prerelease",

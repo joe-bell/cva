@@ -60,6 +60,7 @@ Run these from the repo root:
 - `pnpm test` – runs the test suite with coverage
 - `pnpm build` – production build of the packages
 - `pnpm check` – type checks every package
+- `pnpm --filter cva verify:consumer` – packs the built beta package into an isolated temporary consumer, checks ESM/CJS declarations, and smoke-tests its `cva`, `cva/config`, and `cva/utils` exports
 - `pnpm bundlesize` – verifies bundle size limits (`size-limit`)
 - `pnpm bench` – builds the packages, then runs the `vitest bench` performance scenarios against each built package (add `BENCH_BASELINES_DIR=<dir>` after running `pnpm bench:baselines --out <dir>` to also benchmark published npm baselines alongside your local changes)
 - `pnpm bench:compare` – renders a markdown comparison table from the `test/bench/.output/benchmark-*.json` files produced by `pnpm bench`
@@ -97,6 +98,8 @@ Two details of the published map are deliberate:
 What tsdown does **not** own: `size-limit` remains the bundle-size budget (tsdown's per-file gzip size report is informational only), the `tsc --noEmit` check remains the source type check, and version bumps stay manual per [Releases](#releases).
 
 Day to day: `pnpm --filter <package> dev` runs the build in watch mode, and because the root `prepare:packages` script builds on every `pnpm install`, the publish-shape gates run then too — a broken manifest fails fast on your machine rather than in CI. If that per-install cost ever becomes a problem, `attw: 'ci-only'` in the config confines the slowest gate to CI.
+
+`pnpm --filter cva verify:consumer` requires a completed `pnpm --filter cva build`. It packs that beta build, extracts it outside the workspace, type-checks ESM and CommonJS declaration consumers, and runs smoke checks against the tarball's `cva`, `cva/config`, and `cva/utils` entry points. The isolated layout prevents workspace-source resolution; CI runs it immediately after the package build.
 
 ## Benchmarks
 

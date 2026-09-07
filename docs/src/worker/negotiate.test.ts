@@ -60,7 +60,7 @@ describe("Markdown negotiation", () => {
     ).toBe(false);
   });
 
-  it("does not negotiate non-GET requests", () => {
+  it("does not negotiate POST requests", () => {
     expect(
       acceptsMarkdown(
         new Request("https://cva.style/", {
