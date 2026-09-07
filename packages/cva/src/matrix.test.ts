@@ -349,7 +349,7 @@ function matrix<Fixture extends (props?: any) => string>(
   });
 }
 
-describe("cva replacement runtime matrix", () => {
+describe("cva — variant matrix", () => {
   describe("without base / without defaults", () => {
     const stringClass = cva({
       variants: stringVariantsWithM,
@@ -475,7 +475,6 @@ describe("cva replacement runtime matrix", () => {
   });
 
   describe("without base / with defaults", () => {
-    // This corrected group deliberately omits base; the legacy matrix's label did not.
     const stringClass = cva({
       variants: stringVariantsWithM,
       compoundVariants: defaultsClass,
