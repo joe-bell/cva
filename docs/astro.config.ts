@@ -84,7 +84,6 @@ export default defineConfig({
       ...config,
       routeMiddleware: "./src/route-data.ts",
       components: {
-        Footer: "./src/components/footer.astro",
         Head: "./src/components/head.astro",
         PageTitle: "./src/components/page-title.astro",
         SiteTitle: "./src/components/site-title.astro",

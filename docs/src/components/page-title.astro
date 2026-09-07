@@ -1,7 +1,12 @@
 ---
 import Default from "@astrojs/starlight/components/PageTitle.astro";
+import { cva } from "cva";
 import VersionNotice from "starlight-versions/components/VersionNotice.astro";
 import { markdownPathFromEntryId } from "../lib/docs-routes";
+
+const markdownAction = cva({
+  base: "rounded-md border border-[var(--sl-color-gray-5)] px-3 py-1.5 text-[var(--sl-color-text)] hover:border-[var(--sl-color-accent)] hover:text-[var(--sl-color-accent-high)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sl-color-accent)]",
+});
 
 const { entry } = Astro.locals.starlightRoute;
 const isNotFound = entry.id === "404" || entry.id.endsWith("/404");
@@ -16,16 +21,13 @@ const markdownPath =
 {
   markdownPath && (
     <div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
-      <a
-        href={markdownPath}
-        class="rounded-md border border-[var(--sl-color-gray-5)] px-3 py-1.5 text-[var(--sl-color-text)] no-underline hover:border-[var(--sl-color-accent)] hover:text-[var(--sl-color-accent-high)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sl-color-accent)]"
-      >
+      <a href={markdownPath} class={markdownAction({ class: "no-underline" })}>
         View as Markdown
       </a>
       <button
         type="button"
         data-copy-markdown={markdownPath}
-        class="rounded-md border border-[var(--sl-color-gray-5)] px-3 py-1.5 text-[var(--sl-color-text)] hover:border-[var(--sl-color-accent)] hover:text-[var(--sl-color-accent-high)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sl-color-accent)]"
+        class={markdownAction()}
       >
         Copy Markdown
       </button>
