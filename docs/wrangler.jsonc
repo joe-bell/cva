@@ -1,12 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "cva",
-  "main": "@astrojs/cloudflare/entrypoints/server",
+  "main": "./src/worker.ts",
   "compatibility_date": "2026-06-27",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist/client",
+    "run_worker_first": ["/*", "!/_astro/*", "!/assets/*", "!/pagefind/*"],
+    "not_found_handling": "404-page",
   },
   "routes": [{ "pattern": "cva.style", "custom_domain": true }],
   "preview_urls": true,

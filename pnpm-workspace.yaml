@@ -1,6 +1,8 @@
 overrides:
   "class-variance-authority": "workspace:*"
   "cva": "workspace:*"
+  # Keep bundle measurements stable when unrelated tooling updates esbuild.
+  "@size-limit/esbuild>esbuild": "0.28.0"
   "mdast-util-directive>mdast-util-to-markdown": "2.1.2"
   "vite": "^8.1.0"
 
