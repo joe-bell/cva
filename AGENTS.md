@@ -160,6 +160,8 @@ Agent-specific notes:
 
 Durable, hard-won lessons that don't fit a section above. See [Keeping this guide current](#keeping-this-guide-current-self-improving) for what belongs here and how to write it. Newest first; prune anything that's become wrong or obsolete.
 
+- Keep size-limit's esbuild scoped override in `pnpm-workspace.yaml`: minifier updates can change compressed bundle measurements without library changes. Evaluate upgrades to that pin explicitly against the bundle budgets; docs tooling can upgrade independently.
+
 - The static docs build's Cloudflare adapter writes an asset-only `dist/client/wrangler.json`. The `workerConfig` `astro:build:done` hook restores the checked-in Worker entry point and `ASSETS` binding after validating the generated configuration; keep `session: false` so the adapter does not inject an invalid `SESSION` KV binding. Use `pnpm --filter docs preview`, which runs `wrangler dev`, to test that deployment shape rather than `astro preview`.
 - Keep `satteri@0.10.5` as a direct docs development dependency and externalize it only in Astro's Node prerender environment. Its native binding must resolve beside that package while rendering; it must not enter the deployed Worker bundle. Preserve existing `resolve.external` values when configuring it, and update the pin when `@astrojs/markdown-satteri` changes its supported range.
 - `docs/src/integrations/**` is exercised by `pnpm --filter docs build`, not the unit-test coverage set. Static HTML is the integration contract because it supplies the page metadata and rendered content used for Markdown mirrors.
