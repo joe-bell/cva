@@ -70,7 +70,7 @@ Run these from the repo root:
 - `pnpm lint:skills` – validates the agent skills in `.agents/skills` (`skill-check`, strict mode)
 - `pnpm lint-staged` – runs the pre-commit checks against currently staged files (exactly what the pre-commit hook runs)
 
-To scope a command to a single package, use a pnpm filter, e.g. `pnpm --filter cva test`.
+To scope a package script, use a pnpm filter with one it defines, e.g. `pnpm --filter cva check`. `cva` has no `test` script, so `pnpm --filter cva test` succeeds without running tests. To run its runtime tests, use `pnpm exec vitest run --config .config/vitest.config.ts packages/cva`; this scoped command does not collect coverage. Run `pnpm test` for the full coverage gate and `pnpm check` separately for compile-time type assertions.
 
 CI gates on `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `test`, so run the matching scripts locally before opening a PR. CI also runs an informational `benchmark` job, which posts its results as a PR comment.
 

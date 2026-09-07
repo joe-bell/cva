@@ -9,7 +9,7 @@ import { getSchema } from "./utils";
 
 describe("clsx (the `cva` preset default)", () => {
   test("infers the full ClassValue authoring surface", () => {
-    expectTypeOf(clsx).toMatchTypeOf<CVA.CX>();
+    expectTypeOf(clsx).toExtend<CVA.CX>();
     expectTypeOf<CVA.CXInput<typeof clsx>>().toEqualTypeOf<CVA.ClassValue>();
   });
 
@@ -46,7 +46,7 @@ describe("clsx/lite", () => {
 
   test("infers the full ClassValue authoring surface (lite's own typing)", () => {
     // clsx/lite publishes the full clsx types despite only accepting strings.
-    expectTypeOf(clsxLite).toMatchTypeOf<CVA.CX>();
+    expectTypeOf(clsxLite).toExtend<CVA.CX>();
     expectTypeOf<
       CVA.CXInput<typeof clsxLite>
     >().toEqualTypeOf<CVA.ClassValue>();
@@ -175,7 +175,7 @@ describe("cn", () => {
   const { cva: cnCva, cx: cnCx } = defineConfig({ cx: cn });
 
   test("infers the full ClassValue authoring surface", () => {
-    expectTypeOf(cn).toMatchTypeOf<CVA.CX>();
+    expectTypeOf(cn).toExtend<CVA.CX>();
     expectTypeOf<CVA.CXInput<typeof cn>>().toEqualTypeOf<CVA.ClassValue>();
   });
 
