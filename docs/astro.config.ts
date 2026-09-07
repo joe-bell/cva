@@ -198,7 +198,7 @@ export default defineConfig({
           description:
             "Class Variance Authority documentation for the stable class-variance-authority package and the cva beta package.",
           details:
-            "The abridged bundle contains stable documentation only. The complete bundle contains stable and beta documentation. Each page also has a Markdown mirror at its URL with `.md` appended, or through content negotiation with `Accept: text/markdown`.",
+            "The abridged bundle contains stable documentation only. The complete bundle contains stable and beta documentation. Each page links to a Markdown mirror with a text/markdown alternate link. The home-page mirrors are /index.md and /beta/index.md; other pages use their path without a trailing slash followed by .md. You can also request a page with Accept: text/markdown.",
           optionalLinks: [
             {
               label: "Markdown mirrors",

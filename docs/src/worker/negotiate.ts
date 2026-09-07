@@ -77,12 +77,11 @@ export function isHtmlResponse(response: Response) {
 export function markdownResponse(response: Response, method: string) {
   const headers = new Headers(response.headers);
   headers.set("Content-Type", "text/markdown; charset=utf-8");
-  const varied = withAcceptVary(
+  return withAcceptVary(
     new Response(method === "HEAD" ? null : response.body, {
       status: response.status,
       statusText: response.statusText,
       headers,
     }),
   );
-  return varied;
 }
