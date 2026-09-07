@@ -97,7 +97,7 @@ describe("compose", () => {
 
     expectTypeOf(card).toBeFunction();
 
-    expectTypeOf(card).parameter(0).toMatchTypeOf<
+    expectTypeOf(card).parameter(0).toExtend<
       | {
           shadow?: "sm" | "md" | undefined;
           gap?: "unset" | 1 | 2 | 3 | undefined;
@@ -145,7 +145,7 @@ describe("compose", () => {
 
     const card = compose(base, stack);
 
-    expectTypeOf(card).parameter(0).toMatchTypeOf<
+    expectTypeOf(card).parameter(0).toExtend<
       | {
           _tone?: "quiet" | "loud" | undefined;
           gap?: 1 | 2 | undefined;
@@ -172,7 +172,7 @@ describe("cva — composes", () => {
     const card = cva({ composes: box });
 
     expectTypeOf(card).toBeFunction();
-    expectTypeOf(card).parameter(0).toMatchTypeOf<
+    expectTypeOf(card).parameter(0).toExtend<
       | {
           shadow?: "sm" | "md" | undefined;
         }
@@ -215,7 +215,7 @@ describe("cva — composes", () => {
     const card = cva({ composes: [box, stack] });
 
     expectTypeOf(card).toBeFunction();
-    expectTypeOf(card).parameter(0).toMatchTypeOf<
+    expectTypeOf(card).parameter(0).toExtend<
       | {
           shadow?: "sm" | "md" | undefined;
           gap?: "unset" | 1 | 2 | 3 | undefined;
@@ -271,7 +271,7 @@ describe("cva — composes", () => {
       defaultVariants: { rounded: "sm" },
     });
 
-    expectTypeOf(card).parameter(0).toMatchTypeOf<
+    expectTypeOf(card).parameter(0).toExtend<
       | {
           shadow?: "sm" | "md" | undefined;
           gap?: "unset" | 1 | 2 | 3 | undefined;
