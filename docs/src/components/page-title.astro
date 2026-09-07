@@ -1,12 +1,7 @@
 ---
 import Default from "@astrojs/starlight/components/PageTitle.astro";
-import { cva } from "cva";
 import VersionNotice from "starlight-versions/components/VersionNotice.astro";
 import { markdownPathFromEntryId } from "../lib/docs-routes";
-
-const markdownAction = cva({
-  base: "rounded-md border border-[var(--sl-color-gray-5)] px-3 py-1.5 text-[var(--sl-color-text)] hover:border-[var(--sl-color-accent)] hover:text-[var(--sl-color-accent-high)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sl-color-accent)]",
-});
 
 const { entry } = Astro.locals.starlightRoute;
 const isNotFound = entry.id === "404" || entry.id.endsWith("/404");
@@ -20,52 +15,24 @@ const markdownPath =
 <VersionNotice />
 {
   markdownPath && (
-    <div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
-      <a href={markdownPath} class={markdownAction({ class: "no-underline" })}>
-        View as Markdown
-      </a>
-      <button
-        type="button"
-        data-copy-markdown={markdownPath}
-        class={markdownAction()}
+    <a
+      href={markdownPath}
+      rel="alternate"
+      type="text/markdown"
+      class="mt-4 inline-flex items-center gap-2 rounded-sm text-sm text-[var(--sl-color-gray-2)] no-underline hover:text-[var(--sl-color-accent-high)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sl-color-accent)]"
+    >
+      <svg
+        class="size-4 shrink-0"
+        viewBox="0 0 24 16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        aria-hidden="true"
       >
-        Copy Markdown
-      </button>
-      <span
-        aria-live="polite"
-        class="text-[var(--sl-color-gray-3)]"
-        data-copy-status
-      />
-    </div>
+        <rect x="1" y="1" width="22" height="14" rx="2" />
+        <path d="M5 12V4l4 5 4-5v8M18 4v7m-3-3 3 3 3-3" />
+      </svg>
+      View as Markdown
+    </a>
   )
 }
-
-<script>
-  for (const button of document.querySelectorAll<HTMLButtonElement>(
-    "[data-copy-markdown]",
-  )) {
-    button.addEventListener("click", async () => {
-      const status =
-        button.parentElement?.querySelector<HTMLElement>("[data-copy-status]");
-      const path = button.dataset.copyMarkdown;
-      if (!status || !path) return;
-
-      try {
-        // WebKit requires clipboard.write() to start during the click gesture.
-        const markdown = fetch(path, {
-          headers: { Accept: "text/markdown" },
-        }).then(async (response) => {
-          if (!response.ok) throw new Error("Unable to load Markdown");
-          return new Blob([await response.text()], { type: "text/plain" });
-        });
-        await navigator.clipboard.write([
-          new ClipboardItem({ "text/plain": markdown }),
-        ]);
-        status.textContent = "Copied Markdown.";
-      } catch {
-        status.textContent =
-          "Could not copy Markdown. Use View as Markdown instead.";
-      }
-    });
-  }
-</script>

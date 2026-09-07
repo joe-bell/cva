@@ -187,6 +187,10 @@ export default defineConfig({
             target: "_blank",
           },
         },
+        {
+          label: "llms.txt",
+          link: "/llms.txt",
+        },
       ],
       plugins: [
         starlightLlmsTxt({

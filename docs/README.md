@@ -19,7 +19,7 @@ Run these from the repository root.
 
 Every rendered documentation page with a Markdown alternate link produces a matching `.md` asset at build time. The stable home page is [/index.md](https://cva.style/index.md), and the beta home page is [/beta/index.md](https://cva.style/beta/index.md). A client can also request Markdown for a documentation route with an `Accept: text/markdown` header that has a higher quality value than `text/html`.
 
-The `.md` files exist only after `pnpm --filter docs build`. The Copy and View controls reference those generated assets, so use `pnpm --filter docs preview` when checking them locally; Astro's development server does not serve the mirrors.
+The `.md` files exist only after `pnpm --filter docs build`. The View as Markdown link references those generated assets, so use `pnpm --filter docs preview` when checking them locally; Astro's development server does not serve the mirrors.
 
 The Worker is intentionally small: it serves built assets and negotiates between HTML and generated Markdown. `run_worker_first` routes documentation requests through that Worker, while static asset paths bypass it. That means documentation page requests consume Worker invocations, including requests that ultimately return a static asset.
 
