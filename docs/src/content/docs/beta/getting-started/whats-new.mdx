@@ -15,7 +15,7 @@ TypeScript projects using `cva@beta` need TypeScript 6.0 or later. JavaScript us
 
 Roll your own `cva` via the new [`defineConfig` API in `cva/config`](/beta/api-reference#cvaconfig).
 
-Use `cva`/`cx` with `cn`, `tailwind-merge`, or your own concatenator via the [`cx` option](/beta/getting-started/installation#merging-classes).
+Use `cva`/`cx` with `cn`, `tailwind-merge`, or your own concatenator via the [`cx` option](/beta/getting-started/installation#handling-style-conflicts).
 
 ### 2. `composes`
 
@@ -38,6 +38,10 @@ If a component already declared a variant with a leading underscore (`_state`, `
 ### 5. Bring your own concatenator with `cva/config`
 
 The `cva` package is a preset over the core: it wires `cva` and `cx` to `clsx`, like `class-variance-authority`. Use `cva/config` with a required `cx` option to configure `clsx/lite`, `cn`, `tailwind-merge`, or your own concatenator.
+
+### 6. CSS defaults with `cva/tailwindcss`
+
+Import `cva/tailwindcss` to use [`base:` defaults](/beta/getting-started/installation#css-defaults-with-base) with Tailwind CSS v4. Ordinary utilities override these defaults through CSS, with no runtime class merging.
 
 ## Deprecations
 

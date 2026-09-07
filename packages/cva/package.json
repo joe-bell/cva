@@ -19,12 +19,15 @@
   "repository": "https://github.com/joe-bell/cva.git",
   "license": "Apache-2.0",
   "author": "Joe Bell (https://joebell.studio)",
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": "./src/index.ts",
     "./config": "./src/config.ts",
     "./utils": "./src/utils.ts",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./tailwindcss": "./src/tailwindcss.css"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -55,6 +58,8 @@
     "react-dom": "19.2.6",
     "size-limit": "^12.1.0",
     "tailwind-merge": "3.6.0",
+    "tailwindcss": "^4.3.0",
+    "tailwindcss-v4": "npm:tailwindcss@4.0.0",
     "tsdown": "0.22.4",
     "typescript": "6.0.3",
     "unplugin-unused": "0.5.7"
@@ -81,7 +86,8 @@
         "import": "./dist/utils.mjs",
         "require": "./dist/utils.cjs"
       },
-      "./package.json": "./package.json"
+      "./package.json": "./package.json",
+      "./tailwindcss": "./dist/tailwindcss.css"
     },
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",

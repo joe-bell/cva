@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Install cva@beta, configure Tailwind CSS IntelliSense, and merge conflicting utility classes.
+description: Install cva@beta, configure Tailwind CSS IntelliSense, and handle utility style conflicts.
 ---
 
 import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
@@ -123,11 +123,70 @@ You can enable autocompletion inside `cva` using the steps below:
   </TabItem>
 </Tabs>
 
-## Merging classes
+## Handling style conflicts
 
-By default, `cva` uses [`clsx`](https://github.com/lukeed/clsx) for conditional class joining. It does not resolve conflicting Tailwind CSS utilities.
+By default, `cva` uses [`clsx`](https://github.com/lukeed/clsx) for conditional class joining. It does not resolve conflicting Tailwind CSS utilities. Use CSS defaults for predictable component defaults, or configure a class-conflict library when you need more control.
 
-Both configurations accept conditional objects and arrays.
+### CSS defaults with `base:`
+
+The `base:` variant puts component defaults in a nested `base` layer inside Tailwind's utilities layer. It overrides normal browser defaults and Tailwind's `base` and `components` layers, while ordinary utilities take priority. This recipe requires Tailwind CSS v4.
+
+Import the variant after Tailwind CSS:
+
+```css
+@import "tailwindcss";
+@import "cva/tailwindcss";
+```
+
+<details>
+
+<summary>
+  Copy the <code>base:</code> definition instead
+</summary>
+
+```css
+@custom-variant base {
+  @layer base {
+    :where(&) {
+      @slot;
+    }
+  }
+}
+```
+
+</details>
+
+Put idle defaults behind `base:` and write ordinary state styles with Tailwind variants:
+
+```ts
+import { cva } from "cva";
+
+export const button = cva({
+  base: [
+    "base:bg-blue-600 base:px-4 base:py-2 base:text-white",
+    "hover:bg-blue-700",
+  ],
+});
+
+button({ className: "bg-violet-600" });
+```
+
+The idle `base:bg-blue-600` default yields to `bg-violet-600`, while the ordinary `hover:bg-blue-700` component style still applies on hover.
+
+This recipe was inspired by [Diego Haz's `base:` idea](https://x.com/diegohaz/status/1897776774206853269) and [a related `:where()` example](https://x.com/acd02/status/1897943176863756335).
+
+#### Cascade rules for `base:` defaults
+
+Keep these rules in mind:
+
+- `base:hover:`, `base:sm:`, and `base:dark:` defaults also live in the lower `base` layer, so an ordinary utility overrides them even while the state, breakpoint, or dark-mode condition matches.
+- HTML class order does not merge utilities or settle conflicts within one cascade tier. `base:` establishes defaults; it does not create last-class-wins merging.
+- `:where()` gives the class part of a plain `base:bg-*` selector zero specificity. Pseudo-classes and pseudo-elements add their own specificity. Put `base:` before a pseudo-element variant: `base:before:bg-*`, not `before:base:bg-*`.
+- Unlayered author styles override normal layered styles. With `!important`, layer order reverses, so important `base:` utilities override ordinary important utilities.
+
+Try `cn` or `tailwind-merge` when a component needs more robust class-conflict resolution than these cascade rules provide.
+
+Both external configurations accept conditional objects and arrays.
 
 ### cn
 

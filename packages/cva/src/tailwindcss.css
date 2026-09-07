@@ -1,0 +1,7 @@
+@custom-variant base {
+  @layer base {
+    :where(&) {
+      @slot;
+    }
+  }
+}

@@ -1,6 +1,6 @@
 ---
 title: API Reference
-description: API reference for cva, cva/config, and cva/utils.
+description: API reference for cva, cva/config, cva/utils, and cva/tailwindcss.
 ---
 
 ## `cva`
@@ -43,6 +43,17 @@ const className = cx(classes);
 ### Returns
 
 `string`
+
+## `cva/tailwindcss`
+
+Defines the `base:` variant for Tailwind CSS v4. Import it in your stylesheet after Tailwind CSS:
+
+```css
+@import "tailwindcss";
+@import "cva/tailwindcss";
+```
+
+See [CSS defaults with `base:`](/beta/getting-started/installation#css-defaults-with-base) for usage and cascade caveats.
 
 ## `cva/utils`
 
@@ -116,7 +127,7 @@ export const { cva, cx } = defineConfig(options);
      - It owns the class name grammar: `cva` passes composed outputs, `base`, matched variant and compound-variant values, and `class`/`className` through verbatim, one argument each.
      - Custom callbacks must accept empty calls, variadic inputs, and composed component strings.
      - The authoring surface adopts its parameter type: `twMerge` rejects object syntax, while `clsx` keeps the full clsx-flavored `ClassValue` grammar.
-     - See [Merging classes](/beta/getting-started/installation#merging-classes) for `cn` and `tailwind-merge` examples.
+     - See [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for CSS defaults, `cn`, and `tailwind-merge` examples.
    - `hooks`
      - `onComplete` and `"cx:done"` are deprecated. Each receives the concatenated string and returns a processed string. Use `cx` instead. When both hooks are set, `"cx:done"` takes precedence.
 

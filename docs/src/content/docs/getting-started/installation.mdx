@@ -144,11 +144,50 @@ You can enable autocompletion inside `cva` using the steps below:
 
 ### Handling style conflicts
 
-Although `cva`'s API is designed to help you avoid styling conflicts, there's still a small margin of error.
+By default, `cva` joins conditional class names but does not resolve conflicting Tailwind CSS utilities. Use CSS defaults to give consumers a predictable override path, or merge classes when a component needs more control.
 
-If you're keen to lift that burden altogether, check out the wonderful [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) package.
+#### CSS defaults with `base:`
 
-For bulletproof components, wrap your `cva` component with `twMerge`.
+This copyable Tailwind CSS v4 recipe puts component defaults in a lower nested layer. Add it after Tailwind's import:
+
+```css
+@import "tailwindcss";
+
+@custom-variant base {
+  @layer base {
+    :where(&) {
+      @slot;
+    }
+  }
+}
+```
+
+Use `cva` to apply idle defaults and ordinary state styles:
+
+```ts
+import { cva } from "class-variance-authority";
+
+const buttonVariants = cva(
+  "base:bg-blue-600 base:px-4 base:py-2 base:text-white hover:bg-blue-700",
+);
+
+buttonVariants({ className: "bg-violet-600" });
+```
+
+The idle `base:` defaults yield to ordinary utilities. Keep these cascade rules in mind:
+
+- `base:hover:`, `base:sm:`, and `base:dark:` defaults yield to ordinary utilities even while the state, breakpoint, or dark-mode condition matches.
+- HTML class order does not merge utilities or settle conflicts within one cascade tier. `base:` establishes defaults; it does not create last-class-wins merging.
+- `:where()` gives the class part of a plain `base:bg-*` selector zero specificity. Pseudo-classes and pseudo-elements add their own specificity. Put `base:` before a pseudo-element variant: `base:before:bg-*`, not `before:base:bg-*`.
+- Unlayered author styles override normal layered styles. With `!important`, layer order reverses, so important `base:` utilities override ordinary important utilities.
+
+This recipe was inspired by [Diego Haz's `base:` idea](https://x.com/diegohaz/status/1897776774206853269) and [a related `:where()` example](https://x.com/acd02/status/1897943176863756335).
+
+Try an external library such as `tailwind-merge` when a component needs more robust class-conflict resolution than these cascade rules provide.
+
+#### tailwind-merge
+
+Use [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) to resolve Tailwind CSS conflicts before you render a component.
 
 <details>
 

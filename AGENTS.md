@@ -160,6 +160,8 @@ Agent-specific notes:
 
 Durable, hard-won lessons that don't fit a section above. See [Keeping this guide current](#keeping-this-guide-current-self-improving) for what belongs here and how to write it. Newest first; prune anything that's become wrong or obsolete.
 
+- A Tailwind custom variant can nest a lower layer inside `utilities` (`utilities.base`), rather than target Tailwind's top-level `base` layer. Treat `base:` as defaults: ordinary matching state, responsive, and dark utilities still win through layer precedence, and class order does not merge them.
+- For a package-owned CSS asset, use tsdown's `copy` plus `exports.customExports` with `isPublish` so workspace consumers resolve `src/` and packed consumers resolve `dist/`; use a CSS `sideEffects` glob to preserve stylesheet imports without disabling JavaScript tree shaking. Keep the strict attw checks for JavaScript entries and exclude only the CSS entry, then verify a normal import from the packed package instead of adding a fake TypeScript declaration.
 - Give deprecated value exports their own JSDoc declaration: destructuring a deprecated property into an export loses its marker in emitted declarations, even when the property and its interface are tagged. Verify editor metadata against the packed package.
 - Keep the base-only, non-composed `cx` call at fixed arity: spreading the shared empty composition array ahead of its arguments caused a repeatable throughput regression under the existing benchmark harness. Preserve the normal `cx` filtering and hook path when optimizing it.
 - Infer concatenator inputs with `readonly [...infer Inputs]`, then validate the complete callback against `string | CXInput<T>` so readonly rests and callback unions preserve the actual `cx` call contract.
