@@ -1,0 +1,45 @@
+---
+import Default from "@astrojs/starlight/components/PageTitle.astro";
+import VersionNotice from "starlight-versions/components/VersionNotice.astro";
+import { markdownPathFromEntryId } from "../lib/docs-routes";
+
+const { entry } = Astro.locals.starlightRoute;
+const isNotFound = entry.id === "404" || entry.id.endsWith("/404");
+const markdownPath =
+  isNotFound || entry.data.draft
+    ? undefined
+    : markdownPathFromEntryId(entry.id);
+---
+
+<Default />
+<VersionNotice />
+{
+  markdownPath && (
+    <a
+      href={markdownPath}
+      rel="alternate"
+      type="text/markdown"
+      class="mt-4 inline-flex items-center gap-2 rounded-sm text-sm text-[var(--sl-color-gray-2)] no-underline hover:text-[var(--sl-color-white)] focus:text-[var(--sl-color-white)] focus-visible:outline-2 focus-visible:outline-offset-2"
+    >
+      <svg
+        class="size-4 shrink-0"
+        viewBox="0 0 208 128"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <rect
+          width="198"
+          height="118"
+          x="5"
+          y="5"
+          ry="10"
+          stroke="currentColor"
+          stroke-width="10"
+          fill="none"
+        />
+        <path d="M30 98V30h20l20 25 20-25h20v68H90V59L70 84 50 59v39zm125 0l-30-33h20V30h20v35h20z" />
+      </svg>
+      View as Markdown
+    </a>
+  )
+}
