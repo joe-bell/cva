@@ -50,7 +50,6 @@
       "label": "Sponsor",
       "link": "/sponsors",
       "attrs": { "target": "_blank" }
-    },
-    { "label": "llms.txt", "link": "/llms.txt" }
+    }
   ]
 }

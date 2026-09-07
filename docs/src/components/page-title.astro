@@ -1,0 +1,69 @@
+---
+import Default from "@astrojs/starlight/components/PageTitle.astro";
+import VersionNotice from "starlight-versions/components/VersionNotice.astro";
+import { markdownPathFromEntryId } from "../lib/docs-routes";
+
+const { entry } = Astro.locals.starlightRoute;
+const isNotFound = entry.id === "404" || entry.id.endsWith("/404");
+const markdownPath =
+  isNotFound || entry.data.draft
+    ? undefined
+    : markdownPathFromEntryId(entry.id);
+---
+
+<Default />
+<VersionNotice />
+{
+  markdownPath && (
+    <div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
+      <a
+        href={markdownPath}
+        class="rounded-md border border-[var(--sl-color-gray-5)] px-3 py-1.5 text-[var(--sl-color-text)] no-underline hover:border-[var(--sl-color-accent)] hover:text-[var(--sl-color-accent-high)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sl-color-accent)]"
+      >
+        View as Markdown
+      </a>
+      <button
+        type="button"
+        data-copy-markdown={markdownPath}
+        class="rounded-md border border-[var(--sl-color-gray-5)] px-3 py-1.5 text-[var(--sl-color-text)] hover:border-[var(--sl-color-accent)] hover:text-[var(--sl-color-accent-high)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sl-color-accent)]"
+      >
+        Copy Markdown
+      </button>
+      <span
+        aria-live="polite"
+        class="text-[var(--sl-color-gray-3)]"
+        data-copy-status
+      />
+    </div>
+  )
+}
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>(
+    "[data-copy-markdown]",
+  )) {
+    button.addEventListener("click", async () => {
+      const status =
+        button.parentElement?.querySelector<HTMLElement>("[data-copy-status]");
+      const path = button.dataset.copyMarkdown;
+      if (!status || !path) return;
+
+      try {
+        // WebKit requires clipboard.write() to start during the click gesture.
+        const markdown = fetch(path, {
+          headers: { Accept: "text/markdown" },
+        }).then(async (response) => {
+          if (!response.ok) throw new Error("Unable to load Markdown");
+          return new Blob([await response.text()], { type: "text/plain" });
+        });
+        await navigator.clipboard.write([
+          new ClipboardItem({ "text/plain": markdown }),
+        ]);
+        status.textContent = "Copied Markdown.";
+      } catch {
+        status.textContent =
+          "Could not copy Markdown. Use View as Markdown instead.";
+      }
+    });
+  }
+</script>

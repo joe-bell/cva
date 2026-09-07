@@ -6,6 +6,8 @@ import starlightVersions from "starlight-versions";
 import { satteri } from "@astrojs/markdown-satteri";
 import tailwindcss from "@tailwindcss/vite";
 import { orderRedirects } from "./src/integrations/order-redirects";
+import { markdownMirrors } from "./src/integrations/markdown-mirrors";
+import { workerConfig } from "./src/integrations/worker-config";
 import { versionRedirects } from "./src/integrations/version-redirects";
 
 const site = "https://cva.style";
@@ -24,6 +26,7 @@ const versions = [{ slug: "beta", label: "Beta" }] as const;
 export default defineConfig({
   site,
   output: "static",
+  session: false,
   adapter: cloudflare({
     imageService: "compile",
     prerenderEnvironment: "node",
@@ -81,7 +84,9 @@ export default defineConfig({
       ...config,
       routeMiddleware: "./src/route-data.ts",
       components: {
+        Footer: "./src/components/footer.astro",
         Head: "./src/components/head.astro",
+        PageTitle: "./src/components/page-title.astro",
         SiteTitle: "./src/components/site-title.astro",
       },
       description: "Class Variance Authority",
@@ -104,7 +109,6 @@ export default defineConfig({
           href: "https://joebell.studio/bluesky",
         },
       ],
-      tagline: "Class Variance Authority",
       // Sidebar for the current (stable) version.
       // Each archived version (e.g. `beta`) defines its own sidebar in
       // `src/content/versions/*.json`.
@@ -184,17 +188,25 @@ export default defineConfig({
             target: "_blank",
           },
         },
-        {
-          label: "llms.txt",
-          link: "/llms.txt",
-        },
       ],
       plugins: [
         starlightLlmsTxt({
           exclude: versions.map((version) => `${version.slug}/**`),
+          description:
+            "Class Variance Authority documentation for the stable class-variance-authority package and the cva beta package.",
+          details:
+            "The abridged bundle contains stable documentation only. The complete bundle contains stable and beta documentation. Each page also has a Markdown mirror at its URL with `.md` appended, or through content negotiation with `Accept: text/markdown`.",
+          optionalLinks: [
+            {
+              label: "Markdown mirrors",
+              url: "https://cva.style/index.md",
+              description:
+                "Each documentation page is available as generated Markdown",
+            },
+          ],
           customSets: versions.map((version) => ({
             label: `cva@${version.slug}`,
-            description: `Documentation for the cva@${version.slug} release (https://cva.style/${version.slug})`,
+            description: `Abridged documentation for the cva@${version.slug} release (https://cva.style/${version.slug})`,
             paths: [`${version.slug}/**`],
           })),
         }),
@@ -280,6 +292,8 @@ export default defineConfig({
       ],
     }),
     orderRedirects(),
+    markdownMirrors(),
+    workerConfig(),
     versionRedirects({
       docs: "src/content/docs",
       versions: versions.map(({ slug }) => slug),

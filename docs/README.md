@@ -1,66 +1,40 @@
-# Starlight Starter Kit: Tailwind
+# Documentation
 
-```
-npm create astro@latest -- --template starlight/tailwind
-```
+The [cva.style](https://cva.style/) documentation site serves the stable package at `/` and the current beta at [/beta/](https://cva.style/beta/). It is built with [Astro Starlight](https://starlight.astro.build/) and deployed through [Cloudflare Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/).
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/starlight/tree/main/examples/tailwind)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/starlight/tree/main/examples/tailwind)
+## Commands
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Run these from the repository root.
 
-## 🚀 Project Structure
+| Command                                             | Purpose                                                                                                                        |
+| :-------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm --filter docs dev`                            | Start Astro's authoring server. It does not run the production Worker request negotiation.                                     |
+| `pnpm --filter docs build`                          | Type-check and build the static site, Markdown mirrors, and generated Wrangler deployment configuration.                       |
+| `pnpm --filter docs preview`                        | Build, then run `wrangler dev` against the generated Worker and assets. Use this to check production request handling locally. |
+| `pnpm --filter docs exec wrangler deploy --dry-run` | Validate the generated Worker deployment bundle without deploying it.                                                          |
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+`astro preview` is not a production-equivalent preview for this site. The static build's generated Wrangler configuration restores the Worker entry point and the `ASSETS` binding after the Cloudflare adapter writes its asset configuration, so use the `preview` command above when testing deployment behavior.
 
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   ├── docs/
-│   │   └── config.ts
-│   └── env.d.ts
-├── astro.config.mjs
-├── package.json
-├── tailwind.config.cjs
-└── tsconfig.json
-```
+## Markdown mirrors
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+Every rendered documentation page with a Markdown alternate link produces a matching `.md` asset at build time. The stable home page is [/index.md](https://cva.style/index.md), and the beta home page is [/beta/index.md](https://cva.style/beta/index.md). A client can also request Markdown for a documentation route with an `Accept: text/markdown` header that has a higher quality value than `text/html`.
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
+The `.md` files exist only after `pnpm --filter docs build`. The Copy and View controls reference those generated assets, so use `pnpm --filter docs preview` when checking them locally; Astro's development server does not serve the mirrors.
 
-Static assets, like favicons, can be placed in the `public/` directory.
+The Worker is intentionally small: it serves built assets and negotiates between HTML and generated Markdown. `run_worker_first` routes documentation requests through that Worker, while static asset paths bypass it. That means documentation page requests consume Worker invocations, including requests that ultimately return a static asset.
 
-## 🧞 Commands
+`starlight-llms-txt` builds the stable abridged bundle by excluding beta pages; the complete bundle contains both stable and beta pages. Its custom beta set is abridged. Use each page's Markdown alternate link rather than appending `.md` to a canonical URL: the two home-page mirror URLs are exceptions to that shorthand.
 
-All commands are run from the root of the project, from a terminal:
+## Deployment
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:3000`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+The checked-in [wrangler.jsonc](./wrangler.jsonc) is the source configuration. Astro writes the deployable configuration to `dist/client/wrangler.json`; the `workerConfig` build integration validates and completes that generated file after the adapter finishes. Do not edit the generated file by hand.
 
-## 🚀 Deployment
-
-Deployed via [Cloudflare Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/). Builds are scoped with [build watch paths](https://developers.cloudflare.com/pages/configuration/build-watch-paths/) set in the Cloudflare dashboard (**Settings → Build → Build watch paths**); there's no `wrangler.jsonc` equivalent. Paths are repo-root-relative, independent of the worker's `docs/` root.
-
-Include paths (excludes are empty):
+Cloudflare Workers Builds watch paths are configured in the Cloudflare dashboard under **Settings → Build → Build watch paths**, not in `wrangler.jsonc`. They are repository-root-relative.
 
 - `docs/*`
 - `packages/cva/*`
 - `.config/*`
 - `package.json`, `tsconfig.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.prettierrc.json`
-- `.nvmrc` — Node version; the one extensionless file we watch
+- `.nvmrc`
 
-`*` matches across `/`, so `docs/*` covers nested files. Root `.md` files and other extensionless files (`LICENSE`, `.gitignore`) are excluded, so prose-only changes don't redeploy.
-
-## 👀 Want to learn more?
-
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+`*` matches across `/`, so `docs/*` includes nested documentation files. Root Markdown files and other extensionless root files do not match these paths.
