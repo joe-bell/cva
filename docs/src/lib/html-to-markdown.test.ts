@@ -91,6 +91,5 @@ describe("htmlToMarkdown exact rendered structures", () => {
     expect(markdown).toBe(
       "* TypeScript\n\n  type content\n\n* JavaScript\n\n  javascript content",
     );
-    expect(markdown).not.toContain("This must not appear");
   });
 });
