@@ -9,9 +9,7 @@ function App() {
   return (
     <table
       className={cx(
-        "relative",
-        "h-max w-max",
-        "self-center justify-self-center",
+        "relative h-max w-max self-center justify-self-center",
         "[&_:where(th,td)]:p-2",
       )}
     >

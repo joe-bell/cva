@@ -14,12 +14,10 @@ const isDisabled = [false, true] as const;
     <meta name="generator" content={Astro.generator} />
     <title>cva: Astro with Tailwind CSS</title>
   </head>
-  <body class:list={["grid", "h-full w-full", "p-6"]}>
+  <body class="grid h-full w-full p-6">
     <table
       class:list={[
-        "relative",
-        "h-max w-max",
-        "self-center justify-self-center",
+        "relative h-max w-max self-center justify-self-center",
         "[&_:where(th,td)]:p-2",
       ]}
     >

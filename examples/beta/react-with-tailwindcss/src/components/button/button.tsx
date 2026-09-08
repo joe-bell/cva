@@ -5,16 +5,16 @@ const button = cva({
   base: "button",
   variants: {
     intent: {
-      primary: ["bg-blue-500", "text-white", "border-transparent"],
-      secondary: ["bg-white", "text-gray-800", "border-gray-400"],
+      primary: "bg-blue-500 text-white border-transparent",
+      secondary: "bg-white text-gray-800 border-gray-400",
     },
     size: {
-      small: ["text-sm", "py-1", "px-2"],
-      medium: ["text-base", "py-2", "px-4"],
+      small: "py-1 px-2 text-sm",
+      medium: "py-2 px-4 text-base",
     },
     disabled: {
       false: null,
-      true: ["opacity-50", "cursor-not-allowed"],
+      true: "opacity-50 cursor-not-allowed",
     },
   },
   compoundVariants: [

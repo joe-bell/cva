@@ -8,9 +8,7 @@ export const root = cva({
   base: [
     "[--nav-item-py-offset:calc(var(--nav-item-py)*0.5*-1)]",
     "flex flex-col",
-    "rounded-(--nav-radius)",
-    "border border-zinc-200",
-    "shadow-sm",
+    "rounded-(--nav-radius) border border-zinc-200 shadow-sm",
   ],
   variants: {
     density: {
@@ -63,11 +61,12 @@ export const Item: React.FC<ItemProps> = ({ className, ...props }) => (
 
 export const link = cva({
   base: [
-    "relative flex bg-transparent font-light text-sm text-zinc-800",
-    "px-(--nav-item-px) py-(--nav-item-py)",
+    "relative flex px-(--nav-item-px) py-(--nav-item-py)",
+    "font-light text-sm",
+    "bg-transparent text-zinc-800",
     "hover:bg-zinc-50 hover:text-zinc-900 hover:z-20",
     "focus-visible:bg-white focus-visible:z-30 focus-visible:outline-none",
-    " focus-visible:ring-zinc-600 focus-visible:ring-2",
+    "focus-visible:ring-zinc-600 focus-visible:ring-2",
     "group-first/nav-item:rounded-t-(--nav-radius)",
     "group-last/nav-item:rounded-b-(--nav-radius)",
   ],
