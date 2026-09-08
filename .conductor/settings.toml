@@ -1,7 +1,7 @@
 "$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
 
 # setup-worktree.sh links env files; copied files would prevent those links.
-file_include_globs = ""
+file_include_globs = "!.env*"
 
 [scripts]
 setup = "bash .conductor/scripts/setup.sh"
