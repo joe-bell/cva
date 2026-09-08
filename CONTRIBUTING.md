@@ -98,7 +98,7 @@ Two details of the published map are deliberate:
 
 What tsdown does **not** own: `size-limit` remains the bundle-size budget (tsdown's per-file gzip size report is informational only), the `tsc --noEmit` check remains the source type check, and version bumps stay manual per [Releases](#releases).
 
-Day to day: `pnpm --filter <package> dev` runs the build in watch mode, and because the root `prepare:packages` script builds on every `pnpm install`, the publish-shape gates run then too — a broken manifest fails fast on your machine rather than in CI. If that per-install cost ever becomes a problem, `attw: 'ci-only'` in the config confines the slowest gate to CI.
+Day to day: `pnpm --filter <package> dev` runs the build in watch mode, and because the root `prepare:packages` script builds during a fresh `pnpm install`, the publish-shape gates run then too — a broken manifest fails fast on your machine rather than in CI. An already-up-to-date install may skip `prepare`; run `pnpm build` explicitly when you need to rebuild local changes. If that per-install cost ever becomes a problem, `attw: 'ci-only'` in the config confines the slowest gate to CI.
 
 `pnpm --filter cva test:consumer` requires a completed `pnpm --filter cva build`. It packs that beta build, extracts it outside the workspace, compiles ESM and CommonJS fixtures into JavaScript plus declarations, executes the emitted JavaScript, and type-checks downstream consumers against the emitted declarations. The isolated layout prevents workspace-source resolution; CI runs it in the `test` job after `pnpm test`, with the install setup supplying the build through `prepare`.
 
