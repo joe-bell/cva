@@ -1,18 +1,6 @@
 {
   "version": 1,
   "skills": {
-    "deslop": {
-      "source": "cursor/plugins",
-      "sourceType": "github",
-      "skillPath": "cursor-team-kit/skills/deslop/SKILL.md",
-      "computedHash": "5608829d77af9d386e71927f11d7d934908096e4860ad93d86193be9064da4e7"
-    },
-    "find-skills": {
-      "source": "vercel-labs/skills",
-      "sourceType": "github",
-      "skillPath": "skills/find-skills/SKILL.md",
-      "computedHash": "17fc4ab95ca0d788041f9581605a22932244aa938b7a50faa9d875342741f1fa"
-    },
     "pnpm": {
       "source": "antfu/skills",
       "sourceType": "github",
@@ -30,12 +18,6 @@
       "sourceType": "github",
       "skillPath": "skills/vitest/SKILL.md",
       "computedHash": "943d436114c677802426741980146c07560bf375297666b03062444f4b98a785"
-    },
-    "web-design-guidelines": {
-      "source": "vercel-labs/agent-skills",
-      "sourceType": "github",
-      "skillPath": "skills/web-design-guidelines/SKILL.md",
-      "computedHash": "2b4252a346243aa696da2d021a7a2f747259567cd3ca51308ee86ca24ab60d86"
     },
     "wrangler": {
       "source": "cloudflare/skills",
