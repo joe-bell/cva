@@ -1,10 +1,49 @@
+import { clsx } from "clsx";
 import type * as CVA from "./";
 import { compose, cva, cx, defineConfig, getSchema } from "./";
-import { defineConfig as defineCoreConfig } from "./config";
 import { getSchema as getSchemaUtils } from "./utils";
 
+describe("clsx (the `cva` preset default)", () => {
+  test("infers the full ClassValue authoring surface", () => {
+    expectTypeOf(clsx).toExtend<CVA.CX>();
+    expectTypeOf<CVA.CXInput<typeof clsx>>().toEqualTypeOf<CVA.ClassValue>();
+  });
+
+  test.each<{ name: string; inputs: CVA.ClassValue[] }>([
+    {
+      name: "mixed strings, arrays, objects, and numbers",
+      inputs: ["foo", ["bar", { baz: true, qux: false }], 1],
+    },
+    {
+      name: "empty and boolean values",
+      inputs: [null, undefined, false, true, ""],
+    },
+    {
+      name: "deeply nested arrays",
+      inputs: [[[["deeply", ["nested"]]], { object: 1 }]],
+    },
+  ])("cx matches clsx for $name", ({ inputs }) => {
+    expect(cx(...inputs)).toBe(clsx(...inputs));
+  });
+
+  test("components support clsx's full authoring grammar", () => {
+    const badge = cva({
+      base: ["badge", { "badge--raised": true, "badge--flat": false }],
+      variants: {
+        tone: { info: { "bg-blue-500": true }, warn: "bg-yellow-500" },
+      },
+      defaultVariants: { tone: "info" },
+    });
+
+    expect(badge()).toBe("badge badge--raised bg-blue-500");
+    expect(badge({ tone: "warn", class: ["extra", { on: true }] })).toBe(
+      "badge badge--raised bg-yellow-500 extra on",
+    );
+  });
+});
+
 describe("cx", () => {
-  describe.each<CVA.CXOptions>([
+  test.each<[CVA.ClassValue, string]>([
     [null, ""],
     [undefined, ""],
     [false && "foo", ""],
@@ -29,19 +68,17 @@ describe("cx", () => {
         ],
       ],
       "foo bar baz qux quux quuz corge grault garply",
-      [
-        [
-          "foo",
-          [1 && "bar", { baz: false, bat: null }, ["hello", ["world"]]],
-          "cya",
-        ],
-        "foo bar hello world cya",
-      ],
     ],
-  ])("cx(%o)", (options, expected) => {
-    test(`returns ${expected}`, () => {
-      expect(cx(options)).toBe(expected);
-    });
+    [
+      [
+        "foo",
+        [1 && "bar", { baz: false, bat: null }, ["hello", ["world"]]],
+        "cya",
+      ],
+      "foo bar hello world cya",
+    ],
+  ])("cx(%o) returns %s", (options, expected) => {
+    expect(cx(options)).toBe(expected);
   });
 });
 
@@ -665,237 +702,6 @@ describe("getSchema", () => {
     });
     expectTypeOf(getSchemaUtils).toEqualTypeOf<CVA.GetSchema>();
   });
-
-  test("should return the schema for a component", () => {
-    const buttonWithoutBaseWithDefaultsString = cva({
-      base: "button font-semibold border rounded",
-      variants: {
-        intent: {
-          unset: null,
-          primary:
-            "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
-          secondary:
-            "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-          warning:
-            "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-          danger: [
-            "button--danger",
-            [
-              1 && "bg-red-500",
-              { baz: false, bat: null },
-              ["text-white", ["border-transparent"]],
-            ],
-            "hover:bg-red-600",
-          ],
-        },
-        empty: {},
-        disabled: {
-          true: "button--disabled opacity-050 cursor-not-allowed",
-          false: "button--enabled cursor-pointer",
-        },
-        size: {
-          small: "button--small text-sm py-1 px-2",
-          medium: "button--medium text-base py-2 px-4",
-          large: "button--large text-lg py-2.5 px-4",
-        },
-        m: {
-          0: "m-0",
-          1: "m-1",
-        },
-      },
-      compoundVariants: [
-        {
-          intent: "primary",
-          size: "medium",
-          class: "button--primary-medium uppercase",
-        },
-        {
-          intent: "warning",
-          disabled: false,
-          class: "button--warning-enabled text-gray-800",
-        },
-        {
-          intent: "warning",
-          disabled: true,
-          class: [
-            "button--warning-disabled",
-            [1 && "text-black", { baz: false, bat: null }],
-          ],
-        },
-        {
-          intent: ["warning", "danger"],
-          class: "button--warning-danger !border-red-500",
-        },
-        {
-          intent: ["warning", "danger"],
-          size: "medium",
-          class: "button--warning-danger-medium",
-        },
-      ],
-      defaultVariants: {
-        disabled: false,
-        intent: "primary",
-        size: "medium",
-      },
-    });
-
-    const schema = getSchema(buttonWithoutBaseWithDefaultsString);
-
-    expect(schema).toStrictEqual({
-      disabled: {
-        values: [true, false],
-        defaultValue: false,
-      },
-      intent: {
-        values: ["unset", "primary", "secondary", "warning", "danger"],
-        defaultValue: "primary",
-      },
-      m: {
-        values: [0, 1],
-      },
-      size: {
-        values: ["small", "medium", "large"],
-        defaultValue: "medium",
-      },
-    });
-
-    expectTypeOf(schema).toEqualTypeOf<{
-      intent: {
-        values: readonly (
-          | "warning"
-          | "unset"
-          | "primary"
-          | "secondary"
-          | "danger"
-        )[];
-        defaultValue: "primary";
-      };
-      disabled: {
-        values: readonly boolean[];
-        defaultValue: false;
-      };
-      size: {
-        values: readonly ("small" | "medium" | "large")[];
-        defaultValue: "medium";
-      };
-      m: {
-        values: readonly (0 | 1)[];
-      };
-    }>();
-  });
-
-  test("should return the schema for a composed component", () => {
-    const box = cva({
-      variants: {
-        shadow: {
-          sm: "shadow-sm",
-          md: "shadow-md",
-        },
-      },
-      defaultVariants: {
-        shadow: "sm",
-      },
-    });
-
-    const stack = cva({
-      variants: {
-        gap: {
-          unset: null,
-          1: "gap-1",
-          2: "gap-2",
-          3: "gap-3",
-        },
-      },
-      defaultVariants: {
-        gap: "unset",
-      },
-    });
-
-    const single = cva({ composes: box });
-    expect(getSchema(single)).toStrictEqual({
-      shadow: { values: ["sm", "md"], defaultValue: "sm" },
-    });
-
-    const card = cva({ composes: [box, stack] });
-    const schema = getSchema(card);
-
-    expect(schema).toStrictEqual({
-      shadow: { values: ["sm", "md"], defaultValue: "sm" },
-      gap: { values: [1, 2, 3, "unset"], defaultValue: "unset" },
-    });
-
-    expectTypeOf(schema).toEqualTypeOf<{
-      shadow: { values: readonly ("sm" | "md")[]; defaultValue: "sm" };
-      gap: { values: readonly ("unset" | 1 | 2 | 3)[]; defaultValue: "unset" };
-    }>();
-  });
-
-  test("should reject components not created by cva()", () => {
-    const box = cva({
-      variants: { shadow: { sm: "shadow-sm" } },
-    });
-    const stack = cva({
-      variants: { gap: { 1: "gap-1" } },
-    });
-    const composed = compose(box, stack);
-    const plainFunction = () => "";
-
-    // @ts-expect-error — `compose()`'s result has no `.config`, so it can't
-    // be introspected by `getSchema`. Use the `composes` property instead.
-    getSchema(composed);
-    // @ts-expect-error: not a cva()-created component at all
-    expect(getSchema(plainFunction)).toStrictEqual({});
-  });
-
-  test("should keep a defaulted variant that has no values", () => {
-    const component = cva({
-      variants: { size: {} },
-      // @ts-expect-error: an empty variant has no values to default to
-      defaultVariants: { size: "md" },
-    });
-
-    // @ts-expect-error: rejected at the type level for the same reason,
-    // but the runtime schema still reports the default.
-    expect(getSchema(component)).toStrictEqual({
-      size: { defaultValue: "md" },
-    });
-  });
-
-  test("should drop a variant with neither values nor a default", () => {
-    const component = cva({
-      variants: { size: {}, intent: { primary: "button--primary" } },
-    });
-
-    expect(getSchema(component)).toStrictEqual({
-      intent: { values: ["primary"] },
-    });
-  });
-
-  test("should normalize numeric variant keys, including negatives", () => {
-    const component = cva({
-      variants: {
-        offset: {
-          [-1]: "-mt-1",
-          0: "mt-0",
-          1: "mt-1",
-        },
-      },
-      defaultVariants: { offset: -1 },
-    });
-
-    const schema = getSchema(component);
-
-    // Runtime values match the variant prop types (`-1 | 0 | 1`), not the
-    // stringified object keys they were read from. Order follows `Object.keys`:
-    // array-index keys (`0`, `1`) ascending first, then other keys (`-1`) by
-    // insertion order.
-    expect(schema).toStrictEqual({
-      offset: { values: [0, 1, -1], defaultValue: -1 },
-    });
-    expectTypeOf(schema).toEqualTypeOf<{
-      offset: { values: readonly (0 | 1 | -1)[]; defaultValue: -1 };
-    }>();
-  });
 });
 
 describe("cva", () => {
@@ -970,1580 +776,6 @@ describe("cva", () => {
             className: "adhoc-className",
           }),
         ).toBe("adhoc-class adhoc-className");
-      });
-    });
-
-    describe("without defaults", () => {
-      const buttonWithoutBaseWithoutDefaultsString = cva({
-        variants: {
-          intent: {
-            unset: null,
-            primary:
-              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
-            secondary:
-              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-            warning:
-              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: "button--disabled opacity-050 cursor-not-allowed",
-            false: "button--enabled cursor-pointer",
-          },
-          size: {
-            unset: null,
-            small: "button--small text-sm py-1 px-2",
-            medium: "button--medium text-base py-2 px-4",
-            large: "button--large text-lg py-2.5 px-4",
-          },
-          m: {
-            unset: null,
-            0: "m-0",
-            1: "m-1",
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            class: "button--primary-medium uppercase",
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            class: "button--warning-enabled text-gray-800",
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            class: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-        ],
-      });
-      const buttonWithoutBaseWithoutDefaultsWithClassNameString = cva({
-        variants: {
-          intent: {
-            unset: null,
-            primary:
-              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
-            secondary:
-              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-            warning:
-              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: "button--disabled opacity-050 cursor-not-allowed",
-            false: "button--enabled cursor-pointer",
-          },
-          size: {
-            unset: null,
-            small: "button--small text-sm py-1 px-2",
-            medium: "button--medium text-base py-2 px-4",
-            large: "button--large text-lg py-2.5 px-4",
-          },
-          m: {
-            unset: null,
-            0: "m-0",
-            1: "m-1",
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            className: "button--primary-medium uppercase",
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            className: "button--warning-enabled text-gray-800",
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            className: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-        ],
-      });
-
-      const buttonWithoutBaseWithoutDefaultsArray = cva({
-        variants: {
-          intent: {
-            unset: null,
-            primary: [
-              "button--primary",
-              "bg-blue-500",
-              "text-white",
-              "border-transparent",
-              "hover:bg-blue-600",
-            ],
-            secondary: [
-              "button--secondary",
-              "bg-white",
-              "text-gray-800",
-              "border-gray-400",
-              "hover:bg-gray-100",
-            ],
-            warning: [
-              "button--warning",
-              "bg-yellow-500",
-              "border-transparent",
-              "hover:bg-yellow-600",
-            ],
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
-            false: ["button--enabled", "cursor-pointer"],
-          },
-          size: {
-            unset: null,
-            small: ["button--small", "text-sm", "py-1", "px-2"],
-            medium: ["button--medium", "text-base", "py-2", "px-4"],
-            large: ["button--large", "text-lg", "py-2.5", "px-4"],
-          },
-          m: {
-            unset: null,
-            0: "m-0",
-            1: "m-1",
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            class: ["button--primary-medium", "uppercase"],
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            class: ["button--warning-enabled", "text-gray-800"],
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            class: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-        ],
-      });
-      const buttonWithoutBaseWithoutDefaultsWithClassNameArray = cva({
-        variants: {
-          intent: {
-            unset: null,
-            primary: [
-              "button--primary",
-              "bg-blue-500",
-              "text-white",
-              "border-transparent",
-              "hover:bg-blue-600",
-            ],
-            secondary: [
-              "button--secondary",
-              "bg-white",
-              "text-gray-800",
-              "border-gray-400",
-              "hover:bg-gray-100",
-            ],
-            warning: [
-              "button--warning",
-              "bg-yellow-500",
-              "border-transparent",
-              "hover:bg-yellow-600",
-            ],
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
-            false: ["button--enabled", "cursor-pointer"],
-          },
-          size: {
-            unset: null,
-            small: ["button--small", "text-sm", "py-1", "px-2"],
-            medium: ["button--medium", "text-base", "py-2", "px-4"],
-            large: ["button--large", "text-lg", "py-2.5", "px-4"],
-          },
-          m: {
-            unset: null,
-            0: "m-0",
-            1: "m-1",
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            className: ["button--primary-medium", "uppercase"],
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            className: ["button--warning-enabled", "text-gray-800"],
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            className: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-        ],
-      });
-
-      type ButtonWithoutDefaultsWithoutBaseProps =
-        | CVA.VariantProps<typeof buttonWithoutBaseWithoutDefaultsString>
-        | CVA.VariantProps<
-            typeof buttonWithoutBaseWithoutDefaultsWithClassNameString
-          >
-        | CVA.VariantProps<typeof buttonWithoutBaseWithoutDefaultsArray>
-        | CVA.VariantProps<
-            typeof buttonWithoutBaseWithoutDefaultsWithClassNameArray
-          >;
-
-      describe.each<[ButtonWithoutDefaultsWithoutBaseProps, string]>([
-        [
-          // @ts-expect-error
-          undefined,
-          "",
-        ],
-        [{}, ""],
-        [
-          {
-            aCheekyInvalidProp: "lol",
-          } as ButtonWithoutDefaultsWithoutBaseProps,
-          "",
-        ],
-        [
-          { intent: "secondary" },
-          "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-        ],
-        [{ size: "small" }, "button--small text-sm py-1 px-2"],
-        [{ disabled: true }, "button--disabled opacity-050 cursor-not-allowed"],
-        [
-          {
-            intent: "secondary",
-            size: "unset",
-          },
-          "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-        ],
-        [
-          { intent: "secondary", size: undefined },
-          "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-        ],
-        [
-          { intent: "danger", size: "medium" },
-          "button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--medium text-base py-2 px-4",
-        ],
-        [
-          { intent: "warning", size: "large" },
-          "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4",
-        ],
-        [
-          { intent: "warning", size: "large", disabled: true },
-          "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black",
-        ],
-        [
-          { intent: "primary", m: 0 },
-          "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-0",
-        ],
-        [
-          { intent: "primary", m: 1 },
-          "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-1",
-        ],
-        // !@TODO Add type "extractor" including class prop
-        [
-          {
-            intent: "primary",
-            m: 1,
-            class: "adhoc-class",
-          } as ButtonWithoutDefaultsWithoutBaseProps,
-          "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-1 adhoc-class",
-        ],
-        [
-          {
-            intent: "primary",
-            m: 1,
-            className: "adhoc-classname",
-          } as ButtonWithoutDefaultsWithoutBaseProps,
-          "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-1 adhoc-classname",
-        ],
-        // typings needed
-      ])("button(%o)", (options, expected) => {
-        test(`returns ${expected}`, () => {
-          expect(buttonWithoutBaseWithoutDefaultsString(options)).toBe(
-            expected,
-          );
-          expect(
-            buttonWithoutBaseWithoutDefaultsWithClassNameString(options),
-          ).toBe(expected);
-          expect(buttonWithoutBaseWithoutDefaultsArray(options)).toBe(expected);
-          expect(
-            buttonWithoutBaseWithoutDefaultsWithClassNameArray(options),
-          ).toBe(expected);
-        });
-      });
-    });
-
-    describe("with defaults", () => {
-      const buttonWithoutBaseWithDefaultsString = cva({
-        base: "button font-semibold border rounded",
-        variants: {
-          intent: {
-            unset: null,
-            primary:
-              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
-            secondary:
-              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-            warning:
-              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: "button--disabled opacity-050 cursor-not-allowed",
-            false: "button--enabled cursor-pointer",
-          },
-          size: {
-            unset: null,
-            small: "button--small text-sm py-1 px-2",
-            medium: "button--medium text-base py-2 px-4",
-            large: "button--large text-lg py-2.5 px-4",
-          },
-          m: {
-            unset: null,
-            0: "m-0",
-            1: "m-1",
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            class: "button--primary-medium uppercase",
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            class: "button--warning-enabled text-gray-800",
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            class: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-          {
-            intent: ["warning", "danger"],
-            class: "button--warning-danger !border-red-500",
-          },
-          {
-            intent: ["warning", "danger"],
-            size: "medium",
-            class: "button--warning-danger-medium",
-          },
-        ],
-        defaultVariants: {
-          m: 0,
-          disabled: false,
-          intent: "primary",
-          size: "medium",
-        },
-      });
-      const buttonWithoutBaseWithDefaultsWithClassNameString = cva({
-        base: "button font-semibold border rounded",
-        variants: {
-          intent: {
-            unset: null,
-            primary:
-              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
-            secondary:
-              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-            warning:
-              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: "button--disabled opacity-050 cursor-not-allowed",
-            false: "button--enabled cursor-pointer",
-          },
-          size: {
-            unset: null,
-            small: "button--small text-sm py-1 px-2",
-            medium: "button--medium text-base py-2 px-4",
-            large: "button--large text-lg py-2.5 px-4",
-          },
-          m: {
-            unset: null,
-            0: "m-0",
-            1: "m-1",
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            className: "button--primary-medium uppercase",
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            className: "button--warning-enabled text-gray-800",
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            className: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-          {
-            intent: ["warning", "danger"],
-            className: "button--warning-danger !border-red-500",
-          },
-          {
-            intent: ["warning", "danger"],
-            size: "medium",
-            className: "button--warning-danger-medium",
-          },
-        ],
-        defaultVariants: {
-          m: 0,
-          disabled: false,
-          intent: "primary",
-          size: "medium",
-        },
-      });
-
-      const buttonWithoutBaseWithDefaultsArray = cva({
-        base: ["button", "font-semibold", "border", "rounded"],
-        variants: {
-          intent: {
-            unset: null,
-            primary: [
-              "button--primary",
-              "bg-blue-500",
-              "text-white",
-              "border-transparent",
-              "hover:bg-blue-600",
-            ],
-            secondary: [
-              "button--secondary",
-              "bg-white",
-              "text-gray-800",
-              "border-gray-400",
-              "hover:bg-gray-100",
-            ],
-            warning: [
-              "button--warning",
-              "bg-yellow-500",
-              "border-transparent",
-              "hover:bg-yellow-600",
-            ],
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
-            false: ["button--enabled", "cursor-pointer"],
-          },
-          size: {
-            unset: null,
-            small: ["button--small", "text-sm", "py-1", "px-2"],
-            medium: ["button--medium", "text-base", "py-2", "px-4"],
-            large: ["button--large", "text-lg", "py-2.5", "px-4"],
-          },
-          m: {
-            unset: null,
-            0: "m-0",
-            1: "m-1",
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            class: ["button--primary-medium", "uppercase"],
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            class: ["button--warning-enabled", "text-gray-800"],
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            class: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-          {
-            intent: ["warning", "danger"],
-            class: ["button--warning-danger", "!border-red-500"],
-          },
-          {
-            intent: ["warning", "danger"],
-            size: "medium",
-            class: ["button--warning-danger-medium"],
-          },
-        ],
-        defaultVariants: {
-          m: 0,
-          disabled: false,
-          intent: "primary",
-          size: "medium",
-        },
-      });
-      const buttonWithoutBaseWithDefaultsWithClassNameArray = cva({
-        base: ["button", "font-semibold", "border", "rounded"],
-        variants: {
-          intent: {
-            unset: null,
-            primary: [
-              "button--primary",
-              "bg-blue-500",
-              "text-white",
-              "border-transparent",
-              "hover:bg-blue-600",
-            ],
-            secondary: [
-              "button--secondary",
-              "bg-white",
-              "text-gray-800",
-              "border-gray-400",
-              "hover:bg-gray-100",
-            ],
-            warning: [
-              "button--warning",
-              "bg-yellow-500",
-              "border-transparent",
-              "hover:bg-yellow-600",
-            ],
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
-            false: ["button--enabled", "cursor-pointer"],
-          },
-          size: {
-            unset: null,
-            small: ["button--small", "text-sm", "py-1", "px-2"],
-            medium: ["button--medium", "text-base", "py-2", "px-4"],
-            large: ["button--large", "text-lg", "py-2.5", "px-4"],
-          },
-          m: {
-            unset: null,
-            0: "m-0",
-            1: "m-1",
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            className: ["button--primary-medium", "uppercase"],
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            className: ["button--warning-enabled", "text-gray-800"],
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            className: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-          {
-            intent: ["warning", "danger"],
-            className: "button--warning-danger !border-red-500",
-          },
-          {
-            intent: ["warning", "danger"],
-            size: "medium",
-            className: "button--warning-danger-medium",
-          },
-        ],
-        defaultVariants: {
-          m: 0,
-          disabled: false,
-          intent: "primary",
-          size: "medium",
-        },
-      });
-
-      type ButtonWithoutBaseWithDefaultsProps =
-        | CVA.VariantProps<typeof buttonWithoutBaseWithDefaultsString>
-        | CVA.VariantProps<
-            typeof buttonWithoutBaseWithDefaultsWithClassNameString
-          >
-        | CVA.VariantProps<typeof buttonWithoutBaseWithDefaultsArray>
-        | CVA.VariantProps<
-            typeof buttonWithoutBaseWithDefaultsWithClassNameArray
-          >;
-
-      describe.each<[ButtonWithoutBaseWithDefaultsProps, string]>([
-        [
-          // @ts-expect-error
-          undefined,
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
-        ],
-        [
-          {},
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
-        ],
-        [
-          {
-            aCheekyInvalidProp: "lol",
-          } as ButtonWithoutBaseWithDefaultsProps,
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
-        ],
-        [
-          { intent: "secondary" },
-          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0",
-        ],
-
-        [
-          { size: "small" },
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--small text-sm py-1 px-2 m-0",
-        ],
-        [
-          { disabled: true },
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--disabled opacity-050 cursor-not-allowed button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
-        ],
-        [
-          {
-            intent: "secondary",
-            size: "unset",
-          },
-          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer m-0",
-        ],
-        [
-          { intent: "secondary", size: undefined },
-          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0",
-        ],
-        [
-          { intent: "danger", size: "medium" },
-          "button font-semibold border rounded button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--warning-danger !border-red-500 button--warning-danger-medium",
-        ],
-        [
-          { intent: "warning", size: "large" },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 m-0 button--warning-enabled text-gray-800 button--warning-danger !border-red-500",
-        ],
-        [
-          { intent: "warning", size: "large", disabled: true },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 m-0 button--warning-disabled text-black button--warning-danger !border-red-500",
-        ],
-        [
-          { intent: "primary", m: 0 },
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
-        ],
-        [
-          { intent: "primary", m: 1 },
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-1 button--primary-medium uppercase",
-        ],
-        // !@TODO Add type "extractor" including class prop
-        [
-          {
-            intent: "primary",
-            m: 0,
-            class: "adhoc-class",
-          } as ButtonWithoutBaseWithDefaultsProps,
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase adhoc-class",
-        ],
-        [
-          {
-            intent: "primary",
-            m: 1,
-            className: "adhoc-classname",
-          } as ButtonWithoutBaseWithDefaultsProps,
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-1 button--primary-medium uppercase adhoc-classname",
-        ],
-      ])("button(%o)", (options, expected) => {
-        test(`returns ${expected}`, () => {
-          expect(buttonWithoutBaseWithDefaultsString(options)).toBe(expected);
-          expect(
-            buttonWithoutBaseWithDefaultsWithClassNameString(options),
-          ).toBe(expected);
-          expect(buttonWithoutBaseWithDefaultsArray(options)).toBe(expected);
-          expect(buttonWithoutBaseWithDefaultsWithClassNameArray(options)).toBe(
-            expected,
-          );
-        });
-      });
-    });
-  });
-
-  describe("with base", () => {
-    describe("without defaults", () => {
-      const buttonWithBaseWithoutDefaultsString = cva({
-        base: "button font-semibold border rounded",
-        variants: {
-          intent: {
-            unset: null,
-            primary:
-              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
-            secondary:
-              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-            warning:
-              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: "button--disabled opacity-050 cursor-not-allowed",
-            false: "button--enabled cursor-pointer",
-          },
-          size: {
-            unset: null,
-            small: "button--small text-sm py-1 px-2",
-            medium: "button--medium text-base py-2 px-4",
-            large: "button--large text-lg py-2.5 px-4",
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            class: "button--primary-medium uppercase",
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            class: "button--warning-enabled text-gray-800",
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            class: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-          {
-            intent: ["warning", "danger"],
-            class: "button--warning-danger !border-red-500",
-          },
-          {
-            intent: ["warning", "danger"],
-            size: "medium",
-            class: "button--warning-danger-medium",
-          },
-        ],
-      });
-      const buttonWithBaseWithoutDefaultsWithClassNameString = cva({
-        base: "button font-semibold border rounded",
-        variants: {
-          intent: {
-            unset: null,
-            primary:
-              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
-            secondary:
-              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-            warning:
-              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: "button--disabled opacity-050 cursor-not-allowed",
-            false: "button--enabled cursor-pointer",
-          },
-          size: {
-            unset: null,
-            small: "button--small text-sm py-1 px-2",
-            medium: "button--medium text-base py-2 px-4",
-            large: "button--large text-lg py-2.5 px-4",
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            className: "button--primary-medium uppercase",
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            className: "button--warning-enabled text-gray-800",
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            className: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-          {
-            intent: ["warning", "danger"],
-            className: "button--warning-danger !border-red-500",
-          },
-          {
-            intent: ["warning", "danger"],
-            size: "medium",
-            className: "button--warning-danger-medium",
-          },
-        ],
-      });
-
-      const buttonWithBaseWithoutDefaultsArray = cva({
-        base: ["button", "font-semibold", "border", "rounded"],
-        variants: {
-          intent: {
-            unset: null,
-            primary: [
-              "button--primary",
-              "bg-blue-500",
-              "text-white",
-              "border-transparent",
-              "hover:bg-blue-600",
-            ],
-            secondary: [
-              "button--secondary",
-              "bg-white",
-              "text-gray-800",
-              "border-gray-400",
-              "hover:bg-gray-100",
-            ],
-            warning: [
-              "button--warning",
-              "bg-yellow-500",
-              "border-transparent",
-              "hover:bg-yellow-600",
-            ],
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
-            false: ["button--enabled", "cursor-pointer"],
-          },
-          size: {
-            unset: null,
-            small: ["button--small", "text-sm", "py-1", "px-2"],
-            medium: ["button--medium", "text-base", "py-2", "px-4"],
-            large: ["button--large", "text-lg", "py-2.5", "px-4"],
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            class: ["button--primary-medium", "uppercase"],
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            class: ["button--warning-enabled", "text-gray-800"],
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            class: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-          {
-            intent: ["warning", "danger"],
-            class: ["button--warning-danger", "!border-red-500"],
-          },
-          {
-            intent: ["warning", "danger"],
-            size: "medium",
-            class: ["button--warning-danger-medium"],
-          },
-        ],
-      });
-      const buttonWithBaseWithoutDefaultsWithClassNameArray = cva({
-        base: ["button", "font-semibold", "border", "rounded"],
-        variants: {
-          intent: {
-            unset: null,
-            primary: [
-              "button--primary",
-              "bg-blue-500",
-              "text-white",
-              "border-transparent",
-              "hover:bg-blue-600",
-            ],
-            secondary: [
-              "button--secondary",
-              "bg-white",
-              "text-gray-800",
-              "border-gray-400",
-              "hover:bg-gray-100",
-            ],
-            warning: [
-              "button--warning",
-              "bg-yellow-500",
-              "border-transparent",
-              "hover:bg-yellow-600",
-            ],
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
-            false: ["button--enabled", "cursor-pointer"],
-          },
-          size: {
-            unset: null,
-            small: ["button--small", "text-sm", "py-1", "px-2"],
-            medium: ["button--medium", "text-base", "py-2", "px-4"],
-            large: ["button--large", "text-lg", "py-2.5", "px-4"],
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            className: ["button--primary-medium", "uppercase"],
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            className: ["button--warning-enabled", "text-gray-800"],
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            className: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-          {
-            intent: ["warning", "danger"],
-            className: ["button--warning-danger", "!border-red-500"],
-          },
-          {
-            intent: ["warning", "danger"],
-            size: "medium",
-            className: ["button--warning-danger-medium"],
-          },
-        ],
-      });
-
-      type ButtonWithBaseWithoutDefaultsProps =
-        | CVA.VariantProps<typeof buttonWithBaseWithoutDefaultsString>
-        | CVA.VariantProps<
-            typeof buttonWithBaseWithoutDefaultsWithClassNameString
-          >
-        | CVA.VariantProps<typeof buttonWithBaseWithoutDefaultsArray>
-        | CVA.VariantProps<
-            typeof buttonWithBaseWithoutDefaultsWithClassNameArray
-          >;
-
-      describe.each<[ButtonWithBaseWithoutDefaultsProps, string]>([
-        [
-          undefined as unknown as ButtonWithBaseWithoutDefaultsProps,
-          "button font-semibold border rounded",
-        ],
-        [{}, "button font-semibold border rounded"],
-        [
-          {
-            // @ts-expect-error
-            aCheekyInvalidProp: "lol",
-          },
-          "button font-semibold border rounded",
-        ],
-        [
-          { intent: "secondary" },
-          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-        ],
-
-        [
-          { size: "small" },
-          "button font-semibold border rounded button--small text-sm py-1 px-2",
-        ],
-        [
-          { disabled: false },
-          "button font-semibold border rounded button--enabled cursor-pointer",
-        ],
-        [
-          { disabled: true },
-          "button font-semibold border rounded button--disabled opacity-050 cursor-not-allowed",
-        ],
-        [
-          { intent: "secondary", size: "unset" },
-          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-        ],
-        [
-          { intent: "secondary", size: undefined },
-          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-        ],
-        [
-          { intent: "danger", size: "medium" },
-          "button font-semibold border rounded button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--medium text-base py-2 px-4 button--warning-danger !border-red-500 button--warning-danger-medium",
-        ],
-        [
-          { intent: "warning", size: "large" },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4 button--warning-danger !border-red-500",
-        ],
-        [
-          { intent: "warning", size: "large", disabled: "unset" },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4 button--warning-danger !border-red-500",
-        ],
-        [
-          { intent: "warning", size: "large", disabled: true },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black button--warning-danger !border-red-500",
-        ],
-        [
-          { intent: "warning", size: "large", disabled: false },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800 button--warning-danger !border-red-500",
-        ],
-        // !@TODO Add type "extractor" including class prop
-        [
-          {
-            intent: "primary",
-            class: "adhoc-class",
-          } as ButtonWithBaseWithoutDefaultsProps,
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 adhoc-class",
-        ],
-        [
-          {
-            intent: "primary",
-            className: "adhoc-className",
-          } as ButtonWithBaseWithoutDefaultsProps,
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 adhoc-className",
-        ],
-      ])("button(%o)", (options, expected) => {
-        test(`returns ${expected}`, () => {
-          expect(buttonWithBaseWithoutDefaultsString(options)).toBe(expected);
-          expect(
-            buttonWithBaseWithoutDefaultsWithClassNameString(options),
-          ).toBe(expected);
-          expect(buttonWithBaseWithoutDefaultsArray(options)).toBe(expected);
-          expect(buttonWithBaseWithoutDefaultsWithClassNameArray(options)).toBe(
-            expected,
-          );
-        });
-      });
-    });
-
-    describe("with defaults", () => {
-      const buttonWithBaseWithDefaultsString = cva({
-        base: "button font-semibold border rounded",
-        variants: {
-          intent: {
-            unset: null,
-            primary:
-              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
-            secondary:
-              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-            warning:
-              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: "button--disabled opacity-050 cursor-not-allowed",
-            false: "button--enabled cursor-pointer",
-          },
-          size: {
-            unset: null,
-            small: "button--small text-sm py-1 px-2",
-            medium: "button--medium text-base py-2 px-4",
-            large: "button--large text-lg py-2.5 px-4",
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            class: "button--primary-medium uppercase",
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            class: "button--warning-enabled text-gray-800",
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            class: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-          {
-            intent: ["warning", "danger"],
-            class: "button--warning-danger !border-red-500",
-          },
-          {
-            intent: ["warning", "danger"],
-            size: "medium",
-            class: "button--warning-danger-medium",
-          },
-        ],
-        defaultVariants: {
-          disabled: false,
-          intent: "primary",
-          size: "medium",
-        },
-      });
-      const buttonWithBaseWithDefaultsWithClassNameString = cva({
-        base: "button font-semibold border rounded",
-        variants: {
-          intent: {
-            unset: null,
-            primary:
-              "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
-            secondary:
-              "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-            warning:
-              "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: "button--disabled opacity-050 cursor-not-allowed",
-            false: "button--enabled cursor-pointer",
-          },
-          size: {
-            unset: null,
-            small: "button--small text-sm py-1 px-2",
-            medium: "button--medium text-base py-2 px-4",
-            large: "button--large text-lg py-2.5 px-4",
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            className: "button--primary-medium uppercase",
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            className: "button--warning-enabled text-gray-800",
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            className: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-          {
-            intent: ["warning", "danger"],
-            className: "button--warning-danger !border-red-500",
-          },
-          {
-            intent: ["warning", "danger"],
-            size: "medium",
-            className: "button--warning-danger-medium",
-          },
-        ],
-        defaultVariants: {
-          disabled: false,
-          intent: "primary",
-          size: "medium",
-        },
-      });
-
-      const buttonWithBaseWithDefaultsArray = cva({
-        base: ["button", "font-semibold", "border", "rounded"],
-        variants: {
-          intent: {
-            unset: null,
-            primary: [
-              "button--primary",
-              "bg-blue-500",
-              "text-white",
-              "border-transparent",
-              "hover:bg-blue-600",
-            ],
-            secondary: [
-              "button--secondary",
-              "bg-white",
-              "text-gray-800",
-              "border-gray-400",
-              "hover:bg-gray-100",
-            ],
-            warning: [
-              "button--warning",
-              "bg-yellow-500",
-              "border-transparent",
-              "hover:bg-yellow-600",
-            ],
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
-            false: ["button--enabled", "cursor-pointer"],
-          },
-          size: {
-            unset: null,
-            small: ["button--small", "text-sm", "py-1", "px-2"],
-            medium: ["button--medium", "text-base", "py-2", "px-4"],
-            large: ["button--large", "text-lg", "py-2.5", "px-4"],
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            class: ["button--primary-medium", "uppercase"],
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            class: ["button--warning-enabled", "text-gray-800"],
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            class: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-          {
-            intent: ["warning", "danger"],
-            class: ["button--warning-danger", "!border-red-500"],
-          },
-          {
-            intent: ["warning", "danger"],
-            size: "medium",
-            class: ["button--warning-danger-medium"],
-          },
-        ],
-        defaultVariants: {
-          disabled: false,
-          intent: "primary",
-          size: "medium",
-        },
-      });
-      const buttonWithBaseWithDefaultsWithClassNameArray = cva({
-        base: ["button", "font-semibold", "border", "rounded"],
-        variants: {
-          intent: {
-            unset: null,
-            primary: [
-              "button--primary",
-              "bg-blue-500",
-              "text-white",
-              "border-transparent",
-              "hover:bg-blue-600",
-            ],
-            secondary: [
-              "button--secondary",
-              "bg-white",
-              "text-gray-800",
-              "border-gray-400",
-              "hover:bg-gray-100",
-            ],
-            warning: [
-              "button--warning",
-              "bg-yellow-500",
-              "border-transparent",
-              "hover:bg-yellow-600",
-            ],
-            danger: [
-              "button--danger",
-              [
-                1 && "bg-red-500",
-                { baz: false, bat: null },
-                ["text-white", ["border-transparent"]],
-              ],
-              "hover:bg-red-600",
-            ],
-          },
-          disabled: {
-            unset: null,
-            true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
-            false: ["button--enabled", "cursor-pointer"],
-          },
-          size: {
-            unset: null,
-            small: ["button--small", "text-sm", "py-1", "px-2"],
-            medium: ["button--medium", "text-base", "py-2", "px-4"],
-            large: ["button--large", "text-lg", "py-2.5", "px-4"],
-          },
-        },
-        compoundVariants: [
-          {
-            intent: "primary",
-            size: "medium",
-            className: ["button--primary-medium", "uppercase"],
-          },
-          {
-            intent: "warning",
-            disabled: false,
-            className: ["button--warning-enabled", "text-gray-800"],
-          },
-          {
-            intent: "warning",
-            disabled: true,
-            className: [
-              "button--warning-disabled",
-              [1 && "text-black", { baz: false, bat: null }],
-            ],
-          },
-          {
-            intent: ["warning", "danger"],
-            className: ["button--warning-danger", "!border-red-500"],
-          },
-          {
-            intent: ["warning", "danger"],
-            size: "medium",
-            className: ["button--warning-danger-medium"],
-          },
-        ],
-        defaultVariants: {
-          disabled: false,
-          intent: "primary",
-          size: "medium",
-        },
-      });
-
-      type ButtonWithBaseWithDefaultsProps =
-        | CVA.VariantProps<typeof buttonWithBaseWithDefaultsString>
-        | CVA.VariantProps<typeof buttonWithBaseWithDefaultsWithClassNameString>
-        | CVA.VariantProps<typeof buttonWithBaseWithDefaultsArray>
-        | CVA.VariantProps<typeof buttonWithBaseWithDefaultsWithClassNameArray>;
-
-      describe.each<[ButtonWithBaseWithDefaultsProps, string]>([
-        [
-          // @ts-expect-error
-          undefined,
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
-        ],
-        [
-          {},
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
-        ],
-        [
-          {
-            aCheekyInvalidProp: "lol",
-          } as ButtonWithBaseWithDefaultsProps,
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
-        ],
-        [
-          { intent: "secondary" },
-          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4",
-        ],
-
-        [
-          { size: "small" },
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--small text-sm py-1 px-2",
-        ],
-        [
-          { disabled: "unset" },
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--medium text-base py-2 px-4 button--primary-medium uppercase",
-        ],
-        [
-          { disabled: false },
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
-        ],
-        [
-          { disabled: true },
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--disabled opacity-050 cursor-not-allowed button--medium text-base py-2 px-4 button--primary-medium uppercase",
-        ],
-        [
-          { intent: "secondary", size: "unset" },
-          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer",
-        ],
-        [
-          { intent: "secondary", size: undefined },
-          "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4",
-        ],
-        [
-          { intent: "danger", size: "medium" },
-          "button font-semibold border rounded button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--warning-danger !border-red-500 button--warning-danger-medium",
-        ],
-        [
-          { intent: "warning", size: "large" },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800 button--warning-danger !border-red-500",
-        ],
-        [
-          {
-            intent: "warning",
-            size: "large",
-            disabled: "unset",
-          },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4 button--warning-danger !border-red-500",
-        ],
-        [
-          { intent: "warning", size: "large", disabled: true },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black button--warning-danger !border-red-500",
-        ],
-        [
-          { intent: "warning", size: "large", disabled: false },
-          "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800 button--warning-danger !border-red-500",
-        ],
-        // !@TODO Add type "extractor" including class prop
-        [
-          {
-            intent: "primary",
-            class: "adhoc-class",
-          } as ButtonWithBaseWithDefaultsProps,
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase adhoc-class",
-        ],
-        [
-          {
-            intent: "primary",
-            className: "adhoc-classname",
-          } as ButtonWithBaseWithDefaultsProps,
-          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase adhoc-classname",
-        ],
-      ])("button(%o)", (options, expected) => {
-        test(`returns ${expected}`, () => {
-          expect(buttonWithBaseWithDefaultsString(options)).toBe(expected);
-          expect(buttonWithBaseWithDefaultsWithClassNameString(options)).toBe(
-            expected,
-          );
-          expect(buttonWithBaseWithDefaultsArray(options)).toBe(expected);
-          expect(buttonWithBaseWithDefaultsWithClassNameArray(options)).toBe(
-            expected,
-          );
-        });
       });
     });
   });
@@ -2916,178 +1148,1031 @@ describe("defineConfig", () => {
   });
 });
 
-describe("cva/config", () => {
-  test("accepts only callbacks that can receive cva's assembled calls", () => {
-    const mutableRest = (...inputs: string[]) => inputs.join(" ");
-    const readonlyRest = (...inputs: readonly string[]) => inputs.join(" ");
-    const requiredPrefix = (first: string, ...rest: string[]) =>
-      [first, ...rest].join(" ");
-    const finiteOptional = (first?: string, second?: string) =>
-      [first, second].join(" ");
-    const numbersOnly = (...inputs: number[]) => inputs.join(" ");
-    const symbolsOnly = (...inputs: symbol[]) => inputs.map(String).join(" ");
-
-    const strictCore = defineCoreConfig({ cx: mutableRest });
-    const child = strictCore.cva({ base: "child" });
-    expect(strictCore.cva({ composes: child, base: "parent" })()).toBe(
-      "child parent",
-    );
-    expectTypeOf<CVA.CXInput<typeof readonlyRest>>().toEqualTypeOf<string>();
-    const { cva: readonlyCva } = defineConfig({ cx: readonlyRest });
-    expect(readonlyCva({ base: "preset" })()).toBe("preset");
-    expect(defineCoreConfig({ cx: () => "constant" }).cva({})()).toBe(
-      "constant",
-    );
-
-    // @ts-expect-error — cva can make an empty call
-    defineCoreConfig({ cx: (input: string) => input });
-    // @ts-expect-error — a required prefix also rejects an empty call
-    defineCoreConfig({ cx: requiredPrefix });
-    // @ts-expect-error — finite optional parameters can truncate assembled values
-    defineCoreConfig({ cx: finiteOptional });
-    // @ts-expect-error — composed component results are strings, not numbers
-    defineCoreConfig({ cx: numbersOnly });
-    // @ts-expect-error — symbols cannot receive composed class-name strings
-    defineConfig({ cx: symbolsOnly });
-    // @ts-expect-error — a literal-only rest cannot receive composed strings
-    defineCoreConfig({ cx: (...inputs: "only"[]) => inputs.join(" ") });
-    // @ts-expect-error — a never rest is not a zero-argument constant callback
-    defineConfig({ cx: (...inputs: never[]) => inputs.join(" ") });
-    defineCoreConfig({
-      // @ts-expect-error — the optional prefix must also accept assembled strings
-      cx: (first?: number, ...rest: string[]) =>
-        first?.toFixed() ?? rest.join(" "),
-    });
-    const callbackUnion = null as unknown as
-      | ((...inputs: string[]) => string)
-      | ((first: string, ...rest: string[]) => string);
-    defineCoreConfig({
-      // @ts-expect-error — every callback in a union must accept empty calls
-      cx: callbackUnion,
-    });
-    const differentGrammars = null as unknown as
-      | ((...inputs: CVA.ClassValue[]) => string)
-      | ((...inputs: string[]) => string);
-    defineCoreConfig({
-      // @ts-expect-error — every callback must accept the inferred union grammar
-      cx: differentGrammars,
-    });
-    const presetUnion = defineConfig({ cx: differentGrammars });
-    expectTypeOf(presetUnion.cx).toEqualTypeOf<CVA.CX<string>>();
-    const presetUnionButton = presetUnion.cva({ base: "button" });
-    presetUnion.cva({
-      // @ts-expect-error — the preset narrows the union authoring grammar to strings
-      base: { unexpectedObject: true },
-    });
-    // @ts-expect-error — narrowed class props reject object syntax
-    presetUnionButton({ class: { unexpectedObject: true } });
-
-    readonlyCva({
-      // @ts-expect-error — object bases are outside a string-only grammar
-      base: { button: true },
-    });
-    const readonlyButton = readonlyCva({
-      base: "button",
-      variants: { tone: { info: "info" } },
-    });
-    // @ts-expect-error — object class props are outside a string-only grammar
-    readonlyButton({ class: { extra: true } });
-    // @ts-expect-error — object className props are outside a string-only grammar
-    readonlyButton({ className: { extra: true } });
-    readonlyCva({
-      variants: { tone: { info: "info" } },
-      compoundVariants: [
-        {
-          tone: "info",
-          // @ts-expect-error — compound class values use the configured grammar
-          class: { extra: true },
-        },
+describe("cva — variant matrix", () => {
+  const stringVariantsWithM = {
+    intent: {
+      unset: null,
+      primary:
+        "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
+      secondary:
+        "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+      warning:
+        "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
+      danger: [
+        "button--danger",
+        [
+          1 && "bg-red-500",
+          { baz: false, bat: null },
+          ["text-white", ["border-transparent"]],
+        ],
+        "hover:bg-red-600",
       ],
-    });
-    readonlyCva({
-      variants: { tone: { info: "info" } },
-      compoundVariants: [
-        {
-          tone: "info",
-          // @ts-expect-error — compound className values use the configured grammar
-          className: { extra: true },
-        },
-      ],
-    });
-  });
+    },
+    disabled: {
+      unset: null,
+      true: "button--disabled opacity-050 cursor-not-allowed",
+      false: "button--enabled cursor-pointer",
+    },
+    size: {
+      unset: null,
+      small: "button--small text-sm py-1 px-2",
+      medium: "button--medium text-base py-2 px-4",
+      large: "button--large text-lg py-2.5 px-4",
+    },
+    m: { unset: null, 0: "m-0", 1: "m-1" },
+  };
 
-  test("retains any, unknown, inline, and overloaded callback inference", () => {
-    const unknownRest = defineCoreConfig({
-      cx: (...inputs: unknown[]) => inputs.map(String).join(" "),
+  const arrayVariantsWithM = {
+    intent: {
+      unset: null,
+      primary: [
+        "button--primary",
+        "bg-blue-500",
+        "text-white",
+        "border-transparent",
+        "hover:bg-blue-600",
+      ],
+      secondary: [
+        "button--secondary",
+        "bg-white",
+        "text-gray-800",
+        "border-gray-400",
+        "hover:bg-gray-100",
+      ],
+      warning: [
+        "button--warning",
+        "bg-yellow-500",
+        "border-transparent",
+        "hover:bg-yellow-600",
+      ],
+      danger: [
+        "button--danger",
+        [
+          1 && "bg-red-500",
+          { baz: false, bat: null },
+          ["text-white", ["border-transparent"]],
+        ],
+        "hover:bg-red-600",
+      ],
+    },
+    disabled: {
+      unset: null,
+      true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
+      false: ["button--enabled", "cursor-pointer"],
+    },
+    size: {
+      unset: null,
+      small: ["button--small", "text-sm", "py-1", "px-2"],
+      medium: ["button--medium", "text-base", "py-2", "px-4"],
+      large: ["button--large", "text-lg", "py-2.5", "px-4"],
+    },
+    m: { unset: null, 0: "m-0", 1: "m-1" },
+  };
+
+  const stringVariants = {
+    intent: {
+      unset: null,
+      primary:
+        "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
+      secondary:
+        "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+      warning:
+        "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
+      danger: [
+        "button--danger",
+        [
+          1 && "bg-red-500",
+          { baz: false, bat: null },
+          ["text-white", ["border-transparent"]],
+        ],
+        "hover:bg-red-600",
+      ],
+    },
+    disabled: {
+      unset: null,
+      true: "button--disabled opacity-050 cursor-not-allowed",
+      false: "button--enabled cursor-pointer",
+    },
+    size: {
+      unset: null,
+      small: "button--small text-sm py-1 px-2",
+      medium: "button--medium text-base py-2 px-4",
+      large: "button--large text-lg py-2.5 px-4",
+    },
+  };
+
+  const arrayVariants = {
+    intent: {
+      unset: null,
+      primary: [
+        "button--primary",
+        "bg-blue-500",
+        "text-white",
+        "border-transparent",
+        "hover:bg-blue-600",
+      ],
+      secondary: [
+        "button--secondary",
+        "bg-white",
+        "text-gray-800",
+        "border-gray-400",
+        "hover:bg-gray-100",
+      ],
+      warning: [
+        "button--warning",
+        "bg-yellow-500",
+        "border-transparent",
+        "hover:bg-yellow-600",
+      ],
+      danger: [
+        "button--danger",
+        [
+          1 && "bg-red-500",
+          { baz: false, bat: null },
+          ["text-white", ["border-transparent"]],
+        ],
+        "hover:bg-red-600",
+      ],
+    },
+    disabled: {
+      unset: null,
+      true: ["button--disabled", "opacity-050", "cursor-not-allowed"],
+      false: ["button--enabled", "cursor-pointer"],
+    },
+    size: {
+      unset: null,
+      small: ["button--small", "text-sm", "py-1", "px-2"],
+      medium: ["button--medium", "text-base", "py-2", "px-4"],
+      large: ["button--large", "text-lg", "py-2.5", "px-4"],
+    },
+  };
+
+  type ClassCompound =
+    | { intent: "primary"; size: "medium"; class: CVA.ClassValue }
+    | { intent: "warning"; disabled: false; class: CVA.ClassValue }
+    | { intent: "warning"; disabled: true; class: CVA.ClassValue }
+    | { intent: ("warning" | "danger")[]; class: CVA.ClassValue }
+    | {
+        intent: ("warning" | "danger")[];
+        size: "medium";
+        class: CVA.ClassValue;
+      };
+  type ClassNameCompound =
+    | { intent: "primary"; size: "medium"; className: CVA.ClassValue }
+    | { intent: "warning"; disabled: false; className: CVA.ClassValue }
+    | { intent: "warning"; disabled: true; className: CVA.ClassValue }
+    | { intent: ("warning" | "danger")[]; className: CVA.ClassValue }
+    | {
+        intent: ("warning" | "danger")[];
+        size: "medium";
+        className: CVA.ClassValue;
+      };
+
+  type VariantPropsWithM = {
+    intent?:
+      | "unset"
+      | "primary"
+      | "secondary"
+      | "warning"
+      | "danger"
+      | undefined;
+    disabled?: "unset" | boolean | undefined;
+    size?: "unset" | "small" | "medium" | "large" | undefined;
+    m?: "unset" | 0 | 1 | undefined;
+  };
+
+  type VariantPropsWithoutM = {
+    intent?:
+      | "unset"
+      | "primary"
+      | "secondary"
+      | "warning"
+      | "danger"
+      | undefined;
+    disabled?: "unset" | boolean | undefined;
+    size?: "unset" | "small" | "medium" | "large" | undefined;
+  };
+
+  const noDefaultsClass: ClassCompound[] = [
+    {
+      intent: "primary",
+      size: "medium",
+      class: "button--primary-medium uppercase",
+    },
+    {
+      intent: "warning",
+      disabled: false,
+      class: "button--warning-enabled text-gray-800",
+    },
+    {
+      intent: "warning",
+      disabled: true,
+      class: [
+        "button--warning-disabled",
+        [1 && "text-black", { baz: false, bat: null }],
+      ],
+    },
+  ];
+  const noDefaultsClassName: ClassNameCompound[] = [
+    {
+      intent: "primary",
+      size: "medium",
+      className: "button--primary-medium uppercase",
+    },
+    {
+      intent: "warning",
+      disabled: false,
+      className: "button--warning-enabled text-gray-800",
+    },
+    {
+      intent: "warning",
+      disabled: true,
+      className: [
+        "button--warning-disabled",
+        [1 && "text-black", { baz: false, bat: null }],
+      ],
+    },
+  ];
+  const defaultsClass: ClassCompound[] = [
+    ...noDefaultsClass,
+    {
+      intent: ["warning", "danger"],
+      class: "button--warning-danger !border-red-500",
+    },
+    {
+      intent: ["warning", "danger"],
+      size: "medium",
+      class: "button--warning-danger-medium",
+    },
+  ];
+  const defaultsClassName: ClassNameCompound[] = [
+    ...noDefaultsClassName,
+    {
+      intent: ["warning", "danger"],
+      className: "button--warning-danger !border-red-500",
+    },
+    {
+      intent: ["warning", "danger"],
+      size: "medium",
+      className: "button--warning-danger-medium",
+    },
+  ];
+  const noDefaultsArrayClass: ClassCompound[] = [
+    {
+      intent: "primary",
+      size: "medium",
+      class: ["button--primary-medium", "uppercase"],
+    },
+    {
+      intent: "warning",
+      disabled: false,
+      class: ["button--warning-enabled", "text-gray-800"],
+    },
+    {
+      intent: "warning",
+      disabled: true,
+      class: [
+        "button--warning-disabled",
+        [1 && "text-black", { baz: false, bat: null }],
+      ],
+    },
+  ];
+  const noDefaultsArrayClassName: ClassNameCompound[] = [
+    {
+      intent: "primary",
+      size: "medium",
+      className: ["button--primary-medium", "uppercase"],
+    },
+    {
+      intent: "warning",
+      disabled: false,
+      className: ["button--warning-enabled", "text-gray-800"],
+    },
+    {
+      intent: "warning",
+      disabled: true,
+      className: [
+        "button--warning-disabled",
+        [1 && "text-black", { baz: false, bat: null }],
+      ],
+    },
+  ];
+  const defaultsArrayClass: ClassCompound[] = [
+    ...noDefaultsArrayClass,
+    {
+      intent: ["warning", "danger"],
+      class: ["button--warning-danger", "!border-red-500"],
+    },
+    {
+      intent: ["warning", "danger"],
+      size: "medium",
+      class: ["button--warning-danger-medium"],
+    },
+  ];
+  const defaultsArrayClassName: ClassNameCompound[] = [
+    ...noDefaultsArrayClassName,
+    {
+      intent: ["warning", "danger"],
+      className: ["button--warning-danger", "!border-red-500"],
+    },
+    {
+      intent: ["warning", "danger"],
+      size: "medium",
+      className: ["button--warning-danger-medium"],
+    },
+  ];
+  const noBaseDefaultsArrayClassName: ClassNameCompound[] = [
+    ...noDefaultsArrayClassName,
+    {
+      intent: ["warning", "danger"],
+      className: "button--warning-danger !border-red-500",
+    },
+    {
+      intent: ["warning", "danger"],
+      size: "medium",
+      className: "button--warning-danger-medium",
+    },
+  ];
+
+  function matrix<Fixture extends (props?: any) => string>(
+    group: string,
+    fixture: string,
+    component: Fixture,
+    rows: readonly [
+      name: string,
+      props: Parameters<Fixture>[0],
+      expected: string,
+    ][],
+  ) {
+    test.each(rows)(`${group} / ${fixture} / %s`, (_, props, expected) => {
+      expect(component(props)).toBe(expected);
     });
-    const anyRest = defineCoreConfig({
-      cx: (...inputs: any[]) => inputs.map(String).join(" "),
+  }
+
+  describe("without base / without defaults", () => {
+    const stringClass = cva({
+      variants: stringVariantsWithM,
+      compoundVariants: noDefaultsClass,
     });
-    const inline = defineConfig({ cx: (...inputs) => inputs.join(" ") });
-    interface OverloadedCX {
-      (strings: TemplateStringsArray, ...values: string[]): string;
-      (...inputs: CVA.ClassValue[]): string;
+    const stringClassName = cva({
+      variants: stringVariantsWithM,
+      compoundVariants: noDefaultsClassName,
+    });
+    const arrayClass = cva({
+      variants: arrayVariantsWithM,
+      compoundVariants: noDefaultsArrayClass,
+    });
+    const arrayClassName = cva({
+      variants: arrayVariantsWithM,
+      compoundVariants: noDefaultsArrayClassName,
+    });
+    test("without base / without defaults / variant props remain exact", () => {
+      expectTypeOf<
+        CVA.VariantProps<typeof stringClass>
+      >().toEqualTypeOf<VariantPropsWithM>();
+      expectTypeOf<
+        CVA.VariantProps<typeof stringClassName>
+      >().toEqualTypeOf<VariantPropsWithM>();
+      expectTypeOf<
+        CVA.VariantProps<typeof arrayClass>
+      >().toEqualTypeOf<VariantPropsWithM>();
+      expectTypeOf<
+        CVA.VariantProps<typeof arrayClassName>
+      >().toEqualTypeOf<VariantPropsWithM>();
+    });
+    type Props = Parameters<typeof stringClass>[0];
+    const rows: readonly [string, Props, string][] = [
+      ["undefined", undefined, ""],
+      ["empty", {}, ""],
+      [
+        "secondary",
+        { intent: "secondary" },
+        "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+      ],
+      ["small", { size: "small" }, "button--small text-sm py-1 px-2"],
+      [
+        "disabled",
+        { disabled: true },
+        "button--disabled opacity-050 cursor-not-allowed",
+      ],
+      [
+        "secondary unset",
+        { intent: "secondary", size: "unset" },
+        "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+      ],
+      [
+        "secondary undefined",
+        { intent: "secondary", size: undefined },
+        "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+      ],
+      [
+        "danger medium",
+        { intent: "danger", size: "medium" },
+        "button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--medium text-base py-2 px-4",
+      ],
+      [
+        "warning large",
+        { intent: "warning", size: "large" },
+        "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4",
+      ],
+      [
+        "warning disabled",
+        { intent: "warning", size: "large", disabled: true },
+        "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black",
+      ],
+      [
+        "m zero",
+        { intent: "primary", m: 0 },
+        "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-0",
+      ],
+      [
+        "m one",
+        { intent: "primary", m: 1 },
+        "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-1",
+      ],
+      [
+        "class",
+        { intent: "primary", m: 1, class: "adhoc-class" },
+        "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-1 adhoc-class",
+      ],
+      [
+        "className",
+        { intent: "primary", m: 1, className: "adhoc-classname" },
+        "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 m-1 adhoc-classname",
+      ],
+    ];
+    matrix(
+      "without base / without defaults",
+      "string class",
+      stringClass,
+      rows,
+    );
+    matrix(
+      "without base / without defaults",
+      "string className",
+      stringClassName,
+      rows,
+    );
+    matrix("without base / without defaults", "array class", arrayClass, rows);
+    matrix(
+      "without base / without defaults",
+      "array className",
+      arrayClassName,
+      rows,
+    );
+    for (const [name, component] of [
+      ["string class", stringClass],
+      ["string className", stringClassName],
+      ["array class", arrayClass],
+      ["array className", arrayClassName],
+    ] as const) {
+      test(`without base / without defaults / ${name} / invalid prop`, () => {
+        // @ts-expect-error — deliberately invalid runtime input
+        expect(component({ aCheekyInvalidProp: "lol" })).toBe("");
+      });
     }
-    const overloaded: OverloadedCX = cx;
-    const overloadedConfig = defineConfig({ cx: overloaded });
-
-    expectTypeOf<
-      CVA.CXInput<typeof unknownRest.cx>
-    >().toEqualTypeOf<CVA.ClassValue>();
-    expectTypeOf<
-      CVA.CXInput<typeof anyRest.cx>
-    >().toEqualTypeOf<CVA.ClassValue>();
-    expectTypeOf<
-      CVA.CXInput<typeof inline.cx>
-    >().toEqualTypeOf<CVA.ClassValue>();
-    expectTypeOf<
-      CVA.CXInput<typeof overloaded>
-    >().toEqualTypeOf<CVA.ClassValue>();
-    expect(overloadedConfig.cva({ base: ["button", { active: true }] })()).toBe(
-      "button active",
-    );
   });
 
-  test("requires a cx concatenator", () => {
-    // @ts-expect-error — core's `defineConfig` has no default concatenator
-    defineCoreConfig({});
-  });
-
-  test("forwards inputs to the concatenator and wraps with hooks", () => {
-    const join: CVA.CX = (...inputs) =>
-      inputs.filter((input) => typeof input === "string" && input).join("|");
-
-    const { cva: coreCva, cx: coreCx } = defineCoreConfig({
-      cx: join,
-      hooks: { onComplete: (className) => `(${className})` },
+  describe("without base / with defaults", () => {
+    const stringClass = cva({
+      variants: stringVariantsWithM,
+      compoundVariants: defaultsClass,
+      defaultVariants: {
+        m: 0,
+        disabled: false,
+        intent: "primary",
+        size: "medium",
+      },
     });
-
-    expect(coreCx("a", "b")).toBe("(a|b)");
-
-    const baseOnly = coreCva({ base: "base" });
-    expect(baseOnly({ class: "extra" })).toBe("(base|extra)");
-    expect(baseOnly({ className: "last" })).toBe("(base|last)");
-    expect(coreCva({ composes: baseOnly, base: "parent" })()).toBe(
-      "((base)|parent)",
-    );
-
-    const button = coreCva({
-      base: "btn",
-      variants: { size: { sm: "btn-sm" } },
+    const stringClassName = cva({
+      variants: stringVariantsWithM,
+      compoundVariants: defaultsClassName,
+      defaultVariants: {
+        m: 0,
+        disabled: false,
+        intent: "primary",
+        size: "medium",
+      },
     });
-    expect(button({ size: "sm" })).toBe("(btn|btn-sm)");
+    const arrayClass = cva({
+      variants: arrayVariantsWithM,
+      compoundVariants: defaultsArrayClass,
+      defaultVariants: {
+        m: 0,
+        disabled: false,
+        intent: "primary",
+        size: "medium",
+      },
+    });
+    const arrayClassName = cva({
+      variants: arrayVariantsWithM,
+      compoundVariants: noBaseDefaultsArrayClassName,
+      defaultVariants: {
+        m: 0,
+        disabled: false,
+        intent: "primary",
+        size: "medium",
+      },
+    });
+    test("without base / with defaults / variant props remain exact", () => {
+      expectTypeOf<
+        CVA.VariantProps<typeof stringClass>
+      >().toEqualTypeOf<VariantPropsWithM>();
+      expectTypeOf<
+        CVA.VariantProps<typeof stringClassName>
+      >().toEqualTypeOf<VariantPropsWithM>();
+      expectTypeOf<
+        CVA.VariantProps<typeof arrayClass>
+      >().toEqualTypeOf<VariantPropsWithM>();
+      expectTypeOf<
+        CVA.VariantProps<typeof arrayClassName>
+      >().toEqualTypeOf<VariantPropsWithM>();
+    });
+    type Props = Parameters<typeof stringClass>[0];
+    const rows: readonly [string, Props, string][] = [
+      [
+        "undefined",
+        undefined,
+        "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
+      ],
+      [
+        "empty",
+        {},
+        "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
+      ],
+      [
+        "secondary",
+        { intent: "secondary" },
+        "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0",
+      ],
+      [
+        "small",
+        { size: "small" },
+        "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--small text-sm py-1 px-2 m-0",
+      ],
+      [
+        "disabled",
+        { disabled: true },
+        "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--disabled opacity-050 cursor-not-allowed button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
+      ],
+      [
+        "secondary unset",
+        { intent: "secondary", size: "unset" },
+        "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer m-0",
+      ],
+      [
+        "secondary undefined",
+        { intent: "secondary", size: undefined },
+        "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0",
+      ],
+      [
+        "danger medium",
+        { intent: "danger", size: "medium" },
+        "button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--warning-danger !border-red-500 button--warning-danger-medium",
+      ],
+      [
+        "warning large",
+        { intent: "warning", size: "large" },
+        "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 m-0 button--warning-enabled text-gray-800 button--warning-danger !border-red-500",
+      ],
+      [
+        "warning disabled",
+        { intent: "warning", size: "large", disabled: true },
+        "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 m-0 button--warning-disabled text-black button--warning-danger !border-red-500",
+      ],
+      [
+        "m zero",
+        { intent: "primary", m: 0 },
+        "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
+      ],
+      [
+        "m one",
+        { intent: "primary", m: 1 },
+        "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-1 button--primary-medium uppercase",
+      ],
+      [
+        "class",
+        { intent: "primary", m: 0, class: "adhoc-class" },
+        "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase adhoc-class",
+      ],
+      [
+        "className",
+        { intent: "primary", m: 1, className: "adhoc-classname" },
+        "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-1 button--primary-medium uppercase adhoc-classname",
+      ],
+    ];
+    matrix("without base / with defaults", "string class", stringClass, rows);
+    matrix(
+      "without base / with defaults",
+      "string className",
+      stringClassName,
+      rows,
+    );
+    matrix("without base / with defaults", "array class", arrayClass, rows);
+    matrix(
+      "without base / with defaults",
+      "array className",
+      arrayClassName,
+      rows,
+    );
+    for (const [name, component] of [
+      ["string class", stringClass],
+      ["string className", stringClassName],
+      ["array class", arrayClass],
+      ["array className", arrayClassName],
+    ] as const) {
+      test(`without base / with defaults / ${name} / invalid prop`, () => {
+        // @ts-expect-error — deliberately invalid runtime input
+        expect(component({ aCheekyInvalidProp: "lol" })).toBe(
+          "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 m-0 button--primary-medium uppercase",
+        );
+      });
+    }
   });
 
-  test("the (deprecated) cx:done hook still wins over onComplete", () => {
-    const { cx: coreCx } = defineCoreConfig({
-      cx: (...inputs) =>
-        inputs.filter((input) => typeof input === "string").join(" "),
-      hooks: {
-        "cx:done": (className) => `done:${className}`,
-        onComplete: (className) => `complete:${className}`,
+  describe("with base / without defaults", () => {
+    const stringClass = cva({
+      base: "button font-semibold border rounded",
+      variants: stringVariants,
+      compoundVariants: defaultsClass,
+    });
+    const stringClassName = cva({
+      base: "button font-semibold border rounded",
+      variants: stringVariants,
+      compoundVariants: defaultsClassName,
+    });
+    const arrayClass = cva({
+      base: ["button", "font-semibold", "border", "rounded"],
+      variants: arrayVariants,
+      compoundVariants: defaultsArrayClass,
+    });
+    const arrayClassName = cva({
+      base: ["button", "font-semibold", "border", "rounded"],
+      variants: arrayVariants,
+      compoundVariants: defaultsArrayClassName,
+    });
+    test("with base / without defaults / variant props remain exact", () => {
+      expectTypeOf<
+        CVA.VariantProps<typeof stringClass>
+      >().toEqualTypeOf<VariantPropsWithoutM>();
+      expectTypeOf<
+        CVA.VariantProps<typeof stringClassName>
+      >().toEqualTypeOf<VariantPropsWithoutM>();
+      expectTypeOf<
+        CVA.VariantProps<typeof arrayClass>
+      >().toEqualTypeOf<VariantPropsWithoutM>();
+      expectTypeOf<
+        CVA.VariantProps<typeof arrayClassName>
+      >().toEqualTypeOf<VariantPropsWithoutM>();
+    });
+    type Props = Parameters<typeof stringClass>[0];
+    const rows: readonly [string, Props, string][] = [
+      ["undefined", undefined, "button font-semibold border rounded"],
+      ["empty", {}, "button font-semibold border rounded"],
+      [
+        "secondary",
+        { intent: "secondary" },
+        "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+      ],
+      [
+        "small",
+        { size: "small" },
+        "button font-semibold border rounded button--small text-sm py-1 px-2",
+      ],
+      [
+        "disabled false",
+        { disabled: false },
+        "button font-semibold border rounded button--enabled cursor-pointer",
+      ],
+      [
+        "disabled",
+        { disabled: true },
+        "button font-semibold border rounded button--disabled opacity-050 cursor-not-allowed",
+      ],
+      [
+        "secondary unset",
+        { intent: "secondary", size: "unset" },
+        "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+      ],
+      [
+        "secondary undefined",
+        { intent: "secondary", size: undefined },
+        "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
+      ],
+      [
+        "danger medium",
+        { intent: "danger", size: "medium" },
+        "button font-semibold border rounded button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--medium text-base py-2 px-4 button--warning-danger !border-red-500 button--warning-danger-medium",
+      ],
+      [
+        "warning large",
+        { intent: "warning", size: "large" },
+        "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4 button--warning-danger !border-red-500",
+      ],
+      [
+        "warning unset",
+        { intent: "warning", size: "large", disabled: "unset" },
+        "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4 button--warning-danger !border-red-500",
+      ],
+      [
+        "warning disabled",
+        { intent: "warning", size: "large", disabled: true },
+        "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black button--warning-danger !border-red-500",
+      ],
+      [
+        "warning enabled",
+        { intent: "warning", size: "large", disabled: false },
+        "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800 button--warning-danger !border-red-500",
+      ],
+      [
+        "class",
+        { intent: "primary", class: "adhoc-class" },
+        "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 adhoc-class",
+      ],
+      [
+        "className",
+        { intent: "primary", className: "adhoc-className" },
+        "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 adhoc-className",
+      ],
+    ];
+    matrix("with base / without defaults", "string class", stringClass, rows);
+    matrix(
+      "with base / without defaults",
+      "string className",
+      stringClassName,
+      rows,
+    );
+    matrix("with base / without defaults", "array class", arrayClass, rows);
+    matrix(
+      "with base / without defaults",
+      "array className",
+      arrayClassName,
+      rows,
+    );
+    for (const [name, component] of [
+      ["string class", stringClass],
+      ["string className", stringClassName],
+      ["array class", arrayClass],
+      ["array className", arrayClassName],
+    ] as const) {
+      test(`with base / without defaults / ${name} / invalid prop`, () => {
+        // @ts-expect-error — deliberately invalid runtime input
+        expect(component({ aCheekyInvalidProp: "lol" })).toBe(
+          "button font-semibold border rounded",
+        );
+      });
+    }
+  });
+
+  describe("with base / with defaults", () => {
+    const stringClass = cva({
+      base: "button font-semibold border rounded",
+      variants: stringVariants,
+      compoundVariants: defaultsClass,
+      defaultVariants: { disabled: false, intent: "primary", size: "medium" },
+    });
+    const stringClassName = cva({
+      base: "button font-semibold border rounded",
+      variants: stringVariants,
+      compoundVariants: defaultsClassName,
+      defaultVariants: { disabled: false, intent: "primary", size: "medium" },
+    });
+    const arrayClass = cva({
+      base: ["button", "font-semibold", "border", "rounded"],
+      variants: arrayVariants,
+      compoundVariants: defaultsArrayClass,
+      defaultVariants: { disabled: false, intent: "primary", size: "medium" },
+    });
+    const arrayClassName = cva({
+      base: ["button", "font-semibold", "border", "rounded"],
+      variants: arrayVariants,
+      compoundVariants: defaultsArrayClassName,
+      defaultVariants: { disabled: false, intent: "primary", size: "medium" },
+    });
+    test("with base / with defaults / variant props remain exact", () => {
+      expectTypeOf<
+        CVA.VariantProps<typeof stringClass>
+      >().toEqualTypeOf<VariantPropsWithoutM>();
+      expectTypeOf<
+        CVA.VariantProps<typeof stringClassName>
+      >().toEqualTypeOf<VariantPropsWithoutM>();
+      expectTypeOf<
+        CVA.VariantProps<typeof arrayClass>
+      >().toEqualTypeOf<VariantPropsWithoutM>();
+      expectTypeOf<
+        CVA.VariantProps<typeof arrayClassName>
+      >().toEqualTypeOf<VariantPropsWithoutM>();
+    });
+    type Props = Parameters<typeof stringClass>[0];
+    const rows: readonly [string, Props, string][] = [
+      [
+        "undefined",
+        undefined,
+        "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
+      ],
+      [
+        "empty",
+        {},
+        "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
+      ],
+      [
+        "secondary",
+        { intent: "secondary" },
+        "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4",
+      ],
+      [
+        "small",
+        { size: "small" },
+        "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--small text-sm py-1 px-2",
+      ],
+      [
+        "disabled unset",
+        { disabled: "unset" },
+        "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--medium text-base py-2 px-4 button--primary-medium uppercase",
+      ],
+      [
+        "disabled false",
+        { disabled: false },
+        "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
+      ],
+      [
+        "disabled",
+        { disabled: true },
+        "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--disabled opacity-050 cursor-not-allowed button--medium text-base py-2 px-4 button--primary-medium uppercase",
+      ],
+      [
+        "secondary unset",
+        { intent: "secondary", size: "unset" },
+        "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer",
+      ],
+      [
+        "secondary undefined",
+        { intent: "secondary", size: undefined },
+        "button font-semibold border rounded button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100 button--enabled cursor-pointer button--medium text-base py-2 px-4",
+      ],
+      [
+        "danger medium",
+        { intent: "danger", size: "medium" },
+        "button font-semibold border rounded button--danger bg-red-500 text-white border-transparent hover:bg-red-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--warning-danger !border-red-500 button--warning-danger-medium",
+      ],
+      [
+        "warning large",
+        { intent: "warning", size: "large" },
+        "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800 button--warning-danger !border-red-500",
+      ],
+      [
+        "warning unset",
+        { intent: "warning", size: "large", disabled: "unset" },
+        "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--large text-lg py-2.5 px-4 button--warning-danger !border-red-500",
+      ],
+      [
+        "warning disabled",
+        { intent: "warning", size: "large", disabled: true },
+        "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--disabled opacity-050 cursor-not-allowed button--large text-lg py-2.5 px-4 button--warning-disabled text-black button--warning-danger !border-red-500",
+      ],
+      [
+        "warning enabled",
+        { intent: "warning", size: "large", disabled: false },
+        "button font-semibold border rounded button--warning bg-yellow-500 border-transparent hover:bg-yellow-600 button--enabled cursor-pointer button--large text-lg py-2.5 px-4 button--warning-enabled text-gray-800 button--warning-danger !border-red-500",
+      ],
+      [
+        "class",
+        { intent: "primary", class: "adhoc-class" },
+        "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase adhoc-class",
+      ],
+      [
+        "className",
+        { intent: "primary", className: "adhoc-classname" },
+        "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase adhoc-classname",
+      ],
+    ];
+    matrix("with base / with defaults", "string class", stringClass, rows);
+    matrix(
+      "with base / with defaults",
+      "string className",
+      stringClassName,
+      rows,
+    );
+    matrix("with base / with defaults", "array class", arrayClass, rows);
+    matrix(
+      "with base / with defaults",
+      "array className",
+      arrayClassName,
+      rows,
+    );
+    for (const [name, component] of [
+      ["string class", stringClass],
+      ["string className", stringClassName],
+      ["array class", arrayClass],
+      ["array className", arrayClassName],
+    ] as const) {
+      test(`with base / with defaults / ${name} / invalid prop`, () => {
+        // @ts-expect-error — deliberately invalid runtime input
+        expect(component({ aCheekyInvalidProp: "lol" })).toBe(
+          "button font-semibold border rounded button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600 button--enabled cursor-pointer button--medium text-base py-2 px-4 button--primary-medium uppercase",
+        );
+      });
+    }
+  });
+});
+
+describe("cva type contracts", () => {
+  test("keeps component parameters, variant props, and returns exact", () => {
+    const button = cva({
+      variants: {
+        disabled: { unset: null, true: "disabled", false: "enabled" },
+        m: { 0: "m-0", 1: "m-1" },
+        intent: { primary: "primary", secondary: "secondary" },
       },
     });
 
-    expect(coreCx("foo")).toBe("done:foo");
+    type ButtonProps =
+      | ({
+          disabled?: boolean | "unset" | undefined;
+          m?: 0 | 1 | undefined;
+          intent?: "primary" | "secondary" | undefined;
+        } & (
+          | { class?: CVA.ClassValue; className?: never }
+          | { class?: never; className?: CVA.ClassValue }
+        ))
+      | undefined;
+
+    expectTypeOf<Parameters<typeof button>[0]>().toEqualTypeOf<ButtonProps>();
+    expectTypeOf<ReturnType<typeof button>>().toEqualTypeOf<string>();
+    expectTypeOf<CVA.VariantProps<typeof button>>().toEqualTypeOf<{
+      disabled?: boolean | "unset" | undefined;
+      m?: 0 | 1 | undefined;
+      intent?: "primary" | "secondary" | undefined;
+    }>();
+
+    button();
+    button(undefined);
+    button({ disabled: true, m: 0 });
+    button({ disabled: false, m: 1 });
+    button({ class: "button" });
+    button({ className: "button" });
+    // @ts-expect-error — beta components do not accept null props
+    button(null);
+    // @ts-expect-error — unknown variant names are rejected
+    button({ unknown: "value" });
+    // @ts-expect-error — unknown variant values are rejected
+    button({ intent: "unknown" });
+    // @ts-expect-error — boolean variant props do not accept stringified values
+    button({ disabled: "true" });
+    // @ts-expect-error — numeric variant props do not accept stringified values
+    button({ m: "0" });
+    // @ts-expect-error — class and className are mutually exclusive
+    button({ class: "button", className: "button" });
+  });
+
+  test("rejects invalid beta configurations", () => {
+    // prettier-ignore
+    // @ts-expect-error — defaults must target a declared value
+    cva({ variants: { tone: { quiet: "quiet", loud: "loud" } }, defaultVariants: { tone: "unknown" } });
+    // prettier-ignore
+    // @ts-expect-error — compound selectors must target declared values
+    cva({ variants: { tone: { quiet: "quiet", loud: "loud" } }, compoundVariants: [{ tone: "unknown", class: "compound" }] });
+    // prettier-ignore
+    // @ts-expect-error — compound class props are mutually exclusive
+    cva({ variants: { tone: { quiet: "quiet", loud: "loud" } }, compoundVariants: [{ tone: "quiet", class: "compound", className: "compound" }] });
+    // @ts-expect-error — beta cva requires a configuration object
+    cva();
+  });
+
+  test("keeps nested readonly composition props exact", () => {
+    const spacing = cva({
+      variants: { gap: { sm: "gap-sm", lg: "gap-lg" } },
+      defaultVariants: { gap: "sm" },
+    });
+    const tone = cva({
+      variants: { tone: { quiet: "quiet", loud: "loud" } },
+      defaultVariants: { tone: "quiet" },
+    });
+    const middle = cva({ composes: [spacing, tone] as const });
+    const card = cva({ composes: [middle] as const });
+
+    expectTypeOf<CVA.VariantProps<typeof card>>().toEqualTypeOf<{
+      gap?: "sm" | "lg" | undefined;
+      tone?: "quiet" | "loud" | undefined;
+    }>();
+    expectTypeOf(getSchema(card)).toEqualTypeOf<{
+      gap: { values: readonly ("sm" | "lg")[]; defaultValue: "sm" };
+      tone: { values: readonly ("quiet" | "loud")[]; defaultValue: "quiet" };
+    }>();
+  });
+
+  test("keeps the last composed default literal exact", () => {
+    const compact = cva({
+      variants: { pad: { sm: "pad-sm", lg: "pad-lg" } },
+      defaultVariants: { pad: "sm" },
+    });
+    const spacious = cva({
+      variants: { pad: { sm: "pad-sm", lg: "pad-lg" } },
+      defaultVariants: { pad: "lg" },
+    });
+    const card = cva({ composes: [compact, spacious] as const });
+
+    expectTypeOf(getSchema(card).pad.defaultValue).toEqualTypeOf<"lg">();
+    expect(card()).toBe("pad-lg pad-lg");
   });
 });

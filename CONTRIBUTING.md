@@ -25,6 +25,7 @@ focused:
 - **Commits** follow the ["Conventional Commits" specification](https://www.conventionalcommits.org/en/v1.0.0/). This allows for changelogs to be generated automatically upon release.
 - **Code** is formatted via [Prettier](https://prettier.io/)
 - **JavaScript** is written as [TypeScript](https://www.typescriptlang.org/) where possible.
+- **Tests** should live beside their source as `<source>.test.<ext>`; in `packages/cva`, assign them to the public entry point that exposes the behavior, keep compatibility wrappers with that entry point, and keep runtime and type assertions together rather than creating thematic standalone suites.
 - **`packages/cva`'s type exports**: any type that can appear _named_ (not structurally expanded) in a consumer's generated `.d.ts` when they compile with `declaration: true` must be `export`ed from the public entry point that exposes the signature (`cva`, `cva/config`, or `cva/utils`), even if it's not meant for direct use — an unexported-but-nameable type breaks their build with a `TS4023`/`TS2459`-family error even though `cva`'s own build stays green. Not every type reachable from a public signature needs this: TypeScript structurally expands some of them (e.g. the call-signature parameter helpers) instead of naming them, so those stay unexported on purpose — export the minimum that a real consumer build fails to compile without (see `AGENTS.md`'s Learnings for how to check). These exports exist for that portability reason only, not as a feature we want people to reach for directly, so mark them with a short JSDoc saying so and don't add docs-site coverage for them. `packages/cva/src/index.test.ts` pins the current set, but only catches _losing_ one of these exports, not a new type that newly needs one.
 
 ## Getting Started
@@ -60,6 +61,7 @@ Run these from the repo root:
 - `pnpm test` – runs the test suite with coverage
 - `pnpm build` – production build of the packages
 - `pnpm check` – type checks every package
+- `pnpm --filter cva test:consumer` – packs the built beta package into an isolated pnpm-style temporary consumer where `clsx` is not hoisted, checks ESM/CJS declarations, and smoke-tests its `cva`, `cva/config`, and `cva/utils` exports
 - `pnpm bundlesize` – verifies bundle size limits (`size-limit`)
 - `pnpm bench` – builds the packages, then runs the `vitest bench` performance scenarios against each built package (add `BENCH_BASELINES_DIR=<dir>` after running `pnpm bench:baselines --out <dir>` to also benchmark published npm baselines alongside your local changes)
 - `pnpm bench:compare` – renders a markdown comparison table from the `test/bench/.output/benchmark-*.json` files produced by `pnpm bench`
@@ -96,7 +98,9 @@ Two details of the published map are deliberate:
 
 What tsdown does **not** own: `size-limit` remains the bundle-size budget (tsdown's per-file gzip size report is informational only), the `tsc --noEmit` check remains the source type check, and version bumps stay manual per [Releases](#releases).
 
-Day to day: `pnpm --filter <package> dev` runs the build in watch mode, and because the root `prepare:packages` script builds on every `pnpm install`, the publish-shape gates run then too — a broken manifest fails fast on your machine rather than in CI. If that per-install cost ever becomes a problem, `attw: 'ci-only'` in the config confines the slowest gate to CI.
+Day to day: `pnpm --filter <package> dev` runs the build in watch mode, and because the root `prepare:packages` script builds during a fresh `pnpm install`, the publish-shape gates run then too — a broken manifest fails fast on your machine rather than in CI. An already-up-to-date install may skip `prepare`; run `pnpm build` explicitly when you need to rebuild local changes. If that per-install cost ever becomes a problem, `attw: 'ci-only'` in the config confines the slowest gate to CI.
+
+`pnpm --filter cva test:consumer` requires a completed `pnpm --filter cva build`. It packs that beta build and extracts it outside the workspace under an isolated pnpm-style layout, with `clsx` available only beside `cva`. This catches declarations that name a dependency type (TS2883) even when the package's own `tsc` passes. It compiles the ESM/CommonJS fixtures together, executes the emitted JavaScript, then type-checks both downstream consumers against their emitted declarations. CI runs it in the `test` job after `pnpm test`, with the install setup supplying the build through `prepare`.
 
 ## Benchmarks
 

@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -27,6 +27,7 @@ const BENCHMARK = {
   rme: 0.5,
   sampleCount: 1000,
 };
+const tempDirs: string[] = [];
 
 function group(fullName: string, benchmarks = [BENCHMARK]) {
   return { fullName, benchmarks };
@@ -39,6 +40,8 @@ function reportFixture(files: Record<string, unknown>[]) {
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
+  for (const dir of tempDirs.splice(0))
+    rmSync(dir, { recursive: true, force: true });
 });
 
 describe("parseArgs", () => {
@@ -172,6 +175,7 @@ describe("main", () => {
     manifestEntries?: Record<string, unknown>[];
   }) {
     const dir = mkdtempSync(path.join(tmpdir(), "report-test-"));
+    tempDirs.push(dir);
     const vitestJson = path.join(dir, "vitest-bench.json");
     writeFileSync(vitestJson, JSON.stringify(reportFixture(files)));
 
@@ -321,6 +325,7 @@ describe("main", () => {
     vi.spyOn(console, "log").mockImplementation(() => {});
     const { outDir, argv } = writeFixtures({ files: localGroups });
     const emptyDir = mkdtempSync(path.join(tmpdir(), "report-test-empty-"));
+    tempDirs.push(emptyDir);
 
     main([...argv, "--baselines", emptyDir]);
 
