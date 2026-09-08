@@ -1,4 +1,4 @@
-import { badge, configured, schema, type BadgeProps } from "./out/esm/esm.mjs";
+import { badge, configured, schema, type BadgeProps } from "./out/esm.mjs";
 
 export const props: BadgeProps = { tone: "warning" };
 // @ts-expect-error: "danger" is not a declared tone.

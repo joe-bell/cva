@@ -1,4 +1,4 @@
-import { badge, configured, schema, type BadgeProps } from "./out/cjs/cjs.cjs";
+import { badge, configured, schema, type BadgeProps } from "./out/cjs.cjs";
 
 export const props: BadgeProps = { tone: "warning" };
 // @ts-expect-error: "danger" is not a declared tone.

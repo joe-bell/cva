@@ -96,7 +96,10 @@ export const defineConfig = ((options?: DefineConfigOptions) =>
     cx: options?.cx ?? clsx,
   })) as DefineConfig;
 
-const preset = defineCoreConfig({ cx: clsx });
+// Pin the preset to core's `ClassValue` alias: inferring from `clsx` would
+// name clsx's own `ClassValue` in the declaration, which is not portable
+// (TS2883).
+const preset = defineCoreConfig<CX>({ cx: clsx });
 
 /** @deprecated Use the `composes` property inside `cva` instead. */
 export const compose = preset.compose;

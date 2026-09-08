@@ -145,152 +145,8 @@ describe("processBenchmarkPrComment", () => {
     head: { sha: "abc123", repo: { full_name: "joe-bell/cva" } },
   };
 
-  it("creates the sticky comment when all checks pass", async () => {
-    const { metaPath, sectionContentPath } = writeArtifactDir({
-      meta: { pr: 42 },
-    });
-    const github = fakeGithub({ pull });
-
-    const result = await processBenchmarkPrComment({
-      github,
-      context,
-      metaPath,
-      sectionContentPath,
-      headSha: "abc123",
-      headRepo: "joe-bell/cva",
-      workflowRunPulls: [{ number: 42 }],
-    });
-
-    expect(result.action).toBe("created");
-    expect(github.rest.issues.createComment).toHaveBeenCalledOnce();
-    const body = github.rest.issues.createComment.mock.calls[0][0].body;
-    expect(body).toContain(STICKY_MARKER);
-    expect(body).toContain("## Benchmarks");
-  });
-
-  it("skips when the PR no longer exists", async () => {
-    const { metaPath, sectionContentPath } = writeArtifactDir();
-    const github = fakeGithub();
-    github.rest.pulls.get.mockRejectedValueOnce({ status: 404 });
-
-    const result = await processBenchmarkPrComment({
-      github,
-      context,
-      metaPath,
-      sectionContentPath,
-      headSha: "abc123",
-      headRepo: "joe-bell/cva",
-    });
-
-    expect(result.action).toBe("skipped-pr-missing");
-    expect(github.rest.issues.createComment).not.toHaveBeenCalled();
-  });
-
-  it("re-throws a non-404 error from the PR lookup", async () => {
-    const { metaPath, sectionContentPath } = writeArtifactDir();
-    const github = fakeGithub();
-    github.rest.pulls.get.mockRejectedValueOnce({ status: 500 });
-
-    await expect(
-      processBenchmarkPrComment({
-        github,
-        context,
-        metaPath,
-        sectionContentPath,
-        headSha: "abc123",
-        headRepo: "joe-bell/cva",
-      }),
-    ).rejects.toEqual({ status: 500 });
-    expect(github.rest.issues.createComment).not.toHaveBeenCalled();
-  });
-
-  it("skips on head SHA mismatch without throwing", async () => {
-    const { metaPath, sectionContentPath } = writeArtifactDir();
-    const github = fakeGithub({ pull });
-
-    const result = await processBenchmarkPrComment({
-      github,
-      context,
-      metaPath,
-      sectionContentPath,
-      headSha: "stale-sha",
-      headRepo: "joe-bell/cva",
-    });
-
-    expect(result.action).toBe("mismatch-sha");
-    expect(github.rest.issues.createComment).not.toHaveBeenCalled();
-  });
-
-  it("skips on head repo mismatch without throwing", async () => {
-    const { metaPath, sectionContentPath } = writeArtifactDir();
-    const github = fakeGithub({ pull });
-
-    const result = await processBenchmarkPrComment({
-      github,
-      context,
-      metaPath,
-      sectionContentPath,
-      headSha: "abc123",
-      headRepo: "attacker/cva",
-    });
-
-    expect(result.action).toBe("mismatch-repo");
-    expect(github.rest.issues.createComment).not.toHaveBeenCalled();
-  });
-
-  it("rejects an artifact PR not bound to the workflow run", async () => {
-    const { metaPath, sectionContentPath } = writeArtifactDir({
-      meta: { pr: 42 },
-    });
-    const github = fakeGithub({ pull });
-
-    await expect(
-      processBenchmarkPrComment({
-        github,
-        context,
-        metaPath,
-        sectionContentPath,
-        headSha: "abc123",
-        headRepo: "joe-bell/cva",
-        workflowRunPulls: [{ number: 7 }],
-      }),
-    ).rejects.toThrow(/not associated with this workflow run/);
-  });
-});
-
-describe("processBenchmarkPrComment API destinations", () => {
-  const pull = {
-    head: { sha: "expected-sha", repo: { full_name: "joe-bell/cva" } },
-  };
-
   function expectedBody(content) {
     return `${STICKY_MARKER}\n\n<!-- cva:section:benchmark:start -->\n${content}\n<!-- cva:section:benchmark:end -->`;
-  }
-
-  function writeArtifact(pr = 42, content = "## Exact benchmark") {
-    const dir = mkdtempSync(
-      path.join(tmpdir(), "cva-pr-comment-destinations-"),
-    );
-    tempDirs.push(dir);
-    const metaPath = path.join(dir, "meta.json");
-    const sectionContentPath = path.join(dir, "benchmark-section.md");
-    writeFileSync(metaPath, JSON.stringify({ pr }));
-    writeFileSync(sectionContentPath, content);
-    return { metaPath, sectionContentPath };
-  }
-
-  function fakeGithub({ comments = [], pullResult = pull } = {}) {
-    return {
-      paginate: vi.fn(async () => comments),
-      rest: {
-        pulls: { get: vi.fn(async () => ({ data: pullResult })) },
-        issues: {
-          listComments: vi.fn(),
-          createComment: vi.fn(async () => ({ data: { id: 321 } })),
-          updateComment: vi.fn(async () => ({})),
-        },
-      },
-    };
   }
 
   async function processComment(github, artifact, options = {}) {
@@ -298,7 +154,7 @@ describe("processBenchmarkPrComment API destinations", () => {
       github,
       context,
       ...artifact,
-      headSha: "expected-sha",
+      headSha: "abc123",
       headRepo: "joe-bell/cva",
       workflowRunPulls: [{ number: 42 }],
       ...options,
@@ -311,13 +167,15 @@ describe("processBenchmarkPrComment API destinations", () => {
     expect(github.rest.issues.updateComment).not.toHaveBeenCalled();
   }
 
-  it("looks up, paginates, and creates a comment at the bound repository and PR", async () => {
-    const artifact = writeArtifact();
-    const github = fakeGithub();
+  it("creates the sticky comment at the bound repository and PR when all checks pass", async () => {
+    const artifact = writeArtifactDir({
+      section: "## Benchmarks\n\nExact benchmark",
+    });
+    const github = fakeGithub({ pull });
 
     await expect(processComment(github, artifact)).resolves.toEqual({
       action: "created",
-      commentId: 321,
+      commentId: 999,
       pr: 42,
     });
 
@@ -334,14 +192,15 @@ describe("processBenchmarkPrComment API destinations", () => {
       owner: "joe-bell",
       repo: "cva",
       issue_number: 42,
-      body: expectedBody("## Exact benchmark"),
+      body: expectedBody("## Benchmarks\n\nExact benchmark"),
     });
     expect(github.rest.issues.updateComment).not.toHaveBeenCalled();
   });
 
-  it("looks up, paginates, and updates the exact existing comment destination", async () => {
-    const artifact = writeArtifact();
+  it("updates the exact existing sticky comment destination", async () => {
+    const artifact = writeArtifactDir({ section: "## Exact benchmark" });
     const github = fakeGithub({
+      pull,
       comments: [{ id: 654, user: { type: "Bot" }, body: STICKY_MARKER }],
     });
 
@@ -369,46 +228,56 @@ describe("processBenchmarkPrComment API destinations", () => {
     expect(github.rest.issues.createComment).not.toHaveBeenCalled();
   });
 
-  it("does not paginate or write when the workflow run is bound to another PR", async () => {
-    const github = fakeGithub();
+  it("rejects an artifact PR not bound to the workflow run without any API call", async () => {
+    const github = fakeGithub({ pull });
 
     await expect(
-      processComment(github, writeArtifact(), {
+      processComment(github, writeArtifactDir(), {
         workflowRunPulls: [{ number: 7 }],
       }),
-    ).rejects.toThrow("not associated with this workflow run");
+    ).rejects.toThrow(/not associated with this workflow run/);
 
     expect(github.rest.pulls.get).not.toHaveBeenCalled();
     expectNoCommentApiCalls(github);
   });
 
-  it("does not paginate or write for a stale head SHA", async () => {
-    const github = fakeGithub();
+  it("skips a stale head SHA without paginating or writing", async () => {
+    const github = fakeGithub({ pull });
 
     await expect(
-      processComment(github, writeArtifact(), { headSha: "stale-sha" }),
+      processComment(github, writeArtifactDir(), { headSha: "stale-sha" }),
     ).resolves.toEqual({ action: "mismatch-sha", pr: 42 });
 
     expectNoCommentApiCalls(github);
   });
 
-  it("does not paginate or write for a pull from the wrong repository", async () => {
-    const github = fakeGithub();
+  it("skips a head repo mismatch without paginating or writing", async () => {
+    const github = fakeGithub({ pull });
 
     await expect(
-      processComment(github, writeArtifact(), { headRepo: "fork/cva" }),
+      processComment(github, writeArtifactDir(), { headRepo: "attacker/cva" }),
     ).resolves.toEqual({ action: "mismatch-repo", pr: 42 });
 
     expectNoCommentApiCalls(github);
   });
 
-  it("does not paginate or write when the PR lookup reports it is missing", async () => {
+  it("skips a missing PR without paginating or writing", async () => {
     const github = fakeGithub();
     github.rest.pulls.get.mockRejectedValueOnce({ status: 404 });
 
-    await expect(processComment(github, writeArtifact())).resolves.toEqual({
-      action: "skipped-pr-missing",
-      pr: 42,
+    await expect(
+      processComment(github, writeArtifactDir(), { workflowRunPulls: [] }),
+    ).resolves.toEqual({ action: "skipped-pr-missing", pr: 42 });
+
+    expectNoCommentApiCalls(github);
+  });
+
+  it("re-throws a non-404 error from the PR lookup", async () => {
+    const github = fakeGithub();
+    github.rest.pulls.get.mockRejectedValueOnce({ status: 500 });
+
+    await expect(processComment(github, writeArtifactDir())).rejects.toEqual({
+      status: 500,
     });
 
     expectNoCommentApiCalls(github);

@@ -61,7 +61,7 @@ Run these from the repo root:
 - `pnpm test` – runs the test suite with coverage
 - `pnpm build` – production build of the packages
 - `pnpm check` – type checks every package
-- `pnpm --filter cva test:consumer` – packs the built beta package into an isolated temporary consumer, checks ESM/CJS declarations, and smoke-tests its `cva`, `cva/config`, and `cva/utils` exports
+- `pnpm --filter cva test:consumer` – packs the built beta package into an isolated pnpm-style temporary consumer where `clsx` is not hoisted, checks ESM/CJS declarations, and smoke-tests its `cva`, `cva/config`, and `cva/utils` exports
 - `pnpm bundlesize` – verifies bundle size limits (`size-limit`)
 - `pnpm bench` – builds the packages, then runs the `vitest bench` performance scenarios against each built package (add `BENCH_BASELINES_DIR=<dir>` after running `pnpm bench:baselines --out <dir>` to also benchmark published npm baselines alongside your local changes)
 - `pnpm bench:compare` – renders a markdown comparison table from the `test/bench/.output/benchmark-*.json` files produced by `pnpm bench`
@@ -100,7 +100,7 @@ What tsdown does **not** own: `size-limit` remains the bundle-size budget (tsdow
 
 Day to day: `pnpm --filter <package> dev` runs the build in watch mode, and because the root `prepare:packages` script builds during a fresh `pnpm install`, the publish-shape gates run then too — a broken manifest fails fast on your machine rather than in CI. An already-up-to-date install may skip `prepare`; run `pnpm build` explicitly when you need to rebuild local changes. If that per-install cost ever becomes a problem, `attw: 'ci-only'` in the config confines the slowest gate to CI.
 
-`pnpm --filter cva test:consumer` requires a completed `pnpm --filter cva build`. It packs that beta build, extracts it outside the workspace, compiles ESM and CommonJS fixtures into JavaScript plus declarations, executes the emitted JavaScript, and type-checks downstream consumers against the emitted declarations. The isolated layout prevents workspace-source resolution; CI runs it in the `test` job after `pnpm test`, with the install setup supplying the build through `prepare`.
+`pnpm --filter cva test:consumer` requires a completed `pnpm --filter cva build`. It packs that beta build and extracts it outside the workspace under an isolated pnpm-style layout, with `clsx` available only beside `cva`. This catches declarations that name a dependency type (TS2883) even when the package's own `tsc` passes. It compiles the ESM/CommonJS fixtures together, executes the emitted JavaScript, then type-checks both downstream consumers against their emitted declarations. CI runs it in the `test` job after `pnpm test`, with the install setup supplying the build through `prepare`.
 
 ## Benchmarks
 
