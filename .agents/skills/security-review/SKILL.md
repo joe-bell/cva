@@ -43,7 +43,8 @@ Before flagging any issue, you MUST research the codebase to understand:
 - Test files (unless explicitly reviewing test security)
 - Dead code, commented code, documentation strings
 - Patterns using **constants** or **server-controlled configuration**
-- Code paths that require prior authentication to reach (note the auth requirement instead)
+
+Authentication alone is not a reason to drop a confirmed finding. Authenticated IDOR, horizontal or vertical privilege escalation, confused-deputy bugs, CSRF, and business-logic bypasses remain in scope when exploitability is confirmed. Note the authentication requirement in the finding.
 
 ### Server-Controlled Values (NOT Attacker-Controlled)
 
@@ -116,19 +117,19 @@ Based on file extension or imports:
 |------------|-------|
 | `.py`, `django`, `flask`, `fastapi` | `languages/python.md` |
 | `.js`, `.ts`, `express`, `react`, `vue`, `next` | `languages/javascript.md` |
-| `.go`, `go.mod` | `languages/go.md` |
-| `.rs`, `Cargo.toml` | `languages/rust.md` |
-| `.java`, `spring`, `@Controller` | `languages/java.md` |
+| `.go`, `go.mod` | No bundled guide; use official Go security documentation before reviewing language-specific behavior |
+| `.rs`, `Cargo.toml` | No bundled guide; use official Rust security documentation before reviewing language-specific behavior |
+| `.java`, `spring`, `@Controller` | No bundled guide; use official Java or Spring security documentation before reviewing language-specific behavior |
 
 ### 3. Load Infrastructure Guide (if applicable)
 
 | File Type | Guide |
 |-----------|-------|
 | `Dockerfile`, `.dockerignore` | `infrastructure/docker.md` |
-| K8s manifests, Helm charts | `infrastructure/kubernetes.md` |
-| `.tf`, Terraform | `infrastructure/terraform.md` |
-| GitHub Actions, `.gitlab-ci.yml` | `infrastructure/ci-cd.md` |
-| AWS/GCP/Azure configs, IAM | `infrastructure/cloud.md` |
+| K8s manifests, Helm charts | No bundled guide; use official Kubernetes security documentation before reviewing platform-specific behavior |
+| `.tf`, Terraform | No bundled guide; use official Terraform provider and cloud security documentation before reviewing platform-specific behavior |
+| GitHub Actions, `.gitlab-ci.yml` | No bundled guide; use official CI/CD platform security documentation before reviewing platform-specific behavior |
+| AWS/GCP/Azure configs, IAM | No bundled guide; use official cloud provider security documentation before reviewing platform-specific behavior |
 
 ### 4. Research Before Flagging
 
@@ -300,13 +301,10 @@ If no vulnerabilities found, state: "No high-confidence vulnerabilities identifi
 ### Language Guides (`languages/`)
 - `python.md` - Django, Flask, FastAPI patterns
 - `javascript.md` - Node, Express, React, Vue, Next.js
-- `go.md` - Go-specific security patterns
-- `rust.md` - Rust unsafe blocks, FFI security
-- `java.md` - Spring, Java EE patterns
+
+If a review needs Go, Rust, Java, or another missing language guide, use official documentation for that language or framework before reporting language-specific behavior.
 
 ### Infrastructure (`infrastructure/`)
 - `docker.md` - Container security
-- `kubernetes.md` - K8s RBAC, secrets, policies
-- `terraform.md` - IaC security
-- `ci-cd.md` - Pipeline security
-- `cloud.md` - AWS/GCP/Azure security
+
+If a review needs Kubernetes, Terraform, CI/CD, cloud, or another missing infrastructure guide, use official platform documentation before reporting platform-specific behavior.
