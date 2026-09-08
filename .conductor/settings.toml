@@ -1,11 +1,21 @@
 "$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
 
+# setup-worktree.sh links env files; copied files would prevent those links.
+file_include_globs = ""
+
 [scripts]
 setup = "bash .conductor/scripts/setup.sh"
 run_mode = "concurrent"
 
 [scripts.run.docs]
+available_in = ["local"]
 command = "sh .conductor/scripts/run.sh pnpm --filter ./docs dev --port $CONDUCTOR_PORT"
+default = true
+icon = "book-open"
+
+[scripts.run.docs-cloud]
+available_in = ["cloud"]
+command = "sh .conductor/scripts/run.sh pnpm --filter ./docs dev --host 0.0.0.0 --port 4321"
 default = true
 icon = "book-open"
 
