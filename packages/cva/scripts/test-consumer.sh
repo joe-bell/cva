@@ -19,12 +19,11 @@ consumer_dir="$temp_dir/consumer"
 mkdir -p "$consumer_dir/node_modules/cva" "$consumer_dir/node_modules"
 tar -xzf "$tarball" -C "$consumer_dir/node_modules/cva" --strip-components=1
 ln -s "$package_dir/node_modules/clsx" "$consumer_dir/node_modules/clsx"
-cp "$fixture_dir"/{esm.mts,cjs.cts,esm.mjs,cjs.cjs,downstream.mts,downstream.cts} "$consumer_dir"
+cp "$fixture_dir"/{esm.mts,cjs.cts,downstream.mts,downstream.cts} "$consumer_dir"
 
-pnpm exec tsc "$consumer_dir/esm.mts" --ignoreConfig --strict --declaration --emitDeclarationOnly --module nodenext --moduleResolution nodenext --outDir "$consumer_dir/types/esm"
-pnpm exec tsc "$consumer_dir/cjs.cts" --ignoreConfig --strict --declaration --emitDeclarationOnly --module nodenext --moduleResolution nodenext --outDir "$consumer_dir/types/cjs"
+pnpm exec tsc "$consumer_dir/esm.mts" --ignoreConfig --strict --declaration --module nodenext --moduleResolution nodenext --typeRoots "$package_dir/node_modules/@types" --types node --outDir "$consumer_dir/out/esm"
+pnpm exec tsc "$consumer_dir/cjs.cts" --ignoreConfig --strict --declaration --module nodenext --moduleResolution nodenext --typeRoots "$package_dir/node_modules/@types" --types node --outDir "$consumer_dir/out/cjs"
+node "$consumer_dir/out/esm/esm.mjs"
+node "$consumer_dir/out/cjs/cjs.cjs"
 pnpm exec tsc "$consumer_dir/downstream.mts" --ignoreConfig --strict --noEmit --module nodenext --moduleResolution nodenext
 pnpm exec tsc "$consumer_dir/downstream.cts" --ignoreConfig --strict --noEmit --module nodenext --moduleResolution nodenext
-
-node "$consumer_dir/esm.mjs"
-node "$consumer_dir/cjs.cjs"

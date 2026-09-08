@@ -55,8 +55,6 @@ jobs:
       - uses: ./.github/actions/install
       - name: Packages
         run: pnpm build
-      - name: Packed cva consumer
-        run: pnpm --filter cva verify:consumer
       - name: Examples
         run: pnpm build:examples
   bundlesize:
@@ -120,3 +118,6 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/install
       - run: pnpm test
+      # `./.github/actions/install` already built the packages via the root
+      # `prepare` script, so `dist/` is present without a separate build step.
+      - run: pnpm --filter cva test:consumer

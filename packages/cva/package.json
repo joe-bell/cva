@@ -39,7 +39,7 @@
     "check:tsc": "tsc --project tsconfig.json --noEmit",
     "dev": "tsdown --watch",
     "prepublishOnly": "pnpm build",
-    "verify:consumer": "bash ./scripts/verify-consumer.sh"
+    "test:consumer": "bash ./scripts/test-consumer.sh"
   },
   "dependencies": {
     "clsx": "^2.1.1"
