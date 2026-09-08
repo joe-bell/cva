@@ -11,7 +11,7 @@
       "source": "vercel-labs/skills",
       "sourceType": "github",
       "skillPath": "skills/find-skills/SKILL.md",
-      "computedHash": "17fc4ab95ca0d788041f9581605a22932244aa938b7a50faa9d875342741f1fa"
+      "computedHash": "bf8562fe35faef3e3d7ef7e2289a2ee661fcce9d5ccfe4611ad75cf4cb8d3b05"
     },
     "pnpm": {
       "source": "antfu/skills",
@@ -23,7 +23,7 @@
       "source": "getsentry/skills",
       "sourceType": "github",
       "skillPath": "skills/security-review/SKILL.md",
-      "computedHash": "ec9792f5fd065e020c48ab5a57707c83435c286c449ba98dfa726d7b1842c868"
+      "computedHash": "e3e09502fbad48467f3fc4196cf346bf0a1e4ce1441a9556a5810636224ee517"
     },
     "vitest": {
       "source": "antfu/skills",
@@ -35,19 +35,19 @@
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/web-design-guidelines/SKILL.md",
-      "computedHash": "2b4252a346243aa696da2d021a7a2f747259567cd3ca51308ee86ca24ab60d86"
+      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
     },
     "wrangler": {
       "source": "cloudflare/skills",
       "sourceType": "github",
       "skillPath": "skills/wrangler/SKILL.md",
-      "computedHash": "5772e3a80648ffe8287ec5e95987a25170cc8f633facd21117d5874ca49b9548"
+      "computedHash": "92f4ffdcbd645dc1dded04ed4083aafce1098d8f41e46abef429afc813999ecd"
     },
     "writing-guidelines": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/writing-guidelines/SKILL.md",
-      "computedHash": "f178f796f384ec7dd4145a4ca3d218f0aab8cdc39cfd858af9304503f962fe5e"
+      "computedHash": "fa8cd3bdfc13e95115b1e4d008c6db5df8d85f982c708210e72fc3a4d9500386"
     }
   }
 }

@@ -1,8 +1,8 @@
 ---
 name: tailwind-css-v4
-description: Reference for Tailwind CSS v4 syntax and the differences from v3.x. Use when configuring Tailwind (CSS-first @theme config, @import "tailwindcss"), using new v4 features (container queries, 3D transforms, gradients, composable variants, @utility/@variant/@plugin), or migrating v3 patterns. This repo is on v4 — do NOT emit v3 syntax like tailwind.config.js, @tailwind directives, or bg-gradient-*.
+description: Reference for Tailwind CSS v4 syntax and the differences from v3.x. Use when configuring Tailwind (CSS-first @theme config, @import "tailwindcss"), using new v4 features (container queries, 3D transforms, gradients, composable variants, @utility/@custom-variant/@plugin), or migrating v3 patterns. This repo is on v4 — do NOT emit v3 syntax like tailwind.config.js, @tailwind directives, or bg-gradient-*.
 metadata:
-  source: migrated from .cursor/rules/tailwind-css-v4.mdc
+  source: hand-maintained from official Tailwind CSS documentation
 ---
 
 # Tailwind CSS v4
@@ -133,11 +133,16 @@ metadata:
   }
   ```
 
-- **Custom variants**: Use `@variant` directive
+- **Custom variants**: Use `@custom-variant` to define project-specific variants. Use `@variant` only to apply an existing Tailwind variant inside custom CSS.
 
   ```css
-  @variant pointer-coarse (@media (pointer: coarse));
-  @variant theme-midnight (&:where([data-theme="midnight"] *));
+  @custom-variant wide-gamut {
+    @media (color-gamut: p3) {
+      @slot;
+    }
+  }
+
+  @custom-variant theme-midnight (&:where([data-theme="midnight"] *));
   ```
 
 - **Plugins**: Use `@plugin` directive
@@ -196,7 +201,7 @@ metadata:
 
   ```css
   @import "tailwindcss";
-  @variant dark (&:where(.dark, .dark *));
+  @custom-variant dark (&:where(.dark, .dark *));
   ```
 
 - **Container customization**: Extend with `@utility`
@@ -212,9 +217,9 @@ metadata:
 
   ```html
   <style>
-    @import "../../my-theme.css" theme(reference);
-    /* or */
-    @import "tailwindcss/theme" theme(reference);
+    @reference "../../my-theme.css";
+    /* or, when using only the default theme */
+    @reference "tailwindcss";
 
     h1 {
       @apply text-2xl font-bold text-red-500;
