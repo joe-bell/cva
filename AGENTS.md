@@ -43,18 +43,7 @@ The dev/CI toolchain pins `engines.node` to the [`.node-version`](./.node-versio
 
 ## Docs styling
 
-The `docs` site styles with **Tailwind CSS v4** via Starlight's official
-integration (`@astrojs/starlight-tailwind` + `@tailwindcss/vite`, configured in
-[`docs/astro.config.ts`](./docs/astro.config.ts) and
-[`docs/src/styles/main.css`](./docs/src/styles/main.css)). See Starlight's
-[CSS & Tailwind guide](https://starlight.astro.build/guides/css-and-tailwind/#tailwind-css).
-
-When styling components, use Tailwind v4 utility classes — don't reach for
-inline `style="…"`/`style={{ … }}` attributes or `<style>` tags. Prefer
-variant utilities (e.g. `after:…`, `dark:…`) over scoped CSS, and arbitrary
-values (e.g. `after:bg-[hsl(0,0%,98%)]`) when no token fits. Global styling
-that can't be expressed as utilities belongs in `main.css` (`@apply`, theme
-tokens), not in per-component `<style>` blocks.
+The `docs` site uses Tailwind CSS v4 through Starlight's official integration (`@astrojs/starlight-tailwind` + `@tailwindcss/vite`, currently `^4.2.4`; configured in [`docs/astro.config.ts`](./docs/astro.config.ts) and [`docs/src/styles/main.css`](./docs/src/styles/main.css)). Use Tailwind v4 utility syntax from the public [Tailwind CSS documentation](https://tailwindcss.com/docs/styling-with-utility-classes) and Starlight's [CSS & Tailwind guide](https://starlight.astro.build/guides/css-and-tailwind/#tailwind-css). Keep `docs/src/styles/main.css` for Tailwind/Starlight imports and `@theme` tokens, and use Starlight component overrides in `docs/src/components/` for component-level structure. For new or changed markup, use complete utility class names, `gap-*` for flex/grid child spacing, text size line-height modifiers such as `text-sm/6` instead of separate `leading-*` classes, and avoid new `@apply`, inline `style="…"`/`style={{ … }}` attributes, or per-component `<style>` blocks.
 
 ## Docs writing
 
@@ -66,7 +55,7 @@ When documenting equivalent beta integrations, present them neutrally in alphabe
 
 Project skills live in `.agents/skills/` — the **single source of truth**; agent-specific directories only ever mirror it. They follow the [Agent Skills spec](https://agentskills.io/specification.md) (one `SKILL.md` per directory). Invoke the matching skill before working in that area. `pnpm lint:skills` validates each `SKILL.md` (`skill-check`, strict mode); it runs in pre-commit (via `lint-staged`) and in CI.
 
-Keep repo-local skills for project-specific or CI-validated guidance. Generic personal workflow skills such as `deslop`, `find-skills`, and `web-design-guidelines` may be available globally for Joe's agents, but they are optional: contributors and CI must not need Joe's global agent setup for this repo to build or lint. When a global generic skill is unavailable, use the equivalent manual checklist or CLI command instead of adding a repo-local copy by default.
+Keep repo-local skills for project-specific or CI-validated guidance. Generic personal workflow skills such as `deslop`, `find-skills`, `tailwindcss`, and `web-design-guidelines` may be available globally for Joe's agents, but they are optional: contributors and CI must not need Joe's global agent setup for this repo to build or lint. When a global generic skill is unavailable, use the equivalent manual checklist, public documentation, or CLI command instead of adding a repo-local copy by default.
 
 Supported agent mirrors:
 
@@ -81,7 +70,6 @@ Vendored skill files are excluded from Prettier ([`.prettierignore`](./.prettier
 
 Installed skills:
 
-- `tailwind-css-v4` — Tailwind CSS v4 syntax and the v3→v4 differences (CSS-first `@theme` config, renamed/removed utilities, container queries, new features); use alongside the [Docs styling](#docs-styling) rules whenever touching styles. Hand-maintained in this repo (vendored, not installed from a registry), so it's not tracked in `skills-lock.json`.
 - `writing-guidelines` — prose style review; use when writing or reviewing docs content (see [Docs writing](#docs-writing) above). Sourced from `vercel-labs/agent-skills`; carries a local house-style addendum on top of the fetched upstream ruleset — re-apply it if `npx skills update` clobbers it, and recompute the hash per the note above
 - `security-review` — OWASP-based, confidence-gated vulnerability review (reports only high-confidence, exploitable findings after tracing data flow); part of the core contribution workflow — use before pushing changes that touch executable code (see [Security review](#security-review-run-it-on-code-changes) below). Sourced from `getsentry/skills` (no local tweak; its description already carries "Use when" and its `SKILL.md` is a short index over `references/`/`languages/`/`infrastructure/` guides, so it's under the 500-line cap as-is)
 - `pnpm` — pnpm commands, workspace configuration, and dependency management. Sourced from `antfu/skills`; its June 2026 guidance covers pnpm 10.x and v11 changes, so check version-sensitive guidance against this repo's pinned pnpm 11.0.9.
