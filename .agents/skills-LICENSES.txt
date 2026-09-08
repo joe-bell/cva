@@ -22,7 +22,7 @@ Per-skill status:
 - web-design-guidelines: sourced from vercel-labs/agent-skills. GitHub reported no repository license, no root LICENSE/COPYING/NOTICE file, no package.json license field, and no skill-local license file at the verified revision.
 - wrangler: sourced from cloudflare/skills under the Apache License 2.0.
 - writing-guidelines: sourced from vercel-labs/agent-skills. GitHub reported no repository license, no root LICENSE/COPYING/NOTICE file, no package.json license field, and no skill-local license file at the verified revision.
-- tailwind-css-v4: hand-maintained in this repository from public Tailwind CSS documentation, not copied from a skill registry.
+- tailwind-css-v4: hand-maintained in this repository from official Tailwind CSS documentation.
 
 MIT License
 ===========

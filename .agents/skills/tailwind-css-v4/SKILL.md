@@ -2,7 +2,7 @@
 name: tailwind-css-v4
 description: Reference for Tailwind CSS v4 syntax and the differences from v3.x. Use when configuring Tailwind (CSS-first @theme config, @import "tailwindcss"), using new v4 features (container queries, 3D transforms, gradients, composable variants, @utility/@custom-variant/@plugin), or migrating v3 patterns. This repo is on v4 — do NOT emit v3 syntax like tailwind.config.js, @tailwind directives, or bg-gradient-*.
 metadata:
-  source: hand-maintained from public Tailwind CSS documentation
+  source: hand-maintained from official Tailwind CSS documentation
 ---
 
 # Tailwind CSS v4

@@ -55,7 +55,7 @@ When documenting equivalent beta integrations, present them neutrally in alphabe
 
 Project skills live in `.agents/skills/` — the **single source of truth**; agent-specific directories only ever mirror it. They follow the [Agent Skills spec](https://agentskills.io/specification.md) (one `SKILL.md` per directory). Invoke the matching skill before working in that area. `pnpm lint:skills` validates each `SKILL.md` (`skill-check`, strict mode); it runs in pre-commit (via `lint-staged`) and in CI.
 
-Keep the repo-local contributor skills current so contributors and CI do not depend on any personal global agent setup. Use public upstream sources for fetched skills, preserve the local patches called out below, and keep hand-maintained guidance usable from this public repository.
+Keep the repo-local contributor skills current. Use reputable upstream sources for fetched skills, preserve the documented local patches, and keep hand-maintained guidance usable for contributors.
 
 Supported agent mirrors:
 
@@ -70,7 +70,7 @@ Vendored skill files are excluded from Prettier ([`.prettierignore`](./.prettier
 
 Installed skills:
 
-- `tailwind-css-v4` — Tailwind CSS v4 syntax and the v3 to v4 differences (CSS-first `@theme` config, renamed/removed utilities, container queries, new features); use alongside the [Docs styling](#docs-styling) rules whenever touching styles. Hand-maintained in this repo from public Tailwind CSS documentation only; it is not tracked in `skills-lock.json`.
+- `tailwind-css-v4` — Tailwind CSS v4 syntax and the v3 to v4 differences (CSS-first `@theme` config, renamed/removed utilities, container queries, new features); use alongside the [Docs styling](#docs-styling) rules whenever touching styles. Hand-maintained in this repo from official Tailwind CSS documentation; it is not tracked in `skills-lock.json`.
 - `deslop` — removes AI-generated slop (redundant comments, needless defensive code, `any` casts, deep nesting) from a branch's diff; use when cleaning up agent-written changes before merging. Sourced from `cursor/plugins` and carries a local "Use when" description tweak.
 - `find-skills` — discovers and installs further skills from the ecosystem; use when a task could benefit from a skill we don't have yet. Sourced from `vercel-labs/skills` and carries a local strict-mode description tweak.
 - `pnpm` — pnpm commands, workspace configuration, and dependency management. Sourced from `antfu/skills`; its June 2026 guidance covers pnpm 10.x and v11 changes, so check version-sensitive guidance against this repo's pinned pnpm 11.0.9.
@@ -136,7 +136,7 @@ Security review is a standing step, not an on-request extra. Before pushing a ch
 
 Agent-specific notes:
 
-- **Never expose private repositories.** This is a public repo: anything you write here is published. Never reference the owner's (or anyone's) private repositories — no repo names, URLs, or file paths — in code, docs, commit messages, PR titles/descriptions, issues, or review comments. If work is ported or adapted from a private source, describe it neutrally ("hand-maintained", "vendored") without naming or linking the source. This applies to every agent and every session, with no exceptions.
+- **Never expose private repositories.** This is a public repo: anything you write here is published. Never reference the owner's (or anyone's) private repositories — no repo names, URLs, or file paths — in code, docs, commit messages, PR titles/descriptions, issues, or review comments. If work is ported or adapted from a private source, describe it neutrally ("hand-maintained", "vendored") without naming or linking the source. Public docs and PR descriptions describe the final change, without internal task or rollout history or personal machine context. This applies to every agent and every session, with no exceptions.
 - **Never bump a package version.** See [Releases](./CONTRIBUTING.md#releases) in `CONTRIBUTING.md` — version bumps happen only on `main`, cut by the project owner, as their own commit. Don't add one to a feature/fix branch or PR, even if explicitly asked to "cut vX.Y.Z"; implement the change and let the owner handle the bump separately.
 - **Keep PR titles and descriptions in sync with the branch.** A PR's title/body must describe the _current_ committed state, not the first push: whenever you push commits that materially change what the PR does or contains (new scope, new files, a follow-up like docs or a fix), update the title and description in the same session — reviewers and the squash-merge commit message read the description, so a stale one misleads both. Preserve the PR template's section structure when editing, re-check the "purpose" checkboxes if the change type shifted, and keep the description about the final diff (no changelog-style "edit: also added…" appendices). Trivial pushes that don't change the story (typo fixes, lint appeasement, addressing a review nit) don't require an edit.
 - **Don't rewrite branch history for tidiness.** PRs are squash-merged, so a branch's individual commits never reach `main` and don't need to be clean — net-zero pairs, fixup commits, and revert commits are all fine to leave in place. Only rewrite history (rebase, force-push) when the user explicitly asks for it; don't propose it unprompted.
