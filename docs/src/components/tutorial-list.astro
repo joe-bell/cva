@@ -16,56 +16,38 @@ const { format } = Astro.props;
 
 {
   format === "YouTube" ? (
-    <ul class:list={["grid", "gap-4", "list-none", "pl-0", "sm:grid-cols-2"]}>
+    <ul class:list={["grid list-none gap-4 pl-0", "sm:grid-cols-2"]}>
       {tutorials
         .map(({ data: tutorial }) => {
           if (tutorial.format === "YouTube")
             return (
-              <li class:list={"mt-0!"}>
+              <li class="mt-0!">
                 <article
                   class:list={[
-                    "relative",
-                    "mb-0!",
-                    "flex",
-                    "flex-col",
-                    "h-full",
-                    "rounded-lg",
-                    ["bg-gray-100", "dark:bg-gray-800"],
-                    "border",
-                    ["border-gray-200", "dark:border-gray-700"],
-                    "overflow-hidden",
-                    ["hover:border-gray-300", "dark:hover:border-gray-600"],
-                    "transition-colors",
+                    "relative mb-0! flex h-full flex-col overflow-hidden",
+                    "rounded-lg border border-gray-200 bg-gray-100 transition-colors",
+                    "hover:border-gray-300",
+                    "dark:border-gray-700 dark:bg-gray-800",
+                    "dark:hover:border-gray-600",
                   ]}
                 >
                   <img
                     src={`https://img.youtube.com/vi/${tutorial.youtubeId}/sddefault.jpg`}
                     class:list={[
+                      "aspect-video w-full object-cover",
                       "bg-gray-200",
-                      "aspect-video",
-                      "object-cover",
-                      "w-full",
                     ]}
                   />
 
-                  <div
-                    class:list={["flex", "flex-col", "gap-1", "p-3", "mt-0!"]}
-                  >
+                  <div class="mt-0! flex flex-col gap-1 p-3">
                     <h1 class="mt-0! text-base! leading-tight!">
                       <a
                         href={`https://www.youtube.com/watch?v=${tutorial.youtubeId}`}
                         class:list={[
-                          "no-underline",
-                          "static",
-                          "before:content-['']",
-                          "cursor-pointer",
-                          "before:cursor-pointer",
-                          "before:block",
-                          "before:absolute",
-                          "before:top-0",
-                          "before:left-0",
-                          "before:w-full",
-                          "before:h-full",
+                          "static cursor-pointer no-underline",
+                          "before:absolute before:top-0 before:left-0 before:block",
+                          "before:h-full before:w-full",
+                          "before:cursor-pointer before:content-['']",
                         ]}
                       >
                         {tutorial.title}
@@ -73,15 +55,16 @@ const { format } = Astro.props;
                     </h1>
                     <p
                       class:list={[
-                        "mt-0! inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs!",
-                        ["text-gray-800", "dark:text-gray-300"],
+                        "mt-0! inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5",
+                        "text-xs! text-gray-800",
+                        "dark:text-gray-300",
                       ]}
                     >
                       <span>{tutorial.author}</span>
                       <span
                         class:list={[
-                          "text-[0.75em]!",
-                          ["text-gray-600", "dark:text-gray-400"],
+                          "text-[0.75em]! text-gray-600",
+                          "dark:text-gray-400",
                         ]}
                       >
                         •
