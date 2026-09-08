@@ -2,47 +2,182 @@ import { clsx } from "clsx";
 import { clsx as clsxLite } from "clsx/lite";
 import { cn } from "cn";
 import { twMerge } from "tailwind-merge";
-import type * as CVA from "./";
-import { compose, cva, cx } from "./";
+import type * as CVA from "./config";
+import { compose, cva, cx, defineConfig as definePresetConfig } from "./";
 import { defineConfig } from "./config";
 import { getSchema } from "./utils";
 
-describe("clsx (the `cva` preset default)", () => {
-  test("infers the full ClassValue authoring surface", () => {
-    expectTypeOf(clsx).toExtend<CVA.CX>();
-    expectTypeOf<CVA.CXInput<typeof clsx>>().toEqualTypeOf<CVA.ClassValue>();
+describe("cva/config", () => {
+  test("accepts only callbacks that can receive cva's assembled calls", () => {
+    const mutableRest = (...inputs: string[]) => inputs.join(" ");
+    const readonlyRest = (...inputs: readonly string[]) => inputs.join(" ");
+    const requiredPrefix = (first: string, ...rest: string[]) =>
+      [first, ...rest].join(" ");
+    const finiteOptional = (first?: string, second?: string) =>
+      [first, second].join(" ");
+    const numbersOnly = (...inputs: number[]) => inputs.join(" ");
+    const symbolsOnly = (...inputs: symbol[]) => inputs.map(String).join(" ");
+
+    const strictCore = defineConfig({ cx: mutableRest });
+    const child = strictCore.cva({ base: "child" });
+    expect(strictCore.cva({ composes: child, base: "parent" })()).toBe(
+      "child parent",
+    );
+    expectTypeOf<CVA.CXInput<typeof readonlyRest>>().toEqualTypeOf<string>();
+    const { cva: readonlyCva } = definePresetConfig({ cx: readonlyRest });
+    expect(readonlyCva({ base: "preset" })()).toBe("preset");
+    expect(defineConfig({ cx: () => "constant" }).cva({})()).toBe("constant");
+
+    // @ts-expect-error — cva can make an empty call
+    defineConfig({ cx: (input: string) => input });
+    // @ts-expect-error — a required prefix also rejects an empty call
+    defineConfig({ cx: requiredPrefix });
+    // @ts-expect-error — finite optional parameters can truncate assembled values
+    defineConfig({ cx: finiteOptional });
+    // @ts-expect-error — composed component results are strings, not numbers
+    defineConfig({ cx: numbersOnly });
+    // @ts-expect-error — symbols cannot receive composed class-name strings
+    definePresetConfig({ cx: symbolsOnly });
+    // @ts-expect-error — a literal-only rest cannot receive composed strings
+    defineConfig({ cx: (...inputs: "only"[]) => inputs.join(" ") });
+    // @ts-expect-error — a never rest is not a zero-argument constant callback
+    definePresetConfig({ cx: (...inputs: never[]) => inputs.join(" ") });
+    defineConfig({
+      // @ts-expect-error — the optional prefix must also accept assembled strings
+      cx: (first?: number, ...rest: string[]) =>
+        first?.toFixed() ?? rest.join(" "),
+    });
+    const callbackUnion = null as unknown as
+      | ((...inputs: string[]) => string)
+      | ((first: string, ...rest: string[]) => string);
+    defineConfig({
+      // @ts-expect-error — every callback in a union must accept empty calls
+      cx: callbackUnion,
+    });
+    const differentGrammars = null as unknown as
+      | ((...inputs: CVA.ClassValue[]) => string)
+      | ((...inputs: string[]) => string);
+    defineConfig({
+      // @ts-expect-error — every callback must accept the inferred union grammar
+      cx: differentGrammars,
+    });
+    const presetUnion = definePresetConfig({ cx: differentGrammars });
+    expectTypeOf(presetUnion.cx).toEqualTypeOf<CVA.CX<string>>();
+    const presetUnionButton = presetUnion.cva({ base: "button" });
+    presetUnion.cva({
+      // @ts-expect-error — the preset narrows the union authoring grammar to strings
+      base: { unexpectedObject: true },
+    });
+    // @ts-expect-error — narrowed class props reject object syntax
+    presetUnionButton({ class: { unexpectedObject: true } });
+
+    readonlyCva({
+      // @ts-expect-error — object bases are outside a string-only grammar
+      base: { button: true },
+    });
+    const readonlyButton = readonlyCva({
+      base: "button",
+      variants: { tone: { info: "info" } },
+    });
+    // @ts-expect-error — object class props are outside a string-only grammar
+    readonlyButton({ class: { extra: true } });
+    // @ts-expect-error — object className props are outside a string-only grammar
+    readonlyButton({ className: { extra: true } });
+    readonlyCva({
+      variants: { tone: { info: "info" } },
+      compoundVariants: [
+        {
+          tone: "info",
+          // @ts-expect-error — compound class values use the configured grammar
+          class: { extra: true },
+        },
+      ],
+    });
+    readonlyCva({
+      variants: { tone: { info: "info" } },
+      compoundVariants: [
+        {
+          tone: "info",
+          // @ts-expect-error — compound className values use the configured grammar
+          className: { extra: true },
+        },
+      ],
+    });
   });
 
-  test.each<{ name: string; inputs: CVA.ClassValue[] }>([
-    {
-      name: "mixed strings, arrays, objects, and numbers",
-      inputs: ["foo", ["bar", { baz: true, qux: false }], 1],
-    },
-    {
-      name: "empty and boolean values",
-      inputs: [null, undefined, false, true, ""],
-    },
-    {
-      name: "deeply nested arrays",
-      inputs: [[[["deeply", ["nested"]]], { object: 1 }]],
-    },
-  ])("cx matches clsx for $name", ({ inputs }) => {
-    expect(cx(...inputs)).toBe(clsx(...inputs));
+  test("retains any, unknown, inline, and overloaded callback inference", () => {
+    const unknownRest = defineConfig({
+      cx: (...inputs: unknown[]) => inputs.map(String).join(" "),
+    });
+    const anyRest = defineConfig({
+      cx: (...inputs: any[]) => inputs.map(String).join(" "),
+    });
+    const inline = definePresetConfig({ cx: (...inputs) => inputs.join(" ") });
+    interface OverloadedCX {
+      (strings: TemplateStringsArray, ...values: string[]): string;
+      (...inputs: CVA.ClassValue[]): string;
+    }
+    const overloaded: OverloadedCX = cx;
+    const overloadedConfig = definePresetConfig({ cx: overloaded });
+
+    expectTypeOf<
+      CVA.CXInput<typeof unknownRest.cx>
+    >().toEqualTypeOf<CVA.ClassValue>();
+    expectTypeOf<
+      CVA.CXInput<typeof anyRest.cx>
+    >().toEqualTypeOf<CVA.ClassValue>();
+    expectTypeOf<
+      CVA.CXInput<typeof inline.cx>
+    >().toEqualTypeOf<CVA.ClassValue>();
+    expectTypeOf<
+      CVA.CXInput<typeof overloaded>
+    >().toEqualTypeOf<CVA.ClassValue>();
+    expect(overloadedConfig.cva({ base: ["button", { active: true }] })()).toBe(
+      "button active",
+    );
   });
 
-  test("components support clsx's full authoring grammar", () => {
-    const badge = cva({
-      base: ["badge", { "badge--raised": true, "badge--flat": false }],
-      variants: {
-        tone: { info: { "bg-blue-500": true }, warn: "bg-yellow-500" },
-      },
-      defaultVariants: { tone: "info" },
+  test("requires a cx concatenator", () => {
+    // @ts-expect-error — core's `defineConfig` has no default concatenator
+    defineConfig({});
+  });
+
+  test("forwards inputs to the concatenator and wraps with hooks", () => {
+    const join: CVA.CX = (...inputs) =>
+      inputs.filter((input) => typeof input === "string" && input).join("|");
+
+    const { cva: coreCva, cx: coreCx } = defineConfig({
+      cx: join,
+      hooks: { onComplete: (className) => `(${className})` },
     });
 
-    expect(badge()).toBe("badge badge--raised bg-blue-500");
-    expect(badge({ tone: "warn", class: ["extra", { on: true }] })).toBe(
-      "badge badge--raised bg-yellow-500 extra on",
+    expect(coreCx("a", "b")).toBe("(a|b)");
+
+    const baseOnly = coreCva({ base: "base" });
+    expect(baseOnly({ class: "extra" })).toBe("(base|extra)");
+    expect(baseOnly({ className: "last" })).toBe("(base|last)");
+    expect(coreCva({ composes: baseOnly, base: "parent" })()).toBe(
+      "((base)|parent)",
     );
+
+    const button = coreCva({
+      base: "btn",
+      variants: { size: { sm: "btn-sm" } },
+    });
+    expect(button({ size: "sm" })).toBe("(btn|btn-sm)");
+  });
+
+  test("the (deprecated) cx:done hook still wins over onComplete", () => {
+    const { cx: coreCx } = defineConfig({
+      cx: (...inputs) =>
+        inputs.filter((input) => typeof input === "string").join(" "),
+      hooks: {
+        "cx:done": (className) => `done:${className}`,
+        onComplete: (className) => `complete:${className}`,
+      },
+    });
+
+    expect(coreCx("foo")).toBe("done:foo");
   });
 });
 

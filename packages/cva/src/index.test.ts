@@ -1,7 +1,46 @@
+import { clsx } from "clsx";
 import type * as CVA from "./";
 import { compose, cva, cx, defineConfig, getSchema } from "./";
-import { defineConfig as defineCoreConfig } from "./config";
 import { getSchema as getSchemaUtils } from "./utils";
+
+describe("clsx (the `cva` preset default)", () => {
+  test("infers the full ClassValue authoring surface", () => {
+    expectTypeOf(clsx).toExtend<CVA.CX>();
+    expectTypeOf<CVA.CXInput<typeof clsx>>().toEqualTypeOf<CVA.ClassValue>();
+  });
+
+  test.each<{ name: string; inputs: CVA.ClassValue[] }>([
+    {
+      name: "mixed strings, arrays, objects, and numbers",
+      inputs: ["foo", ["bar", { baz: true, qux: false }], 1],
+    },
+    {
+      name: "empty and boolean values",
+      inputs: [null, undefined, false, true, ""],
+    },
+    {
+      name: "deeply nested arrays",
+      inputs: [[[["deeply", ["nested"]]], { object: 1 }]],
+    },
+  ])("cx matches clsx for $name", ({ inputs }) => {
+    expect(cx(...inputs)).toBe(clsx(...inputs));
+  });
+
+  test("components support clsx's full authoring grammar", () => {
+    const badge = cva({
+      base: ["badge", { "badge--raised": true, "badge--flat": false }],
+      variants: {
+        tone: { info: { "bg-blue-500": true }, warn: "bg-yellow-500" },
+      },
+      defaultVariants: { tone: "info" },
+    });
+
+    expect(badge()).toBe("badge badge--raised bg-blue-500");
+    expect(badge({ tone: "warn", class: ["extra", { on: true }] })).toBe(
+      "badge badge--raised bg-yellow-500 extra on",
+    );
+  });
+});
 
 describe("cx", () => {
   test.each<[CVA.ClassValue, string]>([
@@ -663,237 +702,6 @@ describe("getSchema", () => {
     });
     expectTypeOf(getSchemaUtils).toEqualTypeOf<CVA.GetSchema>();
   });
-
-  test("should return the schema for a component", () => {
-    const buttonWithoutBaseWithDefaultsString = cva({
-      base: "button font-semibold border rounded",
-      variants: {
-        intent: {
-          unset: null,
-          primary:
-            "button--primary bg-blue-500 text-white border-transparent hover:bg-blue-600",
-          secondary:
-            "button--secondary bg-white text-gray-800 border-gray-400 hover:bg-gray-100",
-          warning:
-            "button--warning bg-yellow-500 border-transparent hover:bg-yellow-600",
-          danger: [
-            "button--danger",
-            [
-              1 && "bg-red-500",
-              { baz: false, bat: null },
-              ["text-white", ["border-transparent"]],
-            ],
-            "hover:bg-red-600",
-          ],
-        },
-        empty: {},
-        disabled: {
-          true: "button--disabled opacity-050 cursor-not-allowed",
-          false: "button--enabled cursor-pointer",
-        },
-        size: {
-          small: "button--small text-sm py-1 px-2",
-          medium: "button--medium text-base py-2 px-4",
-          large: "button--large text-lg py-2.5 px-4",
-        },
-        m: {
-          0: "m-0",
-          1: "m-1",
-        },
-      },
-      compoundVariants: [
-        {
-          intent: "primary",
-          size: "medium",
-          class: "button--primary-medium uppercase",
-        },
-        {
-          intent: "warning",
-          disabled: false,
-          class: "button--warning-enabled text-gray-800",
-        },
-        {
-          intent: "warning",
-          disabled: true,
-          class: [
-            "button--warning-disabled",
-            [1 && "text-black", { baz: false, bat: null }],
-          ],
-        },
-        {
-          intent: ["warning", "danger"],
-          class: "button--warning-danger !border-red-500",
-        },
-        {
-          intent: ["warning", "danger"],
-          size: "medium",
-          class: "button--warning-danger-medium",
-        },
-      ],
-      defaultVariants: {
-        disabled: false,
-        intent: "primary",
-        size: "medium",
-      },
-    });
-
-    const schema = getSchema(buttonWithoutBaseWithDefaultsString);
-
-    expect(schema).toStrictEqual({
-      disabled: {
-        values: [true, false],
-        defaultValue: false,
-      },
-      intent: {
-        values: ["unset", "primary", "secondary", "warning", "danger"],
-        defaultValue: "primary",
-      },
-      m: {
-        values: [0, 1],
-      },
-      size: {
-        values: ["small", "medium", "large"],
-        defaultValue: "medium",
-      },
-    });
-
-    expectTypeOf(schema).toEqualTypeOf<{
-      intent: {
-        values: readonly (
-          | "warning"
-          | "unset"
-          | "primary"
-          | "secondary"
-          | "danger"
-        )[];
-        defaultValue: "primary";
-      };
-      disabled: {
-        values: readonly boolean[];
-        defaultValue: false;
-      };
-      size: {
-        values: readonly ("small" | "medium" | "large")[];
-        defaultValue: "medium";
-      };
-      m: {
-        values: readonly (0 | 1)[];
-      };
-    }>();
-  });
-
-  test("should return the schema for a composed component", () => {
-    const box = cva({
-      variants: {
-        shadow: {
-          sm: "shadow-sm",
-          md: "shadow-md",
-        },
-      },
-      defaultVariants: {
-        shadow: "sm",
-      },
-    });
-
-    const stack = cva({
-      variants: {
-        gap: {
-          unset: null,
-          1: "gap-1",
-          2: "gap-2",
-          3: "gap-3",
-        },
-      },
-      defaultVariants: {
-        gap: "unset",
-      },
-    });
-
-    const single = cva({ composes: box });
-    expect(getSchema(single)).toStrictEqual({
-      shadow: { values: ["sm", "md"], defaultValue: "sm" },
-    });
-
-    const card = cva({ composes: [box, stack] });
-    const schema = getSchema(card);
-
-    expect(schema).toStrictEqual({
-      shadow: { values: ["sm", "md"], defaultValue: "sm" },
-      gap: { values: [1, 2, 3, "unset"], defaultValue: "unset" },
-    });
-
-    expectTypeOf(schema).toEqualTypeOf<{
-      shadow: { values: readonly ("sm" | "md")[]; defaultValue: "sm" };
-      gap: { values: readonly ("unset" | 1 | 2 | 3)[]; defaultValue: "unset" };
-    }>();
-  });
-
-  test("should reject components not created by cva()", () => {
-    const box = cva({
-      variants: { shadow: { sm: "shadow-sm" } },
-    });
-    const stack = cva({
-      variants: { gap: { 1: "gap-1" } },
-    });
-    const composed = compose(box, stack);
-    const plainFunction = () => "";
-
-    // @ts-expect-error — `compose()`'s result has no `.config`, so it can't
-    // be introspected by `getSchema`. Use the `composes` property instead.
-    getSchema(composed);
-    // @ts-expect-error: not a cva()-created component at all
-    expect(getSchema(plainFunction)).toStrictEqual({});
-  });
-
-  test("should keep a defaulted variant that has no values", () => {
-    const component = cva({
-      variants: { size: {} },
-      // @ts-expect-error: an empty variant has no values to default to
-      defaultVariants: { size: "md" },
-    });
-
-    // @ts-expect-error: rejected at the type level for the same reason,
-    // but the runtime schema still reports the default.
-    expect(getSchema(component)).toStrictEqual({
-      size: { defaultValue: "md" },
-    });
-  });
-
-  test("should drop a variant with neither values nor a default", () => {
-    const component = cva({
-      variants: { size: {}, intent: { primary: "button--primary" } },
-    });
-
-    expect(getSchema(component)).toStrictEqual({
-      intent: { values: ["primary"] },
-    });
-  });
-
-  test("should normalize numeric variant keys, including negatives", () => {
-    const component = cva({
-      variants: {
-        offset: {
-          [-1]: "-mt-1",
-          0: "mt-0",
-          1: "mt-1",
-        },
-      },
-      defaultVariants: { offset: -1 },
-    });
-
-    const schema = getSchema(component);
-
-    // Runtime values match the variant prop types (`-1 | 0 | 1`), not the
-    // stringified object keys they were read from. Order follows `Object.keys`:
-    // array-index keys (`0`, `1`) ascending first, then other keys (`-1`) by
-    // insertion order.
-    expect(schema).toStrictEqual({
-      offset: { values: [0, 1, -1], defaultValue: -1 },
-    });
-    expectTypeOf(schema).toEqualTypeOf<{
-      offset: { values: readonly (0 | 1 | -1)[]; defaultValue: -1 };
-    }>();
-  });
 });
 
 describe("cva", () => {
@@ -1337,182 +1145,6 @@ describe("defineConfig", () => {
 
       expectTypeOf<CVA.CXInput<OverloadedCX>>().toEqualTypeOf<CVA.ClassValue>();
     });
-  });
-});
-
-describe("cva/config", () => {
-  test("accepts only callbacks that can receive cva's assembled calls", () => {
-    const mutableRest = (...inputs: string[]) => inputs.join(" ");
-    const readonlyRest = (...inputs: readonly string[]) => inputs.join(" ");
-    const requiredPrefix = (first: string, ...rest: string[]) =>
-      [first, ...rest].join(" ");
-    const finiteOptional = (first?: string, second?: string) =>
-      [first, second].join(" ");
-    const numbersOnly = (...inputs: number[]) => inputs.join(" ");
-    const symbolsOnly = (...inputs: symbol[]) => inputs.map(String).join(" ");
-
-    const strictCore = defineCoreConfig({ cx: mutableRest });
-    const child = strictCore.cva({ base: "child" });
-    expect(strictCore.cva({ composes: child, base: "parent" })()).toBe(
-      "child parent",
-    );
-    expectTypeOf<CVA.CXInput<typeof readonlyRest>>().toEqualTypeOf<string>();
-    const { cva: readonlyCva } = defineConfig({ cx: readonlyRest });
-    expect(readonlyCva({ base: "preset" })()).toBe("preset");
-    expect(defineCoreConfig({ cx: () => "constant" }).cva({})()).toBe(
-      "constant",
-    );
-
-    // @ts-expect-error — cva can make an empty call
-    defineCoreConfig({ cx: (input: string) => input });
-    // @ts-expect-error — a required prefix also rejects an empty call
-    defineCoreConfig({ cx: requiredPrefix });
-    // @ts-expect-error — finite optional parameters can truncate assembled values
-    defineCoreConfig({ cx: finiteOptional });
-    // @ts-expect-error — composed component results are strings, not numbers
-    defineCoreConfig({ cx: numbersOnly });
-    // @ts-expect-error — symbols cannot receive composed class-name strings
-    defineConfig({ cx: symbolsOnly });
-    // @ts-expect-error — a literal-only rest cannot receive composed strings
-    defineCoreConfig({ cx: (...inputs: "only"[]) => inputs.join(" ") });
-    // @ts-expect-error — a never rest is not a zero-argument constant callback
-    defineConfig({ cx: (...inputs: never[]) => inputs.join(" ") });
-    defineCoreConfig({
-      // @ts-expect-error — the optional prefix must also accept assembled strings
-      cx: (first?: number, ...rest: string[]) =>
-        first?.toFixed() ?? rest.join(" "),
-    });
-    const callbackUnion = null as unknown as
-      | ((...inputs: string[]) => string)
-      | ((first: string, ...rest: string[]) => string);
-    defineCoreConfig({
-      // @ts-expect-error — every callback in a union must accept empty calls
-      cx: callbackUnion,
-    });
-    const differentGrammars = null as unknown as
-      | ((...inputs: CVA.ClassValue[]) => string)
-      | ((...inputs: string[]) => string);
-    defineCoreConfig({
-      // @ts-expect-error — every callback must accept the inferred union grammar
-      cx: differentGrammars,
-    });
-    const presetUnion = defineConfig({ cx: differentGrammars });
-    expectTypeOf(presetUnion.cx).toEqualTypeOf<CVA.CX<string>>();
-    const presetUnionButton = presetUnion.cva({ base: "button" });
-    presetUnion.cva({
-      // @ts-expect-error — the preset narrows the union authoring grammar to strings
-      base: { unexpectedObject: true },
-    });
-    // @ts-expect-error — narrowed class props reject object syntax
-    presetUnionButton({ class: { unexpectedObject: true } });
-
-    readonlyCva({
-      // @ts-expect-error — object bases are outside a string-only grammar
-      base: { button: true },
-    });
-    const readonlyButton = readonlyCva({
-      base: "button",
-      variants: { tone: { info: "info" } },
-    });
-    // @ts-expect-error — object class props are outside a string-only grammar
-    readonlyButton({ class: { extra: true } });
-    // @ts-expect-error — object className props are outside a string-only grammar
-    readonlyButton({ className: { extra: true } });
-    readonlyCva({
-      variants: { tone: { info: "info" } },
-      compoundVariants: [
-        {
-          tone: "info",
-          // @ts-expect-error — compound class values use the configured grammar
-          class: { extra: true },
-        },
-      ],
-    });
-    readonlyCva({
-      variants: { tone: { info: "info" } },
-      compoundVariants: [
-        {
-          tone: "info",
-          // @ts-expect-error — compound className values use the configured grammar
-          className: { extra: true },
-        },
-      ],
-    });
-  });
-
-  test("retains any, unknown, inline, and overloaded callback inference", () => {
-    const unknownRest = defineCoreConfig({
-      cx: (...inputs: unknown[]) => inputs.map(String).join(" "),
-    });
-    const anyRest = defineCoreConfig({
-      cx: (...inputs: any[]) => inputs.map(String).join(" "),
-    });
-    const inline = defineConfig({ cx: (...inputs) => inputs.join(" ") });
-    interface OverloadedCX {
-      (strings: TemplateStringsArray, ...values: string[]): string;
-      (...inputs: CVA.ClassValue[]): string;
-    }
-    const overloaded: OverloadedCX = cx;
-    const overloadedConfig = defineConfig({ cx: overloaded });
-
-    expectTypeOf<
-      CVA.CXInput<typeof unknownRest.cx>
-    >().toEqualTypeOf<CVA.ClassValue>();
-    expectTypeOf<
-      CVA.CXInput<typeof anyRest.cx>
-    >().toEqualTypeOf<CVA.ClassValue>();
-    expectTypeOf<
-      CVA.CXInput<typeof inline.cx>
-    >().toEqualTypeOf<CVA.ClassValue>();
-    expectTypeOf<
-      CVA.CXInput<typeof overloaded>
-    >().toEqualTypeOf<CVA.ClassValue>();
-    expect(overloadedConfig.cva({ base: ["button", { active: true }] })()).toBe(
-      "button active",
-    );
-  });
-
-  test("requires a cx concatenator", () => {
-    // @ts-expect-error — core's `defineConfig` has no default concatenator
-    defineCoreConfig({});
-  });
-
-  test("forwards inputs to the concatenator and wraps with hooks", () => {
-    const join: CVA.CX = (...inputs) =>
-      inputs.filter((input) => typeof input === "string" && input).join("|");
-
-    const { cva: coreCva, cx: coreCx } = defineCoreConfig({
-      cx: join,
-      hooks: { onComplete: (className) => `(${className})` },
-    });
-
-    expect(coreCx("a", "b")).toBe("(a|b)");
-
-    const baseOnly = coreCva({ base: "base" });
-    expect(baseOnly({ class: "extra" })).toBe("(base|extra)");
-    expect(baseOnly({ className: "last" })).toBe("(base|last)");
-    expect(coreCva({ composes: baseOnly, base: "parent" })()).toBe(
-      "((base)|parent)",
-    );
-
-    const button = coreCva({
-      base: "btn",
-      variants: { size: { sm: "btn-sm" } },
-    });
-    expect(button({ size: "sm" })).toBe("(btn|btn-sm)");
-  });
-
-  test("the (deprecated) cx:done hook still wins over onComplete", () => {
-    const { cx: coreCx } = defineCoreConfig({
-      cx: (...inputs) =>
-        inputs.filter((input) => typeof input === "string").join(" "),
-      hooks: {
-        "cx:done": (className) => `done:${className}`,
-        onComplete: (className) => `complete:${className}`,
-      },
-    });
-
-    expect(coreCx("foo")).toBe("done:foo");
   });
 });
 
@@ -2505,27 +2137,6 @@ describe("cva type contracts", () => {
     cva({ variants: { tone: { quiet: "quiet", loud: "loud" } }, compoundVariants: [{ tone: "quiet", class: "compound", className: "compound" }] });
     // @ts-expect-error — beta cva requires a configuration object
     cva();
-  });
-
-  test("keeps canonical and noncanonical schema keys distinct", () => {
-    const component = cva({
-      variants: {
-        offset: { 1: "one", "01": "leading-zero", " 1": "space", "": "empty" },
-      },
-      defaultVariants: { offset: 1 },
-    });
-    const schema = getSchema(component);
-
-    // Integer keys enumerate first, then noncanonical string keys in insertion order.
-    expect(schema).toStrictEqual({
-      offset: { values: [1, "01", " 1", ""], defaultValue: 1 },
-    });
-    expectTypeOf(schema).toEqualTypeOf<{
-      offset: {
-        values: readonly (1 | "01" | " 1" | "")[];
-        defaultValue: 1;
-      };
-    }>();
   });
 
   test("keeps nested readonly composition props exact", () => {
