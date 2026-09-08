@@ -22,15 +22,13 @@ import { cva } from "cva";
 const button = cva({
   base: "rounded border font-semibold",
   // **or**
-  // base: ["font-semibold", "border", "rounded"],
+  // base: ["font-semibold", "border rounded"],
   variants: {
     intent: {
       primary: "border-transparent bg-blue-500 text-white hover:bg-blue-600",
       // **or**
       // primary: [
-      //   "bg-blue-500",
-      //   "text-white",
-      //   "border-transparent",
+      //   "bg-blue-500 text-white border-transparent",
       //   "hover:bg-blue-600",
       // ],
       secondary: "border-gray-400 bg-white text-gray-800 hover:bg-gray-100",
