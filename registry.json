@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "cva",
+  "homepage": "https://cva.style",
+  "items": [
+    {
+      "name": "cn",
+      "type": "registry:item",
+      "title": "cva with cn",
+      "description": "Configure cva with cn to join conditional classes and resolve Tailwind CSS conflicts.",
+      "dependencies": ["cva@beta", "cn"],
+      "files": [
+        {
+          "path": "examples/beta/react-with-cn/src/cva.config.ts",
+          "type": "registry:file",
+          "target": "~/cva.config.ts"
+        }
+      ]
+    }
+  ]
+}
