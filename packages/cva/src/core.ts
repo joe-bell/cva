@@ -175,9 +175,10 @@ type ComponentProps<Component extends (...args: any) => any> = Omit<
 // it, but `VariantProps` and `getSchema` omit it from the public surface.
 type InternalVariantKey = `_${string}`;
 
+// One `Omit`: nesting it inside `ComponentProps` builds the props twice.
 export type VariantProps<Component extends (...args: any) => any> = Omit<
-  ComponentProps<Component>,
-  InternalVariantKey
+  OmitUndefined<Parameters<Component>[0]>,
+  "class" | "className" | InternalVariantKey
 >;
 
 /* compose
@@ -235,6 +236,19 @@ export type CVAVariantShape = Record<string, Record<string, ClassValue>>;
 type CVAVariantSchema<V> = {
   [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
 };
+// A single value or a list per variant. One mapped type, not a union: a
+// two-arm target doubles what TypeScript tries for every entry.
+type CVACompoundVariantSchema<V> = {
+  [Variant in keyof V]?:
+    | StringToBoolean<keyof V[Variant]>
+    | StringToBoolean<keyof V[Variant]>[]
+    | undefined;
+};
+// Named so TypeScript caches one instantiation per `(V, T)`.
+type CVACompoundVariants<
+  V,
+  T extends ClassValue,
+> = (CVACompoundVariantSchema<V> & CVAClassProp<T>)[];
 type CVAClassProp<T extends ClassValue = ClassValue> =
   | {
       class?: T;
@@ -269,22 +283,17 @@ type CVAComponentConfig<
   // The gate checks variant values against the configured concatenator's
   // input type, so e.g. object syntax fails here (on the `variants` key)
   // under a concatenator that doesn't accept objects.
+  //
+  // `__proto__` reads as a prototype write, so the gate rejects the name.
 } & (Variants extends Record<string, Record<string, T>>
-    ? CVAComponentConfigBase<T> & { variants?: Variants }
+    ? CVAComponentConfigBase<T> & {
+        variants?: Variants & { __proto__?: never };
+      }
     : CVAComponentConfigBase<T> & { variants?: never }) &
   ([keyof Merged] extends [never]
     ? { compoundVariants?: never; defaultVariants?: never }
     : {
-        compoundVariants?: ((
-          | CVAVariantSchema<Uninferred<Merged>>
-          | {
-              [Variant in keyof Uninferred<Merged>]?:
-                | StringToBoolean<keyof Uninferred<Merged>[Variant]>
-                | StringToBoolean<keyof Uninferred<Merged>[Variant]>[]
-                | undefined;
-            }
-        ) &
-          CVAClassProp<T>)[];
+        compoundVariants?: CVACompoundVariants<Uninferred<Merged>, T>;
         defaultVariants?: CVAVariantSchema<Uninferred<Merged>>;
       });
 
@@ -333,6 +342,18 @@ type CVADefaultVariants<Config> = Config extends { defaultVariants?: infer D }
   ? D
   : {};
 
+// Nothing composed is the common case: answer with `Variants` and skip the
+// merge machinery.
+type AllVariants<
+  Variants,
+  ComposedSingle extends CVAComponentShape | undefined,
+  ComposedList extends readonly CVAComponentShape[],
+> = [ComposedSingle] extends [undefined]
+  ? [ComposedList] extends [readonly []]
+    ? Variants
+    : Variants & MergedVariants<ComposedList>
+  : Variants & MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>;
+
 export interface CVA<T extends ClassValue = ClassValue> {
   <
     _ extends InternalOnlyWarning,
@@ -347,12 +368,11 @@ export interface CVA<T extends ClassValue = ClassValue> {
       ComposedSingle,
       ComposedList,
       T,
-      Variants & MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>
+      AllVariants<Variants, ComposedSingle, ComposedList>
     >,
   ): CVAComponent<
     Omit<Config, "defaultVariants"> & {
-      variants: Variants &
-        MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>;
+      variants: AllVariants<Variants, ComposedSingle, ComposedList>;
       // Local `defaultVariants` win over composed ones on key conflicts,
       // matching the runtime spread order. A plain intersection would collapse
       // a conflicting key's value to `never` (e.g. `"sm" & "lg"`), which then
@@ -363,7 +383,7 @@ export interface CVA<T extends ClassValue = ClassValue> {
       > &
         CVADefaultVariants<Config>;
     },
-    Variants & MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>,
+    AllVariants<Variants, ComposedSingle, ComposedList>,
     T
   >;
 }
@@ -422,21 +442,244 @@ export interface DefineConfig {
 const falsyToString = <T extends unknown>(value: T) =>
   typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
 
-// Shared across every non-composed call, rather than allocating a fresh `[]`
-// per call — spreading an empty array contributes no arguments.
-const emptyClassNames: string[] = [];
+// Absent objects normalise to this: `x?.y` costs a temporary at ES2019.
+const empty: Record<string, any> = {};
+
+// The table for a component that has none. Never written to.
+const noValues: readonly never[] = [];
+
+const hasOwn = Object.prototype.hasOwnProperty;
+
+const ownEnumerable = Object.prototype.propertyIsEnumerable;
+
+// The caller's own defined props, minus the class props, over `seed`. An
+// explicit `undefined` keeps the default; an inherited getter is never read.
+const definedProps = (
+  props: Record<string, unknown>,
+  seed?: Record<string, unknown>,
+): Record<string, unknown> => {
+  let merged: Record<string, unknown> = { ...seed };
+  for (const key in props) {
+    if (hasOwn.call(props, key)) {
+      const value = props[key];
+      if (key !== "class" && key !== "className" && value !== undefined) {
+        // A computed key creates a data property; `merged.__proto__ =` would
+        // hit `Object.prototype`'s setter and reparent the object.
+        if (key === "__proto__") merged = { ...merged, [key]: value };
+        else merged[key] = value;
+      }
+    }
+  }
+  return merged;
+};
+
+const pushDefined = (out: ClassValue[], value: ClassValue) => {
+  if (value !== undefined) out.push(value);
+};
+
+const pushClassProps = (
+  out: ClassValue[],
+  source: { class?: ClassValue; className?: ClassValue },
+) => {
+  pushDefined(out, source.class);
+  pushDefined(out, source.className);
+  return out;
+};
+
+// A compound's selectors live in the shared arrays, bounded by start and end.
+// `mask` has a bit per key it selects on: a call whose supplied keys miss it
+// reuses `matchesDefaults`, and a hit only means the selectors are compared,
+// since keys past the 31st share bits.
+interface PreparedCompound {
+  start: number;
+  end: number;
+  mask: number;
+  matchesDefaults: boolean;
+  class: ClassValue;
+  className: ClassValue;
+}
+
+interface MergedConfig {
+  variants: CVAVariantShape;
+  defaults: Record<string, unknown>;
+}
+
+// One source folded into the accumulator, so a later source wins.
+const mergeInto = (
+  merged: MergedConfig,
+  source: Record<string, any> | undefined,
+) => {
+  const variants: CVAVariantShape | undefined = source && source.variants;
+  for (const key in variants) {
+    if (hasOwn.call(variants, key)) {
+      const values = { ...merged.variants[key], ...variants[key] };
+      if (key === "__proto__") {
+        merged.variants = { ...merged.variants, [key]: values };
+      } else {
+        merged.variants[key] = values;
+      }
+    }
+  }
+  merged.defaults = {
+    ...merged.defaults,
+    ...(source && source.defaultVariants),
+  };
+};
+
+const mergeConfig = (
+  children: readonly CVAComponentShape[],
+  definition: Record<string, any>,
+) => {
+  const merged: MergedConfig = { variants: {}, defaults: {} };
+  for (let i = 0; i < children.length; i++) {
+    mergeInto(merged, children[i].config);
+  }
+  mergeInto(merged, definition);
+  return merged;
+};
+
+const prepareVariants = (
+  localVariants: CVAVariantShape | undefined,
+  defaults: Record<string, unknown>,
+) => {
+  const names: string[] = [];
+  const maps: Record<string, ClassValue>[] = [];
+  for (const key in localVariants) {
+    if (hasOwn.call(localVariants, key)) {
+      names.push(key);
+      maps.push(localVariants[key]);
+    }
+  }
+  // No variants, no retained tables; the rest are copied to their exact size.
+  if (!names.length) {
+    return {
+      variantKeys: noValues,
+      variantMaps: noValues,
+      defaultClasses: noValues,
+    };
+  }
+  return {
+    variantKeys: names.slice(),
+    variantMaps: maps.slice(),
+    defaultClasses: names.map(
+      (key, i) => maps[i][falsyToString(defaults[key]) as string],
+    ),
+  };
+};
+
+const compoundMatches = (
+  compound: PreparedCompound,
+  indexes: readonly number[],
+  selectors: readonly unknown[],
+  values: readonly unknown[],
+) => {
+  for (let i = compound.start; i < compound.end; i++) {
+    const selector = selectors[i];
+    const value = values[indexes[i]];
+    if (
+      Array.isArray(selector) ? !selector.includes(value) : value !== selector
+    ) {
+      return false;
+    }
+  }
+  return true;
+};
+
+// A compound may select on a name no variant declares: the key list ends here.
+const prepareCompounds = (
+  compoundVariants: readonly (CVAClassProp & Record<string, unknown>)[],
+  variantKeys: readonly string[],
+  defaults: Record<string, unknown>,
+) => {
+  const keys = variantKeys.slice();
+  const compounds: PreparedCompound[] = [];
+  const indexes: number[] = [];
+  const selectors: unknown[] = [];
+  for (let i = 0; i < compoundVariants.length; i++) {
+    const compound = compoundVariants[i];
+    const start = indexes.length;
+    let mask = 0;
+    for (const key in compound) {
+      if (hasOwn.call(compound, key)) {
+        const selector = compound[key];
+        if (key !== "class" && key !== "className") {
+          let index = keys.indexOf(key);
+          if (index === -1) index = keys.push(key) - 1;
+          indexes.push(index);
+          selectors.push(selector);
+          mask |= 1 << index;
+        }
+      }
+    }
+    compounds.push({
+      start,
+      end: indexes.length,
+      mask,
+      matchesDefaults: false,
+      class: compound.class,
+      className: compound.className,
+    });
+  }
+  const defaultValues = keys.map((key) => defaults[key]);
+  for (let i = 0; i < compounds.length; i++) {
+    compounds[i].matchesDefaults = compoundMatches(
+      compounds[i],
+      indexes,
+      selectors,
+      defaultValues,
+    );
+  }
+  return {
+    keys: keys.slice(),
+    defaultValues,
+    compounds: compounds.slice(),
+    indexes: indexes.slice(),
+    selectors: selectors.slice(),
+  };
+};
+
+// The body of a component with no prop names to read and no children. At
+// module scope, so it captures three values rather than all of `cva`'s.
+const createPlainComponent =
+  (
+    cxArray: (inputs: readonly ClassValue[]) => string,
+    defaultOut: readonly ClassValue[],
+    singleDefaultClass: ClassValue,
+  ) =>
+  (input?: Record<string, unknown>) => {
+    const props: Record<string, unknown> = input || empty;
+    const classValue = props.class as ClassValue;
+    const classNameValue = props.className as ClassValue;
+    // Rebuilding the list as a literal measures faster than sharing one.
+    if (classValue === undefined && singleDefaultClass !== undefined) {
+      return cxArray(
+        classNameValue === undefined
+          ? [singleDefaultClass]
+          : [singleDefaultClass, classNameValue],
+      );
+    }
+    const out = defaultOut.slice();
+    pushDefined(out, classValue);
+    pushDefined(out, classNameValue);
+    return cxArray(out);
+  };
 
 // Cast to `DefineConfig`: runtime uses `ClassValue`; `CXInput` is type-only.
 export const defineConfig = ((options: DefineConfigOptions) => {
-  const cx: CX = (...inputs) => {
-    // Drop absent values so a narrower concatenator never receives `undefined`.
-    const className = options.cx(
-      ...inputs.filter((input) => input !== undefined),
-    );
-
-    const hook = options.hooks?.["cx:done"] ?? options.hooks?.onComplete;
+  // `Reflect.apply` hands over the assembled values as separate arguments and
+  // keeps `options` as the receiver, whatever `cx`'s own `call`/`apply` say.
+  const cxArray = (inputs: readonly ClassValue[]): string => {
+    const className: string = Reflect.apply(options.cx, options, inputs);
+    const hooks = options.hooks || empty;
+    // `??` semantics, spelled out because it downlevels to a temporary.
+    let hook: ((className: string) => string) | undefined = hooks["cx:done"];
+    if (hook == null) hook = hooks.onComplete;
     return hook ? hook(className) : className;
   };
+
+  const cx: CX = (...inputs) =>
+    // Drop absent values so a narrower concatenator never receives `undefined`.
+    cxArray(inputs.filter((input) => input !== undefined));
 
   const cva = (<
     _ extends InternalOnlyWarning,
@@ -447,189 +690,202 @@ export const defineConfig = ((options: DefineConfigOptions) => {
   >(
     config: CVAComponentConfig<Config, Variants, ComposedSingle, ComposedList>,
   ) => {
-    const components = (
-      config?.composes == null
-        ? []
-        : Array.isArray(config.composes)
-          ? config.composes
-          : [config.composes]
-    ) as CVAComponentShape[];
-    // A one-level-deep merge per variant key, so overlapping variants (e.g.
-    // multiple composed components declaring `style`) union their values
-    // instead of the last component's values silently replacing the rest.
-    const mergeVariants = (
-      acc: CVAVariantShape,
-      variants: CVAVariantShape | undefined,
-    ): CVAVariantShape => {
-      if (!variants) return acc;
-      const merged: CVAVariantShape = { ...acc };
-      for (const key of Object.keys(variants)) {
-        merged[key] = { ...merged[key], ...variants[key] };
-      }
-      return merged;
-    };
-    const mergedVariantsFromComposed = components.reduce(
-      (acc: CVAVariantShape, component: CVAComponentShape) =>
-        mergeVariants(acc, component.config?.variants),
-      {} as CVAVariantShape,
+    // The configuration is read here, when the component is created; a call
+    // reads only the caller's props and `options`. By contract it is
+    // immutable afterwards: a change means a new component.
+    const definition: Record<string, any> = config || empty;
+    const composes = definition.composes;
+    const base: ClassValue = definition.base;
+    // A copy, so the merge and every call see the same children.
+    const children: readonly CVAComponentShape[] =
+      composes == null
+        ? noValues
+        : Array.isArray(composes)
+          ? composes.slice()
+          : [composes];
+    const childCount = children.length;
+
+    const { variants: mergedVariants, defaults } = mergeConfig(
+      children,
+      definition,
     );
-    const mergedVariants = mergeVariants(
-      mergedVariantsFromComposed,
-      config?.variants as CVAVariantShape | undefined,
+    const { variantKeys, variantMaps, defaultClasses } = prepareVariants(
+      definition.variants,
+      defaults,
     );
-    const mergedDefaultVariantsFromComposed = components.reduce(
-      (acc: Record<string, unknown>, component: CVAComponentShape) => ({
-        ...acc,
-        ...component.config?.defaultVariants,
-      }),
-      {} as Record<string, unknown>,
-    );
-    // Local `defaultVariants` win over composed ones here too (last spread).
-    const mergedDefaultVariants: Record<string, unknown> = {
-      ...mergedDefaultVariantsFromComposed,
-      ...config?.defaultVariants,
-    };
+    const variantCount = variantKeys.length;
+    const prepared = definition.compoundVariants
+      ? prepareCompounds(definition.compoundVariants, variantKeys, defaults)
+      : undefined;
+    // Every prop name a call reads: the variant names first, so one index
+    // addresses a value map and a default class too, then compound-only names.
+    const keys: readonly string[] = prepared ? prepared.keys : variantKeys;
+    const keyCount = keys.length;
+    const compounds: readonly PreparedCompound[] = prepared
+      ? prepared.compounds
+      : noValues;
+    const compoundCount = compounds.length;
+    const indexes: readonly number[] = prepared ? prepared.indexes : noValues;
+    const selectors: readonly unknown[] = prepared
+      ? prepared.selectors
+      : noValues;
+    const defaultValues: readonly unknown[] = prepared
+      ? prepared.defaultValues
+      : noValues;
 
-    const component: CVAComponent<typeof config, typeof config.variants> = (
-      props,
-    ) => {
-      // Strip `class`/`className` and explicit `undefined` from props once,
-      // reused for both the composed-component calls and compound-variant
-      // matching. An explicit `{ variant: undefined }` is dropped so it falls
-      // back to the (possibly composed) default, matching variant resolution
-      // below. Only built when something consumes it — a plain component with
-      // no `composes` and no `compoundVariants` skips the work entirely.
-      const definedPropsWithoutClass =
-        components.length || config?.compoundVariants
-          ? Object.fromEntries(
-              Object.entries(props || {}).filter(
-                ([key, value]) =>
-                  key !== "class" &&
-                  key !== "className" &&
-                  typeof value !== "undefined",
-              ),
-            )
-          : {};
+    // The arguments for a call that supplies no known prop and no class prop,
+    // and has no child to run. `Reflect.apply` copies it, so it never escapes.
+    const onlyBase = !variantCount && !compoundCount;
+    const assembled: ClassValue[] =
+      onlyBase && base !== undefined ? [base] : [];
+    if (!onlyBase) pushDefined(assembled, base);
+    for (let i = 0; i < variantCount; i++) {
+      pushDefined(assembled, defaultClasses[i]);
+    }
+    for (let i = 0; i < compoundCount; i++) {
+      const compound = compounds[i];
+      if (compound.matchesDefaults) pushClassProps(assembled, compound);
+    }
+    const defaultOut: ClassValue[] = onlyBase ? assembled : assembled.slice();
+    // Every element is defined, so `undefined` means "not a one-element list".
+    const singleDefaultClass: ClassValue =
+      defaultOut.length === 1 ? defaultOut[0] : undefined;
 
-      const getComposedClassNames = components.length
-        ? components.map((component: CVAComponentShape) =>
-            component({
-              ...mergedDefaultVariants,
-              ...definedPropsWithoutClass,
-            }),
-          )
-        : emptyClassNames;
+    const component = (
+      !keyCount && !childCount
+        ? createPlainComponent(cxArray, defaultOut, singleDefaultClass)
+        : (input?: Record<string, unknown>) => {
+            const props: Record<string, unknown> = input || empty;
+            const classValue = props.class as ClassValue;
+            const classNameValue = props.className as ClassValue;
 
-      // Compound variants may target composed-only keys, so a component with
-      // no local `variants` still resolves them.
-      if (!config?.variants && !config?.compoundVariants) {
-        return getComposedClassNames.length
-          ? cx(
-              ...getComposedClassNames,
-              config?.base,
-              props?.class,
-              props?.className,
-            )
-          : cx(config?.base, props?.class, props?.className);
-      }
+            let supplied = 0;
+            const variantClasses = variantCount
+              ? new Array<ClassValue>(variantCount)
+              : undefined;
+            const resolved = compoundCount
+              ? new Array<unknown>(keyCount)
+              : undefined;
+            for (let i = 0; i < keyCount; i++) {
+              const key = keys[i];
+              // A variant name is read straight off `props`; a compound-only
+              // name must be an own enumerable prop to count.
+              const own = compoundCount !== 0 && ownEnumerable.call(props, key);
+              const value = i < variantCount || own ? props[key] : undefined;
+              // Past the 31st key, saturate: every compound with selectors is
+              // compared.
+              if (value !== undefined) supplied |= i < 31 ? 1 << i : -1;
+              if (variantClasses && i < variantCount) {
+                const variantKey = falsyToString(value);
+                variantClasses[i] = variantKey
+                  ? variantMaps[i][variantKey as string]
+                  : defaultClasses[i];
+              }
+              if (resolved) {
+                resolved[i] =
+                  own && value !== undefined ? value : defaultValues[i];
+              }
+            }
 
-      const variants = (config.variants ?? {}) as CVAVariantShape;
+            if (!childCount && !supplied) {
+              if (classValue === undefined) {
+                if (singleDefaultClass !== undefined) {
+                  return cxArray(
+                    classNameValue === undefined
+                      ? [singleDefaultClass]
+                      : [singleDefaultClass, classNameValue],
+                  );
+                }
+                if (classNameValue === undefined) return cxArray(defaultOut);
+              }
+              const out = defaultOut.slice();
+              pushDefined(out, classValue);
+              pushDefined(out, classNameValue);
+              return cxArray(out);
+            }
 
-      // Resolve against the *merged* defaults (composed + local) so a variant
-      // redeclared locally over a composed key uses the same effective default
-      // the composed components and `getSchema` see.
-      const getVariantClassNames = Object.keys(variants).map((variant) => {
-        const variantProp = props?.[variant as keyof typeof props];
-        const defaultVariantProp = mergedDefaultVariants[variant];
+            const out: ClassValue[] = [];
+            if (childCount) {
+              // A fresh object per child, and the child read out of the array
+              // before the call, or it arrives as that child's `this`.
+              const forwarded = definedProps(props, defaults);
+              for (let i = 0; i < childCount; i++) {
+                const child = children[i];
+                pushDefined(out, child({ ...forwarded }));
+              }
+            }
 
-        const variantKey = (falsyToString(variantProp) ||
-          falsyToString(defaultVariantProp)) as string;
+            pushDefined(out, base);
+            if (variantClasses) {
+              for (let i = 0; i < variantCount; i++) {
+                pushDefined(out, variantClasses[i]);
+              }
+            }
+            if (resolved) {
+              for (let i = 0; i < compoundCount; i++) {
+                const compound = compounds[i];
+                let matched = compound.matchesDefaults;
+                if (supplied & compound.mask) {
+                  matched = true;
+                  for (let j = compound.start; j < compound.end; j++) {
+                    const selector = selectors[j];
+                    const value = resolved[indexes[j]];
+                    if (
+                      Array.isArray(selector)
+                        ? !selector.includes(value)
+                        : value !== selector
+                    ) {
+                      matched = false;
+                      break;
+                    }
+                  }
+                }
+                if (matched) pushClassProps(out, compound);
+              }
+            }
 
-        return variants[variant][variantKey];
-      });
-
-      const defaultsAndProps = {
-        ...mergedDefaultVariants,
-        ...definedPropsWithoutClass,
-      };
-
-      const getCompoundVariantClassNames =
-        config?.compoundVariants?.reduce(
-          (
-            acc: ClassValue[],
-            {
-              class: cvClass,
-              className: cvClassName,
-              ...cvConfig
-            }: CVAClassProp & Record<string, unknown>,
-          ) =>
-            Object.entries(cvConfig).every(([cvKey, cvSelector]) => {
-              const selector =
-                defaultsAndProps[cvKey as keyof typeof defaultsAndProps];
-
-              return Array.isArray(cvSelector)
-                ? cvSelector.includes(selector)
-                : selector === cvSelector;
-            })
-              ? [...acc, cvClass, cvClassName]
-              : acc,
-          [] as ClassValue[],
-        ) ?? emptyClassNames;
-
-      return cx(
-        ...getComposedClassNames,
-        config?.base,
-        ...getVariantClassNames,
-        ...getCompoundVariantClassNames,
-        props?.class,
-        props?.className,
-      );
-    };
+            pushDefined(out, classValue);
+            pushDefined(out, classNameValue);
+            return cxArray(out);
+          }
+    ) as CVAComponent<typeof config, typeof config.variants>;
 
     component.config = {
       ...config,
       variants: mergedVariants,
-      defaultVariants: mergedDefaultVariants,
+      defaultVariants: defaults,
     };
 
     return component as ReturnType<CVA>;
   }) as CVA;
 
   const compose: Compose = (...components) => {
-    const composedComponents = components as CVAComponentShape[];
-    const config = composedComponents.reduce(
-      (acc, { config }) => {
-        Object.entries(config || {}).forEach(([key, value]) => {
-          acc[key] =
-            typeof value === "object" && value !== null && !Array.isArray(value)
-              ? {
-                  ...acc[key],
-                  ...value,
-                }
+    const composed = components as CVAComponentShape[];
+    const config: Record<string, any> = {};
+    for (let i = 0; i < composed.length; i++) {
+      const source = composed[i].config;
+      for (const key in source) {
+        if (hasOwn.call(source, key)) {
+          const value = source[key];
+          config[key] =
+            value && typeof value === "object" && !Array.isArray(value)
+              ? { ...config[key], ...value }
               : value;
-        });
-        return acc;
-      },
-      // A loose accumulator: composed configs carry heterogeneous values
-      // (base strings, variant maps, compoundVariant arrays), not just the
-      // `CVAVariantShape` the merged `variants` key holds.
-      {} as Record<string, any>,
-    );
+        }
+      }
+    }
 
     const component: CVAComponent<typeof config, typeof config.variants> = (
-      props,
+      input,
     ) => {
-      const propsWithoutClass = Object.fromEntries(
-        Object.entries(props || {}).filter(
-          ([key]) => !["class", "className"].includes(key),
-        ),
-      );
-
-      return cx(
-        ...composedComponents.map((component) => component(propsWithoutClass)),
-        props?.class,
-        props?.className,
-      );
+      const props: Record<string, unknown> = input || empty;
+      const forwarded = definedProps(props);
+      const out: ClassValue[] = [];
+      for (let i = 0; i < composed.length; i++) {
+        const child = composed[i];
+        pushDefined(out, child(forwarded));
+      }
+      return cxArray(pushClassProps(out, props));
     };
 
     component.config = config;
@@ -643,6 +899,21 @@ export const defineConfig = ((options: DefineConfigOptions) => {
     cx,
   };
 }) as DefineConfig;
+
+// Named so `GetSchema` can drop empty entries while mapping the keys.
+type SchemaEntry<Config, Variants, Variant extends keyof Variants> =
+  Config extends CVAComponentConfig<Config, Variants>
+    ? Variant extends keyof Config["defaultVariants"]
+      ? Config["defaultVariants"][Variant] extends undefined
+        ? never
+        : {
+            values: ReadonlyArray<StringToBoolean<keyof Variants[Variant]>>;
+            defaultValue: Readonly<
+              StringToBoolean<Config["defaultVariants"][Variant]>
+            >;
+          }
+      : { values: ReadonlyArray<StringToBoolean<keyof Variants[Variant]>> }
+    : never;
 
 export interface GetSchema {
   <_ extends InternalOnlyWarning, Component, Config, Variants>(
@@ -659,30 +930,18 @@ export interface GetSchema {
           : { config: CVAComponentConfig<Config, Variants> }
         : never),
   ): {
+    // Remove keys whose schema entry has no values. For retained keys, an
+    // entry with `defaultValue: never` becomes `never`.
     [Variant in keyof Variants as Variant extends InternalVariantKey
       ? never
-      : Variant]: Config extends CVAComponentConfig<Config, Variants>
-      ? Variant extends keyof Config["defaultVariants"]
-        ? Config["defaultVariants"][Variant] extends undefined
-          ? never
-          : {
-              values: ReadonlyArray<StringToBoolean<keyof Variants[Variant]>>;
-              defaultValue: Readonly<
-                StringToBoolean<Config["defaultVariants"][Variant]>
-              >;
-            }
-        : {
-            values: ReadonlyArray<StringToBoolean<keyof Variants[Variant]>>;
+      : SchemaEntry<Config, Variants, Variant> extends {
+            values: readonly never[];
           }
-      : never;
-    // Iterate over the returned schema and remove any keys that have no values
-  } extends infer Schema
-    ? {
-        [K in keyof Schema as Schema[K] extends {
-          values: readonly never[];
-        }
-          ? never
-          : K]: Schema[K] extends { defaultValue: never } ? never : Schema[K];
-      }
-    : never;
+        ? never
+        : Variant]: SchemaEntry<Config, Variants, Variant> extends {
+      defaultValue: never;
+    }
+      ? never
+      : SchemaEntry<Config, Variants, Variant>;
+  };
 }
