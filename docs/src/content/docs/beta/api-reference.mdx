@@ -13,6 +13,8 @@ import { cva } from "cva";
 const component = cva(options);
 ```
 
+`cva` reads `options` during creation. Treat it, and everything it references, as immutable afterwards: to change a component's configuration, create a new component. A call reads only the props you pass it, plus the `cx` and `hooks` you gave [`defineConfig`](#defineconfig), which stay live. Getters with side effects, and changing the props object while the call is running, are unsupported.
+
 ### Parameters
 
 1. `options`

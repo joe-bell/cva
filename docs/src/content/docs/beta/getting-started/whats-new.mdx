@@ -120,11 +120,44 @@ If you now pass a generic type parameter, `cva` throws an error.
 
 ### 5. Faster component calls
 
-Calling a `cva` component is up to 500% faster than `0.7`, with no API changes. The runtime builds one list of class values per call and hands it to your concatenator once, instead of copying props and spreading arrays along the way:
+Calling a `cva` component is up to 1000% faster than `0.7`. The runtime works out as much of the class list as it can when you create the component, then calls your concatenator once per call, instead of copying props and spreading arrays along the way:
 
-- Components with variants and compound variants: 230% to 300% faster per call.
-- Matching many compound variants: 360% to 500% faster.
-- One component called with many different prop shapes: 350% faster.
-- Components with only a `base`: 20% faster.
+- Components with variants and compound variants: 300% to 550% faster per call.
+- Matching a dozen compound variants: 700% to 1000% faster.
+- One component called with 24 different prop shapes: 400% faster.
+- Components with only a `base`: 50% faster.
 
-Thanks to [@fveracoechea](https://github.com/fveracoechea) for inspiring this work! See [the pull request](https://github.com/joe-bell/cva/pull/418) for the full numbers.
+The `cva` entry is now about 2.1 kB (brotli), up from 1.4 kB. The precomputed tables are the difference.
+
+Thanks to [@fveracoechea](https://github.com/fveracoechea) for inspiring this work! See [the pull request](https://github.com/joe-bell/cva/pull/419) for the full numbers.
+
+### 6. Configuration is read when you create the component
+
+`cva` used to re-read your config on every call, so mutating it afterwards quietly changed the output. It now reads `base`, `variants`, `compoundVariants`, `defaultVariants` and `composes` during creation. A call reads only the props you pass it, plus the `cx` and `hooks` from your `defineConfig` options, which stay live. That is where most of the speed above comes from.
+
+:::caution[Breaking change]
+Treat a config, and everything it references, as immutable once you've created the component. Mutating it afterwards is unsupported, and how much of the change shows up is undefined. Create a new component instead:
+
+```diff lang="ts"
+- const config = {
+-   base: "button",
+-   variants: { intent: { primary: "bg-blue-500" } },
+- };
+- const button = cva(config);
+-
+- config.variants.intent.primary = "bg-indigo-500";
++ const button = cva({
++   base: "button",
++   variants: { intent: { primary: "bg-blue-500" } },
++ });
++
++ const indigoButton = cva({
++   base: "button",
++   variants: { intent: { primary: "bg-indigo-500" } },
++ });
+```
+
+Composition follows the same rule: a component pushed onto a `composes` array after the fact won't show up, and editing a composed child's own config won't update the parent's merged variants. Recreate the parent.
+
+`component.config` still exposes the merged `variants` and `defaultVariants` as fresh objects, but it's internal: reading it is fine, mutating it is unsupported and may partly show up in later output. Frozen configs work, and `cva` never mutates or freezes anything you pass it.
+:::
