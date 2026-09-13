@@ -535,18 +535,20 @@ export const defineConfig = ((options: DefineConfigOptions) => {
       // compound config never reads it here.
       if (!components.length && !compounds && !authored.variants) {
         const base: ClassValue = authored.base;
-        const authoredClass = given.class as ClassValue;
-        const alias = given.className as ClassValue;
+        const classValue = given.class as ClassValue;
+        const classNameValue = given.className as ClassValue;
         // A 1- or 2-element array literal instead of the assembly below:
         // measured ~1.28x on `base only` and ~1.32x on `base only x20`
         // against the same rows without this branch (Node 24).
-        if (base !== undefined && authoredClass === undefined) {
-          return cxArray(alias === undefined ? [base] : [base, alias]);
+        if (base !== undefined && classValue === undefined) {
+          return cxArray(
+            classNameValue === undefined ? [base] : [base, classNameValue],
+          );
         }
         const out: ClassValue[] = [];
         push(out, base);
-        push(out, authoredClass);
-        push(out, alias);
+        push(out, classValue);
+        push(out, classNameValue);
         return cxArray(out);
       }
 

@@ -550,7 +550,7 @@ describe("cva — runtime semantics", () => {
       expect(calls).toEqual([["b"], [null], []]);
     });
 
-    test("a hook installed after defineConfig is honoured", () => {
+    test("a hook installed after defineConfig is honoured on the fast path", () => {
       const hooks: { onComplete?: (className: string) => string } = {};
       const { cva: hookedCva } = defineConfig({ cx: clsx, hooks });
       const button = hookedCva({ base: "button" });
@@ -563,7 +563,7 @@ describe("cva — runtime semantics", () => {
       expect(button({ className: "c" })).toBe("<button c>");
     });
 
-    test("calls the concatenator with options as its receiver", () => {
+    test("calls the concatenator with options as its receiver on the fast path", () => {
       const options = {
         marker: "self",
         cx(this: { marker: string }, ...inputs: CVA.ClassValue[]) {
