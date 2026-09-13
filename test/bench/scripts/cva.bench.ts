@@ -210,6 +210,19 @@ function supportsComposes(mod: typeof local): boolean {
   }
 }
 
+// Older published betas expose `defineConfig` with different behaviour, so
+// probe what it actually does to the output rather than its type.
+function supportsHooks(mod: typeof local): boolean {
+  try {
+    const probe = mod.defineConfig({
+      hooks: { onComplete: (className) => `${className} hooked` },
+    });
+    return probe.cva({ base: "p" })({}).endsWith("hooked");
+  } catch {
+    return false;
+  }
+}
+
 function registerBenchmarks(mod: typeof local) {
   // The existing tasks discard their result, and changing that would change
   // their workload, so only the tasks added below write to this sink. It
@@ -383,29 +396,16 @@ function registerBenchmarks(mod: typeof local) {
     BENCH_OPTIONS,
   );
 
-  // Older published betas expose `defineConfig` with different behaviour, so
-  // probe what it actually does to the output rather than its type.
-  const supportsHooks = (() => {
-    try {
-      const probe = (mod as any).defineConfig({
-        hooks: { onComplete: (className: string) => `${className} hooked` },
-      });
-      return probe.cva({ base: "p" })({}).endsWith("hooked");
-    } catch {
-      return false;
-    }
-  })();
-
-  if (supportsHooks) {
-    const hooked = (mod as any).defineConfig({
-      hooks: { onComplete: (className: string) => `${className} hooked` },
+  if (supportsHooks(mod)) {
+    const hooked = mod.defineConfig({
+      hooks: { onComplete: (className) => `${className} hooked` },
     });
     const hookedButton = hooked.cva(buttonConfig);
 
     bench(
       "Call component (hook)",
       () => {
-        sink = hookedButton({ intent: "primary", size: "medium" });
+        sink = hookedButton({ intent: "primary", size: "medium" } as any);
       },
       BENCH_OPTIONS,
     );
