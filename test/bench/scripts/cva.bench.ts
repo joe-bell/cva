@@ -194,6 +194,13 @@ const renderPassProps = Array.from({ length: 60 }, (_, index) => ({
 /* Scenarios
   ============================================ */
 
+// The existing tasks discard their result, and changing that would change
+// their workload, so only the tasks added later write to this sink. It holds
+// the full returned string (not its `.length`) so the class name is really
+// materialised, and it is exported so the store is observable outside this
+// module and can never be treated as dead.
+export let sink: unknown;
+
 // Published versions before `composes` (e.g. `cva@1.0.0-beta.4`) destructure
 // only the config keys they know about, so a `composes` property is
 // silently ignored rather than throwing — benching it there would measure a
@@ -224,12 +231,6 @@ function supportsHooks(mod: typeof local): boolean {
 }
 
 function registerBenchmarks(mod: typeof local) {
-  // The existing tasks discard their result, and changing that would change
-  // their workload, so only the tasks added below write to this sink. It
-  // holds the full returned string (not its `.length`) so the class name is
-  // really materialised and can't be optimised away.
-  let sink: unknown;
-
   // Per-task rotation cursors. These live here, not at module scope, so the
   // local and baseline registrations don't share warmup state.
   let megamorphicIndex = 0;
