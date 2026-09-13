@@ -175,9 +175,10 @@ type ComponentProps<Component extends (...args: any) => any> = Omit<
 // it, but `VariantProps` and `getSchema` omit it from the public surface.
 type InternalVariantKey = `_${string}`;
 
+// One `Omit`: nesting it inside `ComponentProps` builds the props twice.
 export type VariantProps<Component extends (...args: any) => any> = Omit<
-  ComponentProps<Component>,
-  InternalVariantKey
+  OmitUndefined<Parameters<Component>[0]>,
+  "class" | "className" | InternalVariantKey
 >;
 
 /* compose
@@ -235,6 +236,19 @@ export type CVAVariantShape = Record<string, Record<string, ClassValue>>;
 type CVAVariantSchema<V> = {
   [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
 };
+// A single value or a list per variant. One mapped type, not a union: a
+// two-arm target doubles what TypeScript tries for every entry.
+type CVACompoundVariantSchema<V> = {
+  [Variant in keyof V]?:
+    | StringToBoolean<keyof V[Variant]>
+    | StringToBoolean<keyof V[Variant]>[]
+    | undefined;
+};
+// Named so TypeScript caches one instantiation per `(V, T)`.
+type CVACompoundVariants<
+  V,
+  T extends ClassValue,
+> = (CVACompoundVariantSchema<V> & CVAClassProp<T>)[];
 type CVAClassProp<T extends ClassValue = ClassValue> =
   | {
       class?: T;
@@ -269,22 +283,17 @@ type CVAComponentConfig<
   // The gate checks variant values against the configured concatenator's
   // input type, so e.g. object syntax fails here (on the `variants` key)
   // under a concatenator that doesn't accept objects.
+  //
+  // `__proto__` reads as a prototype write, so the gate rejects the name.
 } & (Variants extends Record<string, Record<string, T>>
-    ? CVAComponentConfigBase<T> & { variants?: Variants }
+    ? CVAComponentConfigBase<T> & {
+        variants?: Variants & { __proto__?: never };
+      }
     : CVAComponentConfigBase<T> & { variants?: never }) &
   ([keyof Merged] extends [never]
     ? { compoundVariants?: never; defaultVariants?: never }
     : {
-        compoundVariants?: ((
-          | CVAVariantSchema<Uninferred<Merged>>
-          | {
-              [Variant in keyof Uninferred<Merged>]?:
-                | StringToBoolean<keyof Uninferred<Merged>[Variant]>
-                | StringToBoolean<keyof Uninferred<Merged>[Variant]>[]
-                | undefined;
-            }
-        ) &
-          CVAClassProp<T>)[];
+        compoundVariants?: CVACompoundVariants<Uninferred<Merged>, T>;
         defaultVariants?: CVAVariantSchema<Uninferred<Merged>>;
       });
 
@@ -333,6 +342,18 @@ type CVADefaultVariants<Config> = Config extends { defaultVariants?: infer D }
   ? D
   : {};
 
+// Nothing composed is the common case: answer with `Variants` and skip the
+// merge machinery.
+type AllVariants<
+  Variants,
+  ComposedSingle extends CVAComponentShape | undefined,
+  ComposedList extends readonly CVAComponentShape[],
+> = [ComposedSingle] extends [undefined]
+  ? [ComposedList] extends [readonly []]
+    ? Variants
+    : Variants & MergedVariants<ComposedList>
+  : Variants & MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>;
+
 export interface CVA<T extends ClassValue = ClassValue> {
   <
     _ extends InternalOnlyWarning,
@@ -347,12 +368,11 @@ export interface CVA<T extends ClassValue = ClassValue> {
       ComposedSingle,
       ComposedList,
       T,
-      Variants & MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>
+      AllVariants<Variants, ComposedSingle, ComposedList>
     >,
   ): CVAComponent<
     Omit<Config, "defaultVariants"> & {
-      variants: Variants &
-        MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>;
+      variants: AllVariants<Variants, ComposedSingle, ComposedList>;
       // Local `defaultVariants` win over composed ones on key conflicts,
       // matching the runtime spread order. A plain intersection would collapse
       // a conflicting key's value to `never` (e.g. `"sm" & "lg"`), which then
@@ -363,7 +383,7 @@ export interface CVA<T extends ClassValue = ClassValue> {
       > &
         CVADefaultVariants<Config>;
     },
-    Variants & MergedVariants<ComposedTuple<ComposedSingle, ComposedList>>,
+    AllVariants<Variants, ComposedSingle, ComposedList>,
     T
   >;
 }
@@ -880,6 +900,21 @@ export const defineConfig = ((options: DefineConfigOptions) => {
   };
 }) as DefineConfig;
 
+// Named so `GetSchema` can drop empty entries while mapping the keys.
+type SchemaEntry<Config, Variants, Variant extends keyof Variants> =
+  Config extends CVAComponentConfig<Config, Variants>
+    ? Variant extends keyof Config["defaultVariants"]
+      ? Config["defaultVariants"][Variant] extends undefined
+        ? never
+        : {
+            values: ReadonlyArray<StringToBoolean<keyof Variants[Variant]>>;
+            defaultValue: Readonly<
+              StringToBoolean<Config["defaultVariants"][Variant]>
+            >;
+          }
+      : { values: ReadonlyArray<StringToBoolean<keyof Variants[Variant]>> }
+    : never;
+
 export interface GetSchema {
   <_ extends InternalOnlyWarning, Component, Config, Variants>(
     component: Component &
@@ -895,30 +930,18 @@ export interface GetSchema {
           : { config: CVAComponentConfig<Config, Variants> }
         : never),
   ): {
+    // Remove keys whose schema entry has no values. For retained keys, an
+    // entry with `defaultValue: never` becomes `never`.
     [Variant in keyof Variants as Variant extends InternalVariantKey
       ? never
-      : Variant]: Config extends CVAComponentConfig<Config, Variants>
-      ? Variant extends keyof Config["defaultVariants"]
-        ? Config["defaultVariants"][Variant] extends undefined
-          ? never
-          : {
-              values: ReadonlyArray<StringToBoolean<keyof Variants[Variant]>>;
-              defaultValue: Readonly<
-                StringToBoolean<Config["defaultVariants"][Variant]>
-              >;
-            }
-        : {
-            values: ReadonlyArray<StringToBoolean<keyof Variants[Variant]>>;
+      : SchemaEntry<Config, Variants, Variant> extends {
+            values: readonly never[];
           }
-      : never;
-    // Iterate over the returned schema and remove any keys that have no values
-  } extends infer Schema
-    ? {
-        [K in keyof Schema as Schema[K] extends {
-          values: readonly never[];
-        }
-          ? never
-          : K]: Schema[K] extends { defaultValue: never } ? never : Schema[K];
-      }
-    : never;
+        ? never
+        : Variant]: SchemaEntry<Config, Variants, Variant> extends {
+      defaultValue: never;
+    }
+      ? never
+      : SchemaEntry<Config, Variants, Variant>;
+  };
 }

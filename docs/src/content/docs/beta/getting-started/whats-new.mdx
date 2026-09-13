@@ -161,3 +161,12 @@ Composition follows the same rule: a component pushed onto a `composes` array af
 
 `component.config` still exposes the merged `variants` and `defaultVariants` as fresh objects, but it's internal: reading it is fine, mutating it is unsupported and may partly show up in later output. Frozen configs work, and `cva` never mutates or freezes anything you pass it.
 :::
+
+### 7. Faster type checking
+
+The authoring types were reworked so TypeScript does less work to reach the same answers. Your inferred prop types, `getSchema` results and emitted declarations are identical. Measured with `tsc --extendedDiagnostics` against the previous beta:
+
+- A project with 200 components type-checks about 10% faster, with 26% fewer type instantiations.
+- Composed components: 16% fewer instantiations. Components with a `getSchema` call: 24% fewer.
+
+See [the pull request](https://github.com/joe-bell/cva/pull/420) for the full numbers.

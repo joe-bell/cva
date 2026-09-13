@@ -155,6 +155,8 @@ Agent-specific notes:
 
 Durable, hard-won lessons that don't fit a section above. See [Keeping this guide current](#keeping-this-guide-current-self-improving) for what belongs here and how to write it. Newest first; prune anything that's become wrong or obsolete.
 
+- The authoring types in [`packages/cva/src/core.ts`](./packages/cva/src/core.ts) are performance-sensitive: `compoundVariants` is one mapped schema behind a named array alias, `AllVariants` short-circuits when nothing is composed, `VariantProps` is one `Omit`, and `GetSchema` maps keys in one pass. Measure `tsc --extendedDiagnostics` on plain, composed, `getSchema` and direct-interface consumers before reshaping any of them.
+
 - [`registry.json`](./registry.json) at the repo root is a [shadcn registry](https://ui.shadcn.com/docs/registry/github): `pnpm dlx shadcn@latest add joe-bell/cva/cn` reads it and its `files[].path` sources live from `main` at install time, with no published artifact. That makes `examples/beta/react-with-cn/src/cva.config.ts` a user-facing install source, so edit it deliberately, update the `path` in the same commit as any move, and keep `dependencies` on `cva@beta` until the npm `latest` dist-tag stops pointing at `0.0.0`.
 
 - Type assertions in `*.test.ts` still pass through each package's `tsc` gate, but Vitest needs them inside a runtime `test()` to discover the file; after changing docs test TypeScript, run `pnpm --dir docs exec wrangler types` and `pnpm --dir docs exec astro check` as well as the focused Vitest suite.

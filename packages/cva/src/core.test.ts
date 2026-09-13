@@ -849,3 +849,56 @@ describe("cva — runtime semantics", () => {
     });
   });
 });
+
+describe("cva — authoring types", () => {
+  const button = cva({
+    base: "button",
+    variants: {
+      intent: { primary: "primary", secondary: "secondary" },
+      size: { sm: "sm", lg: "lg" },
+      _internal: { on: "on", off: "off" },
+    },
+    defaultVariants: { intent: "primary" },
+  });
+
+  test("a props interface can extend `VariantProps` directly", () => {
+    // The shadcn idiom: `VariantProps` must stay an object type an
+    // interface can extend (TS2312).
+    interface ButtonProps extends CVA.VariantProps<typeof button> {}
+
+    expectTypeOf<keyof ButtonProps>().toEqualTypeOf<
+      keyof CVA.VariantProps<typeof button>
+    >();
+    expectTypeOf<keyof ButtonProps>().toEqualTypeOf<"intent" | "size">();
+  });
+
+  test("`VariantProps` omits the class props and internal variants", () => {
+    expectTypeOf<CVA.VariantProps<typeof button>>().toEqualTypeOf<{
+      intent?: "primary" | "secondary" | undefined;
+      size?: "sm" | "lg" | undefined;
+    }>();
+
+    // The component itself still accepts them.
+    expect(button({ _internal: "on", size: "sm", class: "extra" })).toBe(
+      "button primary sm on extra",
+    );
+  });
+
+  test("`__proto__` is rejected as a variant name", () => {
+    // @ts-expect-error — `__proto__` is not an authorable variant name
+    cva({ variants: { __proto__: { on: "on" } } });
+    // @ts-expect-error — and a computed key doesn't get around it
+    cva({ variants: { ["__proto__"]: { on: "on" } } });
+  });
+
+  test("variants typed as a broad record are still accepted", () => {
+    // Widening hides the key from the guard.
+    const variants: Record<string, Record<string, string>> = {
+      ["__proto__"]: { on: "on" },
+      intent: { primary: "primary" },
+    };
+    const dynamic = cva({ base: "button", variants });
+
+    expect(dynamic({ intent: "primary" })).toBe("button primary");
+  });
+});
