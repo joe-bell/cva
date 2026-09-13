@@ -120,11 +120,10 @@ If you now pass a generic type parameter, `cva` throws an error.
 
 ### 5. Faster component calls
 
-Calling a `cva` component is now 3 to 4x faster than in earlier betas, with no API changes and no extra bytes in the bundle. The runtime builds one list of class values per call and hands it to your concatenator once, instead of copying props and spreading arrays along the way. Measured in CI on Node 24 against `cva@1.0.0-beta.9` (`class-variance-authority@0.7` performs about the same as that beta):
+Calling a `cva` component is now several times faster than `class-variance-authority@0.7`, with no API changes and no extra bytes in the bundle. The runtime builds one list of class values per call and hands it to your concatenator once, instead of copying props and spreading arrays along the way:
 
-- Components with variants and compound variants: 3.2 to 4.1x faster per call.
-- Composed components (`composes`): about 3.5x faster.
-- A render pass of 30 components with mixed props: 3.8x faster.
-- Plain `cva({ base })` calls and `cx`: already cheap, now about 10% faster.
+- Components with variants and compound variants: 3.4 to 4x faster per call.
+- Matching many compound variants: 5 to 7x faster.
+- One component called with many different prop shapes: 4.5x faster.
 
-Every pull request runs the benchmark suite against the latest published version, so this stays visible. See the [full results](https://github.com/joe-bell/cva/pull/418#issuecomment-5652482997) or [how the benchmarks work](https://github.com/joe-bell/cva/blob/main/CONTRIBUTING.md#benchmarks).
+Thanks to [@fveracoechea](https://github.com/fveracoechea) for inspiring this work! See [the pull request](https://github.com/joe-bell/cva/pull/418) for the full numbers.
