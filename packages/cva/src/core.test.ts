@@ -427,4 +427,153 @@ describe("cva — runtime semantics", () => {
       ]);
     });
   });
+
+  describe("plain-component fast path", () => {
+    test("builds the same argument stream as the general path", () => {
+      const { calls, cva: recordingCva } = recorder();
+
+      recordingCva({ base: "b" })();
+      recordingCva({ base: "b" })({ className: "c" });
+      recordingCva({ base: "b" })({ class: "c" });
+      recordingCva({ base: "b" })({
+        class: "c",
+        // @ts-expect-error — `class` and `className` are mutually exclusive
+        className: "n",
+      });
+      recordingCva({})({ className: "c" });
+
+      // A null class value is a value, not an absence: it is forwarded.
+      recordingCva({ base: "b" })({ class: null });
+      recordingCva({ base: "b" })({ className: null });
+      recordingCva({ base: "b" })({
+        class: null,
+        // @ts-expect-error — `class` and `className` are mutually exclusive
+        className: null,
+      });
+
+      expect(calls).toEqual([
+        ["b"],
+        ["b", "c"],
+        ["b", "c"],
+        ["b", "c", "n"],
+        ["c"],
+        ["b", null],
+        ["b", null],
+        ["b", null, null],
+      ]);
+    });
+
+    test("a falsy base is forwarded, an absent one is not", () => {
+      const { calls, cva: recordingCva } = recorder();
+
+      recordingCva({ base: null })({ className: "c" });
+      recordingCva({ base: false })({ className: "c" });
+      recordingCva({ base: 0 })({ className: "c" });
+      recordingCva({ base: "" })({ className: "c" });
+      recordingCva({ base: undefined })({ className: "c" });
+
+      expect(calls).toEqual([
+        [null, "c"],
+        [false, "c"],
+        [0, "c"],
+        ["", "c"],
+        ["c"],
+      ]);
+    });
+
+    test("props that are absent, null or a primitive stream the base alone", () => {
+      const { calls, cva: recordingCva } = recorder();
+      const button = recordingCva({ base: "b" });
+
+      button();
+      // @ts-expect-error — `null` is not a props object
+      button(null);
+      // @ts-expect-error — a primitive is not a props object
+      button("truthy");
+
+      expect(calls).toEqual([["b"], ["b"], ["b"]]);
+    });
+
+    test("a plain config that gains variants is followed", () => {
+      const config: { base: CVA.ClassValue; variants?: CVA.CVAVariantShape } = {
+        base: "b",
+      };
+      const button = cva(config);
+
+      expect(button()).toBe("b");
+
+      config.variants = { intent: { primary: "intent-primary" } };
+
+      expect(button({ intent: "primary" })).toBe("b intent-primary");
+    });
+
+    test("a plain config that gains a compound is followed", () => {
+      // `variants` is declared so the props surface accepts `intent`; it is
+      // never assigned, so the config stays plain until the compound lands.
+      const config: {
+        base: CVA.ClassValue;
+        variants?: CVA.CVAVariantShape;
+        compoundVariants?: { intent?: string; class?: string }[];
+      } = { base: "b" };
+      const button = cva(config);
+
+      expect(button({ intent: "primary" })).toBe("b");
+
+      config.compoundVariants = [{ intent: "primary", class: "compound" }];
+
+      expect(button({ intent: "primary" })).toBe("b compound");
+      expect(button({ intent: "secondary" })).toBe("b");
+    });
+
+    test("a plain config that gains its first child is followed", () => {
+      const composes: CVA.CVAComponentShape[] = [];
+      const card = cva({ base: "card", composes });
+
+      expect(card()).toBe("card");
+
+      composes.push(cva({ base: "child" }));
+
+      expect(card()).toBe("child card");
+    });
+
+    test("a replaced base is followed through null and undefined", () => {
+      const { calls, cva: recordingCva } = recorder();
+      const config: { base: CVA.ClassValue } = { base: "b" };
+      const button = recordingCva(config);
+
+      button();
+      config.base = null;
+      button();
+      config.base = undefined;
+      button();
+
+      expect(calls).toEqual([["b"], [null], []]);
+    });
+
+    test("a hook installed after defineConfig is honoured", () => {
+      const hooks: { onComplete?: (className: string) => string } = {};
+      const { cva: hookedCva } = defineConfig({ cx: clsx, hooks });
+      const button = hookedCva({ base: "button" });
+
+      expect(button()).toBe("button");
+
+      hooks.onComplete = (className) => `<${className}>`;
+
+      expect(button()).toBe("<button>");
+      expect(button({ className: "c" })).toBe("<button c>");
+    });
+
+    test("calls the concatenator with options as its receiver", () => {
+      const options = {
+        marker: "self",
+        cx(this: { marker: string }, ...inputs: CVA.ClassValue[]) {
+          return `${this.marker}:${clsx(...inputs)}`;
+        },
+      };
+      const button = defineConfig(options).cva({ base: "x" });
+
+      expect(button()).toBe("self:x");
+      expect(button({ className: "y" })).toBe("self:x y");
+    });
+  });
 });

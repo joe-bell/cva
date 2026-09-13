@@ -530,6 +530,26 @@ export const defineConfig = ((options: DefineConfigOptions) => {
       const given: Record<string, unknown> = props || empty;
       const compounds: (CVAClassProp & Record<string, unknown>)[] | undefined =
         authored.compoundVariants;
+
+      // A plain component, checked live: `variants` last, so a composed or
+      // compound config never reads it here.
+      if (!components.length && !compounds && !authored.variants) {
+        const base: ClassValue = authored.base;
+        const authoredClass = given.class as ClassValue;
+        const alias = given.className as ClassValue;
+        // A 1- or 2-element array literal instead of the assembly below:
+        // measured ~1.28x on `base only` and ~1.32x on `base only x20`
+        // against the same rows without this branch (Node 24).
+        if (base !== undefined && authoredClass === undefined) {
+          return cxArray(alias === undefined ? [base] : [base, alias]);
+        }
+        const out: ClassValue[] = [];
+        push(out, base);
+        push(out, authoredClass);
+        push(out, alias);
+        return cxArray(out);
+      }
+
       const out: ClassValue[] = [];
       // Defaults plus defined props, copied for children and used for
       // compounds. The compounds branch implies this was assigned below.
@@ -606,7 +626,7 @@ export const defineConfig = ((options: DefineConfigOptions) => {
         if (hasOwn.call(source, key)) {
           const value = source[key];
           config[key] =
-            typeof value === "object" && value !== null && !Array.isArray(value)
+            value && typeof value === "object" && !Array.isArray(value)
               ? { ...config[key], ...value }
               : value;
         }

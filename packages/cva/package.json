@@ -101,7 +101,7 @@
   "size-limit": [
     {
       "path": "dist/index.cjs",
-      "limit": "1.35KB"
+      "limit": "1.45KB"
     },
     {
       "path": "dist/config.cjs",
