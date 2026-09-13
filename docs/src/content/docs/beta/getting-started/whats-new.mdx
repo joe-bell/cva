@@ -120,10 +120,10 @@ If you now pass a generic type parameter, `cva` throws an error.
 
 ### 5. Faster component calls
 
-Calling a `cva` component is now several times faster than `class-variance-authority@0.7`, with no API changes and no extra bytes in the bundle. The runtime builds one list of class values per call and hands it to your concatenator once, instead of copying props and spreading arrays along the way:
+Calling a `cva` component is up to 590% faster, with no API changes and no extra bytes in the bundle. The runtime builds one list of class values per call and hands it to your concatenator once, instead of copying props and spreading arrays along the way:
 
-- Components with variants and compound variants: 3.4 to 4x faster per call.
-- Matching many compound variants: 5 to 7x faster.
-- One component called with many different prop shapes: 4.5x faster.
+- Components with variants and compound variants: 240% to 300% faster per call.
+- Matching many compound variants: 400% to 590% faster.
+- One component called with many different prop shapes: 350% faster.
 
 Thanks to [@fveracoechea](https://github.com/fveracoechea) for inspiring this work! See [the pull request](https://github.com/joe-bell/cva/pull/418) for the full numbers.
