@@ -155,7 +155,7 @@ Agent-specific notes:
 
 Durable, hard-won lessons that don't fit a section above. See [Keeping this guide current](#keeping-this-guide-current-self-improving) for what belongs here and how to write it. Newest first; prune anything that's become wrong or obsolete.
 
-- [`registry.json`](./registry.json) at the repo root is a [shadcn registry](https://ui.shadcn.com/docs/registry/github): `pnpm dlx shadcn@latest add joe-bell/cva/cn` reads it and its `files[].path` sources live from `main` at install time, with no published artifact. That makes `examples/beta/react-with-cn/src/cva.config.ts` a user-facing install source, so edit it deliberately, update the `path` in the same commit as any move (`test/registry.test.mjs` fails if a path goes missing), and keep `dependencies` on `cva@beta` until the npm `latest` dist-tag stops pointing at `0.0.0`.
+- [`registry.json`](./registry.json) at the repo root is a [shadcn registry](https://ui.shadcn.com/docs/registry/github): `pnpm dlx shadcn@latest add joe-bell/cva/cn` reads it and its `files[].path` sources live from `main` at install time, with no published artifact. That makes `examples/beta/react-with-cn/src/cva.config.ts` a user-facing install source, so edit it deliberately, update the `path` in the same commit as any move, and keep `dependencies` on `cva@beta` until the npm `latest` dist-tag stops pointing at `0.0.0`.
 
 - Type assertions in `*.test.ts` still pass through each package's `tsc` gate, but Vitest needs them inside a runtime `test()` to discover the file; after changing docs test TypeScript, run `pnpm --dir docs exec wrangler types` and `pnpm --dir docs exec astro check` as well as the focused Vitest suite.
 
