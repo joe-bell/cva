@@ -10,6 +10,16 @@ export const badge = cva({
 });
 export const schema = getSchema(badge);
 export type BadgeProps = VariantProps<typeof badge>;
+export interface BadgeUi extends VariantProps<typeof badge> {
+  children?: string;
+}
+export const pill = cva({
+  composes: [badge],
+  base: "pill",
+  variants: { size: { sm: "sm", lg: "lg" } },
+  compoundVariants: [{ tone: "warning", size: ["sm", "lg"], class: "loud" }],
+  defaultVariants: { size: "sm" },
+});
 export const configured = defineConfig({
   cx: (...values: string[]) => values.join(" "),
 }).cva({ base: "configured" });
@@ -20,4 +30,6 @@ assert.equal(badge({ tone: "warning" }), "badge warning");
 assert.deepEqual(schema, {
   tone: { values: ["info", "warning"], defaultValue: "info" },
 });
+assert.equal(pill(), "badge info pill sm");
+assert.equal(pill({ tone: "warning" }), "badge warning pill sm loud");
 assert.equal(configured(), "configured");

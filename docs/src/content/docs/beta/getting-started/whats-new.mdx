@@ -161,3 +161,23 @@ Composition follows the same rule: a component pushed onto a `composes` array af
 
 `component.config` still exposes the merged `variants` and `defaultVariants` as fresh objects, but it's internal: reading it is fine, mutating it is unsupported and may partly show up in later output. Frozen configs work, and `cva` never mutates or freezes anything you pass it.
 :::
+
+### 7. Faster type checking
+
+The authoring types got a rework: TypeScript does a lot less work to arrive at the same answers. Your inferred prop types, your `getSchema` results and the declarations your own build emits are all identical, and nothing exported moved, though cva's own `.d.ts` changed a fair bit. The API is unchanged too, with one deliberate exception: the `__proto__` variant name below. Measured against the previous beta with `tsc --extendedDiagnostics`, median of three runs (seven for the wall-clock timings):
+
+- 200 components: 26% fewer type instantiations (516,334 down to 380,052), and check time drops from 1.80s to 1.61s.
+- 50 components whose props interface extends `VariantProps<typeof component>` directly, the shadcn idiom: 26% fewer.
+- 50 components plus a `getSchema` call each: 24% fewer, with the `getSchema` call sites themselves costing 14% less.
+- 50 composed components: 16% fewer.
+- A single component: 11% fewer.
+- 200 components under `twMerge`: 26% fewer.
+
+Two guarantees came out of it, both pinned by tests:
+
+- `interface ButtonProps extends VariantProps<typeof button> {}` compiles, and will keep compiling. `VariantProps` stays a plain object type, so an interface can extend it.
+- A `__proto__` variant name is a compile error whenever TypeScript can still see the key: a literal, a computed `["__proto__"]`, or a variants object you declared elsewhere. Widen that object to something like `Record<string, Record<string, string>>` and the names are gone, so a `__proto__` entry hiding in one still compiles. It was never a runtime hazard (cva keeps it as an ordinary data property), but it reads like one, so the types turn it down where they can see it.
+
+The beta's types still cost more than `0.7`, and that's by design: the beta models composition, schemas and internal variants, and `0.7` models none of them.
+
+Thanks to [@fveracoechea](https://github.com/fveracoechea) for inspiring this work! See [the pull request](https://github.com/joe-bell/cva/pull/NNN) for the full numbers.
