@@ -28,6 +28,12 @@ export interface Implementation<Mod> {
  * doubling both meaningfully tightens the relative margin of error on
  * noisy shared CI runners, which is what the comparison table's ±5% noise
  * band hinges on.
+ *
+ * Don't raise `time` to stabilise a very fast body: tinybench keeps one
+ * sample per invocation, so a sub-100ns body already allocates ~10M samples
+ * at `time: 1000`, and two `performance.now()` calls per sample dominate the
+ * measurement. Batch tiny bodies instead (the `x20` tasks), and say in the
+ * task name that the reported number is per batch.
  */
 export const BENCH_OPTIONS = { time: 1000, warmupTime: 200 };
 
