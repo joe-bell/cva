@@ -26,8 +26,8 @@ The highest-stakes surface in the repo. Types are the product here as much as th
 - Does `cva()` keep its shallow definition-time snapshot, with only `options.cx`, `options.hooks`, and caller props read during calls?
 - Does every path preserve the exact argument order and finish with one `Reflect.apply` using `options` as receiver?
 - Are compound selectors matched against own enumerable props while declared variants retain direct property reads?
-- Does every `for...in` guard ownership before reading, and do `cva()`'s per-key merges preserve own `__proto__` data properties — with the deprecated `compose()` accumulator, which can still reparent on that key, left as it is?
-- Is each `cva({ composes })` child called detached and given its own fresh forwarded-props object — with the deprecated `compose()`'s shared `forwarded` object left as it is?
+- Does every `for...in` guard ownership before reading, and do `cva()`'s per-key merges preserve own `__proto__` data properties? The deprecated `compose()` accumulator can still reparent on that key; leave it as it is.
+- Is each `cva({ composes })` child called detached and given its own fresh forwarded-props object? The deprecated `compose()` shares one `forwarded` object; leave it as it is.
 - Are retained tables exact-sized and read-only, with the shared empty sentinel never handed to a mutating path and base-only shapes retaining no unused tables?
 - Are getter side effects and mid-call mutation of the props object still out of contract: every known prop read before any child runs, and read again only when preparing a child's forwarded props?
 - Do tests preserve output, argument-stream, getter-read, composition-isolation, and many-key behavior?

@@ -425,7 +425,7 @@ const falsyToString = <T extends unknown>(value: T) =>
 // Absent objects normalise to this: `x?.y` costs a temporary at ES2019.
 const empty: Record<string, any> = {};
 
-// Stands in for a table a component has no use for. Never written to.
+// The table for a component that has none. Never written to.
 const noValues: readonly never[] = [];
 
 const hasOwn = Object.prototype.hasOwnProperty;
@@ -671,8 +671,8 @@ export const defineConfig = ((options: DefineConfigOptions) => {
     config: CVAComponentConfig<Config, Variants, ComposedSingle, ComposedList>,
   ) => {
     // The configuration is read here, when the component is created; a call
-    // reads only the caller's props and `options`. It is contractually
-    // immutable afterwards — a change means a new component.
+    // reads only the caller's props and `options`. By contract it is
+    // immutable afterwards: a change means a new component.
     const definition: Record<string, any> = config || empty;
     const composes = definition.composes;
     const base: ClassValue = definition.base;
