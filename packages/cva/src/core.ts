@@ -422,29 +422,23 @@ export interface DefineConfig {
 const falsyToString = <T extends unknown>(value: T) =>
   typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
 
-// Stands in for an absent `props` or `config`, so every read below can be
-// unconditional: `x?.y` downlevels to a three-term ternary at the package's
-// ES2019 target, and there are a lot of those reads. Never written to.
+// Shared fallback avoids repeated optional-chain expansion at ES2019. Never
+// mutate.
 const empty: Record<string, any> = {};
 
-// `for...in` yields enumerable keys, own and inherited; this narrows that to
-// own enumerable — the set `Object.keys`/`Object.entries` would give — without
-// allocating a key array on every call.
+// Preserve `Object.keys` semantics without allocating a key array.
 const hasOwn = Object.prototype.hasOwnProperty;
 
-/**
- * The authored props a component forwards, minus the class props and minus
- * explicit `undefined` (which falls back to the default, matching variant
- * resolution), optionally layered over `seed`.
- */
+// Overlay own defined variant props on the defaults; omit class props.
+// Explicit `undefined` leaves the default intact.
 const definedProps = (
-  given: Record<string, any>,
+  given: Record<string, unknown>,
   seed?: Record<string, unknown>,
 ): Record<string, unknown> => {
   let merged: Record<string, unknown> = { ...seed };
   // `hasOwn` outside the read: an inherited getter must never be invoked,
   // which is what the `Object.entries` this replaces guaranteed.
-  for (const key in given)
+  for (const key in given) {
     if (hasOwn.call(given, key)) {
       const value = given[key];
       if (key !== "class" && key !== "className" && value !== undefined) {
@@ -454,28 +448,29 @@ const definedProps = (
         else merged[key] = value;
       }
     }
+  }
   return merged;
 };
 
-/** Appends `value` unless it is absent, so `undefined` never reaches `cx`. */
+// Narrow concatenators must never receive `undefined`.
 const push = (out: ClassValue[], value: ClassValue) => {
   if (value !== undefined) out.push(value);
 };
 
-/** Appends `class`/`className` from `source`, in that order, skipping absent. */
-const pushClassProps = (out: ClassValue[], source: Record<string, any>) => {
+const pushClassProps = (
+  out: ClassValue[],
+  source: { class?: ClassValue; className?: ClassValue },
+) => {
   push(out, source.class);
   push(out, source.className);
+  return out;
 };
 
 // Cast to `DefineConfig`: runtime uses `ClassValue`; `CXInput` is type-only.
 export const defineConfig = ((options: DefineConfigOptions) => {
-  // `inputs` is assembled without `undefined`, so it goes straight through.
-  // `Reflect.apply` keeps `options` as the receiver — a `this`-using
-  // concatenator still works, and a `cx` with an overridden `call`/`apply`
-  // cannot intercept the invocation. `options.hooks` is read per call, so a
-  // hook installed or swapped after `defineConfig` is honoured.
-  const cxa = (inputs: ClassValue[]): string => {
+  // Inputs already exclude `undefined`. Avoid a spread call, preserving
+  // `options` as `this` without consulting the concatenator's `call`/`apply`.
+  const cxArray = (inputs: ClassValue[]): string => {
     const className: string = Reflect.apply(options.cx, options, inputs);
     const hooks = options.hooks || empty;
     // `cx:done` wins unless it is nullish — `??` semantics, spelled out
@@ -487,7 +482,7 @@ export const defineConfig = ((options: DefineConfigOptions) => {
 
   const cx: CX = (...inputs) =>
     // Drop absent values so a narrower concatenator never receives `undefined`.
-    cxa(inputs.filter((input) => input !== undefined));
+    cxArray(inputs.filter((input) => input !== undefined));
 
   const cva = (<
     _ extends InternalOnlyWarning,
@@ -504,52 +499,48 @@ export const defineConfig = ((options: DefineConfigOptions) => {
     const authored: Record<string, any> = config || empty;
     const composes = authored.composes;
     // The authored array itself, not a copy: growing it after definition is
-    // observed, exactly as it is today.
+    // observed.
     const components: CVAComponentShape[] =
       composes == null ? [] : Array.isArray(composes) ? composes : [composes];
-    const count = components.length;
 
-    // Composed declarations first, this config last, so local `variants` and
-    // `defaultVariants` win on key conflicts. Variants merge one level deep so
-    // overlapping keys union their values instead of replacing each other.
-    // Spread, never `Object.assign`: an own `__proto__` key (a computed key,
-    // or `JSON.parse`) is a data property under spread, but assign's [[Set]]
-    // and plain assignment both reparent the target instead. The accumulator
-    // is reused across sources, so it takes the same computed-key detour
-    // `definedProps` does, keeping such a key as an own data property. The
-    // per-source `{ ...acc }` this replaced dropped the key instead, by
-    // resetting the copy the assignment had just reparented — so this is a
-    // deliberate behaviour change for a degenerate input, not parity.
+    // Merge children first, then the authored config on the final pass.
+    // Local defaults win; variant value maps merge one level deep.
     let mergedVariants: CVAVariantShape = {};
     let defaults: Record<string, unknown> = {};
-    for (let i = 0; i <= count; i++) {
-      const source = i < count ? components[i].config : authored;
+    for (let i = 0; i <= components.length; i++) {
+      const source = i < components.length ? components[i].config : authored;
       const sourceVariants: CVAVariantShape | undefined =
         source && source.variants;
-      for (const key in sourceVariants)
+      for (const key in sourceVariants) {
         if (hasOwn.call(sourceVariants, key)) {
           const merged = { ...mergedVariants[key], ...sourceVariants[key] };
-          if (key === "__proto__")
+          // Keep `__proto__` as an own data property, without invoking its
+          // setter.
+          if (key === "__proto__") {
             mergedVariants = { ...mergedVariants, [key]: merged };
-          else mergedVariants[key] = merged;
+          } else {
+            mergedVariants[key] = merged;
+          }
         }
+      }
       defaults = { ...defaults, ...(source && source.defaultVariants) };
     }
 
     const component = ((props) => {
-      const given: Record<string, any> = props || empty;
+      const given: Record<string, unknown> = props || empty;
       const compounds: (CVAClassProp & Record<string, unknown>)[] | undefined =
         authored.compoundVariants;
       const out: ClassValue[] = [];
-      // The props object composed components are called with, reused for
-      // compound-variant matching rather than rebuilt per component.
+      // Defaults plus defined props, copied for children and used for
+      // compounds. The compounds branch implies this was assigned below.
       let resolved!: Record<string, unknown>;
 
       if (components.length || compounds) {
         resolved = definedProps(given, defaults);
         // A fresh object per child: a child that mutates its props must not
-        // leak into a sibling or into compound matching below. Detached from
-        // the array first, or the call would pass it as the child's `this`.
+        // leak into a sibling or into compound matching below. Read the child
+        // out of the array before calling it to avoid passing the array as
+        // the child's `this`.
         for (let i = 0; i < components.length; i++) {
           const child = components[i];
           push(out, child({ ...resolved }));
@@ -559,21 +550,23 @@ export const defineConfig = ((options: DefineConfigOptions) => {
       push(out, authored.base);
 
       const variants: CVAVariantShape | undefined = authored.variants;
-      for (const key in variants)
-        if (hasOwn.call(variants, key))
+      for (const key in variants) {
+        if (hasOwn.call(variants, key)) {
           push(
             out,
-            variants![key][
+            variants[key][
               (falsyToString(given[key]) ||
                 falsyToString(defaults[key])) as string
             ],
           );
+        }
+      }
 
-      if (compounds)
+      if (compounds) {
         for (let i = 0; i < compounds.length; i++) {
           const compound = compounds[i];
           let matched = true;
-          for (const key in compound)
+          for (const key in compound) {
             if (hasOwn.call(compound, key)) {
               const selector = compound[key];
               if (
@@ -587,11 +580,12 @@ export const defineConfig = ((options: DefineConfigOptions) => {
                 break;
               }
             }
+          }
           if (matched) pushClassProps(out, compound);
         }
+      }
 
-      pushClassProps(out, given);
-      return cxa(out);
+      return cxArray(pushClassProps(out, given));
     }) as CVAComponent<typeof config, typeof config.variants>;
 
     component.config = {
@@ -608,7 +602,7 @@ export const defineConfig = ((options: DefineConfigOptions) => {
     const config: Record<string, any> = {};
     for (let i = 0; i < composed.length; i++) {
       const source = composed[i].config;
-      for (const key in source)
+      for (const key in source) {
         if (hasOwn.call(source, key)) {
           const value = source[key];
           config[key] =
@@ -616,20 +610,20 @@ export const defineConfig = ((options: DefineConfigOptions) => {
               ? { ...config[key], ...value }
               : value;
         }
+      }
     }
 
     const component: CVAComponent<typeof config, typeof config.variants> = (
       props,
     ) => {
-      const given: Record<string, any> = props || empty;
+      const given: Record<string, unknown> = props || empty;
       const forwarded = definedProps(given);
       const out: ClassValue[] = [];
       for (let i = 0; i < composed.length; i++) {
         const child = composed[i];
         push(out, child(forwarded));
       }
-      pushClassProps(out, given);
-      return cxa(out);
+      return cxArray(pushClassProps(out, given));
     };
 
     component.config = config;
