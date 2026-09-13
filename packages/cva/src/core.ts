@@ -175,8 +175,7 @@ type ComponentProps<Component extends (...args: any) => any> = Omit<
 // it, but `VariantProps` and `getSchema` omit it from the public surface.
 type InternalVariantKey = `_${string}`;
 
-// One `Omit` rather than omitting the internal keys from `ComponentProps`:
-// nesting the two rebuilds the props object twice per use site.
+// One `Omit`: nesting it inside `ComponentProps` builds the props twice.
 export type VariantProps<Component extends (...args: any) => any> = Omit<
   OmitUndefined<Parameters<Component>[0]>,
   "class" | "className" | InternalVariantKey
@@ -237,18 +236,15 @@ export type CVAVariantShape = Record<string, Record<string, ClassValue>>;
 type CVAVariantSchema<V> = {
   [Variant in keyof V]?: StringToBoolean<keyof V[Variant]> | undefined;
 };
-// A `compoundVariants` entry selects on a single value or a list per variant.
-// One mapped type covering both, rather than a union: this arm subsumes the
-// single-value one, and a two-arm target doubles the combinations TypeScript
-// tries for every authored entry.
+// A single value or a list per variant. One mapped type, not a union: a
+// two-arm target doubles what TypeScript tries for every entry.
 type CVACompoundVariantSchema<V> = {
   [Variant in keyof V]?:
     | StringToBoolean<keyof V[Variant]>
     | StringToBoolean<keyof V[Variant]>[]
     | undefined;
 };
-// Named rather than written inline below, so TypeScript caches one
-// instantiation per `(V, T)` instead of rebuilding the element type per use.
+// Named so TypeScript caches one instantiation per `(V, T)`.
 type CVACompoundVariants<
   V,
   T extends ClassValue,
@@ -288,8 +284,7 @@ type CVAComponentConfig<
   // input type, so e.g. object syntax fails here (on the `variants` key)
   // under a concatenator that doesn't accept objects.
   //
-  // `__proto__` stays a data property at runtime, but naming a variant after
-  // it reads as a prototype write, so the gate rejects it while authoring.
+  // `__proto__` reads as a prototype write, so the gate rejects the name.
 } & (Variants extends Record<string, Record<string, T>>
     ? CVAComponentConfigBase<T> & {
         variants?: Variants & { __proto__?: never };
@@ -347,10 +342,8 @@ type CVADefaultVariants<Config> = Config extends { defaultVariants?: infer D }
   ? D
   : {};
 
-// Most components compose nothing, leaving both composition parameters at
-// their defaults. Answering that case with `Variants` verbatim skips
-// `ComposedTuple`, `MergedVariants`' mapped type and its
-// `UnionToIntersection`, which together resolve to `Variants & unknown`.
+// Nothing composed is the common case: answer with `Variants` and skip the
+// merge machinery.
 type AllVariants<
   Variants,
   ComposedSingle extends CVAComponentShape | undefined,
@@ -907,8 +900,7 @@ export const defineConfig = ((options: DefineConfigOptions) => {
   };
 }) as DefineConfig;
 
-// One variant's schema entry, named so `GetSchema` can drop the empty ones as
-// it maps the keys instead of building the whole schema and re-mapping it.
+// Named so `GetSchema` can drop empty entries while mapping the keys.
 type SchemaEntry<Config, Variants, Variant extends keyof Variants> =
   Config extends CVAComponentConfig<Config, Variants>
     ? Variant extends keyof Config["defaultVariants"]

@@ -862,8 +862,8 @@ describe("cva — authoring types", () => {
   });
 
   test("a props interface can extend `VariantProps` directly", () => {
-    // The shadcn idiom. An interface can extend `VariantProps` as long as it
-    // resolves to an object type with statically known members (TS2312).
+    // The shadcn idiom: `VariantProps` must stay an object type an
+    // interface can extend (TS2312).
     interface ButtonProps extends CVA.VariantProps<typeof button> {}
 
     expectTypeOf<keyof ButtonProps>().toEqualTypeOf<
@@ -892,8 +892,7 @@ describe("cva — authoring types", () => {
   });
 
   test("variants typed as a broad record are still accepted", () => {
-    // Widening erases the variant names, so a `__proto__` entry inside a
-    // broad record is out of the guard's reach and still compiles.
+    // Widening hides the key from the guard.
     const variants: Record<string, Record<string, string>> = {
       ["__proto__"]: { on: "on" },
       intent: { primary: "primary" },
