@@ -122,55 +122,147 @@ describe("cva — runtime semantics", () => {
     });
   });
 
-  describe("live config reads", () => {
-    test("a mutated variant value is picked up on the next call", () => {
-      const variants = { intent: { primary: "intent-primary" } };
-      const button = cva({
-        base: "button",
-        variants,
-        compoundVariants: [{ intent: "primary", class: "compound-primary" }],
-        defaultVariants: { intent: "primary" },
+  describe("definition-time configuration", () => {
+    test("no configuration property is read during a call", () => {
+      const reads: string[] = [];
+      const watched = <T>(key: string, value: T) => ({
+        get: () => {
+          reads.push(key);
+          return value;
+        },
+        enumerable: true,
       });
+      const config = Object.defineProperties(
+        {},
+        {
+          base: watched("base", "button"),
+          variants: watched("variants", {
+            intent: { primary: "intent-primary" },
+          }),
+          compoundVariants: watched("compoundVariants", [
+            { intent: "primary", class: "compound-primary" },
+          ]),
+          defaultVariants: watched("defaultVariants", { intent: "primary" }),
+          composes: watched("composes", [cva({ base: "box" })]),
+        },
+      ) as {
+        base: string;
+        variants: { intent: { primary: string } };
+        defaultVariants: { intent: "primary" };
+      };
+      const button = cva(config);
 
-      expect(button()).toBe("button intent-primary compound-primary");
-      expect(button({ intent: "primary" })).toBe(
-        "button intent-primary compound-primary",
+      expect(reads.length).toBeGreaterThan(0);
+      reads.length = 0;
+
+      expect(button()).toBe("box button intent-primary compound-primary");
+      expect(button({ intent: "primary", className: "c" })).toBe(
+        "box button intent-primary compound-primary c",
       );
 
-      variants.intent.primary = "intent-primary-changed";
-
-      expect(button()).toBe("button intent-primary-changed compound-primary");
-      expect(button({ intent: "primary" })).toBe(
-        "button intent-primary-changed compound-primary",
-      );
+      expect(reads).toEqual([]);
     });
 
-    test("base, variants and compoundVariants replaced wholesale are picked up", () => {
-      const config = {
+    test("a frozen config works and the authored objects are left alone", () => {
+      // Freeze at runtime without widening to `Readonly`, which the authoring
+      // types reject for `compoundVariants`.
+      const frozen = <T>(value: T) => Object.freeze(value) as T;
+      const config = frozen({
+        base: "button",
+        variants: frozen({ intent: frozen({ primary: "intent-primary" }) }),
+        compoundVariants: frozen([
+          frozen({ intent: "primary" as const, class: "compound-primary" }),
+        ]),
+        defaultVariants: frozen({ intent: "primary" as const }),
+        composes: frozen([cva({ base: "box" })]),
+      });
+
+      expect(cva(config)()).toBe("box button intent-primary compound-primary");
+
+      // The same shape unfrozen: nothing the caller owns is mutated or frozen.
+      const authored = {
         base: "button",
         variants: { intent: { primary: "intent-primary" } },
         compoundVariants: [
           { intent: "primary" as const, class: "compound-primary" },
         ],
         defaultVariants: { intent: "primary" as const },
+        composes: [cva({ base: "box" })],
       };
-      const button = cva(config);
+      const snapshot = JSON.stringify(authored);
+      const button = cva(authored);
+
+      button();
+      button({ intent: "primary", class: "c" });
+
+      expect(JSON.stringify(authored)).toBe(snapshot);
+      for (const value of [
+        authored,
+        authored.variants,
+        authored.variants.intent,
+        authored.compoundVariants,
+        authored.compoundVariants[0],
+        authored.defaultVariants,
+        authored.composes,
+      ]) {
+        expect(Object.isFrozen(value)).toBe(false);
+      }
+      expect(Object.isFrozen(button.config)).toBe(false);
+    });
+
+    test("recreating the component picks up changes; the original does not", () => {
+      const { calls, cva: recordingCva } = recorder();
+      const config = {
+        base: "button" as CVA.ClassValue,
+        variants: {
+          intent: { primary: "intent-primary", secondary: "intent-secondary" },
+        },
+        compoundVariants: [
+          {
+            intent: "primary" as "primary" | "secondary",
+            class: "compound-primary",
+          },
+        ],
+        defaultVariants: { intent: "primary" as "primary" | "secondary" },
+      };
+      const button = recordingCva(config);
 
       expect(button()).toBe("button intent-primary compound-primary");
 
-      config.base = "button-swapped";
-      config.variants = { intent: { primary: "intent-swapped" } };
+      config.variants.intent.secondary = "intent-changed";
       config.compoundVariants = [
-        { intent: "primary", class: "compound-swapped" },
+        { intent: "secondary", class: "compound-changed" },
       ];
+      config.defaultVariants = { intent: "secondary" };
 
-      expect(button()).toBe("button-swapped intent-swapped compound-swapped");
-      expect(button({ intent: "primary" })).toBe(
-        "button-swapped intent-swapped compound-swapped",
+      // The original keeps the default it was created with.
+      expect(button()).toBe("button intent-primary compound-primary");
+      // A component created afterwards gets the new one.
+      expect(recordingCva(config)()).toBe(
+        "button intent-changed compound-changed",
       );
+
+      // A replaced `base`, including through `null` and `undefined`: only a
+      // component created afterwards forwards the new value.
+      calls.length = 0;
+      config.base = null;
+      button();
+      const withNull = recordingCva(config);
+      config.base = undefined;
+      button();
+      const withUndefined = recordingCva(config);
+      withNull();
+      withUndefined();
+
+      expect(calls).toEqual([
+        ["button", "intent-primary", "compound-primary"],
+        ["button", "intent-primary", "compound-primary"],
+        [null, "intent-changed", "compound-changed"],
+        ["intent-changed", "compound-changed"],
+      ]);
     });
 
-    test("a component appended to the authored composes array is picked up", () => {
+    test("a child added to the authored composes array needs the parent recreated", () => {
       const box = cva({ base: "box" });
       const stack = cva({ base: "stack" });
       const composes = [box];
@@ -180,7 +272,83 @@ describe("cva — runtime semantics", () => {
 
       composes.push(stack);
 
-      expect(card()).toBe("box stack card");
+      expect(card()).toBe("box card");
+      expect(cva({ composes, base: "card" })()).toBe("box stack card");
+    });
+
+    test("a parent reads each child's config when the parent is created", () => {
+      const child = cva({
+        variants: {
+          intent: { primary: "child-primary", secondary: "child-secondary" },
+        },
+        defaultVariants: { intent: "primary" as "primary" | "secondary" },
+      });
+      const card = cva({ composes: [child], base: "card" });
+
+      expect(card()).toBe("child-primary card");
+
+      child.config.defaultVariants = { intent: "secondary" };
+
+      // Neither re-reads it: the child resolved its own default when it was
+      // created, and the parent merged that config when it was created.
+      expect(child()).toBe("child-primary");
+      expect(card()).toBe("child-primary card");
+
+      // A parent created afterwards merges the child's config as it now
+      // stands, which is what "read when the component is created" means.
+      expect(cva({ composes: [child], base: "card" })()).toBe(
+        "child-secondary card",
+      );
+    });
+
+    test("known props are read up front, before any composed child runs", () => {
+      let reads = 0;
+      let readsWhenChildRan = -1;
+      const props = {
+        get v(): "a" | "b" {
+          reads++;
+          return "a";
+        },
+      };
+      const child = Object.assign(
+        () => {
+          readsWhenChildRan = reads;
+          // Reaching back into the caller's props object cannot change the
+          // parent's output: every key it knows was already read.
+          Object.defineProperty(props, "v", {
+            value: "b",
+            enumerable: true,
+            configurable: true,
+          });
+          return "child";
+        },
+        { config: {} },
+      ) as CVA.CVAComponentShape;
+      const card = cva({
+        composes: [child],
+        variants: { v: { a: "variant-a", b: "variant-b" } },
+      });
+
+      expect(card(props)).toBe("child variant-a");
+      // Read once to resolve the variant and once to build the child's own
+      // props, both before the child ran, and never again afterwards.
+      expect(readsWhenChildRan).toBe(2);
+      expect(reads).toBe(2);
+    });
+
+    test("a known prop is read once on a call with no composed children", () => {
+      let reads = 0;
+      const button = cva({ variants: { v: { a: "variant-a" } } });
+
+      expect(
+        button({
+          get v(): "a" {
+            reads++;
+            return "a";
+          },
+        }),
+      ).toBe("variant-a");
+      expect(reads).toBe(1);
     });
   });
 
@@ -428,6 +596,101 @@ describe("cva — runtime semantics", () => {
     });
   });
 
+  describe("output parity across call shapes", () => {
+    test("repeated calls stream the same base and variants", () => {
+      const { calls, cva: recordingCva } = recorder();
+      const button = recordingCva({
+        base: "button",
+        variants: { intent: { primary: "intent-primary" } },
+        defaultVariants: { intent: "primary" },
+      });
+
+      button();
+      button({ class: "c" });
+      button({ className: "n" });
+      button({
+        class: "c",
+        // @ts-expect-error — `class` and `className` are mutually exclusive
+        className: "n",
+      });
+      button();
+
+      expect(calls).toEqual([
+        ["button", "intent-primary"],
+        ["button", "intent-primary", "c"],
+        ["button", "intent-primary", "n"],
+        ["button", "intent-primary", "c", "n"],
+        ["button", "intent-primary"],
+      ]);
+    });
+
+    test("a component with nothing to emit passes no arguments", () => {
+      const { calls, cva: recordingCva } = recorder();
+      const button = recordingCva({
+        variants: { intent: { primary: "intent-primary" } },
+      });
+
+      expect(button()).toBe("");
+      expect(button({ className: "n" })).toBe("n");
+
+      expect(calls).toEqual([[], ["n"]]);
+    });
+
+    test("compounds match against the defaults and against supplied props", () => {
+      const button = cva({
+        base: "button",
+        variants: {
+          intent: { primary: "intent-primary", secondary: "intent-secondary" },
+        },
+        compoundVariants: [
+          { intent: "primary", class: "compound-primary" },
+          { intent: ["secondary"], class: "compound-secondary" },
+        ],
+        defaultVariants: { intent: "primary" },
+      });
+
+      expect(button()).toBe("button intent-primary compound-primary");
+      expect(button({ intent: "secondary" })).toBe(
+        "button intent-secondary compound-secondary",
+      );
+    });
+
+    test("a prop equal to its default streams the same as omitting it", () => {
+      const { calls, cva: recordingCva } = recorder();
+      const button = recordingCva({
+        base: "button",
+        variants: { intent: { primary: "intent-primary" } },
+        compoundVariants: [{ intent: "primary", class: "compound-primary" }],
+        defaultVariants: { intent: "primary" },
+      });
+
+      button();
+      button({ intent: "primary" });
+
+      // Supplying the default and omitting it give the same stream.
+      expect(calls).toEqual([
+        ["button", "intent-primary", "compound-primary"],
+        ["button", "intent-primary", "compound-primary"],
+      ]);
+    });
+
+    test("inherited props are dropped before reaching a composed child", () => {
+      const seen: (string | undefined)[] = [];
+      const child = Object.assign(
+        (props?: Record<string, unknown>) => {
+          seen.push(props && (props.intent as string | undefined));
+          return "child";
+        },
+        { config: {} },
+      ) as CVA.CVAComponentShape;
+      const card = cva({ composes: [child], base: "card" });
+
+      expect(card(Object.create({ intent: "inherited" }))).toBe("child card");
+
+      expect(seen).toEqual([undefined]);
+    });
+  });
+
   describe("plain-component fast path", () => {
     test("builds the same argument stream as the general path", () => {
       const { calls, cva: recordingCva } = recorder();
@@ -494,60 +757,57 @@ describe("cva — runtime semantics", () => {
       expect(calls).toEqual([["b"], ["b"], ["b"]]);
     });
 
-    test("a plain config that gains variants is followed", () => {
-      const config: { base: CVA.ClassValue; variants?: CVA.CVAVariantShape } = {
-        base: "b",
-      };
-      const button = cva(config);
-
-      expect(button()).toBe("b");
-
-      config.variants = { intent: { primary: "intent-primary" } };
-
-      expect(button({ intent: "primary" })).toBe("b intent-primary");
-    });
-
-    test("a plain config that gains a compound is followed", () => {
-      // `variants` is declared so the props surface accepts `intent`; it is
-      // never assigned, so the config stays plain until the compound lands.
-      const config: {
-        base: CVA.ClassValue;
-        variants?: CVA.CVAVariantShape;
-        compoundVariants?: { intent?: string; class?: string }[];
-      } = { base: "b" };
-      const button = cva(config);
-
-      expect(button({ intent: "primary" })).toBe("b");
-
-      config.compoundVariants = [{ intent: "primary", class: "compound" }];
-
-      expect(button({ intent: "primary" })).toBe("b compound");
-      expect(button({ intent: "secondary" })).toBe("b");
-    });
-
-    test("a plain config that gains its first child is followed", () => {
-      const composes: CVA.CVAComponentShape[] = [];
-      const card = cva({ base: "card", composes });
-
-      expect(card()).toBe("card");
-
-      composes.push(cva({ base: "child" }));
-
-      expect(card()).toBe("child card");
-    });
-
-    test("a replaced base is followed through null and undefined", () => {
+    test("empty variants stream exactly like a config without them", () => {
       const { calls, cva: recordingCva } = recorder();
-      const config: { base: CVA.ClassValue } = { base: "b" };
-      const button = recordingCva(config);
 
-      button();
-      config.base = null;
-      button();
-      config.base = undefined;
-      button();
+      recordingCva({ base: "b", variants: {} })();
+      recordingCva({ base: "b", variants: {} })({ className: "c" });
+      recordingCva({ base: "b", variants: {} })({ class: "c" });
+      recordingCva({ variants: {} })({ className: "c" });
 
-      expect(calls).toEqual([["b"], [null], []]);
+      expect(calls).toEqual([["b"], ["b", "c"], ["b", "c"], ["c"]]);
+    });
+
+    test("empty compoundVariants stream exactly like a config without them", () => {
+      const { calls, cva: recordingCva } = recorder();
+      // Annotated because the authoring types accept `compoundVariants` only
+      // alongside `variants`; `variants` is declared and never assigned.
+      type Config = {
+        base?: CVA.ClassValue;
+        variants?: CVA.CVAVariantShape;
+        compoundVariants?: { class?: string }[];
+      };
+      const withBase: Config = { base: "b", compoundVariants: [] };
+      const withoutBase: Config = { compoundVariants: [] };
+
+      recordingCva(withBase)();
+      recordingCva(withBase)({ className: "c" });
+      recordingCva(withBase)({ class: "c" });
+      recordingCva(withoutBase)({ className: "c" });
+
+      expect(calls).toEqual([["b"], ["b", "c"], ["b", "c"], ["c"]]);
+    });
+
+    test("a compound selecting on the 33rd variant key still matches", () => {
+      const variants: CVA.CVAVariantShape = {};
+      for (let index = 0; index < 33; index++) {
+        variants[`k${index}`] = { on: `k${index}-on` };
+      }
+      const button = cva({
+        variants,
+        compoundVariants: [
+          // Bit 32 is outside the mask, so every call takes the general path.
+          { k32: "on", class: "compound-last" },
+          // No keys, so its definition-time match stands for every call.
+          { class: "compound-always" },
+        ],
+      }) as CVA.CVAComponentShape;
+
+      expect(button({ k32: "on" })).toBe(
+        "k32-on compound-last compound-always",
+      );
+      expect(button({ k32: "off" })).toBe("compound-always");
+      expect(button()).toBe("compound-always");
     });
 
     test("a hook installed after defineConfig is honoured on the fast path", () => {

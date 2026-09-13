@@ -426,8 +426,16 @@ const falsyToString = <T extends unknown>(value: T) =>
 // mutate.
 const empty: Record<string, any> = {};
 
+// Shared stand-in for a table a component does not need. Never written to.
+const emptyValues: any[] = [];
+
 // Preserve `Object.keys` semantics without allocating a key array.
 const hasOwn = Object.prototype.hasOwnProperty;
+
+// Own *and* enumerable, the set `Object.keys`/`Object.entries` yields — the
+// predicate `definedProps` applies by construction, applied here per known key
+// instead. `hasOwn` alone would additionally see own non-enumerable props.
+const ownEnumerable = Object.prototype.propertyIsEnumerable;
 
 // Overlay own defined variant props on the defaults; omit class props.
 // Explicit `undefined` leaves the default intact.
@@ -466,6 +474,33 @@ const pushClassProps = (
   return out;
 };
 
+// The body of a component with no keys to read and no children: it can only
+// ever emit `defaultOut` plus the class props. Built here, at module scope,
+// rather than inside `cva` — a closure made there would retain `cva`'s whole
+// variable context, and this shape needs three values from it.
+const plainComponent =
+  (
+    cxArray: (inputs: ClassValue[]) => string,
+    defaultOut: ClassValue[],
+    single: ClassValue,
+  ) =>
+  (props?: Record<string, unknown>) => {
+    const given: Record<string, unknown> = props || empty;
+    const classValue = given.class as ClassValue;
+    const classNameValue = given.className as ClassValue;
+    // V8 scalar-replaces a literal that never escapes, which is worth ~2x on
+    // a bundled `base`-only call against handing over the shared list.
+    if (classValue === undefined && single !== undefined) {
+      return cxArray(
+        classNameValue === undefined ? [single] : [single, classNameValue],
+      );
+    }
+    const out = defaultOut.slice();
+    push(out, classValue);
+    push(out, classNameValue);
+    return cxArray(out);
+  };
+
 // Cast to `DefineConfig`: runtime uses `ClassValue`; `CXInput` is type-only.
 export const defineConfig = ((options: DefineConfigOptions) => {
   // Inputs already exclude `undefined`. Avoid a spread call, preserving
@@ -493,122 +528,308 @@ export const defineConfig = ((options: DefineConfigOptions) => {
   >(
     config: CVAComponentConfig<Config, Variants, ComposedSingle, ComposedList>,
   ) => {
-    // Normalised once so the per-call reads below need no `?.`, but every
-    // `base`/`variants`/`compoundVariants` read stays on the authored object
-    // so replacing one after definition is still observed.
+    // The configuration is read here, when the component is created, and a
+    // call reads only the caller's `props` and `options`. The documented
+    // contract is that the config and everything it references are immutable
+    // afterwards, and that a change means a new component.
     const authored: Record<string, any> = config || empty;
     const composes = authored.composes;
-    // The authored array itself, not a copy: growing it after definition is
-    // observed.
-    const components: CVAComponentShape[] =
-      composes == null ? [] : Array.isArray(composes) ? composes : [composes];
+    const base: ClassValue = authored.base;
+    const localVariants: CVAVariantShape | undefined = authored.variants;
+    const authoredCompounds:
+      | (CVAClassProp & Record<string, unknown>)[]
+      | undefined = authored.compoundVariants;
+    // A copy, so the merge below and every call see the same list whatever
+    // happens to the authored array.
+    const children: CVAComponentShape[] =
+      composes == null
+        ? emptyValues
+        : Array.isArray(composes)
+          ? composes.slice()
+          : [composes];
+    const count = children.length;
 
     // Merge children first, then the authored config on the final pass.
     // Local defaults win; variant value maps merge one level deep.
-    let mergedVariants: CVAVariantShape = {};
-    let defaults: Record<string, unknown> = {};
-    for (let i = 0; i <= components.length; i++) {
-      const source = i < components.length ? components[i].config : authored;
+    let mutableVariants: CVAVariantShape = {};
+    let mutableDefaults: Record<string, unknown> = {};
+    for (let i = 0; i <= count; i++) {
+      const source = i < count ? children[i].config : authored;
       const sourceVariants: CVAVariantShape | undefined =
         source && source.variants;
       for (const key in sourceVariants) {
         if (hasOwn.call(sourceVariants, key)) {
-          const merged = { ...mergedVariants[key], ...sourceVariants[key] };
+          const merged = { ...mutableVariants[key], ...sourceVariants[key] };
           // Keep `__proto__` as an own data property, without invoking its
           // setter.
           if (key === "__proto__") {
-            mergedVariants = { ...mergedVariants, [key]: merged };
+            mutableVariants = { ...mutableVariants, [key]: merged };
           } else {
-            mergedVariants[key] = merged;
+            mutableVariants[key] = merged;
           }
         }
       }
-      defaults = { ...defaults, ...(source && source.defaultVariants) };
+      mutableDefaults = {
+        ...mutableDefaults,
+        ...(source && source.defaultVariants),
+      };
     }
+    // Frozen into `const`s before any closure captures them: a captured `let`
+    // is a context slot V8 cannot treat as constant, which measurably blocks
+    // constant-folding in the component body.
+    const mergedVariants = mutableVariants;
+    const defaults = mutableDefaults;
 
-    const component = ((props) => {
-      const given: Record<string, unknown> = props || empty;
-      const compounds: (CVAClassProp & Record<string, unknown>)[] | undefined =
-        authored.compoundVariants;
-
-      // A plain component, checked live: `variants` last, so a composed or
-      // compound config never reads it here.
-      if (!components.length && !compounds && !authored.variants) {
-        const base: ClassValue = authored.base;
-        const classValue = given.class as ClassValue;
-        const classNameValue = given.className as ClassValue;
-        // A 1- or 2-element array literal instead of the assembly below:
-        // measured ~1.28x on `base only` and ~1.32x on `base only x20`
-        // against the same rows without this branch (Node 24).
-        if (base !== undefined && classValue === undefined) {
-          return cxArray(
-            classNameValue === undefined ? [base] : [base, classNameValue],
-          );
-        }
-        const out: ClassValue[] = [];
-        push(out, base);
-        push(out, classValue);
-        push(out, classNameValue);
-        return cxArray(out);
+    // A call's tables are built in these throwaway builders and copied to
+    // their exact size below. `names` holds every prop name a call reads:
+    // this config's own variant names first, so index `i` also addresses its
+    // value map and resolved default, then any name only a compound variant
+    // selects on.
+    const names: string[] = [];
+    const maps: Record<string, ClassValue>[] = [];
+    for (const key in localVariants) {
+      if (hasOwn.call(localVariants, key)) {
+        names.push(key);
+        maps.push(localVariants[key]);
       }
+    }
+    const variantCount = names.length;
 
-      const out: ClassValue[] = [];
-      // Defaults plus defined props, copied for children and used for
-      // compounds. The compounds branch implies this was assigned below.
-      let resolved!: Record<string, unknown>;
-
-      if (components.length || compounds) {
-        resolved = definedProps(given, defaults);
-        // A fresh object per child: a child that mutates its props must not
-        // leak into a sibling or into compound matching below. Read the child
-        // out of the array before calling it to avoid passing the array as
-        // the child's `this`.
-        for (let i = 0; i < components.length; i++) {
-          const child = components[i];
-          push(out, child({ ...resolved }));
-        }
-      }
-
-      push(out, authored.base);
-
-      const variants: CVAVariantShape | undefined = authored.variants;
-      for (const key in variants) {
-        if (hasOwn.call(variants, key)) {
-          push(
-            out,
-            variants[key][
-              (falsyToString(given[key]) ||
-                falsyToString(defaults[key])) as string
-            ],
-          );
-        }
-      }
-
-      if (compounds) {
-        for (let i = 0; i < compounds.length; i++) {
-          const compound = compounds[i];
-          let matched = true;
-          for (const key in compound) {
-            if (hasOwn.call(compound, key)) {
-              const selector = compound[key];
-              if (
-                key !== "class" &&
-                key !== "className" &&
-                (Array.isArray(selector)
-                  ? !selector.includes(resolved[key])
-                  : resolved[key] !== selector)
-              ) {
-                matched = false;
-                break;
-              }
+    // Per compound: its selectors flattened, with `starts[i]` marking where
+    // compound `i` begins.
+    const starts: number[] = [0];
+    const selectorIndexes: number[] = [];
+    const selectors: unknown[] = [];
+    const masks: number[] = [];
+    const classes: ClassValue[] = [];
+    const classNames: ClassValue[] = [];
+    if (authoredCompounds) {
+      for (let i = 0; i < authoredCompounds.length; i++) {
+        const compound = authoredCompounds[i];
+        let mask = 0;
+        for (const key in compound) {
+          if (hasOwn.call(compound, key)) {
+            const selector = compound[key];
+            if (key !== "class" && key !== "className") {
+              let index = names.indexOf(key);
+              if (index === -1) index = names.push(key) - 1;
+              selectorIndexes.push(index);
+              selectors.push(selector);
+              mask |= 1 << index;
             }
           }
-          if (matched) pushClassProps(out, compound);
+        }
+        starts.push(selectorIndexes.length);
+        masks.push(mask);
+        classes.push(compound.class as ClassValue);
+        classNames.push(compound.className as ClassValue);
+      }
+    }
+    const compoundCount = masks.length;
+    const keyCount = names.length;
+    // Past 31 keys the mask cannot address every key, so it starts saturated:
+    // every call takes the general path and the results are identical.
+    const maskable = keyCount < 32;
+
+    // Each table exactly sized, and a table a component cannot consult is
+    // the shared sentinel: an array grown with `push` retains about 180 B even
+    // at two elements (measured; larger arrays grow from there), so the
+    // twelve-compound shape held ~6.7 kB of tables as per-compound objects
+    // where these hold ~1 kB.
+    const keys: string[] = keyCount ? names.slice() : emptyValues;
+    const variantMaps: Record<string, ClassValue>[] = variantCount
+      ? maps.slice()
+      : emptyValues;
+    const compoundStart: number[] = compoundCount
+      ? starts.slice()
+      : emptyValues;
+    const compoundIndex: number[] = compoundCount
+      ? selectorIndexes.slice()
+      : emptyValues;
+    const compoundSelector: unknown[] = compoundCount
+      ? selectors.slice()
+      : emptyValues;
+    const compoundMask: number[] = compoundCount ? masks.slice() : emptyValues;
+    const compoundClass: ClassValue[] = compoundCount
+      ? classes.slice()
+      : emptyValues;
+    const compoundClassName: ClassValue[] = compoundCount
+      ? classNames.slice()
+      : emptyValues;
+    const compoundMatch: boolean[] = compoundCount
+      ? new Array(compoundCount)
+      : emptyValues;
+    // `defaultRaw[i]` is the merged default behind `keys[i]`; `defaultValue[i]`
+    // is the class it resolves to.
+    const defaultRaw: unknown[] = compoundCount
+      ? new Array(keyCount)
+      : emptyValues;
+    const defaultValue: ClassValue[] = variantCount
+      ? new Array(variantCount)
+      : emptyValues;
+    for (let i = 0; i < keyCount; i++) {
+      const fallback = defaults[keys[i]];
+      if (compoundCount) defaultRaw[i] = fallback;
+      if (i < variantCount) {
+        defaultValue[i] = variantMaps[i][falsyToString(fallback) as string];
+      }
+    }
+
+    // The finished argument list for a call that supplies no variant prop and
+    // no class prop — every base-only render, and the common defaulted one.
+    // Handed to the concatenator as-is; `Reflect.apply` copies it into the
+    // call's arguments, so it is never mutated and never escapes.
+    //
+    // With no variant and no compound table, `base` is the only thing that
+    // can be in it, so it is built directly: skipping the builder and its
+    // copy measures at 0.8x on `base`-only creation.
+    const onlyBase = !variantCount && !compoundCount;
+    const assembled: ClassValue[] = onlyBase
+      ? base === undefined
+        ? emptyValues
+        : [base]
+      : [];
+    if (!onlyBase) push(assembled, base);
+    for (let i = 0; i < variantCount; i++) push(assembled, defaultValue[i]);
+    for (let i = 0; i < compoundCount; i++) {
+      let matched = true;
+      const end = compoundStart[i + 1];
+      for (let j = compoundStart[i]; j < end; j++) {
+        const selector = compoundSelector[j];
+        const value = defaultRaw[compoundIndex[j]];
+        if (
+          Array.isArray(selector)
+            ? !selector.includes(value)
+            : value !== selector
+        ) {
+          matched = false;
+          break;
         }
       }
+      compoundMatch[i] = matched;
+      if (matched) {
+        push(assembled, compoundClass[i]);
+        push(assembled, compoundClassName[i]);
+      }
+    }
+    // `slice` gives an exactly-sized copy; the pushed original is throwaway.
+    const defaultOut: ClassValue[] = onlyBase ? assembled : assembled.slice();
+    // `defaultOut`'s only element, when it has exactly one — every element is
+    // defined, so `undefined` means "not a one-element list". Lets the
+    // commonest calls rebuild a literal instead of copying. A `const`, so the
+    // closures below capture a value V8 can treat as constant.
+    const single: ClassValue =
+      defaultOut.length === 1 ? defaultOut[0] : undefined;
 
-      return cxArray(pushClassProps(out, given));
-    }) as CVAComponent<typeof config, typeof config.variants>;
+    const component = (
+      !keyCount && !count
+        ? plainComponent(cxArray, defaultOut, single)
+        : (props?: Record<string, unknown>) => {
+            const given: Record<string, unknown> = props || empty;
+            const classValue = given.class as ClassValue;
+            const classNameValue = given.className as ClassValue;
+
+            // One read of `props` per known key, shared by variant resolution
+            // and compound matching. `supplied` records which keys carried a
+            // value.
+            let supplied = maskable ? 0 : -1;
+            const variantClasses: ClassValue[] = variantCount
+              ? new Array(variantCount)
+              : emptyValues;
+            const resolved: unknown[] = compoundCount
+              ? new Array(keyCount)
+              : emptyValues;
+            for (let i = 0; i < keyCount; i++) {
+              const key = keys[i];
+              // A variant name is read straight off `props`, as it always has
+              // been; a name only a compound selects on is own-enumerable-gated,
+              // which is what building the props overlay used to guarantee.
+              // Without compound variants nothing consults `own`, so the check
+              // is skipped.
+              const own = compoundCount !== 0 && ownEnumerable.call(given, key);
+              const value = i < variantCount || own ? given[key] : undefined;
+              if (value !== undefined) supplied |= 1 << i;
+              if (i < variantCount) {
+                const variantKey = falsyToString(value);
+                variantClasses[i] = variantKey
+                  ? variantMaps[i][variantKey as string]
+                  : defaultValue[i];
+              }
+              if (compoundCount) {
+                resolved[i] =
+                  own && value !== undefined ? value : defaultRaw[i];
+              }
+            }
+
+            // Nothing supplied and no composed child to run: the argument list
+            // is the one computed at definition, plus any class props.
+            if (!count && supplied === 0) {
+              if (classValue === undefined) {
+                // A literal for the same reason as `plainComponent`'s.
+                if (single !== undefined) {
+                  return cxArray(
+                    classNameValue === undefined
+                      ? [single]
+                      : [single, classNameValue],
+                  );
+                }
+                if (classNameValue === undefined) return cxArray(defaultOut);
+              }
+              // A copy: `defaultOut` is shared by every call, never mutated.
+              const out = defaultOut.slice();
+              push(out, classValue);
+              push(out, classNameValue);
+              return cxArray(out);
+            }
+
+            const out: ClassValue[] = [];
+            if (count) {
+              // A fresh object per child: a child that mutates its props must
+              // not leak into a sibling. Read the child out of the array before
+              // calling it to avoid passing the array as the child's `this`.
+              const forwarded = definedProps(given, defaults);
+              for (let i = 0; i < count; i++) {
+                const child = children[i];
+                push(out, child({ ...forwarded }));
+              }
+            }
+
+            push(out, base);
+            for (let i = 0; i < variantCount; i++) push(out, variantClasses[i]);
+
+            for (let i = 0; i < compoundCount; i++) {
+              let matched: boolean;
+              // None of this compound's keys were supplied, so it matches
+              // exactly as it did against the defaults at definition.
+              if ((supplied & compoundMask[i]) === 0) {
+                matched = compoundMatch[i];
+              } else {
+                matched = true;
+                const end = compoundStart[i + 1];
+                for (let j = compoundStart[i]; j < end; j++) {
+                  const selector = compoundSelector[j];
+                  const value = resolved[compoundIndex[j]];
+                  if (
+                    Array.isArray(selector)
+                      ? !selector.includes(value)
+                      : value !== selector
+                  ) {
+                    matched = false;
+                    break;
+                  }
+                }
+              }
+              if (matched) {
+                push(out, compoundClass[i]);
+                push(out, compoundClassName[i]);
+              }
+            }
+
+            push(out, classValue);
+            push(out, classNameValue);
+            return cxArray(out);
+          }
+    ) as CVAComponent<typeof config, typeof config.variants>;
 
     component.config = {
       ...config,
