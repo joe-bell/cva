@@ -131,15 +131,15 @@ Both configurations accept conditional objects and arrays.
 
 ### cn
 
-Use the [shadcn CLI](https://ui.shadcn.com/docs/registry/github) to install `cva@beta` and `cn` and create `cva.config.ts` at your project root:
+Install the [`cn`](https://www.npmjs.com/package/cn) package to join conditional classes and resolve Tailwind CSS conflicts in one function.
+
+The [shadcn CLI](https://ui.shadcn.com/docs/registry/github) installs `cva@beta` with `cn` and writes `cva.config.ts` to your project root:
 
 ```sh
-npx shadcn@latest add joe-bell/cva/cn
+pnpm dlx shadcn@latest add joe-bell/cva/cn
 ```
 
-Or configure it manually:
-
-Install the [`cn`](https://www.npmjs.com/package/cn) package to join conditional classes and resolve Tailwind CSS conflicts in one function:
+To set it up by hand instead, add `cn` and export the configured functions from `cva.config.ts`:
 
 ```sh
 pnpm add cn
@@ -148,9 +148,9 @@ pnpm add cn
 ```ts
 // cva.config.ts
 import { defineConfig } from "cva/config";
-import { cn as mergeClasses } from "cn";
+import { cn as merge } from "cn";
 
-export const { cva, cx: cn } = defineConfig({ cx: mergeClasses });
+export const { cva, cx: cn } = defineConfig({ cx: merge });
 ```
 
 ### tailwind-merge
