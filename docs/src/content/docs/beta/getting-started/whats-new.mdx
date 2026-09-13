@@ -122,7 +122,7 @@ If you now pass a generic type parameter, `cva` throws an error.
 
 Calling a `cva` component is up to 1000% faster than `0.7`. The runtime works out as much of the class list as it can when you create the component, then calls your concatenator once per call, instead of copying props and spreading arrays along the way:
 
-- Components with variants and compound variants: 400% to 550% faster per call.
+- Components with variants and compound variants: 300% to 550% faster per call.
 - Matching many compound variants: 700% to 1000% faster.
 - One component called with many different prop shapes: 400% faster.
 - Components with only a `base`: 50% faster.
