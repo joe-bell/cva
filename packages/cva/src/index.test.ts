@@ -1,6 +1,10 @@
 import { clsx } from "clsx";
 import type * as CVA from "./";
 import { compose, cva, cx, defineConfig, getSchema } from "./";
+import {
+  getSchema as getSchemaTool,
+  type GetSchema as ToolsGetSchema,
+} from "./tools";
 import { getSchema as getSchemaUtils } from "./utils";
 
 describe("clsx (the `cva` preset default)", () => {
@@ -692,15 +696,18 @@ describe("cva — internal variants", () => {
 });
 
 describe("getSchema", () => {
-  test("is also available from cva/utils", () => {
+  test("the deprecated root export is cva/tools' function itself", () => {
     const button = cva({
       variants: { intent: { primary: "button-primary" } },
     });
 
-    expect(getSchemaUtils(button)).toStrictEqual({
+    expect(getSchema).toBe(getSchemaTool);
+    expect(getSchemaUtils).toBe(getSchemaTool);
+    expect(getSchemaTool(button)).toStrictEqual({
       intent: { values: ["primary"] },
     });
-    expectTypeOf(getSchemaUtils).toEqualTypeOf<CVA.GetSchema>();
+    expectTypeOf<CVA.GetSchema>().toEqualTypeOf<ToolsGetSchema>();
+    expectTypeOf(getSchema).toEqualTypeOf<ToolsGetSchema>();
   });
 });
 

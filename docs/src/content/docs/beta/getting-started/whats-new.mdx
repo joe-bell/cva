@@ -1,6 +1,6 @@
 ---
 title: What's New?
-description: What changed in cva@1.0, defineConfig, composes, getSchema, and other breaking changes since class-variance-authority@0.x.
+description: What changed in cva@1.0, defineConfig, composes, the cva/tools entry point, and other breaking changes since class-variance-authority@0.x.
 ---
 
 What's changed since `class-variance-authority@0.*`?
@@ -25,7 +25,7 @@ This [replaces the `compose` function](#1-compose--composes).
 
 ### 3. `getSchema`
 
-Extract a plain-object schema (variant names, values and defaults) from a `cva` component via the new [`getSchema` utility](/beta/getting-started/utilities). Use it to generate Storybook controls or any other UI that reads a component's variants.
+Extract a plain-object schema (variant names, values and defaults) from a `cva` component via the new [`cva/tools`](/beta/getting-started/tools) entry point's `getSchema`. Use it to generate Storybook controls or any other UI that reads a component's variants.
 
 ### 4. Internal variants
 
@@ -78,14 +78,16 @@ The `defineConfig` function and `DefineConfig` and `DefineConfigOptions` type im
 
 For `hooks.onComplete` and `hooks["cx:done"]`, move the same work into `cx`. A `twMerge` hook becomes `cx: cn` or `cx: (...inputs) => twMerge(clsx(inputs))`; for other postprocessing, use `cx: (...inputs) => postprocess(clsx(inputs))`.
 
-### 3. Root `getSchema` → `cva/utils`
+### 3. Root `getSchema` → `cva/tools`
 
-`getSchema` and its `GetSchema` type are still exported from `cva`, but deprecated there. Import them from `cva/utils` instead:
+`getSchema` and its `GetSchema` type are still exported from `cva`, but deprecated there. Import them from [`cva/tools`](/beta/getting-started/tools) instead:
 
 ```diff lang="ts"
 - import { getSchema, type GetSchema } from "cva";
-+ import { getSchema, type GetSchema } from "cva/utils";
++ import { getSchema, type GetSchema } from "cva/tools";
 ```
+
+An earlier beta briefly put them on `cva/utils`. That entry point still works and still re-exports the same function, but it's deprecated too: move to `cva/tools`.
 
 ## Enhancements
 

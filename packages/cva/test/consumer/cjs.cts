@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from "cva";
 import { defineConfig } from "cva/config";
-import { getSchema } from "cva/utils";
+import { getSchema, type GetSchema } from "cva/tools";
+import { getSchema as getSchemaFromUtils } from "cva/utils";
 import assert from "node:assert/strict";
 
 export const badge = cva({
@@ -9,6 +10,7 @@ export const badge = cva({
   defaultVariants: { tone: "info" },
 });
 export const schema = getSchema(badge);
+export const readSchema: GetSchema = getSchema;
 export type BadgeProps = VariantProps<typeof badge>;
 export interface BadgeUi extends VariantProps<typeof badge> {
   children?: string;
@@ -33,3 +35,5 @@ assert.deepEqual(schema, {
 assert.equal(pill(), "badge info pill sm");
 assert.equal(pill({ tone: "warning" }), "badge warning pill sm loud");
 assert.equal(configured(), "configured");
+assert.equal(getSchemaFromUtils, getSchema);
+assert.deepEqual(getSchemaFromUtils(badge), schema);

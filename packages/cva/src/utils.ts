@@ -14,41 +14,13 @@
  * the License.
  */
 
-import type { CVAComponentShape, CVAVariantShape, GetSchema } from "./core.js";
+import {
+  getSchema as getSchemaTool,
+  type GetSchema as ToolsGetSchema,
+} from "./tools.js";
 
-export type { GetSchema } from "./core.js";
+/** @deprecated Import `GetSchema` from `cva/tools` instead. */
+export type GetSchema = ToolsGetSchema;
 
-// Cast to `GetSchema`: its conditional parameter type cannot narrow here.
-export const getSchema = ((component: CVAComponentShape) => {
-  const variants: CVAVariantShape | undefined = component.config?.variants;
-  if (!variants) return {};
-
-  return Object.entries(variants).reduce((acc, [key, value]) => {
-    if (key.startsWith("_")) return acc;
-
-    const defaultValue = component.config.defaultVariants?.[key];
-    const hasDefaultValue = defaultValue !== undefined;
-    const values = Object.keys(value).map((v) => {
-      if (v === "true") return true;
-      if (v === "false") return false;
-      // Normalize numeric-literal keys back to numbers, since that's how
-      // they appear in variant prop types (`keyof { 1: ... }` is `1`, not
-      // `"1"`) — object keys are always strings/symbols at runtime. The
-      // `String(n) === v` round-trip only accepts canonical numeric forms
-      // (so `"01"`, `""`, `" 1"` stay strings), covering negatives too.
-      const n = Number(v);
-      return Number.isFinite(n) && String(n) === v ? n : v;
-    });
-    const hasValues = values.length > 0;
-
-    return hasValues || hasDefaultValue
-      ? {
-          ...acc,
-          [key]: {
-            ...(hasValues ? { values } : {}),
-            ...(hasDefaultValue ? { defaultValue } : {}),
-          },
-        }
-      : acc;
-  }, {} as ReturnType<GetSchema>);
-}) as GetSchema;
+/** @deprecated Import `getSchema` from `cva/tools` instead. */
+export const getSchema: GetSchema = getSchemaTool;

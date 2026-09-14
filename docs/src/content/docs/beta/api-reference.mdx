@@ -1,6 +1,6 @@
 ---
 title: API Reference
-description: API reference for cva, cva/config, and cva/utils.
+description: API reference for cva, cva/config, and cva/tools.
 ---
 
 ## `cva`
@@ -46,32 +46,23 @@ const className = cx(classes);
 
 `string`
 
-## `cva/utils`
+## `cva/tools`
 
 ### `getSchema`
 
-Extracts a plain-object schema (variant names, possible values, and default values) from a `cva` component. Use it to generate Storybook controls, documentation, or any other UI that reads a component's variants without re-declaring them. See [Utilities](/beta/getting-started/utilities) for use cases.
+Extracts a plain-object schema (variant names, possible values, and default values) from a `cva` component. Use it to generate Storybook controls, documentation, or any other UI that reads a component's variants without re-declaring them. See [Tools](/beta/getting-started/tools) for use cases.
 
 ```ts
 import { cva } from "cva";
-import { getSchema } from "cva/utils";
+import { getSchema } from "cva/tools";
 
 const button = cva({
   base: "button",
   variants: {
-    intent: {
-      primary: "button--primary",
-      secondary: "button--secondary",
-    },
-    disabled: {
-      true: "button--disabled",
-      false: "button--enabled",
-    },
+    intent: { primary: "button--primary", secondary: "button--secondary" },
+    disabled: { true: "button--disabled", false: "button--enabled" },
   },
-  defaultVariants: {
-    intent: "primary",
-    disabled: false,
-  },
+  defaultVariants: { intent: "primary", disabled: false },
 });
 
 getSchema(button);
@@ -83,7 +74,7 @@ getSchema(button);
 
 `getSchema` omits [internal variants](/beta/getting-started/variants#internal-variants) or variants that have no values (e.g. `variants: { empty: {} }`).
 
-`getSchema` and `GetSchema` remain available from `cva`, but are deprecated there. Import them from `cva/utils` instead.
+`getSchema` and `GetSchema` remain available from `cva` and from `cva/utils`, but are deprecated in both. Import them from `cva/tools` instead.
 
 #### Parameters
 
