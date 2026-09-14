@@ -20,7 +20,7 @@ import type {
   InternalOnlyWarning,
   InternalVariantKey,
   StringToBoolean,
-} from "./internal.js";
+} from "./types.js";
 
 /* Types
   ============================================ */

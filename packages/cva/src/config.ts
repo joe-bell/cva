@@ -20,7 +20,7 @@ import type {
   CVAVariantSchema,
   InternalOnlyWarning,
   InternalVariantKey,
-} from "./internal.js";
+} from "./types.js";
 
 /* Types
   ============================================ */
