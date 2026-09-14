@@ -74,8 +74,6 @@ getSchema(button);
 
 `getSchema` omits [internal variants](/beta/getting-started/variants#internal-variants) or variants that have no values (e.g. `variants: { empty: {} }`).
 
-`getSchema` and `GetSchema` remain available from `cva` and from `cva/utils`, but are deprecated in both. Import them from `cva/tools` instead.
-
 #### Parameters
 
 `component`: a component created by `cva` (including components composed via [`composes`](#cva))
@@ -113,9 +111,7 @@ export const { cva, cx } = defineConfig(options);
    - `hooks`
      - `onComplete` and `"cx:done"` are deprecated. Each receives the concatenated string and returns a processed string. Use `cx` instead. When both hooks are set, `"cx:done"` takes precedence.
 
-`defineConfig` also returns a deprecated `compose` function for migrating from earlier `cva@beta` releases. Use the `composes` property on `cva` instead. See [What's new?](/beta/getting-started/whats-new#1-compose--composes).
-
-For backwards compatibility, `defineConfig` is still re-exported from `cva` (with `cx` optional, defaulting to `clsx`), but it's deprecated there: import it from `cva/config` instead.
+`defineConfig` also returns a deprecated `compose` function. Use the `composes` property on `cva` instead. See [What's new?](/beta/getting-started/whats-new#1-compose--composes).
 
 ### Advanced concatenators
 

@@ -51,7 +51,7 @@ Docs prose (`docs/src/content/docs/**`) follows the `writing-guidelines` skill (
 
 When documenting equivalent beta integrations, present them neutrally in alphabetical order and give each independent example matching coverage. Use Starlight-generated heading IDs and update links when headings change instead of adding manual alias anchors.
 
-The beta [What's New](./docs/src/content/docs/beta/getting-started/whats-new.mdx) page is aimed at readers upgrading from `class-variance-authority@0.x` to `cva@1.0`. New beta-to-beta migration instructions belong in the changelog. Preserve the page's existing deprecations and enhancements, including `compose` → `composes` and faster type checking; its audience is not permission to remove or rewrite existing content outside the requested change.
+The beta [What's New](./docs/src/content/docs/beta/getting-started/whats-new.mdx) page is aimed at readers upgrading from `class-variance-authority@0.x` to `cva@1.0`. Beta-to-beta migration instructions belong only in the changelog, including root `defineConfig` → `cva/config` and root/utils `getSchema` → `cva/tools`. Do not add deprecated beta import-path notices to the API reference or Tools page either; show the current imports. Keep the `compose` → `composes` deprecation and faster type-checking enhancement, which are explicitly intended content.
 
 ## Task-specific skills (`.agents/skills/`)
 

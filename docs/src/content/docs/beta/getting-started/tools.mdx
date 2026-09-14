@@ -3,7 +3,7 @@ title: Tools
 description: Read a component's variant names, values, and defaults with getSchema from cva/tools.
 ---
 
-The `cva/tools` entry point holds the helpers that read a component's variants back out at runtime. It's a separate entry point, so an ESM bundler drops it from a build that never imports it. The deprecated `getSchema` re-export on the package root keeps a CommonJS `require("cva")` loading it either way.
+The `cva/tools` entry point holds the helpers that read a component's variants back out at runtime. It's a separate entry point, so an ESM bundler drops it from a build that never imports it.
 
 ## `getSchema`
 
@@ -59,7 +59,3 @@ const schema = getSchema(badge);
 Boolean and numeric variant keys come back as booleans and numbers, matching the props the component accepts rather than the object keys they were written as. [Internal variants](/beta/getting-started/variants#internal-variants) are omitted.
 
 For the full signature, see the [API reference](/beta/api-reference#getschema).
-
-:::note
-`getSchema` and its `GetSchema` type are also exported from `cva` and from `cva/utils`. Both are deprecated: import them from `cva/tools` instead.
-:::
