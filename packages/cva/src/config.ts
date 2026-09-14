@@ -417,10 +417,16 @@ const mergeConfig = (
   return merged;
 };
 
+type PreparedVariants = readonly [
+  variantKeys: readonly string[],
+  variantMaps: readonly Record<string, ClassValue>[],
+  defaultClasses: readonly ClassValue[],
+];
+
 const prepareVariants = (
   localVariants: CVAVariantShape | undefined,
   defaults: Record<string, unknown>,
-) => {
+): PreparedVariants => {
   const names: string[] = [];
   const maps: Record<string, ClassValue>[] = [];
   for (const key in localVariants) {
@@ -430,20 +436,12 @@ const prepareVariants = (
     }
   }
   // No variants, no retained tables; the rest are copied to their exact size.
-  if (!names.length) {
-    return {
-      variantKeys: noValues,
-      variantMaps: noValues,
-      defaultClasses: noValues,
-    };
-  }
-  return {
-    variantKeys: names.slice(),
-    variantMaps: maps.slice(),
-    defaultClasses: names.map(
-      (key, i) => maps[i][falsyToString(defaults[key]) as string],
-    ),
-  };
+  if (!names.length) return [noValues, noValues, noValues];
+  return [
+    names.slice(),
+    maps.slice(),
+    names.map((key, i) => maps[i][falsyToString(defaults[key]) as string]),
+  ];
 };
 
 const compoundMatches = (
@@ -465,11 +463,19 @@ const compoundMatches = (
 };
 
 // A compound may select on a name no variant declares: the key list ends here.
+type PreparedCompounds = readonly [
+  keys: readonly string[],
+  defaultValues: readonly unknown[],
+  compounds: readonly PreparedCompound[],
+  indexes: readonly number[],
+  selectors: readonly unknown[],
+];
+
 const prepareCompounds = (
   compoundVariants: readonly (CVAClassProp & Record<string, unknown>)[],
   variantKeys: readonly string[],
   defaults: Record<string, unknown>,
-) => {
+): PreparedCompounds => {
   const keys = variantKeys.slice();
   const compounds: PreparedCompound[] = [];
   const indexes: number[] = [];
@@ -508,13 +514,13 @@ const prepareCompounds = (
       defaultValues,
     );
   }
-  return {
-    keys: keys.slice(),
+  return [
+    keys.slice(),
     defaultValues,
-    compounds: compounds.slice(),
-    indexes: indexes.slice(),
-    selectors: selectors.slice(),
-  };
+    compounds.slice(),
+    indexes.slice(),
+    selectors.slice(),
+  ];
 };
 
 // The body of a component with no prop names to read and no children. At
@@ -582,29 +588,24 @@ export const defineConfig = ((options: DefineConfigOptions) => {
       children,
       definition,
     );
-    const { variantKeys, variantMaps, defaultClasses } = prepareVariants(
-      definition.variants,
-      defaults,
-    );
+    const preparedVariants = prepareVariants(definition.variants, defaults);
+    // Named locals keep the tuple readable; indexed access avoids iterator work.
+    const variantKeys = preparedVariants[0];
+    const variantMaps = preparedVariants[1];
+    const defaultClasses = preparedVariants[2];
     const variantCount = variantKeys.length;
     const prepared = definition.compoundVariants
       ? prepareCompounds(definition.compoundVariants, variantKeys, defaults)
       : undefined;
     // Every prop name a call reads: the variant names first, so one index
     // addresses a value map and a default class too, then compound-only names.
-    const keys: readonly string[] = prepared ? prepared.keys : variantKeys;
+    const keys = prepared ? prepared[0] : variantKeys;
+    const defaultValues = prepared ? prepared[1] : noValues;
+    const compounds = prepared ? prepared[2] : noValues;
+    const indexes = prepared ? prepared[3] : noValues;
+    const selectors = prepared ? prepared[4] : noValues;
     const keyCount = keys.length;
-    const compounds: readonly PreparedCompound[] = prepared
-      ? prepared.compounds
-      : noValues;
     const compoundCount = compounds.length;
-    const indexes: readonly number[] = prepared ? prepared.indexes : noValues;
-    const selectors: readonly unknown[] = prepared
-      ? prepared.selectors
-      : noValues;
-    const defaultValues: readonly unknown[] = prepared
-      ? prepared.defaultValues
-      : noValues;
 
     // The arguments for a call that supplies no known prop and no class prop,
     // and has no child to run. `Reflect.apply` copies it, so it never escapes.
