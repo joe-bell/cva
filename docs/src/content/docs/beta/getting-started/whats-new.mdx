@@ -21,8 +21,6 @@ Use `cva`/`cx` with `cn`, `tailwind-merge`, or your own concatenator via the [`c
 
 Shallow merge one or more `cva` components into a single component via the new [`composes` property](/beta/getting-started/composing-components).
 
-This [replaces the `compose` function](#1-compose--composes).
-
 ### 3. `getSchema`
 
 Extract a plain-object schema (variant names, values and defaults) from a `cva` component via the new [`cva/tools`](/beta/getting-started/tools) entry point's `getSchema`. Use it to generate Storybook controls or any other UI that reads a component's variants.
@@ -38,56 +36,6 @@ If a component already declared a variant with a leading underscore (`_state`, `
 ### 5. Bring your own concatenator with `cva/config`
 
 The `cva` package is a preset over the core: it wires `cva` and `cx` to `clsx`, like `class-variance-authority`. Use `cva/config` with a required `cx` option to configure `clsx/lite`, `cn`, `tailwind-merge`, or your own concatenator.
-
-## Deprecations
-
-### 1. `compose` → `composes`
-
-The `compose` method is deprecated in favor of the `composes` property inside `cva`. Pass a single component directly, or pass multiple components as an array.
-
-```diff lang="ts"
-- import { cva, compose } from "cva";
-+ import { cva } from "cva";
-
-  const box = cva({ /* ... */ });
-  const root = cva({ /* ... */ });
-
-- const card = compose(box, root);
-+ const card = cva({ composes: [box, root] });
-```
-
-:::note
-`composes` isn't always a byte-for-byte swap. When composed components declare conflicting `defaultVariants` for the same key, `composes` applies a single last-wins default to every component. `compose` let each component resolve its own default instead. See [Extending variants](/beta/getting-started/composing-components#extending-variants).
-:::
-
-See [Composing Components](/beta/getting-started/composing-components) for more details and migration examples.
-
-### 2. Preset `defineConfig` → `cva/config`
-
-The `defineConfig` function and `DefineConfig` and `DefineConfigOptions` type imports from `cva` are deprecated but still work. Move them to `cva/config`, where `cx` is required. Add `clsx` as a direct dependency with `pnpm add clsx` to preserve the preset behavior:
-
-```diff lang="ts"
-- import { defineConfig, type DefineConfigOptions } from "cva";
-+ import { defineConfig, type DefineConfigOptions } from "cva/config";
-+ import { clsx } from "clsx";
-
-- const config = defineConfig();
-+ const options: DefineConfigOptions = { cx: clsx };
-+ const config = defineConfig(options);
-```
-
-For `hooks.onComplete` and `hooks["cx:done"]`, move the same work into `cx`. A `twMerge` hook becomes `cx: cn` or `cx: (...inputs) => twMerge(clsx(inputs))`; for other postprocessing, use `cx: (...inputs) => postprocess(clsx(inputs))`.
-
-### 3. Root `getSchema` → `cva/tools`
-
-`getSchema` and its `GetSchema` type are still exported from `cva`, but deprecated there. Import them from [`cva/tools`](/beta/getting-started/tools) instead:
-
-```diff lang="ts"
-- import { getSchema, type GetSchema } from "cva";
-+ import { getSchema, type GetSchema } from "cva/tools";
-```
-
-An earlier beta briefly put them on `cva/utils`. That entry point still works and still re-exports the same function, but it's deprecated too: move to `cva/tools`.
 
 ## Enhancements
 
@@ -129,9 +77,9 @@ Calling a `cva` component is up to 1000% faster than `0.7`. The runtime works ou
 - One component called with 24 different prop shapes: 400% faster.
 - Components with only a `base`: 50% faster.
 
-The `cva` entry is now about 2.1 kB (brotli), up from 1.4 kB. The precomputed tables are the difference.
+The `cva` entry is about 2.1 kB (brotli). The precomputed tables are what it buys.
 
-Thanks to [@fveracoechea](https://github.com/fveracoechea) for inspiring this work! See [the pull request](https://github.com/joe-bell/cva/pull/419) for the full numbers.
+Thanks to [@fveracoechea](https://github.com/fveracoechea) for inspiring this work! See [the implementation](https://github.com/joe-bell/cva/pull/419) if you want the details.
 
 ### 6. Configuration is read when you create the component
 
@@ -163,12 +111,3 @@ Composition follows the same rule: a component pushed onto a `composes` array af
 
 `component.config` still exposes the merged `variants` and `defaultVariants` as fresh objects, but it's internal: reading it is fine, mutating it is unsupported and may partly show up in later output. Frozen configs work, and `cva` never mutates or freezes anything you pass it.
 :::
-
-### 7. Faster type checking
-
-The authoring types were reworked so TypeScript does less work to reach the same answers. Your inferred prop types, `getSchema` results and emitted declarations are identical. Measured with `tsc --extendedDiagnostics` against the previous beta:
-
-- A project with 200 components type-checks about 10% faster, with 26% fewer type instantiations.
-- Composed components: 16% fewer instantiations. Components with a `getSchema` call: 24% fewer.
-
-See [the pull request](https://github.com/joe-bell/cva/pull/420) for the full numbers.

@@ -113,7 +113,7 @@ export const { cva, cx } = defineConfig(options);
    - `hooks`
      - `onComplete` and `"cx:done"` are deprecated. Each receives the concatenated string and returns a processed string. Use `cx` instead. When both hooks are set, `"cx:done"` takes precedence.
 
-`defineConfig` also returns a deprecated `compose` function for migrating from earlier `cva@beta` releases. Use the `composes` property on `cva` instead. See [What's new?](/beta/getting-started/whats-new#1-compose--composes).
+`defineConfig` also returns a deprecated `compose` function. Use the [`composes` property](/beta/getting-started/composing-components) on `cva` instead.
 
 For backwards compatibility, `defineConfig` is still re-exported from `cva` (with `cx` optional, defaulting to `clsx`), but it's deprecated there: import it from `cva/config` instead.
 

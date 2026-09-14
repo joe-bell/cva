@@ -51,6 +51,8 @@ Docs prose (`docs/src/content/docs/**`) follows the `writing-guidelines` skill (
 
 When documenting equivalent beta integrations, present them neutrally in alphabetical order and give each independent example matching coverage. Use Starlight-generated heading IDs and update links when headings change instead of adding manual alias anchors.
 
+The beta [What's New](./docs/src/content/docs/beta/getting-started/whats-new.mdx) page compares `class-variance-authority@0.x` with `cva@1.0`, for readers upgrading from stable. It is not a changelog for the betas: don't add beta-to-beta migrations or performance figures measured against an earlier beta, and don't move that material to another docs page either. Migrating between beta versions belongs in the changelog. Describe a feature in its final 1.0 form; the API reference may label an export deprecated and name the import path that replaces it, as reference documentation, but no docs page carries beta release history or a beta upgrade tutorial.
+
 ## Task-specific skills (`.agents/skills/`)
 
 Project skills live in `.agents/skills/` — the **single source of truth**; agent-specific directories only ever mirror it. They follow the [Agent Skills spec](https://agentskills.io/specification.md) (one `SKILL.md` per directory). Invoke the matching skill before working in that area. `pnpm lint:skills` validates each `SKILL.md` (`skill-check`, strict mode); it runs in pre-commit (via `lint-staged`) and in CI.
