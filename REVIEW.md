@@ -6,6 +6,15 @@ CI gates `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `
 
 Two facts set the stakes: both packages are published to npm and depended on by other people's builds, and this repo takes outside contributions. A mistake in the public API or the published artifact ships to strangers, and a mistake in CI privileges is exploitable by a pull request.
 
+## Changed prose and code clarity
+
+Apply this section to changed lines only; do not propose broad rewrites.
+
+- Keep comments that explain non-obvious rationale. Flag comments that narrate or duplicate the code.
+- Flag unjustified defensive branches or catches, type escapes that only bypass checking, avoidable nesting, and indirection that obscures behavior. Do not treat documented, load-bearing `any` uses or compatibility code as cleanup targets. Behavior-changing cleanup needs an identified bug and regression coverage.
+- Check that changed prose tells readers what they need to know or do and why it matters. Prefer concrete claims, direct and readable language, and descriptive sentence-case headings. Flag filler, hype, formulaic transitions such as "Additionally", generic conclusions, and marketing-style rhetorical questions. Checklist questions that ask reviewers to verify behavior remain valid.
+- Preserve the deliberate personal, informal voice in the FAQs and What's New pages. Do not flatten it into generic documentation tone.
+
 ## Public API and type inference (`packages/cva`)
 
 The highest-stakes surface in the repo. Types are the product here as much as the runtime is.
@@ -86,7 +95,7 @@ The split between trusted and untrusted CI here is deliberate and documented, an
 - **Equivalent integrations need equal scenarios.** Check that paired playgrounds demonstrate the same documented behavior.
 - **The docs are versioned, and the split matters.** Stable content lives at `docs/src/content/docs/**`; beta content lives under `docs/src/content/docs/beta/**` with its own sidebar in `docs/src/content/versions/beta.json`. A `packages/cva` change documented in the stable tree ships beta behaviour to stable users; a new beta page missing from `beta.json` is unreachable from the sidebar.
 - **Docs build watch paths live in the Cloudflare dashboard**, not in the repo (see [Deployment](./docs/README.md#-deployment)). A PR that makes the docs build depend on a new root-level input won't trigger a redeploy until those paths are updated — flag it rather than assuming it's wired.
-- Prose: `// =>` output comments are claims about real behaviour and should be verified, not assumed. Markdown is **never** hard-wrapped — Prettier runs with `proseWrap: "preserve"`, so `prettier --check` passes on hard wraps and commits them as noisy diffs. Content under `docs/src/content/docs/**` also follows the `writing-guidelines` house style (US English, no em/en-dash punctuation, preserved author voice in the FAQs and What's New pages).
+- Prose: `// =>` output comments are claims about real behaviour and should be verified, not assumed. Markdown is **never** hard-wrapped — Prettier runs with `proseWrap: "preserve"`, so `prettier --check` passes on hard wraps and commits them as noisy diffs. Content under `docs/src/content/docs/**` also follows the `writing-guidelines` house style (US English and no em/en-dash punctuation).
 
 ## Things nothing in this repo enforces
 
