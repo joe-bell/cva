@@ -217,19 +217,6 @@ function supportsComposes(mod: typeof local): boolean {
   }
 }
 
-// Older published betas expose `defineConfig` with different behaviour, so
-// probe what it actually does to the output rather than its type.
-function supportsHooks(mod: typeof local): boolean {
-  try {
-    const probe = mod.defineConfig({
-      hooks: { onComplete: (className) => `${className} hooked` },
-    });
-    return probe.cva({ base: "p" })({}).endsWith("hooked");
-  } catch {
-    return false;
-  }
-}
-
 function registerBenchmarks(mod: typeof local) {
   // Per-task rotation cursors. These live here, not at module scope, so the
   // local and baseline registrations don't share warmup state.
@@ -396,21 +383,6 @@ function registerBenchmarks(mod: typeof local) {
     },
     BENCH_OPTIONS,
   );
-
-  if (supportsHooks(mod)) {
-    const hooked = mod.defineConfig({
-      hooks: { onComplete: (className) => `${className} hooked` },
-    });
-    const hookedButton = hooked.cva(buttonConfig);
-
-    bench(
-      "Call component (hook)",
-      () => {
-        sink = hookedButton({ intent: "primary", size: "medium" } as any);
-      },
-      BENCH_OPTIONS,
-    );
-  }
 
   if (supportsComposes(mod)) {
     const buttonA = mod.cva(buttonConfig);

@@ -1,3 +1,4 @@
+import * as cvaRoot from "cva";
 import { cva, type VariantProps } from "cva";
 import { defineConfig } from "cva/config";
 import { getSchema, type GetSchema } from "cva/tools";
@@ -35,5 +36,13 @@ assert.deepEqual(schema, {
 assert.equal(pill(), "badge info pill sm");
 assert.equal(pill({ tone: "warning" }), "badge warning pill sm loud");
 assert.equal(configured(), "configured");
+// The published root entry is the clsx preset and nothing else. TypeScript's
+// CommonJS namespace interop adds its own `default` key, so drop that one.
+assert.deepEqual(
+  Object.keys(cvaRoot)
+    .filter((name) => name !== "default")
+    .sort(),
+  ["cva", "cx"],
+);
 assert.equal(getSchemaFromUtils, getSchema);
 assert.deepEqual(getSchemaFromUtils(badge), schema);

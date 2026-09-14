@@ -14,19 +14,7 @@
  * the License.
  */
 import { clsx } from "clsx";
-import {
-  defineConfig as defineCoreConfig,
-  type AnyCX,
-  type CVA,
-  type CXInput,
-  type Compose,
-  type CX,
-  type DefineConfigOptions as CoreDefineConfigOptions,
-} from "./config.js";
-import {
-  getSchema as getSchemaTool,
-  type GetSchema as ToolsGetSchema,
-} from "./tools.js";
+import { defineConfig, type CX } from "./config.js";
 
 export type {
   AnyCX,
@@ -34,7 +22,6 @@ export type {
   ClassDictionary,
   ClassArray,
   VariantProps,
-  Compose,
   CX,
   CXInput,
   CXOptions,
@@ -45,62 +32,7 @@ export type {
   CVA,
 } from "./config.js";
 
-/** @deprecated Import `GetSchema` from `cva/tools` instead. */
-export type GetSchema = ToolsGetSchema;
-
-/** @deprecated Import `getSchema` from `cva/tools` instead. */
-export const getSchema: GetSchema = getSchemaTool;
-
-/**
- * @deprecated Import `DefineConfigOptions` from `cva/config` instead and provide
- * the required `cx` concatenator (for example, `clsx`).
- */
-export interface DefineConfigOptions<TCX extends AnyCX = CX> extends Omit<
-  CoreDefineConfigOptions<TCX>,
-  "cx"
-> {
-  /** Defaults to `clsx`. */
-  cx?: CoreDefineConfigOptions<TCX>["cx"];
-}
-
-/**
- * @deprecated Import `DefineConfig` from `cva/config` instead. Its options require
- * a `cx` concatenator (for example, `clsx`).
- */
-export interface DefineConfig {
-  <TCX extends AnyCX = CX>(
-    options?: DefineConfigOptions<TCX>,
-  ): {
-    /**
-     * @deprecated Use the `composes` property inside `cva` instead.
-     * @example
-     * // Before
-     * const card = compose(box, stack)
-     * // After
-     * const card = cva({ composes: [box, stack] })
-     */
-    compose: Compose<CXInput<TCX>>;
-    cx: CX<CXInput<TCX>>;
-    cva: CVA<CXInput<TCX>>;
-  };
-}
-
-/**
- * @deprecated Import `defineConfig` from `cva/config` instead — the `cva`
- * package is the clsx preset, while `cva/config` is where custom
- * configuration (your own `cx` concatenator, hooks) lives.
- */
-export const defineConfig = ((options?: DefineConfigOptions) =>
-  defineCoreConfig({
-    ...options,
-    cx: options?.cx ?? clsx,
-  })) as DefineConfig;
-
 // Pin the preset to config's `ClassValue` alias: inferring from `clsx` would
 // name clsx's own `ClassValue` in the declaration, which is not portable
 // (TS2883).
-const preset = defineCoreConfig<CX>({ cx: clsx });
-
-/** @deprecated Use the `composes` property inside `cva` instead. */
-export const compose = preset.compose;
-export const { cva, cx } = preset;
+export const { cva, cx } = defineConfig<CX>({ cx: clsx });

@@ -136,4 +136,45 @@ Release one package at a time, from `main`. For a package `<package>` (`cva` or 
 6. Publish from the package: `pnpm --filter <package> publish`. `prepublishOnly` runs the tsdown build first, so the publish-shape gates (attw, publint, unused) must pass or the publish aborts. **Publish the beta package under the `beta` dist-tag** — `pnpm --filter cva publish --tag beta` — so the prerelease doesn't overwrite `latest`; the stable package publishes to the default `latest`.
 7. Create the matching [GitHub release](https://github.com/joe-bell/cva/releases) for the `v<version>` tag.
 
+### Beta migration guidance (`cva` releases only)
+
+This step applies to `cva` beta releases. `class-variance-authority` is stable and in maintenance mode, so its releases never carry beta migration guidance.
+
+Before cutting a `cva` beta, update the [`migrate` skill](./skills/migrate):
+
+1. Add or update the curated guide for the release you are about to cut, at `skills/migrate/references/beta/cva-<version>.md` for a prerelease, or `skills/migrate/references/cva-<version>.md` for a stable one. Write it against the real diff, so the reader never has to research the release.
+2. Add or update that destination's row in the supported-routes table in [`skills/migrate/SKILL.md`](./skills/migrate/SKILL.md). **Keep every earlier source version the new guide still serves.** A reader on `beta.3` is still a reader the next release has to migrate, so a route only comes out when it is wrong, never because a newer version shipped.
+
+Land that work in the same PR as the change that needs it, not as a release-day scramble.
+
+Then, when writing the GitHub release body in step 7, embed the router **and every reference that destination needs** in one collapsed block, so the release is self-contained for anyone (or any agent) upgrading to it. Label each file with its repository path so the tree can be reconstructed by hand:
+
+`````text
+<details>
+<summary>Migration skill (<code>migrate</code>)</summary>
+
+`skills/migrate/SKILL.md`
+
+````md
+<!-- paste the tagged contents of skills/migrate/SKILL.md -->
+````
+
+`skills/migrate/references/beta/cva-<version>.md`
+
+````md
+<!-- paste the tagged contents of that reference -->
+````
+
+</details>
+`````
+
+The fence around each pasted file must be **longer than the longest fence inside it**, or that file's own code blocks close it early and the release body breaks. The skill and its references use three-backtick fences today, so each block that holds one needs four (and the demonstration above, which shows those blocks, needs five). Count again whenever a skill file gains a longer nested fence.
+
+Copy every file verbatim from the tag rather than from your working tree, so the embedded copies match what shipped:
+
+```sh
+git show v<version>:skills/migrate/SKILL.md
+git show v<version>:skills/migrate/references/beta/cva-<version>.md
+```
+
 The commit message (`<package>@<version>`) and tag (`v<version>`) formats match the existing release history — keep them consistent so the two packages' releases stay legible in a shared tag namespace.

@@ -7,7 +7,11 @@ export default {
     `pnpm prettier --write ${filenames.map((f) => `'${f}'`).join(" ")}`,
   ],
   "package.json": () => "pnpm syncpack:lint",
-  ".agents/skills/**": () => "pnpm lint:skills",
+  // One key for both skill roots: `skills/` is the canonical home of the
+  // top-level reusable skills and `.agents/skills/` holds the contributor
+  // skills plus the mirrors. A single pattern keeps a change that touches
+  // both from starting two concurrent `lint:skills` runs.
+  "{.agents/skills,skills}/**": () => "pnpm lint:skills",
   "**/wrangler.jsonc": (filenames) =>
     filenames.map(
       (filename) => `pnpm --dir '${dirname(filename)}' exec wrangler types`,

@@ -6,6 +6,7 @@
       "label": "Getting Started",
       "items": [
         { "label": "What's New?", "link": "/getting-started/whats-new" },
+        { "label": "Skills", "link": "/getting-started/skills" },
         { "label": "Installation", "link": "/getting-started/installation" },
         { "label": "Variants", "link": "/getting-started/variants" },
         {

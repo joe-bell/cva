@@ -9,37 +9,64 @@ const markdownPath =
   isNotFound || entry.data.draft
     ? undefined
     : markdownPathFromEntryId(entry.id);
+
+// One complete class string, so Tailwind's source scanner still sees every
+// utility and both actions can never drift apart.
+const action =
+  "inline-flex items-center gap-2 rounded-sm text-sm text-[var(--sl-color-gray-2)] no-underline hover:text-[var(--sl-color-white)] focus:text-[var(--sl-color-white)] focus-visible:outline-2 focus-visible:outline-offset-2";
 ---
 
 <Default />
 <VersionNotice />
 {
   markdownPath && (
-    <a
-      href={markdownPath}
-      rel="alternate"
-      type="text/markdown"
-      class="mt-4 inline-flex items-center gap-2 rounded-sm text-sm text-[var(--sl-color-gray-2)] no-underline hover:text-[var(--sl-color-white)] focus:text-[var(--sl-color-white)] focus-visible:outline-2 focus-visible:outline-offset-2"
-    >
-      <svg
-        class="size-4 shrink-0"
-        viewBox="0 0 208 128"
-        fill="currentColor"
-        aria-hidden="true"
+    <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+      <a
+        href={markdownPath}
+        rel="alternate"
+        type="text/markdown"
+        class={action}
       >
-        <rect
-          width="198"
-          height="118"
-          x="5"
-          y="5"
-          ry="10"
-          stroke="currentColor"
-          stroke-width="10"
+        <svg
+          class="size-4 shrink-0"
+          viewBox="0 0 208 128"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <rect
+            width="198"
+            height="118"
+            x="5"
+            y="5"
+            ry="10"
+            stroke="currentColor"
+            stroke-width="10"
+            fill="none"
+          />
+          <path d="M30 98V30h20l20 25 20-25h20v68H90V59L70 84 50 59v39zm125 0l-30-33h20V30h20v35h20z" />
+        </svg>
+        View as Markdown
+      </a>
+      <a
+        href="https://github.com/joe-bell/cva/releases"
+        rel="external"
+        class={action}
+      >
+        <svg
+          class="size-4 shrink-0"
+          viewBox="0 0 24 24"
           fill="none"
-        />
-        <path d="M30 98V30h20l20 25 20-25h20v68H90V59L70 84 50 59v39zm125 0l-30-33h20V30h20v35h20z" />
-      </svg>
-      View as Markdown
-    </a>
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.828 8.828a2 2 0 0 0 2.828 0l7.172-7.172a2 2 0 0 0 0-2.828z" />
+          <circle cx="7.5" cy="7.5" r="1.5" fill="currentColor" />
+        </svg>
+        Changelog
+      </a>
+    </div>
   )
 }

@@ -17,8 +17,8 @@
   <a href="https://www.npmjs.com/package/class-variance-authority">
     <img alt="Types Included" src="https://badgen.net/npm/types/class-variance-authority" />
   </a>
-  <a href="https://bundlephobia.com/result?p=class-variance-authority">
-    <img alt="Minizipped Size" src="https://img.shields.io/bundlephobia/minzip/class-variance-authority" />
+  <a href="https://bundlephobia.com/package/cva@beta">
+    <img alt="Minizipped Size" src="https://img.shields.io/bundlephobia/minzip/cva/beta" />
   </a>
   <a href="https://github.com/joe-bell/cva/blob/main/LICENSE">
     <img alt="Apache-2.0 License" src="https://badgen.net/github/license/joe-bell/cva" />

@@ -1,0 +1,36 @@
+---
+title: Skills
+description: Install the migrate Agent Skill so a coding agent can upgrade your project between cva versions.
+---
+
+`cva` ships a [`migrate` Agent Skill](https://github.com/joe-bell/cva/tree/main/skills/migrate) so a coding agent can do a version upgrade for you. For a supported route, maintainers curate the release's changes up front, so the agent reads a guide written against the real diff. For any other route it researches the release history itself, and says so rather than guessing.
+
+## Install the skill
+
+Install it into whichever agent you use:
+
+```sh
+npx skills add joe-bell/cva --skill migrate
+```
+
+Without `-a`, the CLI detects installed agents and may prompt you to choose targets and installation scope. To pick a target yourself, pass `-a` with an agent identifier, such as `-a universal` for the shared `.agents/skills/` directory. The CLI's [supported agents table](https://github.com/vercel-labs/skills#supported-agents) lists every identifier and the path it installs to.
+
+## Ask for a migration
+
+Point your agent at the destination version:
+
+> Migrate this project to `cva@1.0.0-beta.11`.
+
+The agent works out the rest. It reads the version actually resolved in your tree rather than the range in `package.json`, detects your package manager from `packageManager` and your lockfile, then loads the one curated guide for that route. Guides live in separate files, so only the migration you asked for reaches the agent's context.
+
+You do not need to tell it what changed in the release, and you should not have to: the point of curating the guides is that the research already happened.
+
+## What the current route covers
+
+One route is curated today: `cva@1.0.0-beta.0` through `cva@1.0.0-beta.10`, up to `cva@1.0.0-beta.11`. Its guide covers the removal of `compose`, the `cx` hooks, and the deprecated root `defineConfig` and `getSchema` exports, plus the TypeScript 6 floor, the move onto `cva/config` and `cva/tools`, and the behavior differences between `compose` and the `composes` property.
+
+For a route with no curated guide, the skill tells the agent to research it from the [cva releases on GitHub](https://github.com/joe-bell/cva/releases), the tagged package metadata and the published npm artifacts, and to stop and say so rather than guess when the evidence runs out.
+
+## Where the skill ships
+
+Starting with `cva@1.0.0-beta.11`, each beta release embeds the exact skill from its tagged commit in the [release notes](https://github.com/joe-bell/cva/releases), so the guidance in a release matches the code that shipped in it. Earlier releases predate the skill and carry no copy. Installing from the repository gives you the current version of the same files.
