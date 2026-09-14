@@ -712,25 +712,22 @@ describe("the `cva` entry point's surface", () => {
   });
 
   test("no longer carries the deprecated values or their types", () => {
-    // Every `@ts-expect-error` below is satisfied only while the name is
-    // missing. Restoring an export resolves the reference, leaves the
-    // directive unused (TS2578), and fails `pnpm --filter cva check:tsc` —
-    // which is what makes these guards worth having.
+    // These directives fail with TS2578 if a removed export returns.
 
-    // @ts-expect-error — `compose` is removed; use `cva({ composes })`
+    // @ts-expect-error: `compose` is removed; use `cva({ composes })`
     rootExports.compose;
-    // @ts-expect-error — `defineConfig` is removed; import it from `cva/config`
+    // @ts-expect-error: `defineConfig` is removed; import it from `cva/config`
     rootExports.defineConfig;
-    // @ts-expect-error — `getSchema` is removed; import it from `cva/tools`
+    // @ts-expect-error: `getSchema` is removed; import it from `cva/tools`
     rootExports.getSchema;
 
-    // @ts-expect-error — `Compose` is removed
+    // @ts-expect-error: `Compose` is removed
     type RemovedCompose = CVA.Compose;
-    // @ts-expect-error — `DefineConfig` is removed; it lives in `cva/config`
+    // @ts-expect-error: `DefineConfig` is removed; it lives in `cva/config`
     type RemovedDefineConfig = CVA.DefineConfig;
-    // @ts-expect-error — `DefineConfigOptions` is removed; see `cva/config`
+    // @ts-expect-error: `DefineConfigOptions` is removed; see `cva/config`
     type RemovedDefineConfigOptions = CVA.DefineConfigOptions;
-    // @ts-expect-error — `GetSchema` is removed; it lives in `cva/tools`
+    // @ts-expect-error: `GetSchema` is removed; it lives in `cva/tools`
     type RemovedGetSchema = CVA.GetSchema;
   });
 });

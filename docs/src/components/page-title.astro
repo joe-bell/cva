@@ -1,5 +1,6 @@
 ---
 import Default from "@astrojs/starlight/components/PageTitle.astro";
+import { Icon } from "@astrojs/starlight/components";
 import VersionNotice from "starlight-versions/components/VersionNotice.astro";
 import { markdownPathFromEntryId } from "../lib/docs-routes";
 
@@ -10,8 +11,7 @@ const markdownPath =
     ? undefined
     : markdownPathFromEntryId(entry.id);
 
-// One complete class string, so Tailwind's source scanner still sees every
-// utility and both actions can never drift apart.
+// Keep the full utility string literal so Tailwind can detect every class.
 const action =
   "inline-flex items-center gap-2 rounded-sm text-sm text-[var(--sl-color-gray-2)] no-underline hover:text-[var(--sl-color-white)] focus:text-[var(--sl-color-white)] focus-visible:outline-2 focus-visible:outline-offset-2";
 ---
@@ -52,19 +52,7 @@ const action =
         rel="external"
         class={action}
       >
-        <svg
-          class="size-4 shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.828 8.828a2 2 0 0 0 2.828 0l7.172-7.172a2 2 0 0 0 0-2.828z" />
-          <circle cx="7.5" cy="7.5" r="1.5" fill="currentColor" />
-        </svg>
+        <Icon name="rocket" class="shrink-0" size="1rem" />
         Changelog
       </a>
     </div>

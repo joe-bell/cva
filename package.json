@@ -14,7 +14,7 @@
     "dev": "vitest --config .config/vitest.config.ts",
     "docs": "pnpm run --filter './docs' dev",
     "preinstall": "npx only-allow pnpm",
-    "lint:skills": "skill-check check ./.agents/skills --no-security-scan --strict",
+    "lint:skills": "skill-check check ./.agents/skills --no-security-scan --strict && skill-check check ./skills --no-security-scan --strict",
     "lint-staged": "lint-staged --config .config/lint-staged.config.mjs",
     "prepare": "pnpm run '/^prepare:.*/'",
     "prepare:hooks": "git config core.hooksPath .github/hooks",

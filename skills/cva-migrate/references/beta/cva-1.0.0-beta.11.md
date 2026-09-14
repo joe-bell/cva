@@ -1,6 +1,6 @@
 # Migrating to `cva@1.0.0-beta.11`
 
-The curated guide for the `cva@1.0.0-beta.0` through `cva@1.0.0-beta.10` to `cva@1.0.0-beta.11` route. The [`cva-migrate` skill](../../SKILL.md) selects this file; read it in full before editing, then apply only the sections the installed version needs.
+This guide covers `cva@1.0.0-beta.0` through `cva@1.0.0-beta.10` upgrading to `cva@1.0.0-beta.11`. The [`cva-migrate` skill](../../SKILL.md) selects this file. Read it in full before editing, then apply only the sections the installed version needs.
 
 `cva@1.0.0-beta.11` removes the deprecated APIs listed below. It does not remove every deprecation: `cva/utils` is deprecated and deliberately survives.
 
@@ -28,11 +28,11 @@ What stays: `"cva"` exports `cva`, `cx`, and the public types. `"cva/config"` ke
 
 ## Step 1: detect the package manager and the workspace
 
-Do this before running any command, and use the result for every install, script and executable below. Creating a second lockfile is worse than the migration it was meant to serve.
+Do this before running any command, and use the result for every install, script, and executable below. Do not create a second lockfile.
 
 Check, in order:
 
-1. `packageManager` in the consumer's `package.json` (`"pnpm@11.0.9"`, `"yarn@4.6.0"`, …). This is authoritative when present.
+1. `packageManager` in the consumer's `package.json`, such as `"pnpm@11.0.9"` or `"yarn@4.6.0"`. This is authoritative when present.
 2. The lockfile beside it: `package-lock.json` (npm), `pnpm-lock.yaml` (pnpm), `yarn.lock` (Yarn), `bun.lock` or `bun.lockb` (Bun).
 
 In a monorepo the lockfile and `packageManager` live at the repo root while `cva` is a dependency of one workspace package. Run the edits in that package and the commands with the manager's workspace selector: `npm -w <pkg>`, `pnpm --filter <pkg>`, `yarn workspace <pkg>`, `bun --filter <pkg>`.
@@ -49,7 +49,7 @@ Use this routing for every command in the rest of this guide:
 
 ## Step 2: read the installed version
 
-The router already reads this to pick the route. Confirm it here anyway when you did not read it yourself, because every row below depends on the exact version. Read what is resolved and installed, not the range in `package.json`. Ask the package manager from Step 1, adding its workspace selector when the project is a monorepo:
+If the router supplied the version, use it. Otherwise, read the resolved version rather than the range in `package.json`. Ask the package manager from Step 1, adding its workspace selector when the project is a monorepo:
 
 ```sh
 npm ls cva                # npm: installed tree
@@ -58,11 +58,11 @@ yarn why cva              # Yarn: installed resolution (Classic and Berry)
 bun pm ls | grep cva      # Bun: installed tree
 ```
 
-Do **not** read the version with `node -p "require('cva/package.json').version"`. `cva` only added `"./package.json"` to its `exports` in `beta.7`, so on `beta.0` through `beta.6` that command fails with `ERR_PACKAGE_PATH_NOT_EXPORTED`, which is precisely the range this guide most needs to identify.
+Do **not** read the version with `node -p "require('cva/package.json').version"`. `cva` only added `"./package.json"` to its `exports` in `beta.7`, so that command fails with `ERR_PACKAGE_PATH_NOT_EXPORTED` on `beta.0` through `beta.6`.
 
-Yarn Classic's `yarn info cva` queries the **registry**, not your tree, so it reports the latest published version rather than yours. `yarn why` is the one that answers for both Classic and Berry.
+Yarn Classic's `yarn info cva` queries the **registry**, not your tree, so it reports the latest published version rather than yours. Use `yarn why` for both Classic and Berry.
 
-If the output is ambiguous (several versions in the tree, or a workspace you cannot attribute), read the lockfile you identified in Step 1 and find the resolved `cva` entry there. Reach for the lockfile, never for registry metadata: the registry cannot tell you what this project installed.
+If the output is ambiguous because the tree contains several versions or an unknown workspace, find the resolved `cva` entry in the lockfile from Step 1. Registry metadata cannot tell you what this project installed.
 
 Map the result to the work required. Each row lists exactly what that version needs:
 
@@ -101,7 +101,7 @@ grep -rnE 'hooks[[:space:]]*:|onComplete|cx:done' . --exclude-dir=node_modules
 grep -rnE '\bgetSchema\b|\bGetSchema\b|\bdefineConfig\b|\bDefineConfig' . --exclude-dir=node_modules
 ```
 
-`compose` is a common English word and a common export elsewhere (Redux, Ramda, Vue). `defineConfig` is also Vite's, Astro's and Vitest's. Confirm each hit resolves to a `cva` import before touching it.
+`compose` is a common English word and an export from libraries such as Redux, Ramda, and Vue. `defineConfig` is also exported by Vite, Astro, and Vitest. Confirm each hit resolves to a `cva` import before editing it.
 
 ## Step 4: upgrade cva (and TypeScript, when they are coupled)
 
@@ -129,7 +129,7 @@ yarn install
 bun install
 ```
 
-Keep `cva` in whichever block already declares it. It is a runtime dependency of the code that imports it, so do not take this as an excuse to move it into `devDependencies`. If the project uses a pnpm catalog, or Yarn resolutions, edit the range in the catalog or resolution entry that actually governs it rather than pinning a second copy in the package manifest.
+Keep `cva` in its existing dependency block. Code imports it at runtime, so do not move it into `devDependencies`. If the project uses a pnpm catalog or Yarn resolutions, edit the entry that governs the existing dependency rather than pinning a second copy in the package manifest.
 
 `beta.3` through `beta.8` declare `typescript >= 4.5.5` with no upper bound, but they still need TypeScript 6 for `beta.11`, so use the same single-install edit. `beta.9` and `beta.10` already require TypeScript 6, so only the `cva` range changes.
 
@@ -151,7 +151,7 @@ If the project only ever used the default `clsx` behavior with no options, drop 
 import { cva, cx } from "cva";
 ```
 
-That is the smallest correct change, and it needs no new dependency. Only reach for the explicit form below if the project actually passed options:
+This needs no new dependency. Use the explicit form below only if the project passed options:
 
 ```diff lang="ts"
 - import { defineConfig } from "cva";
@@ -176,7 +176,7 @@ Type imports move too: `DefineConfig` and `DefineConfigOptions` come from `"cva/
 
 ### `getSchema` and `GetSchema` move to `cva/tools`
 
-`getSchema` arrived in `beta.5` on the root entry, gained a `cva/utils` home in `beta.9`, and moved to the canonical `cva/tools` in `beta.10`. Move both older paths to `cva/tools`. Only the root import is actually removed in `beta.11`, so that one is a required fix; the `cva/utils` import still works and is a cleanup.
+`getSchema` arrived in `beta.5` on the root entry, was also exported from `cva/utils` in `beta.9`, and moved to the canonical `cva/tools` entry in `beta.10`. Move both older paths to `cva/tools`. Only the root import is removed in `beta.11`; changing a `cva/utils` import is cleanup.
 
 ```diff lang="ts"
 - import { cva, getSchema, type GetSchema } from "cva";
@@ -227,11 +227,11 @@ The behavior is identical across all three paths. `getSchema` returns one entry 
   });
 ```
 
-Annotating the rest parameter with `Parameters<typeof twMerge>` is what keeps the authoring surface identical. An unannotated `(...inputs)` infers a wider parameter type, which quietly reopens class values the original concatenator rejected.
+Annotating the rest parameter with `Parameters<typeof twMerge>` keeps the authoring surface identical. An unannotated `(...inputs)` infers a wider parameter type and accepts class values the original concatenator rejected.
 
 Two behavioral details to check when you rewrite a hook:
 
-- A hook ran **after** concatenation, on the finished string. A custom `cx` runs **instead of** concatenation, so call the original concatenator yourself and apply the hook logic to its result, exactly as above. State the hook captured from its surrounding scope still works: a `cx` closure closes over the same variables a hook did.
+- A hook ran **after** concatenation, on the finished string. A custom `cx` runs **instead of** concatenation, so call the original concatenator and apply the hook logic to its result. Values captured from the hook's surrounding scope can remain in the new closure.
 - When both hooks were set, `"cx:done"` won at runtime and `onComplete` never ran. Port only `"cx:done"` in that case; porting both would apply two transforms where one ran before.
 
 A custom `cx` must accept zero arguments and an unbounded rest parameter, and must accept composed component strings alongside its own grammar. `cva` rejects narrower callbacks at compile time.
@@ -272,20 +272,20 @@ const b = cva({
 // cva({ composes: [a, b] })() => "p-4 b-4"  (last-wins "lg" applied to both)
 ```
 
-If a converted component's output changes, this is almost always why. Fix it by declaring the intended default on the composing component (`defaultVariants` there wins over every composed default), or by keeping the components separate and joining their output with `cx` yourself.
+If a converted component's output changes, check for conflicting defaults first. Declare the intended default on the composing component, where it wins over every composed default, or keep the components separate and join their output with `cx`.
 
 Two further `composes` rules that differ from `compose`:
 
 - Pass an inline array literal or one marked `as const`. A pre-declared mutable array (`const list = [a, b]`) loses the tuple inference `composes` relies on and can silently widen or drop variant types.
-- `composes` declares a structural contract: each entry must be callable and carry a `config` property. A plain function has no `config` and is rejected, and so is the result of the old `compose`, whose declared return type is a bare function. A hand-built object with both members will type-check, but only components created by `cva` are supported; anything else is relying on an internal shape that can change.
+- `composes` declares a structural contract: each entry must be callable and carry a `config` property. It rejects plain functions and the result of the old `compose`, whose declared return type is a bare function. A hand-built object with both members type-checks, but only components created by `cva` are supported.
 
-If an old `compose` call mixed components with a plain function, there is no `composes` equivalent, because the plain function has no `config`. Rebuild the call by hand instead, matching what `compose` actually did:
+If an old `compose` call mixed components with a plain function, there is no `composes` equivalent. Rebuild the call by hand, matching what `compose` did:
 
 1. Build the forwarded props from the caller's own enumerable string-keyed entries, dropping `class`, `className`, and every entry whose value is `undefined`. Dropping `undefined` is what let a composed component fall back to its own default.
 2. Call every entry in the original order, passing that same forwarded object.
 3. Append the caller's `class`, then `className`, last.
 
-Take `cva` and `cx` from the **same instance the removed `compose` came from**. The root import below is correct only when that `compose` was the root preset's. If the project built its own with `defineConfig`, reuse that instance's `cva` and `cx` (`export const { cva, cx } = defineConfig({ cx: twMerge })`, then `import { cva, cx } from "./cva.config"`). Reaching for the root preset there would swap the configured concatenator for `clsx`, widening the authoring grammar and changing the rendered output.
+Take `cva` and `cx` from the **same instance that provided the removed `compose`**. The root import below is correct only for the root preset. If the project used `defineConfig`, reuse that instance's `cva` and `cx` (`export const { cva, cx } = defineConfig({ cx: twMerge })`, then `import { cva, cx } from "./cva.config"`). Importing the root preset instead would replace the configured concatenator with `clsx`, widening the authoring grammar and changing the output.
 
 ```ts
 import { cva, cx } from "cva";
@@ -322,11 +322,11 @@ export const card = (props?: BoxProps) => {
 };
 ```
 
-Do not reach for rest destructuring (`const { class: _, className: __, ...forwarded } = props`) here. It looks equivalent and is not: rest keeps an own property whose value is `undefined`, so `{ pad: undefined }` reaches the plain function as a present `pad` key. A decorator that branches on key presence rather than truthiness then changes behavior. Rebuilding from entries drops those keys the way `compose` did.
+Do not use rest destructuring (`const { class: _, className: __, ...forwarded } = props`) here. Rest keeps an own property whose value is `undefined`, so `{ pad: undefined }` reaches the plain function as a present `pad` key. A decorator that checks key presence would then change behavior. Rebuilding from entries drops those keys as `compose` did.
 
-Order matters just as much. Forwarding the untouched props would let `box` consume the caller's `class` before `decorate` ran, turning `box small decorated extra` into `box small extra decorated`. Adding a `base` to a wrapper `cva` component would inject another class too.
+Preserve the original order. Forwarding untouched props would let `box` consume the caller's `class` before `decorate` ran, turning `box small decorated extra` into `box small extra decorated`. Adding a `base` to a wrapper `cva` component would also inject another class.
 
-This rewrite is output-identical to `compose`, checked against `cva@1.0.0-beta.10` with a decorator that reports key presence, across no props, `{}`, a variant, `class`, `className`, a variant plus `class`, an explicit `undefined` variant, and an `undefined` entry ahead of a real one. It also sidesteps the conflicting-default caveat, because each component still resolves its own defaults exactly as it did under `compose`. Extend the same shape for more than two entries: call each one with `forwarded`, in the original order.
+This rewrite was checked against `cva@1.0.0-beta.10` with no props, `{}`, a variant, `class`, `className`, a variant plus `class`, an explicit `undefined` variant, and an `undefined` entry before a real one. It preserves `compose` output and lets each component resolve its own defaults. For more than two entries, call each one with `forwarded` in the original order.
 
 ### Internal `_`-prefixed variants (from `beta.7` and earlier)
 

@@ -6,7 +6,6 @@
       "label": "Getting Started",
       "items": [
         { "label": "What's New?", "link": "/getting-started/whats-new" },
-        { "label": "Skills", "link": "/getting-started/skills" },
         { "label": "Installation", "link": "/getting-started/installation" },
         { "label": "Variants", "link": "/getting-started/variants" },
         {
@@ -23,7 +22,8 @@
         },
         { "label": "Polymorphism", "link": "/getting-started/polymorphism" },
         { "label": "TypeScript", "link": "/getting-started/typescript" },
-        { "label": "Tools", "link": "/getting-started/tools" }
+        { "label": "Tools", "link": "/getting-started/tools" },
+        { "label": "Skills", "link": "/getting-started/skills" }
       ]
     },
     {

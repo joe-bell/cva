@@ -69,8 +69,8 @@ describe("cva/config", () => {
       // @ts-expect-error — every callback must accept the inferred union grammar
       cx: differentGrammars,
     });
-    // Inference spans the union's parameter lists, so the widest grammar
-    // wins — which is why the constraint above rejects the narrow arm.
+    // Inference spans the union's parameter lists, so the widest grammar wins.
+    // The constraint above therefore rejects the narrow arm.
     expectTypeOf<
       CVA.CXInput<typeof differentGrammars>
     >().toEqualTypeOf<CVA.ClassValue>();
@@ -218,14 +218,14 @@ describe("cva/config", () => {
     expect(narrowCx("a", null, "b")).toBe("a b");
 
     narrowCva({
-      // @ts-expect-error — objects aren't part of this concatenator's grammar
+      // @ts-expect-error: objects aren't part of this concatenator's grammar
       base: { "bg-gray-200": true },
     });
     narrowCva({
-      // @ts-expect-error — object-syntax variant values fail the variants gate
+      // @ts-expect-error: object-syntax variant values fail the variants gate
       variants: { intent: { primary: { "bg-blue-500": true } } },
     });
-    // @ts-expect-error — and neither are object-syntax class props
+    // @ts-expect-error: object-syntax class props fail the same gate
     button({ intent: "primary", class: { extra: true } });
   });
 
@@ -252,9 +252,8 @@ describe("cva/config", () => {
     expectTypeOf<
       CVA.CXInput<(...inputs: string[]) => string>
     >().toEqualTypeOf<string>();
-    // A wider-than-grammar parameter narrows to the shared subset rather
-    // than reopening values the concatenator rejects. (Object types such
-    // as `URL` already satisfy `ClassDictionary`, so they stay.)
+    // A parameter wider than cva's grammar narrows to their shared subset.
+    // Object types such as `URL` already satisfy `ClassDictionary` and remain.
     expectTypeOf<
       CVA.CXInput<(...inputs: (string | symbol)[]) => string>
     >().toEqualTypeOf<string>();
@@ -288,15 +287,15 @@ describe("cva/config's surface after the beta removals", () => {
   });
 
   test("no longer accepts hooks or names the `Compose` type", () => {
-    // As in `index.test.ts`: restoring either name leaves the directive
-    // unused (TS2578) and fails `check:tsc`.
+    // Restoring either name makes its directive unused (TS2578) and fails
+    // `check:tsc`.
     defineConfig({
       cx: clsx,
-      // @ts-expect-error — `hooks` is removed; wrap your own `cx` instead
+      // @ts-expect-error: `hooks` is removed; wrap your own `cx` instead
       hooks: { onComplete: (className: string) => className },
     });
 
-    // @ts-expect-error — `Compose` is removed; use `cva({ composes })`
+    // @ts-expect-error: `Compose` is removed; use `cva({ composes })`
     type RemovedCompose = CVA.Compose;
   });
 });
