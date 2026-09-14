@@ -1,5 +1,5 @@
 ---
-name: migrate
+name: cva-migrate
 description: Migrate a project between cva versions, routing to a curated per-release guide when one exists and researching the release history when it does not. Use when changing the cva version in a project, when a build breaks after a cva upgrade with errors about missing exports such as compose, hooks, defineConfig or getSchema, or when asked to move cva imports onto a newer entry point.
 metadata:
   source: hand-maintained for the joe-bell/cva repository

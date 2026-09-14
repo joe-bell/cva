@@ -1,17 +1,32 @@
 ---
 title: Skills
-description: Install the migrate Agent Skill so a coding agent can upgrade your project between cva versions.
+description: Install or run the cva-migrate Agent Skill so a coding agent can upgrade your project between cva versions.
 ---
 
-`cva` ships a [`migrate` Agent Skill](https://github.com/joe-bell/cva/tree/main/skills/migrate) so a coding agent can do a version upgrade for you. For a supported route, maintainers curate the release's changes up front, so the agent reads a guide written against the real diff. For any other route it researches the release history itself, and says so rather than guessing.
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
-## Install the skill
+`cva` ships a [`cva-migrate` Agent Skill](https://github.com/joe-bell/cva/tree/main/skills/cva-migrate) so a coding agent can do a version upgrade for you. For a supported route, maintainers curate the release's changes up front, so the agent reads a guide written against the real diff. For any other route it researches the release history itself and stops rather than guessing.
 
-Install it into whichever agent you use:
+## Install or run the skill
 
-```sh
-npx skills add joe-bell/cva --skill migrate
-```
+Install the skill yourself, or paste the prompt into your coding agent to run it without installation:
+
+<Tabs>
+  <TabItem label="Command">
+
+    ```sh
+    npx skills add https://github.com/joe-bell/cva --skill cva-migrate
+    ```
+
+  </TabItem>
+  <TabItem label="Prompt">
+
+    ```text
+    Run `npx skills use "https://github.com/joe-bell/cva" --skill "cva-migrate"` and follow the generated skill instructions now. Read its complete output, redirecting it to a temporary file first if necessary. Resolve relative paths from the supporting-files directory it provides.
+    ```
+
+  </TabItem>
+</Tabs>
 
 Without `-a`, the CLI detects installed agents and may prompt you to choose targets and installation scope. To pick a target yourself, pass `-a` with an agent identifier, such as `-a universal` for the shared `.agents/skills/` directory. The CLI's [supported agents table](https://github.com/vercel-labs/skills#supported-agents) lists every identifier and the path it installs to.
 

@@ -140,10 +140,10 @@ Release one package at a time, from `main`. For a package `<package>` (`cva` or 
 
 This step applies to `cva` beta releases. `class-variance-authority` is stable and in maintenance mode, so its releases never carry beta migration guidance.
 
-Before cutting a `cva` beta, update the [`migrate` skill](./skills/migrate):
+Before cutting a `cva` beta, update the [`cva-migrate` skill](./skills/cva-migrate):
 
-1. Add or update the curated guide for the release you are about to cut, at `skills/migrate/references/beta/cva-<version>.md` for a prerelease, or `skills/migrate/references/cva-<version>.md` for a stable one. Write it against the real diff, so the reader never has to research the release.
-2. Add or update that destination's row in the supported-routes table in [`skills/migrate/SKILL.md`](./skills/migrate/SKILL.md). **Keep every earlier source version the new guide still serves.** A reader on `beta.3` is still a reader the next release has to migrate, so a route only comes out when it is wrong, never because a newer version shipped.
+1. Add or update the curated guide for the release you are about to cut, at `skills/cva-migrate/references/beta/cva-<version>.md` for a prerelease, or `skills/cva-migrate/references/cva-<version>.md` for a stable one. Write it against the real diff, so the reader never has to research the release.
+2. Add or update that destination's row in the supported-routes table in [`skills/cva-migrate/SKILL.md`](./skills/cva-migrate/SKILL.md). **Keep every earlier source version the new guide still serves.** A reader on `beta.3` is still a reader the next release has to migrate, so a route only comes out when it is wrong, never because a newer version shipped.
 
 Land that work in the same PR as the change that needs it, not as a release-day scramble.
 
@@ -151,15 +151,15 @@ Then, when writing the GitHub release body in step 7, embed the router **and eve
 
 `````text
 <details>
-<summary>Migration skill (<code>migrate</code>)</summary>
+<summary>Migration skill (<code>cva-migrate</code>)</summary>
 
-`skills/migrate/SKILL.md`
+`skills/cva-migrate/SKILL.md`
 
 ````md
-<!-- paste the tagged contents of skills/migrate/SKILL.md -->
+<!-- paste the tagged contents of skills/cva-migrate/SKILL.md -->
 ````
 
-`skills/migrate/references/beta/cva-<version>.md`
+`skills/cva-migrate/references/beta/cva-<version>.md`
 
 ````md
 <!-- paste the tagged contents of that reference -->
@@ -173,8 +173,8 @@ The fence around each pasted file must be **longer than the longest fence inside
 Copy every file verbatim from the tag rather than from your working tree, so the embedded copies match what shipped:
 
 ```sh
-git show v<version>:skills/migrate/SKILL.md
-git show v<version>:skills/migrate/references/beta/cva-<version>.md
+git show v<version>:skills/cva-migrate/SKILL.md
+git show v<version>:skills/cva-migrate/references/beta/cva-<version>.md
 ```
 
 The commit message (`<package>@<version>`) and tag (`v<version>`) formats match the existing release history — keep them consistent so the two packages' releases stay legible in a shared tag namespace.

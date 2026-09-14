@@ -1,6 +1,6 @@
 # Migrating to `cva@1.0.0-beta.11`
 
-The curated guide for the `cva@1.0.0-beta.0` through `cva@1.0.0-beta.10` to `cva@1.0.0-beta.11` route. The [`migrate` skill](../../SKILL.md) selects this file; read it in full before editing, then apply only the sections the installed version needs.
+The curated guide for the `cva@1.0.0-beta.0` through `cva@1.0.0-beta.10` to `cva@1.0.0-beta.11` route. The [`cva-migrate` skill](../../SKILL.md) selects this file; read it in full before editing, then apply only the sections the installed version needs.
 
 `cva@1.0.0-beta.11` removes the deprecated APIs listed below. It does not remove every deprecation: `cva/utils` is deprecated and deliberately survives.
 
