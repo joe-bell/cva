@@ -1,0 +1,61 @@
+---
+title: Tools
+description: Read a component's variant names, values, and defaults with getSchema from cva/tools.
+---
+
+The `cva/tools` entry point holds the helpers that read a component's variants back out at runtime. It's a separate entry point, so an ESM bundler drops it from a build that never imports it.
+
+## `getSchema`
+
+Re-declaring variants for a Storybook story or prop table creates a second copy to keep in sync by hand. `getSchema` reads them from the component instead, so you declare each variant once:
+
+```ts
+import { cva } from "cva";
+import { getSchema } from "cva/tools";
+
+const button = cva({
+  base: "button",
+  variants: {
+    intent: { primary: "button--primary", secondary: "button--secondary" },
+    size: { small: "button--small", large: "button--large" },
+  },
+  defaultVariants: { intent: "primary", size: "small" },
+});
+
+getSchema(button);
+// => {
+//   intent: { values: ["primary", "secondary"], defaultValue: "primary" },
+//   size: { values: ["small", "large"], defaultValue: "small" },
+// }
+```
+
+The schema is fully typed: `values` narrows to the variant's literal values, and `defaultValue` only appears when the component declares one. Hover the result in your editor and you see the same shape the runtime returns:
+
+```ts
+import { cva } from "cva";
+import { getSchema } from "cva/tools";
+
+const badge = cva({
+  base: "badge",
+  variants: {
+    tone: { info: "badge--info", warning: "badge--warning" },
+    round: { true: "badge--round", false: "badge--square" },
+    weight: { 400: "badge--regular", 700: "badge--bold" },
+  },
+  defaultVariants: { tone: "info" },
+});
+
+const schema = getSchema(badge);
+//    ^ {
+//        tone: {
+//          values: readonly ("info" | "warning")[];
+//          defaultValue: "info";
+//        };
+//        round: { values: readonly boolean[] };
+//        weight: { values: readonly (400 | 700)[] };
+//      }
+```
+
+Boolean and numeric variant keys come back as booleans and numbers, matching the props the component accepts rather than the object keys they were written as. [Internal variants](/beta/getting-started/variants#internal-variants) are omitted.
+
+For the full signature, see the [API reference](/beta/api-reference#getschema).

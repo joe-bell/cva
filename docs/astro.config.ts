@@ -39,6 +39,9 @@ export default defineConfig({
     // spread redirect here would compile to an `/index.html` target which
     // Cloudflare rejects as a loop.
     "/docs": "/",
+    // The beta "Utilities" page became "Tools" when the `cva/tools` entry
+    // point landed.
+    "/beta/getting-started/utilities": "/beta/getting-started/tools",
   },
   markdown: {
     processor: satteri({ features: { smartPunctuation: true } }),

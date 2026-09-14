@@ -1,6 +1,6 @@
 ---
 title: What's New?
-description: What changed in cva@1.0, defineConfig, composes, getSchema, and other breaking changes since class-variance-authority@0.x.
+description: What changed in cva@1.0, defineConfig, composes, the cva/tools entry point, and other breaking changes since class-variance-authority@0.x.
 ---
 
 What's changed since `class-variance-authority@0.*`?
@@ -25,7 +25,7 @@ This [replaces the `compose` function](#1-compose--composes).
 
 ### 3. `getSchema`
 
-Extract a plain-object schema (variant names, values and defaults) from a `cva` component via the new [`getSchema` utility](/beta/getting-started/utilities). Use it to generate Storybook controls or any other UI that reads a component's variants.
+Extract a plain-object schema (variant names, values and defaults) from a `cva` component via the new [`cva/tools`](/beta/getting-started/tools) entry point's `getSchema`. Use it to generate Storybook controls or any other UI that reads a component's variants.
 
 ### 4. Internal variants
 
@@ -61,31 +61,6 @@ The `compose` method is deprecated in favor of the `composes` property inside `c
 :::
 
 See [Composing Components](/beta/getting-started/composing-components) for more details and migration examples.
-
-### 2. Preset `defineConfig` → `cva/config`
-
-The `defineConfig` function and `DefineConfig` and `DefineConfigOptions` type imports from `cva` are deprecated but still work. Move them to `cva/config`, where `cx` is required. Add `clsx` as a direct dependency with `pnpm add clsx` to preserve the preset behavior:
-
-```diff lang="ts"
-- import { defineConfig, type DefineConfigOptions } from "cva";
-+ import { defineConfig, type DefineConfigOptions } from "cva/config";
-+ import { clsx } from "clsx";
-
-- const config = defineConfig();
-+ const options: DefineConfigOptions = { cx: clsx };
-+ const config = defineConfig(options);
-```
-
-For `hooks.onComplete` and `hooks["cx:done"]`, move the same work into `cx`. A `twMerge` hook becomes `cx: cn` or `cx: (...inputs) => twMerge(clsx(inputs))`; for other postprocessing, use `cx: (...inputs) => postprocess(clsx(inputs))`.
-
-### 3. Root `getSchema` → `cva/utils`
-
-`getSchema` and its `GetSchema` type are still exported from `cva`, but deprecated there. Import them from `cva/utils` instead:
-
-```diff lang="ts"
-- import { getSchema, type GetSchema } from "cva";
-+ import { getSchema, type GetSchema } from "cva/utils";
-```
 
 ## Enhancements
 

@@ -22,11 +22,11 @@ import {
   type Compose,
   type CX,
   type DefineConfigOptions as CoreDefineConfigOptions,
-} from "./core.js";
+} from "./config.js";
 import {
-  getSchema as getSchemaUtils,
-  type GetSchema as UtilsGetSchema,
-} from "./utils.js";
+  getSchema as getSchemaTool,
+  type GetSchema as ToolsGetSchema,
+} from "./tools.js";
 
 export type {
   AnyCX,
@@ -45,11 +45,11 @@ export type {
   CVA,
 } from "./config.js";
 
-/** @deprecated Import `GetSchema` from `cva/utils` instead. */
-export type GetSchema = UtilsGetSchema;
+/** @deprecated Import `GetSchema` from `cva/tools` instead. */
+export type GetSchema = ToolsGetSchema;
 
-/** @deprecated Import `getSchema` from `cva/utils` instead. */
-export const getSchema: GetSchema = getSchemaUtils;
+/** @deprecated Import `getSchema` from `cva/tools` instead. */
+export const getSchema: GetSchema = getSchemaTool;
 
 /**
  * @deprecated Import `DefineConfigOptions` from `cva/config` instead and provide
@@ -96,7 +96,7 @@ export const defineConfig = ((options?: DefineConfigOptions) =>
     cx: options?.cx ?? clsx,
   })) as DefineConfig;
 
-// Pin the preset to core's `ClassValue` alias: inferring from `clsx` would
+// Pin the preset to config's `ClassValue` alias: inferring from `clsx` would
 // name clsx's own `ClassValue` in the declaration, which is not portable
 // (TS2883).
 const preset = defineCoreConfig<CX>({ cx: clsx });
