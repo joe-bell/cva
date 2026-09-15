@@ -17,6 +17,10 @@
   "homepage": "https://github.com/joe-bell/cva#readme",
   "bugs": "https://github.com/joe-bell/cva/issues",
   "repository": "https://github.com/joe-bell/cva.git",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/joe-bell"
+  },
   "license": "Apache-2.0",
   "author": "Joe Bell (https://joebell.studio)",
   "sideEffects": false,
