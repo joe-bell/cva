@@ -91,12 +91,16 @@ export default defineConfig({
         Head: "./src/components/head.astro",
         PageTitle: "./src/components/page-title.astro",
         SiteTitle: "./src/components/site-title.astro",
-        SocialIcons: "./src/components/social-icons.astro",
       },
       description: "Class Variance Authority",
       credits: false,
       logo: { src: "./src/assets/logo.svg", replacesTitle: true },
       social: [
+        {
+          icon: "heart",
+          label: "Sponsors",
+          href: "https://github.com/sponsors/joe-bell",
+        },
         {
           icon: "github",
           label: "GitHub",
