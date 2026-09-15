@@ -9,6 +9,8 @@ banner:
 
 import { Picture } from "astro:assets";
 
+import BundleSize from "../../components/bundle-size.astro";
+
 <Picture
   src="/assets/img/wallpaper-4k.png"
   alt="cva logo"
@@ -31,6 +33,8 @@ CSS-in-TS isn't for everyone, though. You may need full control over your styles
 Creating variants with the "traditional" CSS approach can become an arduous task: manually matching classes to props, and manually adding types.
 
 `cva` takes away those pain points, so you can focus on building your UI.
+
+The `class-variance-authority` package's CommonJS entry, bundled with its `clsx` dependency, is <BundleSize id="stable" /> after esbuild minification and Brotli compression. Your own bundle will differ after tree shaking.
 
 ## Sponsors
 

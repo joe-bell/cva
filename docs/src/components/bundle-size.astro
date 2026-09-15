@@ -1,0 +1,17 @@
+---
+import { getEntry } from "astro:content";
+
+import {
+  formatDecimalBytes,
+  requiredBundleSizeEntry,
+} from "../lib/bundle-size";
+
+export interface Props {
+  id: "stable" | "beta";
+}
+
+const { id } = Astro.props;
+const entry = requiredBundleSizeEntry(await getEntry("bundleSizes", id), id);
+---
+
+<span>{formatDecimalBytes(entry.data.size)}</span>

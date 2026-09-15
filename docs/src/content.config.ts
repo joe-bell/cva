@@ -6,6 +6,8 @@ import { docsSchema } from "@astrojs/starlight/schema";
 import { docsVersionsLoader } from "starlight-versions/loader";
 import { format } from "date-fns";
 
+import { bundleSizeLoader, bundleSizeSchema } from "./lib/bundle-size";
+
 export const collections = {
   docs: defineCollection({
     loader: docsLoader(),
@@ -14,6 +16,10 @@ export const collections = {
     schema: docsSchema({ extend: z.object({ description: z.string() }) }),
   }),
   versions: defineCollection({ loader: docsVersionsLoader() }),
+  bundleSizes: defineCollection({
+    loader: bundleSizeLoader(),
+    schema: bundleSizeSchema,
+  }),
   tutorials: defineCollection({
     loader: glob({ pattern: "**/*.json", base: "./src/content/tutorials" }),
     schema: () => {
