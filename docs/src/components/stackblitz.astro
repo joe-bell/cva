@@ -12,14 +12,24 @@ const { dir, file } = Astro.props;
 
 invariant(dir, "No directory specified");
 invariant(file, "No file specified");
+
+const githubUrl = `https://github.com/joe-bell/cva/tree/${branch}/${dir}/${file}`;
+const stackBlitzUrl = `https://stackblitz.com/github/joe-bell/cva/tree/${branch}/${dir}?file=${file}`;
+const stackBlitzEmbedUrl = `${stackBlitzUrl}&embed=1&hideNavigation=1&view=preview`;
 ---
 
-<div class="mt-4 block [&>*+*]:mt-4">
-  <a href={`https://github.com/joe-bell/cva/tree/${branch}/${dir}/${file}`}>
-    View on GitHub <span aria-label="External">↗</span>
-  </a>
+<div class="mt-4 grid gap-4">
+  <div class="flex flex-wrap gap-x-4 gap-y-2">
+    <a href={githubUrl}>
+      View on GitHub <span aria-hidden="true">↗</span>
+    </a>{" "}
+    <a href={stackBlitzUrl}>
+      Open in StackBlitz <span aria-hidden="true">↗</span>
+    </a>
+  </div>
+  {/* Cancel Starlight's sibling margin so the grid gap controls spacing. */}
   <iframe
-    class="aspect-square w-full"
-    src={`https://stackblitz.com/github/joe-bell/cva/tree/${branch}/${dir}?embed=1&file=${file}&hideNavigation=1&view=preview`}
-  ></iframe>
+    class="m-0 aspect-square w-full"
+    src={stackBlitzEmbedUrl}
+    title={`StackBlitz preview for ${dir}`}></iframe>
 </div>
