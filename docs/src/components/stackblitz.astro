@@ -19,17 +19,145 @@ const stackBlitzEmbedUrl = `${stackBlitzUrl}&embed=1&hideNavigation=1&view=previ
 ---
 
 <div class="mt-4 grid gap-4">
-  <div class="flex flex-wrap gap-x-4 gap-y-2">
-    <a href={githubUrl}>
-      View on GitHub <span aria-hidden="true">↗</span>
-    </a>{" "}
-    <a href={stackBlitzUrl}>
-      Open in StackBlitz <span aria-hidden="true">↗</span>
-    </a>
-  </div>
+  <a href={githubUrl}>
+    View source on GitHub <span aria-hidden="true">↗</span>
+  </a>
   {/* Cancel Starlight's sibling margin so the grid gap controls spacing. */}
-  <iframe
-    class="m-0 aspect-square w-full"
-    src={stackBlitzEmbedUrl}
-    title={`StackBlitz preview for ${dir}`}></iframe>
+  <div
+    data-stackblitz
+    class="not-content relative m-0 aspect-square w-full overflow-hidden rounded-xl bg-gray-50 shadow-xs ring-1 ring-gray-200 dark:bg-gray-950 dark:shadow-[0_-1px_0_var(--color-gray-600),0_4px_6px_-1px_oklch(0%_0_0/0.25),0_2px_4px_-2px_oklch(0%_0_0/0.25)] dark:ring-gray-800"
+  >
+    <iframe
+      class="invisible absolute inset-0 m-0 size-full border-0 data-stackblitz-ready:visible"
+      data-stackblitz-embed
+      data-stackblitz-src-light={`${stackBlitzEmbedUrl}&theme=light`}
+      data-stackblitz-src-dark={`${stackBlitzEmbedUrl}&theme=dark`}
+      title={`StackBlitz preview for ${dir}`}></iframe>
+    <div
+      data-stackblitz-fallback
+      class="absolute inset-0 hidden data-visible:flex data-visible:items-center data-visible:justify-center data-visible:p-8"
+    >
+      <div class="flex flex-col items-center gap-6 text-center">
+        <svg
+          class="size-8 text-gray-500 dark:text-gray-400"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M17.75 12.25 18 12a4.243 4.243 0 0 0-6-6l-.25.25"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+          <path
+            d="M6.25 11.75 6 12a4.243 4.243 0 0 0 6 6l.25-.25"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+          <path
+            d="M8.25 4.75v1.5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+          <path
+            d="M15.75 17.75v1.5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+          <path
+            d="M6.25 8.25h-1.5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+          <path
+            d="M19.25 15.75h-1.5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+        </svg>
+
+        <div class="flex flex-col items-center gap-4 text-center">
+          <p class="m-0 max-w-sm text-sm/6 text-gray-600 dark:text-gray-400">
+            Sorry, your browser <a
+              href="https://developer.stackblitz.com/platform/webcontainers/browser-support"
+              class="text-inherit underline decoration-1 underline-offset-2 hover:decoration-dotted focus-visible:outline-2 focus-visible:outline-offset-2"
+              target="_blank"
+              rel="noopener noreferrer">doesn't support</a
+            > this type of embed.
+          </p>
+          <p class="m-0 max-w-xs text-sm/6 text-gray-600 dark:text-gray-400">
+            Try <a
+              href={stackBlitzUrl}
+              class="text-inherit underline decoration-1 underline-offset-2 hover:decoration-dotted focus-visible:outline-2 focus-visible:outline-offset-2"
+              target="_blank"
+              rel="noopener noreferrer">visiting the example directly</a
+            > or reopen this page in a Chromium-based browser.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+  // See https://developer.stackblitz.com/platform/webcontainers/browser-support
+  function isWebContainersSupported(): boolean {
+    if (window.crossOriginIsolated) return true;
+    return "chrome" in window || /Chrome\//.test(navigator.userAgent);
+  }
+
+  const isSupported = isWebContainersSupported();
+
+  document.querySelectorAll("[data-stackblitz]").forEach((container) => {
+    const fallback = container.querySelector("[data-stackblitz-fallback]");
+    const iframe = container.querySelector("[data-stackblitz-embed]");
+
+    if (!isSupported) {
+      fallback?.setAttribute("data-visible", "");
+      iframe?.remove();
+    } else {
+      fallback?.remove();
+    }
+  });
+
+  if (isSupported) {
+    const observer = new IntersectionObserver(
+      (entries, intersectionObserver) => {
+        entries.forEach((entry) => {
+          if (entry.intersectionRatio <= 0) return;
+
+          const { target } = entry;
+          const theme = document.documentElement.dataset.theme ?? "dark";
+          const src = target.getAttribute(`data-stackblitz-src-${theme}`);
+
+          if (src) {
+            target.setAttribute("src", src);
+            target.setAttribute("data-stackblitz-ready", "");
+          }
+
+          intersectionObserver.unobserve(target);
+        });
+      },
+    );
+
+    const observeEmbeds = () => {
+      document.querySelectorAll("[data-stackblitz-embed]").forEach((embed) => {
+        embed.removeAttribute("src");
+        embed.removeAttribute("data-stackblitz-ready");
+        observer.observe(embed);
+      });
+    };
+
+    observeEmbeds();
+
+    new MutationObserver(observeEmbeds).observe(document.documentElement, {
+      attributeFilter: ["data-theme"],
+    });
+  }
+</script>
