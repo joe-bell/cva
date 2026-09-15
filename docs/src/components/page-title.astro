@@ -1,6 +1,7 @@
 ---
 import Default from "@astrojs/starlight/components/PageTitle.astro";
 import { Icon } from "@astrojs/starlight/components";
+import { cva } from "cva";
 import VersionNotice from "starlight-versions/components/VersionNotice.astro";
 import { markdownPathFromEntryId } from "../lib/docs-routes";
 
@@ -12,8 +13,9 @@ const markdownPath =
     : markdownPathFromEntryId(entry.id);
 
 // Keep the full utility string literal so Tailwind can detect every class.
-const action =
-  "inline-flex items-center gap-2 rounded-sm text-sm text-[var(--sl-color-gray-2)] no-underline hover:text-[var(--sl-color-white)] focus:text-[var(--sl-color-white)] focus-visible:outline-2 focus-visible:outline-offset-2";
+const action = cva({
+  base: "inline-flex items-center gap-2 rounded-sm text-sm text-[var(--sl-color-gray-2)] no-underline hover:text-[var(--sl-color-white)] focus:text-[var(--sl-color-white)] focus-visible:outline-2 focus-visible:outline-offset-2",
+});
 ---
 
 <Default />
@@ -25,7 +27,7 @@ const action =
         href={markdownPath}
         rel="alternate"
         type="text/markdown"
-        class={action}
+        class={action()}
       >
         <svg
           class="size-4 shrink-0"
@@ -50,7 +52,7 @@ const action =
       <a
         href="https://github.com/joe-bell/cva/releases"
         rel="external"
-        class={action}
+        class={action()}
       >
         <Icon name="notes" class="shrink-0" size="1rem" />
         Changelog
