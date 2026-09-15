@@ -38,8 +38,11 @@
     "dist/"
   ],
   "scripts": {
-    "build": "tsdown",
-    "bundlesize": "pnpm build && size-limit",
+    "build": "pnpm run build:clear-size-limit && pnpm run build:source && pnpm run build:size-limit",
+    "build:clear-size-limit": "node ../../.config/bundle-size-report.mjs --clear",
+    "build:size-limit": "node ../../.config/bundle-size-report.mjs",
+    "build:source": "tsdown",
+    "bundlesize": "pnpm build",
     "check": "pnpm run '/^check:.*/'",
     "check:tsc": "tsc --project tsconfig.json --noEmit",
     "dev": "tsdown --watch",

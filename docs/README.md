@@ -15,6 +15,8 @@ Run these from the repository root.
 
 `astro preview` is not a production-equivalent preview for this site. The static build's generated Wrangler configuration restores the Worker entry point and the `ASSETS` binding after the Cloudflare adapter writes its asset configuration, so use the `preview` command above when testing deployment behavior.
 
+The docs build reads the gitignored `bundle-size.json` report at each published package root. The shared [report writer](../.config/bundle-size-report.mjs) lives under `.config/`, an existing docs-build watch path. Run `pnpm build` first when installation has not already run the root `prepare` script.
+
 ## Markdown mirrors
 
 Every rendered documentation page with a Markdown alternate link produces a matching `.md` asset at build time. The stable home page is [/index.md](https://cva.style/index.md), and the beta home page is [/beta/index.md](https://cva.style/beta/index.md). A client can also request Markdown for a documentation route with an `Accept: text/markdown` header that has a higher quality value than `text/html`.
@@ -36,5 +38,7 @@ Cloudflare Workers Builds watch paths are configured in the Cloudflare dashboard
 - `.config/*`
 - `package.json`, `tsconfig.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.prettierrc.json`
 - `.nvmrc`
+
+The dashboard does not yet watch `packages/class-variance-authority/*`. Add that path manually before relying on stable package changes to trigger a documentation build; this repository cannot update Cloudflare dashboard watch paths.
 
 `*` matches across `/`, so `docs/*` includes nested documentation files. Root Markdown files and other extensionless root files do not match these paths.

@@ -59,10 +59,10 @@ Run these from the repo root:
 
 - `pnpm dev` – runs vitest, watching for file changes
 - `pnpm test` – runs the test suite with coverage
-- `pnpm build` – production build of the packages
+- `pnpm build` – production build of the packages and fresh Size Limit JSON reports
 - `pnpm check` – type checks every package
 - `pnpm --filter cva test:consumer` – packs the built beta package into an isolated pnpm-style temporary consumer where `clsx` is not hoisted, checks ESM/CJS declarations, and smoke-tests its `cva`, `cva/config`, `cva/tools`, and `cva/utils` exports
-- `pnpm bundlesize` – verifies bundle size limits (`size-limit`)
+- `pnpm bundlesize` – runs the same fresh package builds and verifies every Size Limit entry
 - `pnpm bench` – builds the packages, then runs the `vitest bench` performance scenarios against each built package (add `BENCH_BASELINES_DIR=<dir>` after running `pnpm bench:baselines --out <dir>` to also benchmark published npm baselines alongside your local changes)
 - `pnpm bench:compare` – renders a markdown comparison table from the `test/bench/.output/benchmark-*.json` files produced by `pnpm bench`
 - `pnpm bench:preview` – one command that installs the npm baselines, runs `pnpm bench` against them, and writes the rendered comparison table to `test/bench/.output/preview.md` (see Benchmarks below)
@@ -78,7 +78,7 @@ CI gates on `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, an
 
 ### Build & publish (`packages/*`)
 
-Both published packages (`packages/cva` and `packages/class-variance-authority`) build with [tsdown](https://tsdown.dev). The shared options live in [`.config/tsdown.base.mts`](./.config/tsdown.base.mts) (alongside the repo's other shared tool config), and each package's `tsdown.config.mts` spreads that base and adds only its genuine deltas — entry points, sourcemaps, and output extensions. One `pnpm --filter <package> build` emits the whole dual-format output to `dist/`. The base uses tsdown's explicit extensions (`fixedExtension: true`), so `cva` ships `index.cjs` + `index.d.cts` (CommonJS) and `index.mjs` + `index.d.mts` (ESM); `class-variance-authority` overrides `fixedExtension` to keep the `index.js` + `index.d.ts` CommonJS layout it has always published, in case anything in the wild references those `dist/` paths directly.
+Both published packages (`packages/cva` and `packages/class-variance-authority`) build with [tsdown](https://tsdown.dev). The shared options live in [`.config/tsdown.base.mts`](./.config/tsdown.base.mts) (alongside the repo's other shared tool config), and each package's `tsdown.config.mts` spreads that base and adds only its genuine deltas — entry points, sourcemaps, and output extensions. One `pnpm --filter <package> build` runs `build:clear-size-limit`, `build:source`, then `build:size-limit`: cleanup invalidates any old package-root report before tsdown emits the whole dual-format output to `dist/`, then the shared [`.config/bundle-size-report.mjs`](./.config/bundle-size-report.mjs) invokes the package-local Size Limit CLI and writes every result to its gitignored `bundle-size.json` report. `bundlesize` delegates to that same build path. The base uses tsdown's explicit extensions (`fixedExtension: true`), so `cva` ships `index.cjs` + `index.d.cts` (CommonJS) and `index.mjs` + `index.d.mts` (ESM); `class-variance-authority` overrides `fixedExtension` to keep the `index.js` + `index.d.ts` CommonJS layout it has always published, in case anything in the wild references those `dist/` paths directly.
 
 #### How the packages transform for publish
 

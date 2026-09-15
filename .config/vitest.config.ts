@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => ({
     coverage: {
       include: [
         "packages/*/src/**/*.ts",
+        ".config/bundle-size-report.mjs",
         "test/bench/scripts/**/*.ts",
         ".github/scripts/**/*.mjs",
         "docs/src/lib/**/*.ts",
@@ -35,6 +36,7 @@ export default defineConfig(({ mode }) => ({
         // `?.`/`??` half-branch proves untestable, prefer lowering these
         // globs' `branches` over adding v8-ignore comments.
         "test/bench/scripts/**/*.ts": { 100: true },
+        ".config/bundle-size-report.mjs": { 100: true },
         ".github/scripts/**/*.mjs": { 100: true },
         "docs/src/lib/**/*.ts": { 100: true },
         "docs/src/worker/**/*.ts": { 100: true },
