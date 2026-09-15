@@ -208,6 +208,8 @@ export default defineConfig({
             "Class Variance Authority documentation for the stable class-variance-authority package and the cva beta package.",
           details:
             "The abridged bundle contains stable documentation only. The complete bundle contains stable and beta documentation. Each page links to a Markdown mirror with a text/markdown alternate link. The home-page mirrors are /index.md and /beta/index.md; other pages use their path without a trailing slash followed by .md. You can also request a page with Accept: text/markdown.",
+          // Match iframe removal in src/lib/html-to-markdown.ts.
+          customSelectors: { all: ["iframe"] },
           optionalLinks: [
             {
               label: "Markdown mirrors",
