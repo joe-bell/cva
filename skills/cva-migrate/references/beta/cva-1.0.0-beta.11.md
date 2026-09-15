@@ -206,9 +206,11 @@ The behavior is identical across all three paths. `getSchema` returns one entry 
 
   export const { cva, cx } = defineConfig({
 -   hooks: {
--     onComplete: (className) => `prefix-${className}`,
+-     onComplete: (className) =>
+-       `${className} motion-safe:transition-colors`,
 -   },
-+   cx: (...inputs) => `prefix-${clsx(...inputs)}`,
++   cx: (...inputs) =>
++     `${clsx(...inputs)} motion-safe:transition-colors`,
   });
 ```
 
@@ -221,13 +223,17 @@ The behavior is identical across all three paths. `getSchema` returns one entry 
   export const { cva, cx } = defineConfig({
 -   cx: twMerge,
 -   hooks: {
--     onComplete: (className) => `prefix-${className}`,
+-     onComplete: (className) =>
+-       `${className} motion-safe:transition-colors`,
 -   },
-+   cx: (...inputs: Parameters<typeof twMerge>) => `prefix-${twMerge(...inputs)}`,
++   cx: (...inputs: Parameters<typeof twMerge>) =>
++     `${twMerge(...inputs)} motion-safe:transition-colors`,
   });
 ```
 
 Annotating the rest parameter with `Parameters<typeof twMerge>` keeps the authoring surface identical. An unannotated `(...inputs)` infers a wider parameter type and accepts class values the original concatenator rejected.
+
+Keep every Tailwind utility name complete in source. Do not recreate a prefixing hook as `` `prefix-${twMerge(...inputs)}` ``: [Tailwind scans source as plain text](https://tailwindcss.com/docs/detecting-classes-in-source-files#dynamic-class-names) and cannot detect the completed class names. Map dynamic values to complete static class strings. In Tailwind CSS v4, use [`@source inline()`](https://tailwindcss.com/docs/detecting-classes-in-source-files#safelisting-specific-utilities) only when the project intentionally generates utilities that do not appear in its content.
 
 Two behavioral details to check when you rewrite a hook:
 
