@@ -63,3 +63,7 @@ header.header {
 :where(.sidebar-content details details > summary > .group-label) > .large {
   @apply text-sm;
 }
+
+:where(.social-icons a[href="/sponsors"] svg) {
+  font-size: 1.25em;
+}
