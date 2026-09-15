@@ -7,7 +7,9 @@ export default {
     `pnpm prettier --write ${filenames.map((f) => `'${f}'`).join(" ")}`,
   ],
   "package.json": () => "pnpm syncpack:lint",
-  ".agents/skills/**": () => "pnpm lint:skills",
+  // One pattern avoids parallel lint runs when a change touches multiple inputs.
+  "{.agents/skills/**,skills/**,skill-check.config.json}": () =>
+    "pnpm lint:skills",
   "**/wrangler.jsonc": (filenames) =>
     filenames.map(
       (filename) => `pnpm --dir '${dirname(filename)}' exec wrangler types`,

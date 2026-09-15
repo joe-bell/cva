@@ -69,7 +69,7 @@ Run these from the repo root:
 - `pnpm bench:check` – type checks the `test/bench/` scripts
 - `pnpm prettier --check .` – checks formatting (`--write` to fix)
 - `pnpm syncpack:lint` – checks dependency-version consistency (`pnpm syncpack:fix` to fix)
-- `pnpm lint:skills` – validates the agent skills in `.agents/skills` (`skill-check`, strict mode)
+- `pnpm lint:skills` – validates the agent skills in `.agents/skills` and `skills` (`skill-check`, strict mode)
 - `pnpm lint-staged` – runs the pre-commit checks against currently staged files (exactly what the pre-commit hook runs)
 
 To scope a package script, use a pnpm filter with one it defines, e.g. `pnpm --filter cva check`. `cva` has no `test` script, so `pnpm --filter cva test` succeeds without running tests. To run its runtime tests, use `pnpm exec vitest run --config .config/vitest.config.ts packages/cva`; this scoped command does not collect coverage. Run `pnpm test` for the full coverage gate and `pnpm check` separately for compile-time type assertions.
@@ -123,17 +123,60 @@ Version bumps (the `version` field in `packages/*/package.json`) are part of tha
 Release one package at a time, from `main`. For a package `<package>` (`cva` or `class-variance-authority`) at a new `<version>`:
 
 1. Check out `main` and make sure it's up to date: `git checkout main && git pull`.
-2. Bump the `version` field in that package's `package.json` — the only place the version changes.
-3. Commit the bump on its own, using the version as the message: `git commit -am "<package>@<version>"` (e.g. `cva@1.0.0-beta.7`).
-4. Push `main`: `git push origin main`.
-5. Tag the commit `v<version>` and push the tag:
+2. For a `cva` beta, complete the [beta migration guidance](#beta-migration-guidance-cva-releases-only) review before bumping the version. Either confirm that consumers need no migration or land the skill update first.
+3. Bump the `version` field in that package's `package.json` — the only place the version changes.
+4. Commit the bump on its own, using the version as the message: `git commit -am "<package>@<version>"` (e.g. `cva@1.0.0-beta.7`).
+5. Push `main`: `git push origin main`.
+6. Tag the commit `v<version>` and push the tag:
 
    ```sh
    git tag v<version>          # e.g. v1.0.0-beta.7
    git push origin v<version>
    ```
 
-6. Publish from the package: `pnpm --filter <package> publish`. `prepublishOnly` runs the tsdown build first, so the publish-shape gates (attw, publint, unused) must pass or the publish aborts. **Publish the beta package under the `beta` dist-tag** — `pnpm --filter cva publish --tag beta` — so the prerelease doesn't overwrite `latest`; the stable package publishes to the default `latest`.
-7. Create the matching [GitHub release](https://github.com/joe-bell/cva/releases) for the `v<version>` tag.
+7. Publish from the package: `pnpm --filter <package> publish`. `prepublishOnly` runs the tsdown build first, so the publish-shape gates (attw, publint, unused) must pass or the publish aborts. **Publish the beta package under the `beta` dist-tag** — `pnpm --filter cva publish --tag beta` — so the prerelease doesn't overwrite `latest`; the stable package publishes to the default `latest`.
+8. Create the matching [GitHub release](https://github.com/joe-bell/cva/releases) for the `v<version>` tag.
+
+### Beta migration guidance (`cva` releases only)
+
+This review applies to every `cva` beta release. Compare its consumer-facing changes with the routes already covered by [`cva-migrate`](./skills/cva-migrate). If consumers need no migration, leave the skill unchanged rather than adding an empty guide. `class-variance-authority` is stable and in maintenance mode, so its releases never carry beta migration guidance.
+
+When migration is needed:
+
+1. Add or update the curated guide for the release you are about to cut, at `skills/cva-migrate/references/beta/cva-<version>.md` for a prerelease, or `skills/cva-migrate/references/cva-<version>.md` for a stable one. Write it against the real diff, so the reader never has to research the release.
+2. Add or update that destination's row in the supported-routes table in [`skills/cva-migrate/SKILL.md`](./skills/cva-migrate/SKILL.md). **Keep every earlier source version the new guide still serves.** A reader on `beta.3` is still a reader the next release has to migrate, so a route only comes out when it is wrong, never because a newer version shipped.
+3. Run `pnpm exec skill-check check ./skills/cva-migrate --no-security-scan --strict` and `pnpm lint:skills`.
+
+Land that work in the same PR as the change that needs it, not as a release-day scramble.
+
+Then, when writing the GitHub release body in step 8, embed the router **and every reference that destination needs** in one collapsed block, so the release is self-contained for anyone (or any agent) upgrading to it. Label each file with its repository path so the tree can be reconstructed by hand:
+
+`````text
+<details>
+<summary>Migration skill (<code>cva-migrate</code>)</summary>
+
+`skills/cva-migrate/SKILL.md`
+
+````md
+<!-- paste the tagged contents of skills/cva-migrate/SKILL.md -->
+````
+
+`skills/cva-migrate/references/beta/cva-<version>.md`
+
+````md
+<!-- paste the tagged contents of that reference -->
+````
+
+</details>
+`````
+
+The fence around each pasted file must be **longer than the longest fence inside it**, or that file's own code blocks close it early and the release body breaks. The skill and its references use three-backtick fences today, so each block that holds one needs four (and the demonstration above, which shows those blocks, needs five). Count again whenever a skill file gains a longer nested fence.
+
+Copy every file verbatim from the tag rather than from your working tree, so the embedded copies match what shipped:
+
+```sh
+git show v<version>:skills/cva-migrate/SKILL.md
+git show v<version>:skills/cva-migrate/references/beta/cva-<version>.md
+```
 
 The commit message (`<package>@<version>`) and tag (`v<version>`) formats match the existing release history — keep them consistent so the two packages' releases stay legible in a shared tag namespace.

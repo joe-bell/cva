@@ -22,7 +22,8 @@
         },
         { "label": "Polymorphism", "link": "/getting-started/polymorphism" },
         { "label": "TypeScript", "link": "/getting-started/typescript" },
-        { "label": "Tools", "link": "/getting-started/tools" }
+        { "label": "Tools", "link": "/getting-started/tools" },
+        { "label": "Skills", "link": "/getting-started/skills" }
       ]
     },
     {

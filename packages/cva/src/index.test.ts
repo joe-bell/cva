@@ -1,11 +1,8 @@
 import { clsx } from "clsx";
 import type * as CVA from "./";
-import { compose, cva, cx, defineConfig, getSchema } from "./";
-import {
-  getSchema as getSchemaTool,
-  type GetSchema as ToolsGetSchema,
-} from "./tools";
-import { getSchema as getSchemaUtils } from "./utils";
+import * as rootExports from "./";
+import { cva, cx } from "./";
+import { getSchema } from "./tools";
 
 describe("clsx (the `cva` preset default)", () => {
   test("infers the full ClassValue authoring surface", () => {
@@ -83,116 +80,6 @@ describe("cx", () => {
     ],
   ])("cx(%o) returns %s", (options, expected) => {
     expect(cx(options)).toBe(expected);
-  });
-});
-
-describe("compose", () => {
-  test("should merge non-variant config values and tolerate a missing config", () => {
-    // `base` is a string (not a mergeable object), so it overwrites rather
-    // than merges when configs are folded together.
-    const box = cva({
-      base: "box",
-      variants: {
-        shadow: {
-          sm: "shadow-sm",
-        },
-      },
-    });
-    const plainFunction = () => "plain";
-
-    // @ts-expect-error: not a cva()-created component (no `.config`), which
-    // compose tolerates at runtime.
-    const card = compose(box, plainFunction);
-
-    expect(card({ shadow: "sm" })).toBe("box shadow-sm plain");
-  });
-
-  test("should merge into a single component", () => {
-    const box = cva({
-      variants: {
-        shadow: {
-          sm: "shadow-sm",
-          md: "shadow-md",
-        },
-      },
-      defaultVariants: {
-        shadow: "sm",
-      },
-    });
-
-    const stack = cva({
-      variants: {
-        gap: {
-          unset: null,
-          1: "gap-1",
-          2: "gap-2",
-          3: "gap-3",
-        },
-      },
-      defaultVariants: {
-        gap: "unset",
-      },
-    });
-
-    const card = compose(box, stack);
-
-    expectTypeOf(card).toBeFunction();
-
-    expectTypeOf(card).parameter(0).toExtend<
-      | {
-          shadow?: "sm" | "md" | undefined;
-          gap?: "unset" | 1 | 2 | 3 | undefined;
-        }
-      | undefined
-    >();
-
-    expect(card()).toBe("shadow-sm");
-    expect(card({ class: "adhoc-class" })).toBe("shadow-sm adhoc-class");
-    expect(card({ className: "adhoc-class" })).toBe("shadow-sm adhoc-class");
-    expect(card({ shadow: "md" })).toBe("shadow-md");
-    expect(card({ gap: 2 })).toBe("shadow-sm gap-2");
-    expect(card({ shadow: "md", gap: 3, class: "adhoc-class" })).toBe(
-      "shadow-md gap-3 adhoc-class",
-    );
-    expect(
-      card({
-        shadow: "md",
-        gap: 3,
-        className: "adhoc-class",
-      }),
-    ).toBe("shadow-md gap-3 adhoc-class");
-  });
-
-  test("should accept internal variant props", () => {
-    const base = cva({
-      variants: {
-        _tone: {
-          quiet: "tone-quiet",
-          loud: "tone-loud",
-        },
-      },
-      defaultVariants: { _tone: "quiet" },
-    });
-
-    const stack = cva({
-      variants: {
-        gap: {
-          1: "gap-1",
-          2: "gap-2",
-        },
-      },
-      defaultVariants: { gap: 1 },
-    });
-
-    const card = compose(base, stack);
-
-    expectTypeOf(card).parameter(0).toExtend<
-      | {
-          _tone?: "quiet" | "loud" | undefined;
-          gap?: 1 | 2 | undefined;
-        }
-      | undefined
-    >();
   });
 });
 
@@ -531,17 +418,11 @@ describe("cva — composes", () => {
 
   test("should reject values that aren't cva() components", () => {
     const box = cva({ variants: { shadow: { sm: "shadow-sm" } } });
-    const stack = cva({ variants: { gap: { 1: "gap-1" } } });
 
     // @ts-expect-error — plain function: no `config` property
     cva({ composes: () => "" });
     // @ts-expect-error — plain function inside an array
     cva({ composes: [box, () => ""] });
-
-    const composed = compose(box, stack);
-    // @ts-expect-error — `compose()` results carry no `config` and can't be
-    // re-composed; compose the original components via `composes` instead
-    cva({ composes: composed });
   });
 });
 
@@ -695,22 +576,6 @@ describe("cva — internal variants", () => {
   });
 });
 
-describe("getSchema", () => {
-  test("the deprecated root export is cva/tools' function itself", () => {
-    const button = cva({
-      variants: { intent: { primary: "button-primary" } },
-    });
-
-    expect(getSchema).toBe(getSchemaTool);
-    expect(getSchemaUtils).toBe(getSchemaTool);
-    expect(getSchemaTool(button)).toStrictEqual({
-      intent: { values: ["primary"] },
-    });
-    expectTypeOf<CVA.GetSchema>().toEqualTypeOf<ToolsGetSchema>();
-    expectTypeOf(getSchema).toEqualTypeOf<ToolsGetSchema>();
-  });
-});
-
 describe("cva", () => {
   describe("without base", () => {
     describe("without anything", () => {
@@ -840,6 +705,33 @@ describe("CVAVariantShape", () => {
   });
 });
 
+describe("the `cva` entry point's surface", () => {
+  test("exports `cva` and `cx`, and nothing else, at runtime", () => {
+    expect(Object.keys(rootExports).sort()).toStrictEqual(["cva", "cx"]);
+    expectTypeOf<keyof typeof rootExports>().toEqualTypeOf<"cva" | "cx">();
+  });
+
+  test("no longer carries the deprecated values or their types", () => {
+    // These directives fail with TS2578 if a removed export returns.
+
+    // @ts-expect-error: `compose` is removed; use `cva({ composes })`
+    rootExports.compose;
+    // @ts-expect-error: `defineConfig` is removed; import it from `cva/config`
+    rootExports.defineConfig;
+    // @ts-expect-error: `getSchema` is removed; import it from `cva/tools`
+    rootExports.getSchema;
+
+    // @ts-expect-error: `Compose` is removed
+    type RemovedCompose = CVA.Compose;
+    // @ts-expect-error: `DefineConfig` is removed; it lives in `cva/config`
+    type RemovedDefineConfig = CVA.DefineConfig;
+    // @ts-expect-error: `DefineConfigOptions` is removed; see `cva/config`
+    type RemovedDefineConfigOptions = CVA.DefineConfigOptions;
+    // @ts-expect-error: `GetSchema` is removed; it lives in `cva/tools`
+    type RemovedGetSchema = CVA.GetSchema;
+  });
+});
+
 describe("exported types", () => {
   test("portability types stay exported", () => {
     // Each name below must be reachable through the `CVA.` namespace
@@ -850,308 +742,6 @@ describe("exported types", () => {
     expectTypeOf<CVA.CVAVariantShape>().toEqualTypeOf<
       Record<string, Record<string, CVA.ClassValue>>
     >();
-  });
-});
-
-describe("defineConfig", () => {
-  describe("hooks", () => {
-    describe("onComplete", () => {
-      const PREFIX = "never-gonna-give-you-up";
-      const SUFFIX = "never-gonna-let-you-down";
-
-      const onCompleteHandler = (className: string) =>
-        [PREFIX, className, SUFFIX].join(" ");
-
-      test("should extend compose", () => {
-        const { compose: composeExtended } = defineConfig({
-          hooks: {
-            onComplete: onCompleteHandler,
-          },
-        });
-
-        const box = cva({
-          variants: {
-            shadow: {
-              sm: "shadow-sm",
-              md: "shadow-md",
-            },
-          },
-          defaultVariants: {
-            shadow: "sm",
-          },
-        });
-        const stack = cva({
-          variants: {
-            gap: {
-              unset: null,
-              1: "gap-1",
-              2: "gap-2",
-              3: "gap-3",
-            },
-          },
-          defaultVariants: {
-            gap: "unset",
-          },
-        });
-        const card = composeExtended(box, stack);
-
-        expectTypeOf(card).toBeFunction();
-
-        const cardClassList = card();
-        const cardClassListSplit = cardClassList.split(" ");
-        expect(cardClassListSplit[0]).toBe(PREFIX);
-        expect(cardClassListSplit[cardClassListSplit.length - 1]).toBe(SUFFIX);
-
-        const cardShadowGapClassList = card({ shadow: "md", gap: 3 });
-        const cardShadowGapClassListSplit = cardShadowGapClassList.split(" ");
-        expect(cardShadowGapClassListSplit[0]).toBe(PREFIX);
-        expect(
-          cardShadowGapClassListSplit[cardShadowGapClassListSplit.length - 1],
-        ).toBe(SUFFIX);
-      });
-
-      test("should extend cva", () => {
-        const { cva: cvaExtended } = defineConfig({
-          hooks: {
-            onComplete: onCompleteHandler,
-          },
-        });
-
-        const component = cvaExtended({
-          base: "foo",
-          variants: { intent: { primary: "bar" } },
-        });
-        const componentClassList = component({ intent: "primary" });
-        const componentClassListSplit = componentClassList.split(" ");
-
-        expectTypeOf(component).toBeFunction();
-        expect(componentClassListSplit[0]).toBe(PREFIX);
-        expect(
-          componentClassListSplit[componentClassListSplit.length - 1],
-        ).toBe(SUFFIX);
-      });
-
-      test("should extend cx", () => {
-        const { cx: cxExtended } = defineConfig({
-          hooks: {
-            onComplete: onCompleteHandler,
-          },
-        });
-
-        const classList = cxExtended("foo", "bar");
-        const classListSplit = classList.split(" ");
-
-        expectTypeOf(classList).toBeString();
-        expect(classListSplit[0]).toBe(PREFIX);
-        expect(classListSplit[classListSplit.length - 1]).toBe(SUFFIX);
-      });
-    });
-
-    describe("cx:done (deprecated)", () => {
-      const PREFIX = "we-know-the-game";
-      const SUFFIX = "and-were-gonna-play-it";
-
-      const cxDoneHandler = (className: string) =>
-        [PREFIX, className, SUFFIX].join(" ");
-
-      test("should extend compose", () => {
-        const { compose: composeExtended } = defineConfig({
-          hooks: {
-            "cx:done": cxDoneHandler,
-          },
-        });
-
-        const box = cva({
-          variants: {
-            shadow: {
-              sm: "shadow-sm",
-              md: "shadow-md",
-            },
-          },
-          defaultVariants: {
-            shadow: "sm",
-          },
-        });
-        const stack = cva({
-          variants: {
-            gap: {
-              unset: null,
-              1: "gap-1",
-            },
-          },
-          defaultVariants: {
-            gap: "unset",
-          },
-        });
-        const card = composeExtended(box, stack);
-
-        const cardClassListSplit = card({ shadow: "md", gap: 1 }).split(" ");
-        expect(cardClassListSplit[0]).toBe(PREFIX);
-        expect(cardClassListSplit[cardClassListSplit.length - 1]).toBe(SUFFIX);
-      });
-
-      test("should extend cva", () => {
-        const { cva: cvaExtended } = defineConfig({
-          hooks: {
-            "cx:done": cxDoneHandler,
-          },
-        });
-
-        const component = cvaExtended({
-          base: "foo",
-          variants: { intent: { primary: "bar" } },
-        });
-        const componentClassListSplit = component({
-          intent: "primary",
-        }).split(" ");
-
-        expect(componentClassListSplit[0]).toBe(PREFIX);
-        expect(
-          componentClassListSplit[componentClassListSplit.length - 1],
-        ).toBe(SUFFIX);
-      });
-
-      test("should extend cx", () => {
-        const { cx: cxExtended } = defineConfig({
-          hooks: {
-            "cx:done": cxDoneHandler,
-          },
-        });
-
-        expect(cxExtended("foo", "bar")).toBe(`${PREFIX} foo bar ${SUFFIX}`);
-      });
-
-      test("should take precedence over onComplete when both are set", () => {
-        const { cx: cxExtended } = defineConfig({
-          hooks: {
-            "cx:done": cxDoneHandler,
-            onComplete: (className) => `on-complete ${className}`,
-          },
-        });
-
-        expect(cxExtended("foo")).toBe(`${PREFIX} foo ${SUFFIX}`);
-      });
-    });
-  });
-
-  describe("cx", () => {
-    test("receives assembled values verbatim, one argument each", () => {
-      const calls: unknown[][] = [];
-      const recording: CVA.CX = (...inputs) => {
-        calls.push(inputs);
-        return "recorded";
-      };
-
-      const { cva: cvaExtended } = defineConfig({ cx: recording });
-
-      const child = cvaExtended({ base: "child" });
-      const badge = cvaExtended({
-        composes: [child],
-        base: ["badge", { "badge--raised": true }],
-        variants: {
-          tone: { info: { "bg-blue-500": true }, warn: "bg-yellow-500" },
-        },
-        compoundVariants: [{ tone: "info", class: "compound-info" }],
-        defaultVariants: { tone: "info" },
-      });
-
-      expect(badge({ class: "extra" })).toBe("recorded");
-      // The child renders before its parent.
-      expect(calls).toHaveLength(2);
-      expect(calls[0]).toEqual(["child"]);
-      // Authored arrays/objects stay intact; absent values are omitted.
-      expect(calls[1]).toEqual([
-        "recorded",
-        ["badge", { "badge--raised": true }],
-        { "bg-blue-500": true },
-        "compound-info",
-        "extra",
-      ]);
-    });
-
-    test("infers the authoring surface from the concatenator's parameters", () => {
-      const { cva: narrowCva, cx: narrowCx } = defineConfig({
-        cx: (...inputs: (string | null | undefined | 0 | false)[]) =>
-          inputs.filter(Boolean).join(" "),
-      });
-
-      const button = narrowCva({
-        base: "font-semibold",
-        variants: { intent: { primary: "bg-blue-500" } },
-      });
-      expect(button({ intent: "primary", class: "extra" })).toBe(
-        "font-semibold bg-blue-500 extra",
-      );
-      expect(narrowCx("a", null, "b")).toBe("a b");
-
-      narrowCva({
-        // @ts-expect-error — objects aren't part of this concatenator's grammar
-        base: { "bg-gray-200": true },
-      });
-      narrowCva({
-        // @ts-expect-error — object-syntax variant values fail the variants gate
-        variants: { intent: { primary: { "bg-blue-500": true } } },
-      });
-      // @ts-expect-error — and neither are object-syntax class props
-      button({ intent: "primary", class: { extra: true } });
-    });
-
-    test("falls back to the full ClassValue grammar when nothing narrower is inferrable", () => {
-      const { cva: inlineCva } = defineConfig({
-        cx: (...inputs) => inputs.filter(Boolean).join("|"),
-      });
-      const { cva: unknownCva } = defineConfig({
-        cx: (...inputs: unknown[]) => inputs.filter(Boolean).join("|"),
-      });
-
-      for (const cvaExtended of [inlineCva, unknownCva]) {
-        const badge = cvaExtended({
-          base: ["badge", { "badge--raised": true }],
-          variants: { tone: { info: { "bg-blue-500": true } } },
-        });
-        expectTypeOf(badge).toBeFunction();
-      }
-
-      expectTypeOf<
-        CVA.CXInput<(...inputs: unknown[]) => string>
-      >().toEqualTypeOf<CVA.ClassValue>();
-      expectTypeOf<CVA.CXInput<CVA.CX>>().toEqualTypeOf<CVA.ClassValue>();
-      expectTypeOf<
-        CVA.CXInput<(...inputs: string[]) => string>
-      >().toEqualTypeOf<string>();
-      // A wider-than-grammar parameter narrows to the shared subset rather
-      // than reopening values the concatenator rejects. (Object types such
-      // as `URL` already satisfy `ClassDictionary`, so they stay.)
-      expectTypeOf<
-        CVA.CXInput<(...inputs: (string | symbol)[]) => string>
-      >().toEqualTypeOf<string>();
-    });
-
-    test("a string-only concatenator never receives undefined", () => {
-      const { cva: strictCva, cx: strictCx } = defineConfig({
-        cx: (...inputs: string[]) =>
-          inputs.map((input) => input.toUpperCase()).join(" "),
-      });
-
-      const box = strictCva({ base: "box" });
-      const button = strictCva({
-        composes: box,
-        variants: { intent: { primary: "primary" }, size: { sm: "sm" } },
-      });
-
-      expect(box()).toBe("BOX");
-      expect(button({ intent: "primary" })).toBe("BOX PRIMARY");
-      expect(strictCx("a", "b")).toBe("A B");
-    });
-
-    test("infers from the last signature of an overloaded concatenator", () => {
-      interface OverloadedCX {
-        (strings: TemplateStringsArray, ...values: string[]): string;
-        (...inputs: CVA.ClassValue[]): string;
-      }
-
-      expectTypeOf<CVA.CXInput<OverloadedCX>>().toEqualTypeOf<CVA.ClassValue>();
-    });
   });
 });
 

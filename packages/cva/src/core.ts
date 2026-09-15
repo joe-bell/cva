@@ -28,7 +28,6 @@ import {
   type ClassArray as ConfigClassArray,
   type ClassDictionary as ConfigClassDictionary,
   type ClassValue as ConfigClassValue,
-  type Compose as ConfigCompose,
   type CVA as ConfigCVA,
   type CVAComponent as ConfigCVAComponent,
   type CVAComponentShape as ConfigCVAComponentShape,
@@ -56,8 +55,6 @@ export type CXInput<TCX extends AnyCX> = ConfigCXInput<TCX>;
 /** @deprecated Import `VariantProps` from `cva/config` instead. */
 export type VariantProps<Component extends (...args: any) => any> =
   ConfigVariantProps<Component>;
-/** @deprecated Import `Compose` from `cva/config` instead. */
-export type Compose<T extends ClassValue = ClassValue> = ConfigCompose<T>;
 /** @deprecated Import `CX` from `cva/config` instead. */
 export type CX<T extends ClassValue = ClassValue> = ConfigCX<T>;
 /** @deprecated Import `CXOptions` from `cva/config` instead. */

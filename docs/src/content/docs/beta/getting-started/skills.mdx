@@ -1,0 +1,33 @@
+---
+title: Skills
+description: Use the cva-migrate Agent Skill to upgrade a project between cva versions.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## `cva-migrate`
+
+[`cva-migrate`](https://github.com/joe-bell/cva/tree/main/skills/cva-migrate) upgrades a project between `cva` versions. Install it for repeated use, or paste the prompt into your agent to run it once:
+
+<Tabs>
+  <TabItem label="Command">
+
+    ```sh
+    npx skills add https://github.com/joe-bell/cva --skill cva-migrate
+    ```
+
+  </TabItem>
+  <TabItem label="Prompt">
+
+    ```text
+    Run `npx skills use "https://github.com/joe-bell/cva" --skill "cva-migrate"` and follow the generated skill instructions now. Read its complete output, redirecting it to a temporary file first if necessary. Resolve relative paths from the supporting-files directory it provides.
+    ```
+
+  </TabItem>
+</Tabs>
+
+Then tell the agent which version to install:
+
+> Migrate this project to `cva@1.0.0-beta.11`.
+
+The first curated route upgrades `cva@1.0.0-beta.0` through `beta.10` to `beta.11`. For other routes, the skill checks every relevant [GitHub release](https://github.com/joe-bell/cva/releases), the tagged package metadata, and the published npm artifacts. It stops if those sources do not support a migration step.

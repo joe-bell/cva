@@ -142,8 +142,8 @@ type MergedVariants<T extends readonly unknown[]> = UnionToIntersection<
 // type rather than `Omit<A, keyof B> & B`: the latter stays an unresolved
 // deferred type when `A`/`B` are themselves generic (as they are here, via
 // `ReturnType<CVA>` with no concrete `Config`), which then breaks downstream
-// `any`-narrowing in unrelated code that consumes `ReturnType<CVA>` (e.g.
-// the deprecated `compose`). A mapped type resolves eagerly instead.
+// `any`-narrowing in unrelated code that consumes `ReturnType<CVA>` (e.g. the
+// `composes` and `getSchema` guards). A mapped type resolves eagerly instead.
 type RightMerge<A, B> = {
   [K in keyof A | keyof B]: K extends keyof B
     ? B[K]
@@ -172,46 +172,11 @@ type MergedDefaultVariants<T extends readonly unknown[]> = T extends readonly [
   ? RightMerge<DefaultsOf<Head>, MergedDefaultVariants<Rest>>
   : {};
 
-type ComponentProps<Component extends (...args: any) => any> = Omit<
-  OmitUndefined<Parameters<Component>[0]>,
-  "class" | "className"
->;
-
-// One `Omit`: nesting it inside `ComponentProps` builds the props twice.
+// One `Omit`: nesting the class-prop removal in a helper builds the props twice.
 export type VariantProps<Component extends (...args: any) => any> = Omit<
   OmitUndefined<Parameters<Component>[0]>,
   "class" | "className" | InternalVariantKey
 >;
-
-/* compose
-  ---------------------------------- */
-
-/**
- * @deprecated Use the `composes` property inside `cva` instead.
- * @example
- * // Before
- * const card = compose(box, stack)
- * // After
- * const card = cva({ composes: [box, stack] })
- */
-export interface Compose<T extends ClassValue = ClassValue> {
-  <Components extends readonly unknown[]>(
-    ...components: Components &
-      (Components[number] extends CVAComponentShape ? unknown : never)
-  ): (
-    props?: (
-      | UnionToIntersection<
-          {
-            [K in keyof Components]: Components[K] extends CVAComponentShape
-              ? ComponentProps<Components[K]>
-              : never;
-          }[number]
-        >
-      | undefined
-    ) &
-      CVAClassProp<T>,
-  ) => string;
-}
 
 /* cx
   ---------------------------------- */
@@ -254,15 +219,14 @@ export interface CVAComponent<
 // keeps the two from drifting: instantiated with `any`, the props conditional
 // and `config` both collapse to `any` (mapped types over `any` are `any`),
 // i.e. `{ (props?: any): string; config: any }`. The required `config`
-// property is what rejects plain functions and (deprecated) `compose`
-// results.
+// property is what rejects plain functions.
 //
 // The `any` arguments are deliberate, not lazy typing — a shaped `config`
 // (e.g. `{ variants?: CVAVariantShape }`) was tried and verifiably breaks:
 // a variant-less `cva({ base })` carries `variants: unknown`, and
-// `ReturnType<CVA>` instantiates this constraint inside the
-// `Compose`/`GetSchema` guards, where the shaped form rejects every real
-// component via props contravariance.
+// `ReturnType<CVA>` instantiates this constraint inside the `composes` and
+// `GetSchema` guards, where the shaped form rejects every real component via
+// props contravariance.
 //
 // Its class-value parameter must be `any`: narrowed components otherwise fail
 // props contravariance in `composes` and `getSchema`.
@@ -327,8 +291,8 @@ export interface CVA<T extends ClassValue = ClassValue> {
 
 export interface DefineConfigOptions<TCX extends AnyCX = CX> {
   /**
-   * The class name concatenator used by `cva`, `cx`, and `compose`. It owns
-   * the class name grammar entirely: cva assembles the authored values
+   * The class name concatenator used by `cva` and `cx`. It owns the class
+   * name grammar entirely: cva assembles the authored values
    * (composed component outputs, `base`, matched variant and compound
    * variant values, `class`/`className`) and passes them through verbatim,
    * one argument each, without interpreting them.
@@ -340,31 +304,12 @@ export interface DefineConfigOptions<TCX extends AnyCX = CX> {
    * full clsx-flavored `ClassValue` grammar.
    */
   cx: TCX & CXConstraint<TCX>;
-  hooks?: {
-    /**
-     * @deprecated please use the `cx` option instead
-     */
-    "cx:done"?: (className: string) => string;
-    /**
-     * @deprecated please use the `cx` option instead
-     */
-    onComplete?: (className: string) => string;
-  };
 }
 
 export interface DefineConfig {
   <TCX extends AnyCX>(
     options: DefineConfigOptions<TCX>,
   ): {
-    /**
-     * @deprecated Use the `composes` property inside `cva` instead.
-     * @example
-     * // Before
-     * const card = compose(box, stack)
-     * // After
-     * const card = cva({ composes: [box, stack] })
-     */
-    compose: Compose<CXInput<TCX>>;
     cx: CX<CXInput<TCX>>;
     cva: CVA<CXInput<TCX>>;
   };
@@ -390,7 +335,7 @@ const ownEnumerable = Object.prototype.propertyIsEnumerable;
 // explicit `undefined` keeps the default; an inherited getter is never read.
 const definedProps = (
   props: Record<string, unknown>,
-  seed?: Record<string, unknown>,
+  seed: Record<string, unknown>,
 ): Record<string, unknown> => {
   let merged: Record<string, unknown> = { ...seed };
   for (const key in props) {
@@ -472,10 +417,16 @@ const mergeConfig = (
   return merged;
 };
 
+type PreparedVariants = readonly [
+  variantKeys: readonly string[],
+  variantMaps: readonly Record<string, ClassValue>[],
+  defaultClasses: readonly ClassValue[],
+];
+
 const prepareVariants = (
   localVariants: CVAVariantShape | undefined,
   defaults: Record<string, unknown>,
-) => {
+): PreparedVariants => {
   const names: string[] = [];
   const maps: Record<string, ClassValue>[] = [];
   for (const key in localVariants) {
@@ -485,20 +436,12 @@ const prepareVariants = (
     }
   }
   // No variants, no retained tables; the rest are copied to their exact size.
-  if (!names.length) {
-    return {
-      variantKeys: noValues,
-      variantMaps: noValues,
-      defaultClasses: noValues,
-    };
-  }
-  return {
-    variantKeys: names.slice(),
-    variantMaps: maps.slice(),
-    defaultClasses: names.map(
-      (key, i) => maps[i][falsyToString(defaults[key]) as string],
-    ),
-  };
+  if (!names.length) return [noValues, noValues, noValues];
+  return [
+    names.slice(),
+    maps.slice(),
+    names.map((key, i) => maps[i][falsyToString(defaults[key]) as string]),
+  ];
 };
 
 const compoundMatches = (
@@ -520,11 +463,19 @@ const compoundMatches = (
 };
 
 // A compound may select on a name no variant declares: the key list ends here.
+type PreparedCompounds = readonly [
+  keys: readonly string[],
+  defaultValues: readonly unknown[],
+  compounds: readonly PreparedCompound[],
+  indexes: readonly number[],
+  selectors: readonly unknown[],
+];
+
 const prepareCompounds = (
   compoundVariants: readonly (CVAClassProp & Record<string, unknown>)[],
   variantKeys: readonly string[],
   defaults: Record<string, unknown>,
-) => {
+): PreparedCompounds => {
   const keys = variantKeys.slice();
   const compounds: PreparedCompound[] = [];
   const indexes: number[] = [];
@@ -563,13 +514,13 @@ const prepareCompounds = (
       defaultValues,
     );
   }
-  return {
-    keys: keys.slice(),
+  return [
+    keys.slice(),
     defaultValues,
-    compounds: compounds.slice(),
-    indexes: indexes.slice(),
-    selectors: selectors.slice(),
-  };
+    compounds.slice(),
+    indexes.slice(),
+    selectors.slice(),
+  ];
 };
 
 // The body of a component with no prop names to read and no children. At
@@ -602,14 +553,8 @@ const createPlainComponent =
 export const defineConfig = ((options: DefineConfigOptions) => {
   // `Reflect.apply` hands over the assembled values as separate arguments and
   // keeps `options` as the receiver, whatever `cx`'s own `call`/`apply` say.
-  const cxArray = (inputs: readonly ClassValue[]): string => {
-    const className: string = Reflect.apply(options.cx, options, inputs);
-    const hooks = options.hooks || empty;
-    // `??` semantics, spelled out because it downlevels to a temporary.
-    let hook: ((className: string) => string) | undefined = hooks["cx:done"];
-    if (hook == null) hook = hooks.onComplete;
-    return hook ? hook(className) : className;
-  };
+  const cxArray = (inputs: readonly ClassValue[]): string =>
+    Reflect.apply(options.cx, options, inputs);
 
   const cx: CX = (...inputs) =>
     // Drop absent values so a narrower concatenator never receives `undefined`.
@@ -643,29 +588,24 @@ export const defineConfig = ((options: DefineConfigOptions) => {
       children,
       definition,
     );
-    const { variantKeys, variantMaps, defaultClasses } = prepareVariants(
-      definition.variants,
-      defaults,
-    );
+    const preparedVariants = prepareVariants(definition.variants, defaults);
+    // Named locals keep the tuple readable; indexed access avoids iterator work.
+    const variantKeys = preparedVariants[0];
+    const variantMaps = preparedVariants[1];
+    const defaultClasses = preparedVariants[2];
     const variantCount = variantKeys.length;
     const prepared = definition.compoundVariants
       ? prepareCompounds(definition.compoundVariants, variantKeys, defaults)
       : undefined;
     // Every prop name a call reads: the variant names first, so one index
     // addresses a value map and a default class too, then compound-only names.
-    const keys: readonly string[] = prepared ? prepared.keys : variantKeys;
+    const keys = prepared ? prepared[0] : variantKeys;
+    const defaultValues = prepared ? prepared[1] : noValues;
+    const compounds = prepared ? prepared[2] : noValues;
+    const indexes = prepared ? prepared[3] : noValues;
+    const selectors = prepared ? prepared[4] : noValues;
     const keyCount = keys.length;
-    const compounds: readonly PreparedCompound[] = prepared
-      ? prepared.compounds
-      : noValues;
     const compoundCount = compounds.length;
-    const indexes: readonly number[] = prepared ? prepared.indexes : noValues;
-    const selectors: readonly unknown[] = prepared
-      ? prepared.selectors
-      : noValues;
-    const defaultValues: readonly unknown[] = prepared
-      ? prepared.defaultValues
-      : noValues;
 
     // The arguments for a call that supplies no known prop and no class prop,
     // and has no child to run. `Reflect.apply` copies it, so it never escapes.
@@ -793,42 +733,7 @@ export const defineConfig = ((options: DefineConfigOptions) => {
     return component as ReturnType<CVA>;
   }) as CVA;
 
-  const compose: Compose = (...components) => {
-    const composed = components as CVAComponentShape[];
-    const config: Record<string, any> = {};
-    for (let i = 0; i < composed.length; i++) {
-      const source = composed[i].config;
-      for (const key in source) {
-        if (hasOwn.call(source, key)) {
-          const value = source[key];
-          config[key] =
-            value && typeof value === "object" && !Array.isArray(value)
-              ? { ...config[key], ...value }
-              : value;
-        }
-      }
-    }
-
-    const component: CVAComponent<typeof config, typeof config.variants> = (
-      input,
-    ) => {
-      const props: Record<string, unknown> = input || empty;
-      const forwarded = definedProps(props);
-      const out: ClassValue[] = [];
-      for (let i = 0; i < composed.length; i++) {
-        const child = composed[i];
-        pushDefined(out, child(forwarded));
-      }
-      return cxArray(pushClassProps(out, props));
-    };
-
-    component.config = config;
-
-    return component;
-  };
-
   return {
-    compose,
     cva,
     cx,
   };

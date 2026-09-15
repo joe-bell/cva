@@ -5,7 +5,7 @@ import { getSchema } from "./tools";
 
 // The schema reads a component's merged config, so the concatenator is
 // irrelevant here; use the same clsx grammar the preset ships with.
-const { compose, cva } = defineConfig<CVA.CX>({ cx: clsx });
+const { cva } = defineConfig<CVA.CX>({ cx: clsx });
 
 describe("getSchema", () => {
   test("should return the schema for a component", () => {
@@ -173,18 +173,8 @@ describe("getSchema", () => {
   });
 
   test("should reject components not created by cva()", () => {
-    const box = cva({
-      variants: { shadow: { sm: "shadow-sm" } },
-    });
-    const stack = cva({
-      variants: { gap: { 1: "gap-1" } },
-    });
-    const composed = compose(box, stack);
     const plainFunction = () => "";
 
-    // @ts-expect-error — `compose()`'s result has no `.config`, so it can't
-    // be introspected by `getSchema`. Use the `composes` property instead.
-    getSchema(composed);
     // @ts-expect-error: not a cva()-created component at all
     expect(getSchema(plainFunction)).toStrictEqual({});
   });

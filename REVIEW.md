@@ -6,6 +6,15 @@ CI gates `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `
 
 Two facts set the stakes: both packages are published to npm and depended on by other people's builds, and this repo takes outside contributions. A mistake in the public API or the published artifact ships to strangers, and a mistake in CI privileges is exploitable by a pull request.
 
+## Changed prose and code clarity
+
+Apply this section to changed lines only; do not propose broad rewrites.
+
+- Keep comments that explain non-obvious rationale. Flag comments that narrate or duplicate the code.
+- Flag unjustified defensive branches or catches, type escapes that only bypass checking, avoidable nesting, and indirection that obscures behavior. Do not treat documented, load-bearing `any` uses or compatibility code as cleanup targets. Behavior-changing cleanup needs an identified bug and regression coverage.
+- Check that changed prose tells readers what they need to know or do and why it matters. Prefer concrete claims, direct and readable language, and descriptive sentence-case headings. Flag filler, hype, formulaic transitions such as "Additionally", generic conclusions, and marketing-style rhetorical questions. Checklist questions that ask reviewers to verify behavior remain valid.
+- Preserve the deliberate personal, informal voice in the FAQs and What's New pages. Do not flatten it into generic documentation tone.
+
 ## Public API and type inference (`packages/cva`)
 
 The highest-stakes surface in the repo. Types are the product here as much as the runtime is.
@@ -24,11 +33,11 @@ The highest-stakes surface in the repo. Types are the product here as much as th
 - Variants merge one level deep so overlapping keys union their values. Runtime: `cva`'s definition-time merge loop. Types: `MergedVariants`/`UnionToIntersection`. Preserve merge depth, precedence and own `__proto__` data properties.
 - Internal `_`-prefixed variants are filtered in three places, now split across three files: `InternalVariantKey` is defined in `src/types.ts`, applied by `VariantProps` in `src/config.ts`, and applied again by the key remap in the `GetSchema` interface in `src/tools.ts`, alongside the `key.startsWith("_")` guard in `getSchema`'s implementation. All three, or none.
 - Prop normalisation is subtle and looks like dead weight: `definedProps` builds a composed child's props, dropping an explicit `undefined` so it falls back to the default and dropping the class props so they aren't forwarded, while compound matching resolves the known keys independently; `falsyToString` maps `false` → `"false"` and `0` → `"0"`; `getSchema` round-trips numeric keys through `String(n) === v` so `"01"` and `" 1"` stay strings. Each has an observable consequence for consumers.
-- Does `cva()` keep its shallow definition-time snapshot, with only `options.cx`, `options.hooks`, and caller props read during calls?
+- Does `cva()` keep its shallow definition-time snapshot, with only `options.cx` and caller props read during calls?
 - Does every path preserve the exact argument order and finish with one `Reflect.apply` using `options` as receiver?
 - Are compound selectors matched against own enumerable props while declared variants retain direct property reads?
-- Does every `for...in` guard ownership before reading, and do `cva()`'s per-key merges preserve own `__proto__` data properties? The deprecated `compose()` accumulator can still reparent on that key; leave it as it is.
-- Is each `cva({ composes })` child called detached and given its own fresh forwarded-props object? The deprecated `compose()` shares one `forwarded` object; leave it as it is.
+- Does every `for...in` guard ownership before reading, and do `cva()`'s per-key merges preserve own `__proto__` data properties?
+- Is each `cva({ composes })` child called detached and given its own fresh forwarded-props object?
 - Are retained tables exact-sized and read-only, with the shared empty sentinel never handed to a mutating path and base-only shapes retaining no unused tables?
 - Are getter side effects and mid-call mutation of the props object still out of contract: every known prop read before any child runs, and read again only when preparing a child's forwarded props?
 - Do tests preserve output, argument-stream, getter-read, composition-isolation, and many-key behavior?
@@ -49,7 +58,7 @@ CI's `build` job runs tsdown's `publint`/`attw`/`unused` gates, so a genuinely _
 
 ## Size and dependency budget
 
-- `bundlesize` enforces the numbers, not the choice of numbers. The `size-limit` blocks cap the `cva` preset at `2.15KB`, `cva/config` at `1.7KB`, `cva/tools` at `0.35KB`, `cva/utils` at `0.37KB`, and `class-variance-authority` at `1.2KB`. `cva/utils` is a deprecated re-export of `cva/tools`, so size-limit's "with all dependencies" measurement counts `tools.cjs` (333 B) plus the CJS re-export hop, measuring 363 B; an aliased `const` and a bare `export … from` measure the same. A PR that raises its own limit to fit gets a green job — that is a review decision, weighed against the "performance & minimal footprint" project goal.
+- `bundlesize` enforces the numbers, not the choice of numbers. The `size-limit` blocks cap the `cva` preset at `1.65KB`, `cva/config` at `1.45KB`, `cva/tools` at `0.35KB`, `cva/utils` at `0.37KB`, and `class-variance-authority` at `1.2KB`. `cva/utils` is a deprecated re-export of `cva/tools`, so size-limit's "with all dependencies" measurement counts `tools.cjs` (333 B) plus the CJS re-export hop, measuring 363 B; an aliased `const` and a bare `export … from` measure the same. A PR that raises its own limit to fit gets a green job — that is a review decision, weighed against the "performance & minimal footprint" project goal.
 - `clsx` is the only runtime dependency of either package. Anything added to `dependencies` under `packages/*` is a headline change, not a detail.
 - [`pnpm-workspace.yaml`](./pnpm-workspace.yaml) carries two supply-chain protections that a PR can quietly weaken: `minimumReleaseAge`, and the explicit `allowBuilds` allowlist (adding a package there grants it install-time script execution). Removing or lowering `minimumReleaseAge` to work around an `ERR_PNPM_MISSING_TIME` is the specific anti-fix called out in [`AGENTS.md`](./AGENTS.md#learnings) — the right answer is to re-run the install.
 - Dependabot is configured for `github-actions` only ([`.github/dependabot.yml`](./.github/dependabot.yml)), so npm bumps arrive by hand and carry no automated provenance.
@@ -86,11 +95,11 @@ The split between trusted and untrusted CI here is deliberate and documented, an
 - **Equivalent integrations need equal scenarios.** Check that paired playgrounds demonstrate the same documented behavior.
 - **The docs are versioned, and the split matters.** Stable content lives at `docs/src/content/docs/**`; beta content lives under `docs/src/content/docs/beta/**` with its own sidebar in `docs/src/content/versions/beta.json`. A `packages/cva` change documented in the stable tree ships beta behaviour to stable users; a new beta page missing from `beta.json` is unreachable from the sidebar.
 - **Docs build watch paths live in the Cloudflare dashboard**, not in the repo (see [Deployment](./docs/README.md#-deployment)). A PR that makes the docs build depend on a new root-level input won't trigger a redeploy until those paths are updated — flag it rather than assuming it's wired.
-- Prose: `// =>` output comments are claims about real behaviour and should be verified, not assumed. Markdown is **never** hard-wrapped — Prettier runs with `proseWrap: "preserve"`, so `prettier --check` passes on hard wraps and commits them as noisy diffs. Content under `docs/src/content/docs/**` also follows the `writing-guidelines` house style (US English, no em/en-dash punctuation, preserved author voice in the FAQs and What's New pages).
+- Prose: `// =>` output comments are claims about real behaviour and should be verified, not assumed. Markdown is **never** hard-wrapped — Prettier runs with `proseWrap: "preserve"`, so `prettier --check` passes on hard wraps and commits them as noisy diffs. Content under `docs/src/content/docs/**` also follows the `writing-guidelines` house style (US English and no em/en-dash punctuation).
 
 ## Things nothing in this repo enforces
 
-- **Agent-config mirrors drift silently.** `.claude/skills/<name>` must stay a relative symlink into `.agents/skills/`; `.vscode/mcp.json` (schema: `servers`) and the `context_servers` block in `.zed/settings.json` are hand-mirrored and must change in the same commit as `.mcp.json`. [`AGENTS.md`](./AGENTS.md) states outright that none of this is checked — a real file committed under `.claude/skills/` looks fine to both git and `pnpm lint:skills`.
+- **Agent-config mirrors drift silently.** `.claude/skills/<name>` must stay a relative symlink: into `.agents/skills/<name>` for a contributor skill, or straight into `skills/<name>` for a published top-level one; `.vscode/mcp.json` (schema: `servers`) and the `context_servers` block in `.zed/settings.json` are hand-mirrored and must change in the same commit as `.mcp.json`. [`AGENTS.md`](./AGENTS.md) states outright that none of this is checked — a real file committed under `.claude/skills/` looks fine to both git and `pnpm lint:skills`.
 - **A skill is instructions an agent will follow.** Review an added or updated `SKILL.md` and its `references/` the way you'd review a dependency, and never let a changed `source` in `skills-lock.json` pass silently. Vendored skill files are Prettier-ignored so the committed bytes match the recorded hash — a formatting diff there means something rewrote them.
 - **No version bumps in a PR.** The `version` field in `packages/*/package.json` changes only on `main`, as the owner's own commit ([Releases](./CONTRIBUTING.md#releases)). Nothing stops one landing on a feature branch, even when a PR is titled as a release.
 - **This repository is public.** No private repository names, URLs, or file paths in code, docs, commit messages, or PR text — ported work is described neutrally.
