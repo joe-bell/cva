@@ -2,7 +2,6 @@ import * as cvaRoot from "cva";
 import { cva, type VariantProps } from "cva";
 import { defineConfig } from "cva/config";
 import { getSchema, type GetSchema } from "cva/tools";
-import { getSchema as getSchemaFromUtils } from "cva/utils";
 import assert from "node:assert/strict";
 
 export const badge = cva({
@@ -44,5 +43,3 @@ assert.deepEqual(
     .sort(),
   ["cva", "cx"],
 );
-assert.equal(getSchemaFromUtils, getSchema);
-assert.deepEqual(getSchemaFromUtils(badge), schema);

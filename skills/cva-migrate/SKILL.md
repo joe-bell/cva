@@ -7,7 +7,7 @@ metadata:
 
 # Migrate a `cva` project between versions
 
-This skill is a router. It identifies the source and destination versions, then loads at most one curated guide. Today only the `cva@1.0.0-beta.11` route is curated. Research every other route, including downgrades, in Step 3. Never load unrelated references because their instructions may not apply.
+This skill is a router. It identifies the source and destination versions, then loads at most one curated guide. Today, the `cva@1.0.0-beta.11` and upcoming `cva@1.0.0-beta.12` routes are curated. Research every other route, including downgrades, in Step 3. Never load unrelated references because their instructions may not apply.
 
 `cva@beta` is not covered by semver and changes without warning. Treat every route below as version-to-version migration guidance, not a semver contract.
 
@@ -35,6 +35,7 @@ If the output is ambiguous, find the resolved `cva` entry in the project's lockf
 | From                                           | To                  | Guide                                                                          |
 | ---------------------------------------------- | ------------------- | ------------------------------------------------------------------------------ |
 | `cva@1.0.0-beta.0` through `cva@1.0.0-beta.10` | `cva@1.0.0-beta.11` | [`references/beta/cva-1.0.0-beta.11.md`](references/beta/cva-1.0.0-beta.11.md) |
+| `cva@1.0.0-beta.0` through `cva@1.0.0-beta.11` | `cva@1.0.0-beta.12` | [`references/beta/cva-1.0.0-beta.12.md`](references/beta/cva-1.0.0-beta.12.md) |
 
 A row matches only when the installed version falls inside its `From` range and the requested destination equals its `To`. For example, `cva@0.0.0` to `cva@1.0.0-beta.11` does not match because `0.0.0` is outside the supported source range.
 

@@ -28,7 +28,6 @@
     ".": "./src/index.ts",
     "./config": "./src/config.ts",
     "./tools": "./src/tools.ts",
-    "./utils": "./src/utils.ts",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
@@ -87,10 +86,6 @@
         "import": "./dist/tools.mjs",
         "require": "./dist/tools.cjs"
       },
-      "./utils": {
-        "import": "./dist/utils.mjs",
-        "require": "./dist/utils.cjs"
-      },
       "./package.json": "./package.json"
     },
     "main": "dist/index.cjs",
@@ -103,9 +98,6 @@
         ],
         "tools": [
           "./dist/tools.d.cts"
-        ],
-        "utils": [
-          "./dist/utils.d.cts"
         ]
       }
     }
@@ -122,10 +114,6 @@
     {
       "path": "dist/tools.cjs",
       "limit": "0.35KB"
-    },
-    {
-      "path": "dist/utils.cjs",
-      "limit": "0.37KB"
     }
   ]
 }

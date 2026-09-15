@@ -26,7 +26,7 @@ focused:
 - **Code** is formatted via [Prettier](https://prettier.io/)
 - **JavaScript** is written as [TypeScript](https://www.typescriptlang.org/) where possible.
 - **Tests** should live beside their source as `<source>.test.<ext>`; in `packages/cva`, assign them to the public entry point that exposes the behavior, keep compatibility wrappers with that entry point, and keep runtime and type assertions together rather than creating thematic standalone suites.
-- **`packages/cva`'s type exports**: any type that can appear _named_ (not structurally expanded) in a consumer's generated `.d.ts` when they compile with `declaration: true` must be `export`ed from the public entry point that exposes the signature (`cva`, `cva/config`, `cva/tools`, or the deprecated `cva/utils`), even if it's not meant for direct use — an unexported-but-nameable type breaks their build with a `TS4023`/`TS2459`-family error even though `cva`'s own build stays green. Not every type reachable from a public signature needs this: TypeScript structurally expands some of them (e.g. the call-signature parameter helpers) instead of naming them, so those stay unexported on purpose — export the minimum that a real consumer build fails to compile without (see `AGENTS.md`'s Learnings for how to check). These exports exist for that portability reason only, not as a feature we want people to reach for directly, so mark them with a short JSDoc saying so and don't add docs-site coverage for them. `packages/cva/src/index.test.ts` pins the current set, but only catches _losing_ one of these exports, not a new type that newly needs one.
+- **`packages/cva`'s type exports**: any type that can appear _named_ (not structurally expanded) in a consumer's generated `.d.ts` when they compile with `declaration: true` must be `export`ed from the public entry point that exposes the signature (`cva`, `cva/config`, or `cva/tools`), even if it's not meant for direct use — an unexported-but-nameable type breaks their build with a `TS4023`/`TS2459`-family error even though `cva`'s own build stays green. Not every type reachable from a public signature needs this: TypeScript structurally expands some of them (e.g. the call-signature parameter helpers) instead of naming them, so those stay unexported on purpose — export the minimum that a real consumer build fails to compile without (see `AGENTS.md`'s Learnings for how to check). These exports exist for that portability reason only, not as a feature we want people to reach for directly, so mark them with a short JSDoc saying so and don't add docs-site coverage for them. `packages/cva/src/index.test.ts` pins the current set, but only catches _losing_ one of these exports, not a new type that newly needs one.
 
 ## Getting Started
 
@@ -61,7 +61,7 @@ Run these from the repo root:
 - `pnpm test` – runs the test suite with coverage
 - `pnpm build` – production build of the packages
 - `pnpm check` – type checks every package
-- `pnpm --filter cva test:consumer` – packs the built beta package into an isolated pnpm-style temporary consumer where `clsx` is not hoisted, checks ESM/CJS declarations, and smoke-tests its `cva`, `cva/config`, `cva/tools`, and `cva/utils` exports
+- `pnpm --filter cva test:consumer` – packs the built beta package into an isolated pnpm-style temporary consumer where `clsx` is not hoisted, checks ESM/CJS declarations and the current `cva`, `cva/config`, and `cva/tools` entries, then verifies ESM and CommonJS reject `cva/utils` with the export-map error
 - `pnpm bundlesize` – verifies bundle size limits (`size-limit`)
 - `pnpm bench` – builds the packages, then runs the `vitest bench` performance scenarios against each built package (add `BENCH_BASELINES_DIR=<dir>` after running `pnpm bench:baselines --out <dir>` to also benchmark published npm baselines alongside your local changes)
 - `pnpm bench:compare` – renders a markdown comparison table from the `test/bench/.output/benchmark-*.json` files produced by `pnpm bench`
@@ -82,7 +82,7 @@ Both published packages (`packages/cva` and `packages/class-variance-authority`)
 
 #### How the packages transform for publish
 
-The `exports` and `publishConfig.exports` blocks in each package's `package.json` are **machine-generated**: the config's `exports: { devExports: true }` makes tsdown rewrite both on every build. **Never hand-edit them** — the next build silently overwrites your change; adjust that package's `tsdown.config.mts` (or the shared base) instead. The hand-maintained exception is `publishConfig.typesVersions`: `class-variance-authority` has a node10 fallback for `./types`, and `cva` has fallbacks for `./config`, `./tools` and `./utils`. tsdown preserves them but does not generate them. The two blocks implement a dev/publish split:
+The `exports` and `publishConfig.exports` blocks in each package's `package.json` are **machine-generated**: the config's `exports: { devExports: true }` makes tsdown rewrite both on every build. **Never hand-edit them** — the next build silently overwrites your change; adjust that package's `tsdown.config.mts` (or the shared base) instead. The hand-maintained exception is `publishConfig.typesVersions`: `class-variance-authority` has a node10 fallback for `./types`, and `cva` has fallbacks for `./config` and `./tools`. tsdown preserves them but does not generate them. The two blocks implement a dev/publish split:
 
 - The top-level `exports` points at `./src/*.ts`, so workspace consumers (tests, examples, docs) always resolve the raw TypeScript source with no build step in between.
 - `publishConfig.exports` points at `dist/`. pnpm applies `publishConfig` when packing or publishing (`pnpm pack` / `pnpm publish` — never `npm pack`, which skips the rewrite entirely), so the tarball people install resolves the built output.
@@ -100,7 +100,7 @@ What tsdown does **not** own: `size-limit` remains the bundle-size budget (tsdow
 
 Day to day: `pnpm --filter <package> dev` runs the build in watch mode, and because the root `prepare:packages` script builds during a fresh `pnpm install`, the publish-shape gates run then too — a broken manifest fails fast on your machine rather than in CI. An already-up-to-date install may skip `prepare`; run `pnpm build` explicitly when you need to rebuild local changes. If that per-install cost ever becomes a problem, `attw: 'ci-only'` in the config confines the slowest gate to CI.
 
-`pnpm --filter cva test:consumer` requires a completed `pnpm --filter cva build`. It packs that beta build and extracts it outside the workspace under an isolated pnpm-style layout, with `clsx` available only beside `cva`. This catches declarations that name a dependency type (TS2883) even when the package's own `tsc` passes. It compiles the ESM/CommonJS fixtures together, executes the emitted JavaScript, then type-checks both downstream consumers against their emitted declarations. CI runs it in the `test` job after `pnpm test`, with the install setup supplying the build through `prepare`.
+`pnpm --filter cva test:consumer` requires a completed `pnpm --filter cva build`. It packs that beta build and extracts it outside the workspace under an isolated pnpm-style layout, with `clsx` available only beside `cva`. This catches declarations that name a dependency type (TS2883) even when the package's own `tsc` passes. It compiles the ESM/CommonJS fixtures together, executes the emitted JavaScript, type-checks both downstream consumers against their emitted declarations, and verifies that both module systems reject the removed `cva/utils` path with `ERR_PACKAGE_PATH_NOT_EXPORTED`. CI runs it in the `test` job after `pnpm test`, with the install setup supplying the build through `prepare`.
 
 ## Benchmarks
 
@@ -146,6 +146,8 @@ When migration is needed:
 1. Add or update the curated guide for the release you are about to cut, at `skills/cva-migrate/references/beta/cva-<version>.md` for a prerelease, or `skills/cva-migrate/references/cva-<version>.md` for a stable one. Write it against the real diff, so the reader never has to research the release.
 2. Add or update that destination's row in the supported-routes table in [`skills/cva-migrate/SKILL.md`](./skills/cva-migrate/SKILL.md). **Keep every earlier source version the new guide still serves.** A reader on `beta.3` is still a reader the next release has to migrate, so a route only comes out when it is wrong, never because a newer version shipped.
 3. Run `pnpm exec skill-check check ./skills/cva-migrate --no-security-scan --strict` and `pnpm lint:skills`.
+
+When a beta release removes or moves a public API, lead its GitHub release body with a breaking-change callout and link readers to the beta [Skills page](https://cva.style/beta/getting-started/skills/), which points to the curated route.
 
 Land that work in the same PR as the change that needs it, not as a release-day scramble.
 
