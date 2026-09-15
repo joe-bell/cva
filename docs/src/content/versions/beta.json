@@ -48,7 +48,7 @@
     { "label": "FAQs", "link": "/faqs" },
     {
       "label": "Sponsor",
-      "link": "https://github.com/sponsors/joe-bell",
+      "link": "/sponsors",
       "attrs": { "target": "_blank" }
     },
     { "label": "llms.txt", "link": "/llms.txt" }

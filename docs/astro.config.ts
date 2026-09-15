@@ -99,7 +99,7 @@ export default defineConfig({
         {
           icon: "heart",
           label: "Sponsors",
-          href: "https://github.com/sponsors/joe-bell",
+          href: "/sponsors",
         },
         {
           icon: "github",
@@ -191,7 +191,7 @@ export default defineConfig({
         },
         {
           label: "Sponsor",
-          link: "https://github.com/sponsors/joe-bell",
+          link: "/sponsors",
           attrs: {
             target: "_blank",
           },
