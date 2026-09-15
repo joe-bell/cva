@@ -1,1 +1,3 @@
+/docs/sponsors https://github.com/sponsors/joe-bell 301
+/docs/sponsors/ https://github.com/sponsors/joe-bell 301
 /docs/* /:splat 301

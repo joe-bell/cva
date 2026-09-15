@@ -32,7 +32,8 @@ export default defineConfig({
     prerenderEnvironment: "node",
   }),
   redirects: {
-    "/sponsors": "https://joebell.studio/sponsors",
+    "/sponsors": "https://github.com/sponsors/joe-bell",
+    "/beta/sponsors": "https://github.com/sponsors/joe-bell",
     // Preserve inbound links from the previous Nextra docs, which served pages
     // under `/docs/*`.
     // Note: the `/docs/*` catch-all is defined in `public/_redirects`; a
@@ -90,6 +91,7 @@ export default defineConfig({
         Head: "./src/components/head.astro",
         PageTitle: "./src/components/page-title.astro",
         SiteTitle: "./src/components/site-title.astro",
+        SocialIcons: "./src/components/social-icons.astro",
       },
       description: "Class Variance Authority",
       credits: false,
@@ -185,7 +187,7 @@ export default defineConfig({
         },
         {
           label: "Sponsor",
-          link: "/sponsors",
+          link: "https://github.com/sponsors/joe-bell",
           attrs: {
             target: "_blank",
           },
@@ -303,7 +305,7 @@ export default defineConfig({
     versionRedirects({
       docs: "src/content/docs",
       versions: versions.map(({ slug }) => slug),
-      versionedRedirectsToRoot: ["sponsors", "llms.txt"],
+      versionedRedirectsToRoot: ["llms.txt"],
     }),
   ],
   vite: {

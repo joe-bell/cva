@@ -12,9 +12,8 @@ export interface VersionRedirectsOptions {
   docs: string;
   /** Archived version slugs, e.g. `["beta"]`. */
   versions: readonly string[];
-  /** Root-only pages (e.g. `"sponsors"`, `"llms.txt"`) for which a versioned
-   *  redirect to the root page is created per version, e.g. `/beta/sponsors` →
-   *  `/sponsors`. */
+  /** Root-only pages (e.g. `"llms.txt"`) for which a versioned redirect to the
+   *  root page is created per version, e.g. `/beta/llms.txt` → `/llms.txt`. */
   versionedRedirectsToRoot?: readonly string[];
 }
 
