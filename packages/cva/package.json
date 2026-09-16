@@ -39,8 +39,7 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "build:size-limit": "node ../../.config/bundle-size-report.mjs",
-    "bundlesize": "pnpm run build && pnpm run build:size-limit",
+    "bundlesize": "pnpm build && size-limit",
     "check": "pnpm run '/^check:.*/'",
     "check:tsc": "tsc --project tsconfig.json --noEmit",
     "dev": "tsdown --watch",

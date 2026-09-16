@@ -3,10 +3,12 @@ title: Variants
 description: Create variants, compound variants, and disable variants with cva@beta.
 ---
 
+import BundleSize from "../../../../components/bundle-size.astro";
+
 ## Creating variants
 
 :::note
-Although `cva` is a [**tiny**](https://bundlephobia.com/package/cva@beta) library, it's best to use in an environment with server-side rendering (SSR) or static-site generation (SSG): your user probably doesn't need this JavaScript, especially for static components.
+`cva` is a tiny (<BundleSize package="cva" /> compressed) library. Use it with server-side rendering (SSR) or static-site generation (SSG) so static components do not send this JavaScript to users.
 :::
 
 To kick things off, let's build a "basic" `button` component, using `cva` to handle our variant's classes

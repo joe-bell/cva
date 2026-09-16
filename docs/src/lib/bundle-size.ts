@@ -1,51 +1,50 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 import type { Loader } from "astro/loaders";
 import { z } from "astro/zod";
 
-const REPOSITORY_ROOT = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../../..",
-);
+import {
+  BUNDLE_SIZE_ARTIFACT_PATH,
+  BUNDLE_SIZE_SOURCES,
+  type BundleSizePackage,
+} from "./bundle-size-sources.ts";
 
-interface BundleSizeSource {
-  package: string;
-  buildEntry: string;
-  reportPath: string;
-}
-
-export const BUNDLE_SIZE_SOURCES = [
-  {
-    package: "class-variance-authority",
-    buildEntry: "dist/index.js",
-    reportPath: path.join(
-      REPOSITORY_ROOT,
-      "packages/class-variance-authority/bundle-size.json",
-    ),
-  },
-  {
-    package: "cva",
-    buildEntry: "dist/index.cjs",
-    reportPath: path.join(REPOSITORY_ROOT, "packages/cva/bundle-size.json"),
-  },
-] as const satisfies readonly BundleSizeSource[];
-
-/** Each source's package name doubles as its collection entry ID. */
-export type BundleSizePackage = (typeof BUNDLE_SIZE_SOURCES)[number]["package"];
+export {
+  BUNDLE_SIZE_ARTIFACT_PATH,
+  BUNDLE_SIZE_SOURCES,
+  type BundleSizePackage,
+};
 
 export const bundleSizeSchema = z
   .object({
+    passed: z.literal(true),
     size: z.int().positive(),
     sizeLimit: z.int().positive(),
-    passed: z.literal(true),
   })
+  .strict()
   .refine(({ size, sizeLimit }) => size <= sizeLimit, {
     message: "Bundle size must not exceed its limit.",
     path: ["size"],
-  })
-  .transform(({ size }) => ({ size }));
+  });
+
+export const bundleSizeArtifactSchema = z
+  .record(z.string(), bundleSizeSchema)
+  .superRefine((artifact, context) => {
+    const hasExpectedPackages =
+      Object.keys(artifact).length === BUNDLE_SIZE_SOURCES.length &&
+      BUNDLE_SIZE_SOURCES.every(
+        ({ package: packageName }) => packageName in artifact,
+      );
+
+    if (!hasExpectedPackages) {
+      context.addIssue({
+        code: "custom",
+        message:
+          "Bundle size artifact must contain exactly the published packages.",
+      });
+    }
+  });
 
 export type ReadText = (filePath: string) => Promise<string>;
 
@@ -55,62 +54,27 @@ export async function readBundleSizeText(filePath: string): Promise<string> {
 
 const readText: ReadText = readBundleSizeText;
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
+export function parseBundleSizeArtifact(text: string) {
+  let artifact: unknown;
 
-function parseJson(filePath: string, text: string): unknown {
   try {
-    return JSON.parse(text);
+    artifact = JSON.parse(text);
   } catch {
-    throw new Error(`Invalid JSON in ${filePath}.`);
-  }
-}
-
-function rootResult(source: BundleSizeSource, report: unknown) {
-  if (isRecord(report) && "error" in report) {
-    throw new Error(
-      `Size Limit failed for ${source.package}: ${String(report.error)}`,
-    );
-  }
-  if (!Array.isArray(report)) {
-    throw new Error(`Size Limit report for ${source.package} is not an array.`);
+    throw new Error("Invalid JSON in bundle size artifact.");
   }
 
-  const roots = report.filter(
-    (entry): entry is Record<string, unknown> =>
-      isRecord(entry) && entry.name === source.buildEntry,
-  );
-  if (roots.length !== 1) {
-    throw new Error(
-      `Expected one ${source.buildEntry} result for ${source.package}.`,
-    );
-  }
-  return roots[0]!;
+  return bundleSizeArtifactSchema.parse(artifact);
 }
 
 export async function readBundleSizeEntries(readTextImpl: ReadText = readText) {
-  return Promise.all(
-    BUNDLE_SIZE_SOURCES.map(async (source) => {
-      const result = rootResult(
-        source,
-        parseJson(source.reportPath, await readTextImpl(source.reportPath)),
-      );
-
-      return {
-        id: source.package,
-        data: {
-          size: result.size,
-          sizeLimit: result.sizeLimit,
-          passed: result.passed,
-        },
-      };
-    }),
+  const artifact = parseBundleSizeArtifact(
+    await readTextImpl(BUNDLE_SIZE_ARTIFACT_PATH),
   );
-}
 
-function loaderError(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
+  return BUNDLE_SIZE_SOURCES.map((source) => ({
+    id: source.package,
+    data: artifact[source.package]!,
+  }));
 }
 
 export function requiredBundleSizeEntry<T>(
@@ -124,20 +88,18 @@ export function requiredBundleSizeEntry<T>(
 
 export function bundleSizeLoader({
   readTextImpl = readText,
-}: { readTextImpl?: ReadText } = {}) {
+}: {
+  readTextImpl?: ReadText;
+} = {}) {
   let refreshVersion = 0;
 
   return {
     name: "bundle-size",
     async load(context) {
-      const reportPaths = BUNDLE_SIZE_SOURCES.map(
-        ({ reportPath }) => reportPath,
-      );
-
       const refresh = async (throwOnError: boolean) => {
         const version = ++refreshVersion;
+
         try {
-          context.store.clear();
           const entries = await readBundleSizeEntries(readTextImpl);
           const parsedEntries = await Promise.all(
             entries.map(async ({ id, data }) => ({
@@ -146,24 +108,30 @@ export function bundleSizeLoader({
             })),
           );
           if (version !== refreshVersion) return;
+
+          context.store.clear();
           for (const entry of parsedEntries) context.store.set(entry);
         } catch (error) {
           if (version !== refreshVersion) return;
-          context.logger.error(loaderError(error));
+
+          context.store.clear();
+          context.logger.error(String(error));
           if (throwOnError) throw error;
         }
       };
 
-      const refreshForReport = (changedPath: string) => {
-        if (reportPaths.includes(path.resolve(changedPath))) {
+      const refreshArtifact = (changedPath: string) => {
+        if (path.resolve(changedPath) === BUNDLE_SIZE_ARTIFACT_PATH) {
           void refresh(false);
         }
       };
 
-      context.watcher?.add(reportPaths);
-      context.watcher?.on("change", refreshForReport);
-      context.watcher?.on("add", refreshForReport);
-      context.watcher?.on("unlink", refreshForReport);
+      if (context.watcher) {
+        context.watcher.add([BUNDLE_SIZE_ARTIFACT_PATH]);
+        context.watcher.on("add", refreshArtifact);
+        context.watcher.on("change", refreshArtifact);
+        context.watcher.on("unlink", refreshArtifact);
+      }
 
       await refresh(true);
     },

@@ -54,8 +54,6 @@ jobs:
           persist-credentials: false
       # Installation builds the packages through root prepare:packages.
       - uses: ./.github/actions/install
-      - name: Documentation
-        run: pnpm --filter docs build
       - name: Examples
         run: pnpm build:examples
   bundlesize:

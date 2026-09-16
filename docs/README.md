@@ -15,7 +15,11 @@ Run these from the repository root.
 
 `astro preview` is not a production-equivalent preview for this site. The static build's generated Wrangler configuration restores the Worker entry point and the `ASSETS` binding after the Cloudflare adapter writes its asset configuration, so use the `preview` command above when testing deployment behavior.
 
-The docs `build`, `dev`, and `start` scripts run the root `build:bundle-size-reports` script before Wrangler and Astro. It measures each published package's existing `dist/` and rewrites the gitignored `bundle-size.json` at that package root, which the site then reads. The shared [report writer](../.config/bundle-size-report.mjs) lives under `.config/`, an existing docs-build watch path. Measurement never compiles anything: a fresh install supplies `dist/` through the root `prepare` script, so after editing package source run `pnpm build` (or `pnpm --filter <package> build`) before the docs measure it again.
+Docs `prebuild` runs [`src/scripts/generate-bundle-sizes.ts`](./src/scripts/generate-bundle-sizes.ts) before `build`. Docs `dev` and `start` call it before Wrangler and Astro. Docs `preview` runs `build`, which runs `prebuild`.
+
+The generator removes stale `docs/.generated/bundle-sizes.json`. It runs each package's Size Limit CLI from its package directory against existing `dist` files. It validates stable `dist/index.js` and beta `dist/index.cjs`, then atomically writes `docs/.generated/bundle-sizes.json`.
+
+The generator does not compile packages. Root install/prepare provides `dist`. After editing package source, run `pnpm build` or `pnpm --filter <package> build` before direct docs measurement.
 
 ## Markdown mirrors
 

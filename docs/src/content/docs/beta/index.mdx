@@ -20,7 +20,7 @@ import BundleSize from "../../../components/bundle-size.astro";
 <br />
 <br />
 
-`cva` builds type-safe, variant-driven class names for any styling approach, with first-class Tailwind CSS support.
+`cva` is a tiny (<BundleSize package="cva" /> compressed) library for type-safe, variant-driven class names for any styling approach, with first-class Tailwind CSS support.
 
 CSS-in-TS libraries such as [Stitches](https://stitches.dev/docs/variants) and [Vanilla Extract](https://vanilla-extract.style/documentation/api/style-variants/) handle type-safe UI variants without you managing class names or stylesheet composition by hand.
 
@@ -29,8 +29,6 @@ CSS-in-TS isn't for everyone, though. You may need full control over your styles
 Creating variants with the "traditional" CSS approach can become an arduous task: manually matching classes to props, and manually adding types.
 
 `cva` takes away those pain points, so you can focus on building your UI.
-
-The `cva` package's CommonJS entry, bundled with its `clsx` dependency, is <BundleSize package="cva" /> after esbuild minification and Brotli compression. Your own bundle will differ after tree shaking.
 
 ## Sponsors
 

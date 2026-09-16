@@ -8,7 +8,6 @@
     "bench:compare": "pnpm run --filter bench compare",
     "bench:preview": "pnpm run --filter bench preview",
     "build": "pnpm run --filter './packages/**' build",
-    "build:bundle-size-reports": "pnpm run --filter class-variance-authority --filter cva --parallel build:size-limit",
     "build:examples": "pnpm --filter './examples/**' --parallel build",
     "bundlesize": "pnpm run --filter './packages/**' --parallel bundlesize",
     "check": "pnpm run --filter './packages/**' --parallel check",
