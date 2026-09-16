@@ -12,6 +12,11 @@ const compactNumber = new Intl.NumberFormat("en-US", {
   notation: "compact",
   maximumFractionDigits: 1,
 });
+const compactLongNumber = new Intl.NumberFormat("en-US", {
+  notation: "compact",
+  compactDisplay: "long",
+  maximumFractionDigits: 1,
+});
 const decimalNumber = new Intl.NumberFormat("en-US", {
   maximumSignificantDigits: 3,
 });
@@ -84,6 +89,7 @@ const weeklyDownloadsSchema = z
     const formatDownloads = (value: number) => ({
       value,
       formatted: compactNumber.format(value),
+      formattedLong: compactLongNumber.format(value),
     });
 
     return {
