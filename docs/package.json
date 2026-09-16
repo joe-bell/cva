@@ -4,10 +4,11 @@
   "type": "module",
   "scripts": {
     "astro": "astro",
+    "prebuild": "node ./src/scripts/generate-bundle-sizes.ts",
     "build": "wrangler types && astro check && astro build",
-    "dev": "wrangler types && astro dev",
+    "dev": "pnpm prebuild && wrangler types && astro dev",
     "preview": "pnpm build && wrangler dev",
-    "start": "wrangler types && astro dev"
+    "start": "pnpm prebuild && wrangler types && astro dev"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",

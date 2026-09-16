@@ -9,6 +9,8 @@ banner:
 
 import { Picture } from "astro:assets";
 
+import BundleSize from "../../components/bundle-size.astro";
+
 <Picture
   src="/assets/img/wallpaper-4k.png"
   alt="cva logo"
@@ -22,7 +24,7 @@ import { Picture } from "astro:assets";
 <br />
 <br />
 
-`cva` builds type-safe, variant-driven class names for any styling approach, with first-class Tailwind CSS support.
+`cva` is a tiny (<BundleSize package="class-variance-authority" /> compressed) library for building type-safe, variant-driven class names with Tailwind CSS or any other styling approach.
 
 CSS-in-TS libraries such as [Stitches](https://stitches.dev/docs/variants) and [Vanilla Extract](https://vanilla-extract.style/documentation/api/style-variants/) handle type-safe UI variants without you managing class names or stylesheet composition by hand.
 

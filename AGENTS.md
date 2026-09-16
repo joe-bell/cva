@@ -186,6 +186,11 @@ Durable, hard-won lessons that don't fit a section above. See [Keeping this guid
 
 - Keep size-limit's esbuild scoped override in `pnpm-workspace.yaml`: minifier updates can change compressed bundle measurements without library changes. Evaluate upgrades to that pin explicitly against the bundle budgets; docs tooling can upgrade independently.
 
+- Package `build` scripts run only `tsdown`, so root `build` and `prepare:packages` create `dist` without measuring. Package `bundlesize` builds, then runs Size Limit.
+- Docs `prebuild` runs [`docs/src/scripts/generate-bundle-sizes.ts`](./docs/src/scripts/generate-bundle-sizes.ts) before `build`. Docs `dev` and `start` call it too. Docs `preview` runs `build`, which runs `prebuild`.
+- The generator removes stale `docs/.generated/bundle-sizes.json` and runs each package's Size Limit CLI from that package directory. It validates `class-variance-authority/dist/index.js` and `cva/dist/index.cjs`, then atomically writes both results by package name. Root install/prepare provides `dist`. Run a package or root build after source edits before docs measurement.
+- Add `packages/class-variance-authority/*` to the Cloudflare dashboard watch paths so stable package changes trigger the docs build.
+
 - The static docs build's Cloudflare adapter writes an asset-only `dist/client/wrangler.json`. The `workerConfig` `astro:build:done` hook restores the checked-in Worker entry point and `ASSETS` binding after validating the generated configuration; keep `session: false` so the adapter does not inject an invalid `SESSION` KV binding. Use `pnpm --filter docs preview`, which runs `wrangler dev`, to test that deployment shape rather than `astro preview`.
 - Keep `satteri@0.10.5` as a direct docs development dependency and externalize it only in Astro's Node prerender environment. Its native binding must resolve beside that package while rendering; it must not enter the deployed Worker bundle. Preserve existing `resolve.external` values when configuring it, and update the pin when `@astrojs/markdown-satteri` changes its supported range.
 - `docs/src/integrations/**` is exercised by `pnpm --filter docs build`, not the unit-test coverage set. Static HTML is the integration contract because it supplies the page metadata and rendered content used for Markdown mirrors.

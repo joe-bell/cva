@@ -16,6 +16,7 @@ export default defineConfig(({ mode }) => ({
         "test/bench/scripts/**/*.ts",
         ".github/scripts/**/*.mjs",
         "docs/src/lib/**/*.ts",
+        "docs/src/scripts/**/*.ts",
         "docs/src/worker/**/*.ts",
       ],
       exclude: [
@@ -37,6 +38,7 @@ export default defineConfig(({ mode }) => ({
         "test/bench/scripts/**/*.ts": { 100: true },
         ".github/scripts/**/*.mjs": { 100: true },
         "docs/src/lib/**/*.ts": { 100: true },
+        "docs/src/scripts/**/*.ts": { 100: true },
         "docs/src/worker/**/*.ts": { 100: true },
       },
     },
