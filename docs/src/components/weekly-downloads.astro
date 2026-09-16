@@ -1,22 +1,11 @@
 ---
 import { getEntry } from "astro:content";
 
-import {
-  formatWeeklyDownloadDate,
-  formatWeeklyDownloads,
-  requiredWeeklyDownloadEntry,
-  totalWeeklyDownloads,
-} from "../lib/weekly-downloads";
-
-const stable = requiredWeeklyDownloadEntry(
-  await getEntry("weeklyDownloads", "class-variance-authority"),
-  "class-variance-authority",
-);
-const beta = requiredWeeklyDownloadEntry(
-  await getEntry("weeklyDownloads", "cva"),
-  "cva",
-);
-const total = totalWeeklyDownloads(stable.data.downloads, beta.data.downloads);
+const snapshot = await getEntry("weeklyDownloads", "npm-weekly-downloads");
+if (snapshot === undefined)
+  throw new Error("Missing weekly npm download snapshot.");
+const stable = snapshot.data.packages["class-variance-authority"];
+const beta = snapshot.data.packages.cva;
 ---
 
 <section
@@ -33,7 +22,7 @@ const total = totalWeeklyDownloads(stable.data.downloads, beta.data.downloads);
     <p
       class="m-0 text-2xl/8 font-semibold tracking-tight text-gray-950 dark:text-white"
     >
-      <span class="tabular-nums">{formatWeeklyDownloads(total)}</span>{" "}
+      <span class="tabular-nums">{snapshot.data.total.formatted}</span>{" "}
       downloads across both packages
     </p>
   </div>
@@ -73,7 +62,7 @@ const total = totalWeeklyDownloads(stable.data.downloads, beta.data.downloads);
           <td
             class="py-3 text-right text-gray-700 tabular-nums dark:text-gray-300"
           >
-            {formatWeeklyDownloads(stable.data.downloads)}
+            {stable.formatted}
           </td>
         </tr>
         <tr>
@@ -91,7 +80,7 @@ const total = totalWeeklyDownloads(stable.data.downloads, beta.data.downloads);
           <td
             class="py-3 text-right text-gray-700 tabular-nums dark:text-gray-300"
           >
-            {formatWeeklyDownloads(beta.data.downloads)}
+            {beta.formatted}
           </td>
         </tr>
       </tbody>
@@ -100,8 +89,7 @@ const total = totalWeeklyDownloads(stable.data.downloads, beta.data.downloads);
 
   <p class="m-0 text-sm/6 text-gray-700 dark:text-gray-300">
     npm download counts cover all versions of each package. Week ending{" "}
-    <time datetime={stable.data.end}
-      >{formatWeeklyDownloadDate(stable.data.end)}</time
+    <time datetime={snapshot.data.end.value}>{snapshot.data.end.formatted}</time
     >.
   </p>
 

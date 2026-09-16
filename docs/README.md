@@ -21,7 +21,7 @@ The generator removes stale `docs/.generated/bundle-sizes.json`. It runs each pa
 
 The generator does not compile packages. Root install/prepare provides `dist`. After editing package source, run `pnpm build` or `pnpm --filter <package> build` before direct docs measurement.
 
-Astro runs the homepage's weekly npm download loader during each content sync. `pnpm --filter docs build` syncs once for `astro check` and again for `astro build`, so it requests npm's bulk download API twice. Each request is bounded to 10 seconds; a failed, malformed, or timed-out response clears the collection and stops the command instead of reusing stale totals.
+The homepage reads weekly npm totals from [`src/content/npm-weekly-downloads.json`](./src/content/npm-weekly-downloads.json). The `update-weekly-downloads` workflow fetches and validates npm's latest seven-day totals each Monday, then opens or updates a pull request containing the snapshot. Documentation builds read only the checked-in file and never depend on npm's API.
 
 ## Markdown mirrors
 
