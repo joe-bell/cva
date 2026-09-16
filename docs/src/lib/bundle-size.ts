@@ -10,10 +10,7 @@ const REPOSITORY_ROOT = path.resolve(
   "../../..",
 );
 
-export const BUNDLE_SIZE_IDS = ["stable", "beta"] as const;
-
 interface BundleSizeSource {
-  id: (typeof BUNDLE_SIZE_IDS)[number];
   package: string;
   buildEntry: string;
   reportPath: string;
@@ -21,7 +18,6 @@ interface BundleSizeSource {
 
 export const BUNDLE_SIZE_SOURCES = [
   {
-    id: "stable",
     package: "class-variance-authority",
     buildEntry: "dist/index.js",
     reportPath: path.join(
@@ -30,12 +26,14 @@ export const BUNDLE_SIZE_SOURCES = [
     ),
   },
   {
-    id: "beta",
     package: "cva",
     buildEntry: "dist/index.cjs",
     reportPath: path.join(REPOSITORY_ROOT, "packages/cva/bundle-size.json"),
   },
 ] as const satisfies readonly BundleSizeSource[];
+
+/** Each source's package name doubles as its collection entry ID. */
+export type BundleSizePackage = (typeof BUNDLE_SIZE_SOURCES)[number]["package"];
 
 export const bundleSizeSchema = z
   .object({
@@ -56,21 +54,6 @@ export async function readBundleSizeText(filePath: string): Promise<string> {
 }
 
 const readText: ReadText = readBundleSizeText;
-
-export function assertOwnedBundleSizeSources(
-  sources: readonly Pick<BundleSizeSource, "id">[],
-) {
-  const ids = sources.map(({ id }) => id);
-  if (
-    ids.length !== BUNDLE_SIZE_IDS.length ||
-    new Set(ids).size !== ids.length ||
-    BUNDLE_SIZE_IDS.some((id) => !ids.includes(id))
-  ) {
-    throw new Error(
-      "Bundle size reports must own only the stable and beta IDs.",
-    );
-  }
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -115,7 +98,7 @@ export async function readBundleSizeEntries(readTextImpl: ReadText = readText) {
       );
 
       return {
-        id: source.id,
+        id: source.package,
         data: {
           size: result.size,
           sizeLimit: result.sizeLimit,
@@ -132,16 +115,16 @@ function loaderError(error: unknown): string {
 
 export function requiredBundleSizeEntry<T>(
   entry: T | undefined,
-  id: string,
+  packageName: BundleSizePackage,
 ): T {
-  if (entry === undefined) throw new Error(`Missing ${id} bundle size report.`);
+  if (entry === undefined)
+    throw new Error(`Missing ${packageName} bundle size report.`);
   return entry;
 }
 
 export function bundleSizeLoader({
   readTextImpl = readText,
 }: { readTextImpl?: ReadText } = {}) {
-  assertOwnedBundleSizeSources(BUNDLE_SIZE_SOURCES);
   let refreshVersion = 0;
 
   return {
@@ -189,11 +172,14 @@ export function bundleSizeLoader({
 
 const DECIMAL_UNITS = ["B", "KB", "MB", "GB", "TB", "PB"] as const;
 
+/** Keeps the measurement and its unit on one line when the prose wraps. */
+const NONBREAKING_SPACE = "\u00a0";
+
 export function formatDecimalBytes(bytes: number): string {
   const magnitude = Math.min(
     Math.floor(Math.log10(Math.max(bytes, 1)) / 3),
     DECIMAL_UNITS.length - 1,
   );
   const value = bytes / 1000 ** magnitude;
-  return `${new Intl.NumberFormat("en-US", { maximumSignificantDigits: 3 }).format(value)} ${DECIMAL_UNITS[magnitude]!}`;
+  return `${new Intl.NumberFormat("en-US", { maximumSignificantDigits: 3 }).format(value)}${NONBREAKING_SPACE}${DECIMAL_UNITS[magnitude]!}`;
 }

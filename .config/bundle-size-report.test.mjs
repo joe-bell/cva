@@ -11,7 +11,6 @@ import {
   main,
   parseSizeLimitReport,
   runCommand,
-  runCli,
   sizeLimitCliPath,
   writeBundleSizeReport,
   writeReportAtomically,
@@ -122,39 +121,70 @@ describe("parseSizeLimitReport", () => {
   });
 });
 
-describe("clearBundleSizeReport", () => {
-  it("runs cleanup before source compilation in both package builds", async () => {
+async function manifest(relativePath) {
+  return JSON.parse(
+    await readFile(new URL(relativePath, import.meta.url), "utf8"),
+  );
+}
+
+describe("report orchestration", () => {
+  it("keeps both package builds source-only and measures from bundlesize", async () => {
     for (const packagePath of [
       "../packages/class-variance-authority/package.json",
       "../packages/cva/package.json",
     ]) {
-      const packageJson = JSON.parse(
-        await readFile(new URL(packagePath, import.meta.url), "utf8"),
-      );
+      const { scripts } = await manifest(packagePath);
 
-      expect(packageJson.scripts).toMatchObject({
-        build:
-          "pnpm run build:clear-size-limit && pnpm run build:source && pnpm run build:size-limit",
-        "build:clear-size-limit":
-          "node ../../.config/bundle-size-report.mjs --clear",
+      expect(scripts).toMatchObject({
+        build: "tsdown",
+        "build:size-limit": "node ../../.config/bundle-size-report.mjs",
+        bundlesize: "pnpm run build && pnpm run build:size-limit",
       });
+      expect(scripts).not.toHaveProperty("build:clear-size-limit");
+      expect(scripts).not.toHaveProperty("build:source");
     }
   });
 
-  it("invalidates a stale report before a source build failure", async () => {
+  it("compiles source without Size Limit from the root build and prepare", async () => {
+    const { scripts } = await manifest("../package.json");
+
+    expect(scripts).toMatchObject({
+      build: "pnpm run --filter './packages/**' build",
+      "build:bundle-size-reports":
+        "pnpm run --filter class-variance-authority --filter cva --parallel build:size-limit",
+      "prepare:packages": "pnpm build",
+    });
+    expect(scripts.build).not.toContain("size-limit");
+    expect(scripts["prepare:packages"]).not.toContain("size-limit");
+  });
+
+  it("regenerates reports before every docs command that renders them", async () => {
+    const { scripts } = await manifest("../docs/package.json");
+
+    expect(scripts).toMatchObject({
+      build:
+        "pnpm -w run build:bundle-size-reports && wrangler types && astro check && astro build",
+      dev: "pnpm -w run build:bundle-size-reports && wrangler types && astro dev",
+      preview: "pnpm build && wrangler dev",
+      start:
+        "pnpm -w run build:bundle-size-reports && wrangler types && astro dev",
+    });
+    expect(scripts).not.toHaveProperty("prebuild");
+    expect(scripts).not.toHaveProperty("predev");
+  });
+});
+
+describe("clearBundleSizeReport", () => {
+  it("removes a stale report and tolerates a missing one", async () => {
     const directory = await packageDirectory();
     const reportPath = path.join(directory, REPORT_FILENAME);
     await writeFile(reportPath, JSON.stringify(successfulReport()));
 
     await clearBundleSizeReport(directory);
-    await expect(
-      Promise.resolve().then(() => {
-        throw new Error("source build failed");
-      }),
-    ).rejects.toThrow("source build failed");
     await expect(readFile(reportPath, "utf8")).rejects.toMatchObject({
       code: "ENOENT",
     });
+    await expect(clearBundleSizeReport(directory)).resolves.toBeUndefined();
   });
 });
 
@@ -442,58 +472,6 @@ describe("writeBundleSizeReport", () => {
     expect(errorWriter).toHaveBeenCalledWith(
       expect.stringContaining("Size Limit exited with code 0."),
     );
-  });
-});
-
-describe("runCli", () => {
-  it("clears the report when requested", async () => {
-    const clearReport = vi.fn();
-    const reportWriter = vi.fn();
-
-    await expect(
-      runCli({
-        argv: ["node", "bundle-size-report.mjs", "--clear"],
-        clearReport,
-        errorWriter: vi.fn(),
-        reportWriter,
-      }),
-    ).resolves.toBe(0);
-    expect(clearReport).toHaveBeenCalledOnce();
-    expect(reportWriter).not.toHaveBeenCalled();
-  });
-
-  it("reports a clear failure", async () => {
-    const errorWriter = vi.fn();
-
-    await expect(
-      runCli({
-        argv: ["node", "bundle-size-report.mjs", "--clear"],
-        clearReport: async () => {
-          throw new Error("clear failed");
-        },
-        errorWriter,
-        reportWriter: vi.fn(),
-      }),
-    ).resolves.toBe(1);
-    expect(errorWriter).toHaveBeenCalledWith(
-      "Could not clear Size Limit report: clear failed\n",
-    );
-  });
-
-  it("dispatches other commands to the report writer", async () => {
-    const clearReport = vi.fn();
-    const reportWriter = vi.fn(async () => 7);
-
-    await expect(
-      runCli({
-        argv: ["node", "bundle-size-report.mjs"],
-        clearReport,
-        errorWriter: vi.fn(),
-        reportWriter,
-      }),
-    ).resolves.toBe(7);
-    expect(clearReport).not.toHaveBeenCalled();
-    expect(reportWriter).toHaveBeenCalledOnce();
   });
 });
 

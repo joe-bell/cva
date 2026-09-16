@@ -15,7 +15,7 @@ Run these from the repository root.
 
 `astro preview` is not a production-equivalent preview for this site. The static build's generated Wrangler configuration restores the Worker entry point and the `ASSETS` binding after the Cloudflare adapter writes its asset configuration, so use the `preview` command above when testing deployment behavior.
 
-The docs build reads the gitignored `bundle-size.json` report at each published package root. The shared [report writer](../.config/bundle-size-report.mjs) lives under `.config/`, an existing docs-build watch path. Run `pnpm build` first when installation has not already run the root `prepare` script.
+The docs `build`, `dev`, and `start` scripts run the root `build:bundle-size-reports` script before Wrangler and Astro. It measures each published package's existing `dist/` and rewrites the gitignored `bundle-size.json` at that package root, which the site then reads. The shared [report writer](../.config/bundle-size-report.mjs) lives under `.config/`, an existing docs-build watch path. Measurement never compiles anything: a fresh install supplies `dist/` through the root `prepare` script, so after editing package source run `pnpm build` (or `pnpm --filter <package> build`) before the docs measure it again.
 
 ## Markdown mirrors
 

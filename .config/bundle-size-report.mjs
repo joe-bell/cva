@@ -57,11 +57,8 @@ export function parseSizeLimitReport(output) {
   throw new Error("Size Limit did not produce a nonempty JSON report.");
 }
 
-export async function clearBundleSizeReport(
-  packageDir = process.cwd(),
-  { remove = rm } = {},
-) {
-  await remove(path.join(packageDir, REPORT_FILENAME), { force: true });
+export async function clearBundleSizeReport(packageDir) {
+  await rm(path.join(packageDir, REPORT_FILENAME), { force: true });
 }
 
 export async function writeReportAtomically(
@@ -139,7 +136,6 @@ function sizeLimitSummary(report) {
 export async function writeBundleSizeReport(
   packageDir = process.cwd(),
   {
-    clearReport = clearBundleSizeReport,
     command = runCommand,
     errorWriter = process.stderr.write.bind(process.stderr),
     outputWriter = process.stdout.write.bind(process.stdout),
@@ -148,7 +144,7 @@ export async function writeBundleSizeReport(
   } = {},
 ) {
   const reportPath = path.join(packageDir, REPORT_FILENAME);
-  await clearReport(packageDir);
+  await clearBundleSizeReport(packageDir);
 
   const result = await command(
     process.execPath,
@@ -193,32 +189,11 @@ export async function main(
   }
 }
 
-export async function runCli({
-  argv = process.argv,
-  clearReport = clearBundleSizeReport,
-  errorWriter = process.stderr.write.bind(process.stderr),
-  reportWriter = main,
-} = {}) {
-  if (argv[2] === "--clear") {
-    try {
-      await clearReport();
-      return 0;
-    } catch (error) {
-      errorWriter(
-        `Could not clear Size Limit report: ${errorMessage(error)}\n`,
-      );
-      return 1;
-    }
-  }
-
-  return reportWriter();
-}
-
 /* v8 ignore start -- requires invoking this module as Node's entrypoint. */
 if (
   process.argv[1] !== undefined &&
   path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
-  process.exitCode = await runCli();
+  process.exitCode = await main();
 }
 /* v8 ignore stop */

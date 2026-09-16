@@ -4,10 +4,10 @@
   "type": "module",
   "scripts": {
     "astro": "astro",
-    "build": "wrangler types && astro check && astro build",
-    "dev": "wrangler types && astro dev",
+    "build": "pnpm -w run build:bundle-size-reports && wrangler types && astro check && astro build",
+    "dev": "pnpm -w run build:bundle-size-reports && wrangler types && astro dev",
     "preview": "pnpm build && wrangler dev",
-    "start": "wrangler types && astro dev"
+    "start": "pnpm -w run build:bundle-size-reports && wrangler types && astro dev"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",

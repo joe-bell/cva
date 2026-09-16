@@ -2,17 +2,17 @@ import type { LoaderContext } from "astro/loaders";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
   BUNDLE_SIZE_SOURCES,
-  assertOwnedBundleSizeSources,
   bundleSizeLoader,
   bundleSizeSchema,
   formatDecimalBytes,
   readBundleSizeEntries,
   readBundleSizeText,
   requiredBundleSizeEntry,
+  type BundleSizePackage,
   type ReadText,
 } from "./bundle-size";
 
@@ -101,21 +101,18 @@ async function settle() {
 }
 
 describe("bundle size sources", () => {
-  it("maps only the stable and beta root CommonJS entries", () => {
+  it("maps each package name to its root CommonJS entry", () => {
     expect(
-      BUNDLE_SIZE_SOURCES.map(({ id, package: packageName, buildEntry }) => ({
-        id,
+      BUNDLE_SIZE_SOURCES.map(({ package: packageName, buildEntry }) => ({
         package: packageName,
         buildEntry,
       })),
     ).toEqual([
       {
-        id: "stable",
         package: "class-variance-authority",
         buildEntry: "dist/index.js",
       },
       {
-        id: "beta",
         package: "cva",
         buildEntry: "dist/index.cjs",
       },
@@ -125,26 +122,23 @@ describe("bundle size sources", () => {
     ).toBe(true);
   });
 
-  it("reads fixture reports without requiring generated package reports", async () => {
+  it("infers the package union from the source registry alone", () => {
+    expectTypeOf<BundleSizePackage>().toEqualTypeOf<
+      "class-variance-authority" | "cva"
+    >();
+  });
+
+  it("keys fixture entries by package name", async () => {
     await expect(readBundleSizeEntries(readTextFor())).resolves.toEqual([
       {
-        id: "stable",
+        id: "class-variance-authority",
         data: { passed: true, size: 1000, sizeLimit: 1100 },
       },
       {
-        id: "beta",
+        id: "cva",
         data: { passed: true, size: 1001, sizeLimit: 1101 },
       },
     ]);
-  });
-
-  it("rejects source lists that do not own exactly stable and beta", () => {
-    expect(() => assertOwnedBundleSizeSources([{ id: "stable" }])).toThrow(
-      "Bundle size reports must own only the stable and beta IDs.",
-    );
-    expect(() =>
-      assertOwnedBundleSizeSources([{ id: "stable" }, { id: "stable" }]),
-    ).toThrow("Bundle size reports must own only the stable and beta IDs.");
   });
 });
 
@@ -181,10 +175,12 @@ describe("bundleSizeSchema", () => {
 });
 
 describe("requiredBundleSizeEntry", () => {
-  it("returns an entry and reports a missing owned ID", () => {
-    expect(requiredBundleSizeEntry("entry", "stable")).toBe("entry");
-    expect(() => requiredBundleSizeEntry(undefined, "beta")).toThrow(
-      "Missing beta bundle size report.",
+  it("returns an entry and names the package missing a report", () => {
+    expect(requiredBundleSizeEntry("entry", "class-variance-authority")).toBe(
+      "entry",
+    );
+    expect(() => requiredBundleSizeEntry(undefined, "cva")).toThrow(
+      "Missing cva bundle size report.",
     );
   });
 });
@@ -204,11 +200,11 @@ describe("bundleSizeLoader", () => {
     expect(fixture.parseData).toHaveBeenCalledTimes(2);
     expect(fixture.store.set).toHaveBeenCalledTimes(2);
     expect(fixture.store.set).toHaveBeenNthCalledWith(1, {
-      id: "stable",
+      id: "class-variance-authority",
       data: { size: 1000 },
     });
     expect(fixture.store.set).toHaveBeenNthCalledWith(2, {
-      id: "beta",
+      id: "cva",
       data: { size: 1001 },
     });
   });
@@ -319,7 +315,7 @@ describe("bundleSizeLoader", () => {
     watcher.emit("add", BUNDLE_SIZE_SOURCES[1].reportPath);
     await vi.waitFor(() => expect(fixture.store.set).toHaveBeenCalledTimes(6));
     expect(fixture.store.set).toHaveBeenLastCalledWith({
-      id: "beta",
+      id: "cva",
       data: { size: 3000 },
     });
   });
@@ -385,7 +381,7 @@ describe("bundleSizeLoader", () => {
 
     expect(fixture.store.set).toHaveBeenCalledTimes(4);
     expect(fixture.store.set).toHaveBeenLastCalledWith({
-      id: "beta",
+      id: "cva",
       data: { size: 2000 },
     });
   });
@@ -422,9 +418,9 @@ describe("bundleSizeLoader", () => {
 
 describe("formatDecimalBytes", () => {
   it("uses decimal units with up to three significant digits", () => {
-    expect(formatDecimalBytes(580)).toBe("580 B");
-    expect(formatDecimalBytes(1000)).toBe("1 KB");
-    expect(formatDecimalBytes(1624)).toBe("1.62 KB");
-    expect(formatDecimalBytes(1_234_567)).toBe("1.23 MB");
+    expect(formatDecimalBytes(580)).toBe("580\u00a0B");
+    expect(formatDecimalBytes(1000)).toBe("1\u00a0KB");
+    expect(formatDecimalBytes(1624)).toBe("1.62\u00a0KB");
+    expect(formatDecimalBytes(1_234_567)).toBe("1.23\u00a0MB");
   });
 });
