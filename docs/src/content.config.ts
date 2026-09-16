@@ -7,6 +7,10 @@ import { docsVersionsLoader } from "starlight-versions/loader";
 import { format } from "date-fns";
 
 import { bundleSizeLoader, bundleSizeSchema } from "./lib/bundle-size";
+import {
+  weeklyDownloadSchema,
+  weeklyDownloadsLoader,
+} from "./lib/weekly-downloads";
 
 export const collections = {
   docs: defineCollection({
@@ -19,6 +23,10 @@ export const collections = {
   bundleSizes: defineCollection({
     loader: bundleSizeLoader(),
     schema: bundleSizeSchema,
+  }),
+  weeklyDownloads: defineCollection({
+    loader: weeklyDownloadsLoader(),
+    schema: weeklyDownloadSchema,
   }),
   tutorials: defineCollection({
     loader: glob({ pattern: "**/*.json", base: "./src/content/tutorials" }),

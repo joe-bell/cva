@@ -21,6 +21,8 @@ The generator removes stale `docs/.generated/bundle-sizes.json`. It runs each pa
 
 The generator does not compile packages. Root install/prepare provides `dist`. After editing package source, run `pnpm build` or `pnpm --filter <package> build` before direct docs measurement.
 
+Astro runs the homepage's weekly npm download loader during each content sync. `pnpm --filter docs build` syncs once for `astro check` and again for `astro build`, so it requests npm's bulk download API twice. Each request is bounded to 10 seconds; a failed, malformed, or timed-out response clears the collection and stops the command instead of reusing stale totals.
+
 ## Markdown mirrors
 
 Every rendered documentation page with a Markdown alternate link produces a matching `.md` asset at build time. The stable home page is [/index.md](https://cva.style/index.md), and the beta home page is [/beta/index.md](https://cva.style/beta/index.md). A client can also request Markdown for a documentation route with an `Accept: text/markdown` header that has a higher quality value than `text/html`.

@@ -1,0 +1,115 @@
+---
+import { getEntry } from "astro:content";
+
+import {
+  formatWeeklyDownloadDate,
+  formatWeeklyDownloads,
+  requiredWeeklyDownloadEntry,
+  totalWeeklyDownloads,
+} from "../lib/weekly-downloads";
+
+const stable = requiredWeeklyDownloadEntry(
+  await getEntry("weeklyDownloads", "class-variance-authority"),
+  "class-variance-authority",
+);
+const beta = requiredWeeklyDownloadEntry(
+  await getEntry("weeklyDownloads", "cva"),
+  "cva",
+);
+const total = totalWeeklyDownloads(stable.data.downloads, beta.data.downloads);
+---
+
+<section
+  aria-labelledby="weekly-downloads-title"
+  class="not-content mt-6 grid gap-4 rounded-lg border border-gray-200 bg-gray-50 p-5 dark:border-gray-800 dark:bg-gray-900"
+>
+  <div class="grid gap-1">
+    <h2
+      id="weekly-downloads-title"
+      class="m-0 text-lg/7 font-semibold text-balance text-gray-950 dark:text-white"
+    >
+      Weekly npm downloads
+    </h2>
+    <p
+      class="m-0 text-2xl/8 font-semibold tracking-tight text-gray-950 dark:text-white"
+    >
+      <span class="tabular-nums">{formatWeeklyDownloads(total)}</span>{" "}
+      downloads across both packages
+    </p>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="m-0 w-full table-fixed border-collapse text-sm/6">
+      <caption class="sr-only">Weekly npm downloads by package</caption>
+      <thead class="border-b border-gray-300 dark:border-gray-700">
+        <tr>
+          <th
+            scope="col"
+            class="w-1/2 py-2 pr-4 text-left font-semibold text-gray-950 dark:text-white"
+          >
+            Package
+          </th>
+          <th
+            scope="col"
+            class="py-2 text-right font-semibold text-gray-950 dark:text-white"
+          >
+            Downloads
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-b border-gray-200 dark:border-gray-800">
+          <th
+            scope="row"
+            class="min-w-0 py-3 pr-4 text-left font-medium text-gray-950 dark:text-white"
+          >
+            <a
+              href="https://www.npmjs.com/package/class-variance-authority"
+              translate="no"
+              class="break-words text-inherit underline decoration-1 underline-offset-2 hover:decoration-dotted focus-visible:outline-2 focus-visible:outline-offset-2"
+              >class-variance-authority</a
+            >
+          </th>
+          <td
+            class="py-3 text-right text-gray-700 tabular-nums dark:text-gray-300"
+          >
+            {formatWeeklyDownloads(stable.data.downloads)}
+          </td>
+        </tr>
+        <tr>
+          <th
+            scope="row"
+            class="min-w-0 py-3 pr-4 text-left font-medium text-gray-950 dark:text-white"
+          >
+            <a
+              href="https://www.npmjs.com/package/cva/v/beta"
+              translate="no"
+              class="text-inherit underline decoration-1 underline-offset-2 hover:decoration-dotted focus-visible:outline-2 focus-visible:outline-offset-2"
+              >cva@beta</a
+            >
+          </th>
+          <td
+            class="py-3 text-right text-gray-700 tabular-nums dark:text-gray-300"
+          >
+            {formatWeeklyDownloads(beta.data.downloads)}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="m-0 text-sm/6 text-gray-700 dark:text-gray-300">
+    npm download counts cover all versions of each package. Week ending{" "}
+    <time datetime={stable.data.end}
+      >{formatWeeklyDownloadDate(stable.data.end)}</time
+    >.
+  </p>
+
+  <p class="m-0 text-sm/6">
+    <a
+      href="https://npmx.dev/compare?packages=class-variance-authority,cva&facets=downloads&layout=split"
+      class="underline decoration-1 underline-offset-2 hover:decoration-dotted focus-visible:outline-2 focus-visible:outline-offset-2"
+      >Compare package downloads on npmx</a
+    >
+  </p>
+</section>
