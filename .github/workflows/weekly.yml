@@ -1,4 +1,4 @@
-name: update weekly npm downloads
+name: weekly
 
 on:
   workflow_dispatch:
@@ -14,7 +14,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  update:
+  npm-downloads:
+    name: npm-downloads
     if: github.repository == 'joe-bell/cva'
     runs-on: ubuntu-latest
     timeout-minutes: 10
