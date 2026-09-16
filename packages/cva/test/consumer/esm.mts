@@ -2,7 +2,6 @@ import * as cvaRoot from "cva";
 import { cva, type VariantProps } from "cva";
 import { defineConfig } from "cva/config";
 import { getSchema, type GetSchema } from "cva/tools";
-import { getSchema as getSchemaFromUtils } from "cva/utils";
 import assert from "node:assert/strict";
 
 export const badge = cva({
@@ -38,5 +37,3 @@ assert.equal(pill({ tone: "warning" }), "badge warning pill sm loud");
 assert.equal(configured(), "configured");
 // The published root entry is the clsx preset and nothing else.
 assert.deepEqual(Object.keys(cvaRoot).sort(), ["cva", "cx"]);
-assert.equal(getSchemaFromUtils, getSchema);
-assert.deepEqual(getSchemaFromUtils(badge), schema);
