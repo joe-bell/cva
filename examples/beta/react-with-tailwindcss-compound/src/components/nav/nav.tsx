@@ -9,7 +9,7 @@ export const root = cva({
     "[--nav-item-py-offset:calc(var(--nav-item-py)*0.5*-1)]",
     "flex flex-col",
     "rounded-(--nav-radius) bg-white bg-clip-padding",
-    "border border-black/5 shadow-contrast",
+    "border border-black/5 shadow-border",
   ],
   variants: {
     density: {
