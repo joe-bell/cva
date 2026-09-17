@@ -1,6 +1,6 @@
 import React from "react";
-import { cn } from "./cva.config";
 import { getSchema } from "cva/tools";
+import { cn } from "./cva.config";
 import { Button, button } from "./components";
 
 const schema = getSchema(button);
@@ -27,9 +27,9 @@ function App() {
           ))}
         </tr>
       </thead>
-      <tbody>
-        {isDisabled.flatMap((disabled) =>
-          sizes.map((size, index) => (
+      {isDisabled.map((disabled) => (
+        <tbody key={String(disabled)}>
+          {sizes.map((size, index) => (
             <tr key={`${disabled}-${size || "default"}`}>
               {index === 0 && (
                 <th scope="rowgroup" rowSpan={sizes.length}>
@@ -45,9 +45,9 @@ function App() {
                 </td>
               ))}
             </tr>
-          )),
-        )}
-      </tbody>
+          ))}
+        </tbody>
+      ))}
       <tfoot>
         <tr>
           <th scope="row">override</th>

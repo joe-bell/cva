@@ -59,7 +59,22 @@ cx("button", ["rounded", { "button--active": active }]);
 
 ## Tailwind CSS
 
-If you're a Tailwind user, here are some additional (optional) steps to get the most out of `cva`:
+Use complete class names in your variant definitions. Tailwind CSS scans source text and cannot detect interpolated names such as `bg-${tone}-500`. Map each value to a full class string instead:
+
+```ts
+import { cva } from "cva";
+
+const badge = cva({
+  variants: {
+    tone: {
+      info: "bg-blue-500 text-white",
+      warning: "bg-amber-500 text-black",
+    },
+  },
+});
+```
+
+See Tailwind's [class detection guide](https://tailwindcss.com/docs/detecting-classes-in-source-files#dynamic-class-names) for how source scanning works. The editor settings below add autocompletion inside `cva`.
 
 ### IntelliSense
 
