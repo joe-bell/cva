@@ -57,11 +57,20 @@ header.header {
 }
 
 /**
- * Make the nested collapsible sidebar titles a little smaller with an
- * absolutely disgraceful CSS selector (using `:where()` to reduce specificity).
+ * Nested collapsible sidebar group titles (e.g. "React" under "Examples")
+ * match the size of their sibling links at every breakpoint. Starlight sizes
+ * links at `--sl-text-base` below `50rem` and `--sl-text-sm` from `50rem`,
+ * so mirror that here (its `.large` default is one step larger). `:where()`
+ * keeps the specificity low.
  */
 :where(.sidebar-content details details > summary > .group-label) > .large {
-  @apply text-sm;
+  font-size: var(--sl-text-base);
+}
+
+@media (min-width: 50rem) {
+  :where(.sidebar-content details details > summary > .group-label) > .large {
+    font-size: var(--sl-text-sm);
+  }
 }
 
 :where(.social-icons a[href="/sponsors"] svg) {
