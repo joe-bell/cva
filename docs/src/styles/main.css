@@ -77,3 +77,24 @@ header.header {
 :where(.social-icons a[href="/sponsors"] svg) {
   font-size: 1.25em;
 }
+
+/* Starlight's Tabs can't take a class, so target it with a plain selector.
+ * On mobile, break the tab row out of the content padding using Starlight's
+ * own padding variable (negative margin), then re-add the padding on the
+ * `ul` (not the scroll container) so the trailing gutter survives at the
+ * end of a scroll. The breakpoint matches Starlight's 50rem sidebar
+ * collapse in PageFrame.astro. */
+@media (max-width: 49.999rem) {
+  :where(starlight-tabs) > .tablist-wrapper {
+    margin-inline: calc(-1 * var(--sl-content-pad-x));
+    scroll-padding-inline: var(--sl-content-pad-x);
+  }
+  :where(starlight-tabs) > .tablist-wrapper > [role="tablist"] {
+    padding-inline: var(--sl-content-pad-x);
+  }
+}
+
+/* Keep tab labels on one line at all widths */
+:where(starlight-tabs) [role="tab"] {
+  white-space: nowrap;
+}
