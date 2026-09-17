@@ -125,22 +125,22 @@ You can enable autocompletion inside `cva` using the steps below:
 
 ## Handling class conflicts
 
-By default, `cva` joins classes with [`clsx`](https://github.com/lukeed/clsx). It does not resolve conflicting Tailwind CSS utilities.
+By default, `cva` joins classes with [`clsx`](https://github.com/lukeed/clsx). It does not resolve conflicting Tailwind CSS utilities. Choose one of the approaches below:
 
 ### cva/tailwindcss
 
-`cva/tailwindcss` is a CSS-only entry point included in `cva@beta` for Tailwind CSS v4. It adds a `base:` variant so you can define component defaults that ordinary utilities override, without runtime class merging.
-
-These defaults still override normal browser styles and Tailwind's `base` and `components` layers.
-
-Import the variant after Tailwind CSS:
+`cva/tailwindcss` is a set of custom Tailwind CSS variants, for use with or without `cva`. Import it after Tailwind CSS:
 
 ```css
 @import "tailwindcss";
 @import "cva/tailwindcss";
 ```
 
-Put idle defaults behind `base:` and write ordinary state styles with Tailwind variants:
+#### base:
+
+The `base:` variant marks a utility as a component default, so any ordinary utility overrides it through the CSS cascade instead of runtime class merging.
+
+Prefix your defaults with `base:` and write state styles as ordinary utilities:
 
 ```ts
 import { cva } from "cva";
@@ -155,24 +155,20 @@ export const button = cva({
 button({ className: "bg-violet-600" });
 ```
 
-The idle `base:bg-blue-600` default yields to `bg-violet-600`, while the ordinary `hover:bg-blue-700` component style still applies on hover.
+In this example, `bg-violet-600` wins over `base:bg-blue-600`, and `hover:bg-blue-700` still applies on hover.
 
-The variant was inspired by [Diego Haz's `base:` idea](https://x.com/diegohaz/status/1897776774206853269) and [a related `:where()` example](https://x.com/acd02/status/1897943176863756335).
+`base:` utilities sit in a nested layer below ordinary utilities but above Tailwind's `base` and `components` layers. Inspired by [Diego Haz's `base:` idea](https://x.com/diegohaz/status/1897776774206853269) and [a related `:where()` example](https://x.com/acd02/status/1897943176863756335).
 
-#### Caveats
+#### Limitations
 
-:::caution
-The `base:` variant makes defaults overridable through CSS, but it does not guarantee conflict-free styles.
+`base:` makes defaults overridable. It does not merge classes, so keep these rules in mind:
 
-Use [`cn`](#cn) or [`tailwind-merge`](#tailwind-merge) when you need more control over class conflicts.
-:::
+- **Conditional defaults lose too**: any ordinary `bg-*` utility beats `base:hover:bg-*`, `base:sm:bg-*`, and `base:dark:bg-*`, even while the condition matches. Write state styles without `base:`.
+- **Class order still doesn't matter**: two ordinary utilities that conflict, or two `base:` utilities that conflict, resolve by stylesheet order.
+- **Put `base:` before pseudo-element variants**: `base:before:bg-*` works, but `before:base:bg-*` compiles to an invalid selector and never applies.
+- **`!important` flips the layer order**: `base:bg-blue-600!` beats `bg-violet-600!`.
 
-The CSS approach has these limitations:
-
-- `base:` utilities live in a lower cascade layer. Ordinary utilities override `base:hover:`, `base:sm:`, and `base:dark:` defaults even while the state, breakpoint, or dark-mode condition matches.
-- HTML class order does not merge utilities or settle conflicts within one cascade tier. `base:` establishes defaults; it does not create last-class-wins merging.
-- `:where()` gives the class part of a plain `base:bg-*` selector zero specificity. Pseudo-classes and pseudo-elements add their own specificity. Put `base:` before a pseudo-element variant: `base:before:bg-*`, not `before:base:bg-*`.
-- Unlayered author styles override normal layered styles. With `!important`, layer order reverses, so important `base:` utilities override ordinary important utilities.
+If you'd rather not think about the cascade, [`cn`](#cn) and [`tailwind-merge`](#tailwind-merge) are more bulletproof: they merge classes at runtime, so the last conflicting class wins.
 
 ### cn
 
