@@ -66,11 +66,8 @@ jobs:
 
           if git ls-remote --exit-code --heads origin "$UPDATE_BRANCH" >/dev/null; then
             git fetch --no-tags origin "$UPDATE_BRANCH:refs/remotes/origin/$UPDATE_BRANCH"
-            open_pr="$(gh pr list --head "$UPDATE_BRANCH" --base main --state open --json number --jq '.[0].number')"
             git switch --create "$UPDATE_BRANCH" --track "origin/$UPDATE_BRANCH"
-            if [[ -z "$open_pr" ]]; then
-              git merge --no-commit --no-ff origin/main
-            fi
+            git merge --no-commit --no-ff origin/main
           else
             git switch --create "$UPDATE_BRANCH" origin/main
           fi
