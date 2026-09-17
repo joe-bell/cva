@@ -1,0 +1,17 @@
+---
+import { getEntry } from "astro:content";
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+import WeeklyDownloads from "./weekly-downloads.astro";
+
+const bundleSize = await getEntry("bundleSizes", "class-variance-authority");
+if (bundleSize === undefined)
+  throw new Error("Missing class-variance-authority bundle size report.");
+---
+
+<CardGrid stagger>
+  <WeeklyDownloads />
+  <Card title={bundleSize.data.formattedSize} icon="rocket">
+    Minified and compressed with Brotli.
+  </Card>
+</CardGrid>
