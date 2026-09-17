@@ -32,6 +32,10 @@
   --color-gray-800: var(--color-zinc-800);
   --color-gray-900: var(--color-zinc-900);
   --color-gray-950: var(--color-zinc-950);
+  /* Starlight's sidebar breakpoint. It exposes no token for it (media
+   * queries cannot read custom properties), so its components hard-code
+   * `50rem`; name it once here for `sl-sidebar:` utilities and `@variant`. */
+  --breakpoint-sl-sidebar: 50rem;
 }
 
 :root {
@@ -57,13 +61,46 @@ header.header {
 }
 
 /**
- * Make the nested collapsible sidebar titles a little smaller with an
- * absolutely disgraceful CSS selector (using `:where()` to reduce specificity).
+ * Nested collapsible sidebar group titles (e.g. "React" under "Examples")
+ * match the size of their sibling links at every breakpoint. Starlight sizes
+ * links at `--sl-text-base` below its sidebar breakpoint and `--sl-text-sm`
+ * from it, so mirror that here (its `.large` default is one step larger).
+ * `:where()` keeps the specificity low.
  */
 :where(.sidebar-content details details > summary > .group-label) > .large {
-  @apply text-sm;
+  font-size: var(--sl-text-base);
+  @variant sl-sidebar {
+    font-size: var(--sl-text-sm);
+  }
 }
 
 :where(.social-icons a[href="/sponsors"] svg) {
   font-size: 1.25em;
+}
+
+/* Starlight's Tabs can't take a class, so target it with a plain selector.
+ * Below Starlight's sidebar breakpoint, break the scroll container out of the
+ * content padding using Starlight's own padding variable, then size the
+ * tablist to its content and re-add that padding inside it, so both gutters
+ * scroll with the tabs and the last tab keeps its gutter at the end of a
+ * scroll. The tablist's own border is hidden so the underline only spans the
+ * tabs (each tab draws its own via box-shadow). */
+:where(starlight-tabs) > .tablist-wrapper {
+  @variant max-sl-sidebar {
+    margin-inline: calc(-1 * var(--sl-content-pad-x));
+    scroll-padding-inline: var(--sl-content-pad-x);
+  }
+}
+:where(starlight-tabs) > .tablist-wrapper > [role="tablist"] {
+  @variant max-sl-sidebar {
+    width: max-content;
+    min-width: 100%;
+    padding-inline: var(--sl-content-pad-x);
+    border-bottom-color: transparent;
+  }
+}
+
+/* Keep tab labels on one line at all widths */
+:where(starlight-tabs) [role="tab"] {
+  white-space: nowrap;
 }
