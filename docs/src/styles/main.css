@@ -32,6 +32,10 @@
   --color-gray-800: var(--color-zinc-800);
   --color-gray-900: var(--color-zinc-900);
   --color-gray-950: var(--color-zinc-950);
+  /* Starlight's sidebar breakpoint. It exposes no token for it (media
+   * queries cannot read custom properties), so its components hard-code
+   * `50rem`; name it once here for `sl-sidebar:` utilities and `@variant`. */
+  --breakpoint-sl-sidebar: 50rem;
 }
 
 :root {
@@ -57,11 +61,17 @@ header.header {
 }
 
 /**
- * Make the nested collapsible sidebar titles a little smaller with an
- * absolutely disgraceful CSS selector (using `:where()` to reduce specificity).
+ * Nested collapsible sidebar group titles (e.g. "React" under "Examples")
+ * match the size of their sibling links at every breakpoint. Starlight sizes
+ * links at `--sl-text-base` below its sidebar breakpoint and `--sl-text-sm`
+ * from it, so mirror that here (its `.large` default is one step larger).
+ * `:where()` keeps the specificity low.
  */
 :where(.sidebar-content details details > summary > .group-label) > .large {
-  @apply text-sm;
+  font-size: var(--sl-text-base);
+  @variant sl-sidebar {
+    font-size: var(--sl-text-sm);
+  }
 }
 
 :where(.social-icons a[href="/sponsors"] svg) {
