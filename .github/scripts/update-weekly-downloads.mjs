@@ -3,6 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 export const WEEKLY_DOWNLOADS_ENDPOINT =
   "https://api.npmjs.org/downloads/point/last-week/class-variance-authority,cva";
 export const WEEKLY_DOWNLOADS_TIMEOUT_MS = 10_000;
+export const MINIMUM_WEEKLY_DOWNLOAD_RATIO = 0.5;
 export const WEEKLY_DOWNLOADS_OUTPUT_URL = new URL(
   "../../docs/src/content/npm-weekly-downloads.json",
   import.meta.url,
@@ -10,6 +11,7 @@ export const WEEKLY_DOWNLOADS_OUTPUT_URL = new URL(
 
 const PACKAGES = ["class-variance-authority", "cva"];
 const REPORT_KEYS = ["downloads", "end", "package", "start"];
+const SNAPSHOT_KEYS = ["end", "packages", "start"];
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const MILLISECONDS_PER_DAY = 86_400_000;
 
@@ -32,6 +34,13 @@ function isCalendarDate(value) {
   return date.toISOString().slice(0, 10) === value;
 }
 
+function parseDownloadCount(value, packageName) {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new Error(`Invalid npm download count for ${packageName}.`);
+  }
+  return value;
+}
+
 function parseReport(value, packageName) {
   if (!isRecord(value) || !hasExactKeys(value, REPORT_KEYS)) {
     throw new Error(`Invalid npm download report for ${packageName}.`);
@@ -41,13 +50,46 @@ function parseReport(value, packageName) {
       `npm returned the wrong package identity for ${packageName}.`,
     );
   }
-  if (!Number.isSafeInteger(value.downloads) || value.downloads < 0) {
-    throw new Error(`Invalid npm download count for ${packageName}.`);
+  parseDownloadCount(value.downloads, packageName);
+  return value;
+}
+
+export function parseWeeklyDownloadsSnapshot(value) {
+  if (!isRecord(value) || !hasExactKeys(value, SNAPSHOT_KEYS)) {
+    throw new Error("Invalid weekly npm download snapshot.");
+  }
+  if (!isRecord(value.packages) || !hasExactKeys(value.packages, PACKAGES)) {
+    throw new Error("Invalid weekly npm download packages.");
   }
   if (!isCalendarDate(value.start) || !isCalendarDate(value.end)) {
-    throw new Error(`Invalid npm download date for ${packageName}.`);
+    throw new Error("Invalid weekly npm download date.");
   }
-  return value;
+
+  const stable = parseDownloadCount(
+    value.packages["class-variance-authority"],
+    PACKAGES[0],
+  );
+  const beta = parseDownloadCount(value.packages.cva, PACKAGES[1]);
+  const window =
+    (Date.parse(`${value.end}T00:00:00.000Z`) -
+      Date.parse(`${value.start}T00:00:00.000Z`)) /
+    MILLISECONDS_PER_DAY;
+
+  if (window !== 6) {
+    throw new Error("npm download reports must cover seven inclusive days.");
+  }
+  if (!Number.isSafeInteger(stable + beta)) {
+    throw new Error("Combined weekly download count must be a safe integer.");
+  }
+
+  return {
+    start: value.start,
+    end: value.end,
+    packages: {
+      "class-variance-authority": stable,
+      cva: beta,
+    },
+  };
 }
 
 export function parseWeeklyDownloadsResponse(value) {
@@ -62,26 +104,32 @@ export function parseWeeklyDownloadsResponse(value) {
     throw new Error("npm download reports must cover matching dates.");
   }
 
-  const window =
-    (Date.parse(`${stable.end}T00:00:00.000Z`) -
-      Date.parse(`${stable.start}T00:00:00.000Z`)) /
-    MILLISECONDS_PER_DAY;
-  if (window !== 6) {
-    throw new Error("npm download reports must cover seven inclusive days.");
-  }
-
-  if (!Number.isSafeInteger(stable.downloads + beta.downloads)) {
-    throw new Error("Combined weekly download count must be a safe integer.");
-  }
-
-  return {
+  return parseWeeklyDownloadsSnapshot({
     start: stable.start,
     end: stable.end,
     packages: {
       "class-variance-authority": stable.downloads,
       cva: beta.downloads,
     },
-  };
+  });
+}
+
+export function assertPlausibleWeeklyDownloads(snapshot, previousSnapshot) {
+  if (Date.parse(snapshot.end) < Date.parse(previousSnapshot.end)) {
+    throw new Error(
+      "Weekly npm download snapshot is older than the current snapshot.",
+    );
+  }
+
+  for (const packageName of PACKAGES) {
+    const previous = previousSnapshot.packages[packageName];
+    const minimum = Math.ceil(previous * MINIMUM_WEEKLY_DOWNLOAD_RATIO);
+    if (snapshot.packages[packageName] < minimum) {
+      throw new Error(
+        `Weekly npm downloads for ${packageName} fell below ${MINIMUM_WEEKLY_DOWNLOAD_RATIO * 100}% of the previous snapshot (${snapshot.packages[packageName]} vs ${previous}).`,
+      );
+    }
+  }
 }
 
 export async function fetchWeeklyDownloads(
@@ -149,6 +197,11 @@ export async function updateWeeklyDownloads({
   }
 
   if (current === content) return { changed: false, snapshot };
+
+  if (current !== undefined) {
+    const previousSnapshot = parseWeeklyDownloadsSnapshot(JSON.parse(current));
+    assertPlausibleWeeklyDownloads(snapshot, previousSnapshot);
+  }
 
   await writeFileImpl(outputUrl, content, "utf8");
   return { changed: true, snapshot };

@@ -1,9 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  MINIMUM_WEEKLY_DOWNLOAD_RATIO,
   WEEKLY_DOWNLOADS_ENDPOINT,
+  assertPlausibleWeeklyDownloads,
   fetchWeeklyDownloads,
   parseWeeklyDownloadsResponse,
+  parseWeeklyDownloadsSnapshot,
   serializeWeeklyDownloads,
   updateWeeklyDownloads,
 } from "./update-weekly-downloads.mjs";
@@ -37,6 +40,15 @@ const expectedSnapshot = {
   packages: {
     "class-variance-authority": 45_324_438,
     cva: 1_267_623,
+  },
+};
+
+const previousSnapshot = {
+  start: "2024-01-25",
+  end: "2024-01-31",
+  packages: {
+    "class-variance-authority": 44_000_000,
+    cva: 1_000_000,
   },
 };
 
@@ -83,6 +95,76 @@ describe("parseWeeklyDownloadsResponse", () => {
     ],
   ])("rejects %s", (_label, data) => {
     expect(() => parseWeeklyDownloadsResponse(data)).toThrow();
+  });
+});
+
+describe("parseWeeklyDownloadsSnapshot", () => {
+  it("accepts the stored snapshot shape", () => {
+    expect(parseWeeklyDownloadsSnapshot(expectedSnapshot)).toEqual(
+      expectedSnapshot,
+    );
+  });
+
+  it.each([
+    ["a non-object snapshot", null],
+    ["an extra snapshot field", { ...expectedSnapshot, extra: true }],
+    ["a non-object packages field", { ...expectedSnapshot, packages: null }],
+    [
+      "a missing package",
+      {
+        ...expectedSnapshot,
+        packages: { cva: expectedSnapshot.packages.cva },
+      },
+    ],
+    ["a non-string date", { ...expectedSnapshot, start: 1 }],
+    ["an invalid date format", { ...expectedSnapshot, start: "2024-2-01" }],
+    ["an invalid date", { ...expectedSnapshot, end: "2024-02-30" }],
+  ])("rejects %s", (_label, snapshot) => {
+    expect(() => parseWeeklyDownloadsSnapshot(snapshot)).toThrow();
+  });
+});
+
+describe("assertPlausibleWeeklyDownloads", () => {
+  it("accepts a newer snapshot at the minimum ratio", () => {
+    const previous = {
+      ...previousSnapshot,
+      packages: {
+        "class-variance-authority":
+          expectedSnapshot.packages["class-variance-authority"] /
+          MINIMUM_WEEKLY_DOWNLOAD_RATIO,
+        cva: expectedSnapshot.packages.cva / MINIMUM_WEEKLY_DOWNLOAD_RATIO,
+      },
+    };
+
+    expect(() =>
+      assertPlausibleWeeklyDownloads(expectedSnapshot, previous),
+    ).not.toThrow();
+  });
+
+  it.each(["class-variance-authority", "cva"])(
+    "rejects an unusually low %s count",
+    (packageName) => {
+      const previous = {
+        ...previousSnapshot,
+        packages: {
+          ...expectedSnapshot.packages,
+          [packageName]:
+            expectedSnapshot.packages[packageName] /
+              MINIMUM_WEEKLY_DOWNLOAD_RATIO +
+            1,
+        },
+      };
+
+      expect(() =>
+        assertPlausibleWeeklyDownloads(expectedSnapshot, previous),
+      ).toThrow(packageName);
+    },
+  );
+
+  it("rejects a snapshot older than the current one", () => {
+    expect(() =>
+      assertPlausibleWeeklyDownloads(previousSnapshot, expectedSnapshot),
+    ).toThrow("older than the current snapshot");
   });
 });
 
@@ -161,7 +243,9 @@ describe("updateWeeklyDownloads", () => {
   const fetchImpl = vi.fn(async () => response(reports()));
 
   it("writes a changed snapshot", async () => {
-    const readFileImpl = vi.fn(async () => "old snapshot\n");
+    const readFileImpl = vi.fn(async () =>
+      serializeWeeklyDownloads(previousSnapshot),
+    );
     const writeFileImpl = vi.fn(async () => undefined);
 
     await expect(
@@ -202,5 +286,25 @@ describe("updateWeeklyDownloads", () => {
     await expect(
       updateWeeklyDownloads({ fetchImpl, readFileImpl }),
     ).rejects.toBe(readError);
+  });
+
+  it("does not write an implausibly low snapshot", async () => {
+    const fetchImpl = vi.fn(async () =>
+      response(
+        reports({
+          downloads:
+            expectedSnapshot.packages["class-variance-authority"] *
+              MINIMUM_WEEKLY_DOWNLOAD_RATIO -
+            1,
+        }),
+      ),
+    );
+    const readFileImpl = vi.fn(async () => content);
+    const writeFileImpl = vi.fn();
+
+    await expect(
+      updateWeeklyDownloads({ fetchImpl, readFileImpl, writeFileImpl }),
+    ).rejects.toThrow("class-variance-authority");
+    expect(writeFileImpl).not.toHaveBeenCalled();
   });
 });
