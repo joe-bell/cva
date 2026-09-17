@@ -1,6 +1,6 @@
 # Migrating to `cva@1.0.0-beta.12`
 
-This guide covers `cva@1.0.0-beta.0` through `cva@1.0.0-beta.11` upgrading to the upcoming `cva@1.0.0-beta.12`. The [`cva-migrate` skill](../../SKILL.md) selects this file. Read it in full before editing, then apply only the sections the installed version needs.
+This guide covers `cva@1.0.0-beta.0` through `cva@1.0.0-beta.11` upgrading to `cva@1.0.0-beta.12`. The [`cva-migrate` skill](../../SKILL.md) selects this file. Read it in full before editing, then apply only the sections the installed version needs.
 
 `cva@1.0.0-beta.12` removes the public `cva/utils` entry point. It also carries forward every removal introduced by `beta.11`. `cva@beta` is not covered by semver and changes without warning. Treat everything here as beta-to-beta migration guidance, not a semver contract.
 
@@ -38,7 +38,18 @@ From `"cva/config"`:
 
 After the upgrade, ESM `import("cva/utils")` and CommonJS `require("cva/utils")` fail with `ERR_PACKAGE_PATH_NOT_EXPORTED`.
 
-What stays: `"cva"` exports `cva`, `cx`, and the public portability types. `"cva/config"` keeps `defineConfig` and its types, with a **required** `cx`. `"cva/tools"` remains the canonical home of `getSchema` and `GetSchema`. Those are the three public build entries.
+What stays: `"cva"` exports `cva`, `cx`, and the public portability types. `"cva/config"` keeps `defineConfig` and its types, with a **required** `cx`. `"cva/tools"` remains the canonical home of `getSchema` and `GetSchema`. Those are the three public JavaScript entries.
+
+## What `beta.12` adds
+
+`beta.12` adds `cva/tailwindcss`, an optional stylesheet of custom Tailwind CSS variants, including `base:` for overridable component defaults. It requires Tailwind CSS v4 and is imported from CSS after Tailwind CSS itself:
+
+```css
+@import "tailwindcss";
+@import "cva/tailwindcss";
+```
+
+It needs no migration step: existing code is unaffected, and adopting it is a separate decision. Do not add the import or rewrite classes with `base:` as part of this upgrade. See [Installation](https://cva.style/beta/getting-started/installation/#cvatailwindcss) for usage and limitations.
 
 ## Step 1: detect the package manager and workspace
 

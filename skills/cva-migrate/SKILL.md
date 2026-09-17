@@ -7,7 +7,7 @@ metadata:
 
 # Migrate a `cva` project between versions
 
-This skill is a router. It identifies the source and destination versions, then loads at most one curated guide. Today, the `cva@1.0.0-beta.11` and upcoming `cva@1.0.0-beta.12` routes are curated. Research every other route, including downgrades, in Step 3. Never load unrelated references because their instructions may not apply.
+This skill is a router. It identifies the source and destination versions, then loads at most one curated guide. Today, the `cva@1.0.0-beta.11` and `cva@1.0.0-beta.12` routes are curated. Research every other route, including downgrades, in Step 3. Never load unrelated references because their instructions may not apply.
 
 `cva@beta` is not covered by semver and changes without warning. Treat every route below as version-to-version migration guidance, not a semver contract.
 
