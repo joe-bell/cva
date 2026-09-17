@@ -5,7 +5,7 @@ description: Build type-safe, variant-driven class names for any styling approac
 
 import { Picture } from "astro:assets";
 
-import BundleSize from "../../../components/bundle-size.astro";
+import ProjectStats from "../../../components/project-stats.astro";
 
 <Picture
   src="/assets/img/wallpaper-4k.png"
@@ -20,7 +20,7 @@ import BundleSize from "../../../components/bundle-size.astro";
 <br />
 <br />
 
-`cva` is a tiny (<BundleSize package="cva" /> compressed) library for building type-safe, variant-driven class names with Tailwind CSS or any other styling approach.
+`cva` is a tiny library for building type-safe, variant-driven class names with Tailwind CSS or any other styling approach.
 
 CSS-in-TS libraries such as [Stitches](https://stitches.dev/docs/variants) and [Vanilla Extract](https://vanilla-extract.style/documentation/api/style-variants/) handle type-safe UI variants without you managing class names or stylesheet composition by hand.
 
@@ -36,6 +36,10 @@ Creating variants with the "traditional" CSS approach can become an arduous task
 `cva` is a privately-maintained **free** open-source project.  
 Please consider [**sponsoring**](/sponsors) my work to contribute towards development efforts financially.
 :::
+
+### Stats
+
+<ProjectStats package="cva" />
 
 ## Acknowledgments
 

@@ -1,0 +1,23 @@
+---
+import { getEntry } from "astro:content";
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+import type { BundleSizePackage } from "../lib/bundle-size-sources";
+import WeeklyDownloads from "./weekly-downloads.astro";
+
+export interface Props {
+  package: BundleSizePackage;
+}
+
+const { package: packageName } = Astro.props;
+const bundleSize = await getEntry("bundleSizes", packageName);
+if (bundleSize === undefined)
+  throw new Error(`Missing ${packageName} bundle size report.`);
+---
+
+<CardGrid stagger>
+  <WeeklyDownloads />
+  <Card title={bundleSize.data.formattedSize} icon="rocket">
+    Minified and compressed with Brotli.
+  </Card>
+</CardGrid>

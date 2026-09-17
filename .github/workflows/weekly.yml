@@ -1,0 +1,98 @@
+name: weekly
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-weekly-npm-downloads
+  cancel-in-progress: false
+
+jobs:
+  npm-downloads:
+    name: npm-downloads
+    if: github.repository == 'joe-bell/cva'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      UPDATE_BRANCH: automation/weekly-npm-downloads
+      SNAPSHOT_PATH: docs/src/content/npm-weekly-downloads.json
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/install
+
+      - name: Update snapshot
+        run: |
+          node --input-type=module --eval '
+            const { updateWeeklyDownloads } = await import("./.github/scripts/update-weekly-downloads.mjs");
+            const result = await updateWeeklyDownloads();
+            console.log(result.changed ? "Updated weekly npm downloads." : "Weekly npm downloads are unchanged.");
+          '
+
+      - name: Detect changes
+        id: snapshot
+        shell: bash
+        run: |
+          if git diff --quiet -- "$SNAPSHOT_PATH"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push snapshot
+        if: steps.snapshot.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          snapshot="$RUNNER_TEMP/npm-weekly-downloads.json"
+          cp "$SNAPSHOT_PATH" "$snapshot"
+          git restore -- "$SNAPSHOT_PATH"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          gh auth setup-git
+          if [[ "$(git rev-parse --is-shallow-repository)" == true ]]; then
+            git fetch --unshallow --no-tags origin
+          fi
+          git fetch --no-tags origin main:refs/remotes/origin/main
+
+          if git ls-remote --exit-code --heads origin "$UPDATE_BRANCH" >/dev/null; then
+            git fetch --no-tags origin "$UPDATE_BRANCH:refs/remotes/origin/$UPDATE_BRANCH"
+            git switch --create "$UPDATE_BRANCH" --track "origin/$UPDATE_BRANCH"
+            git merge --no-commit --no-ff origin/main
+          else
+            git switch --create "$UPDATE_BRANCH" origin/main
+          fi
+
+          cp "$snapshot" "$SNAPSHOT_PATH"
+          git add "$SNAPSHOT_PATH"
+          if git diff --cached --quiet && ! git rev-parse --quiet --verify MERGE_HEAD >/dev/null; then
+            exit 0
+          fi
+
+          git commit -m "chore: update weekly npm downloads"
+          git push --set-upstream origin "$UPDATE_BRANCH"
+
+      - name: Open or update pull request
+        if: steps.snapshot.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          pr_url="$(gh pr list --head "$UPDATE_BRANCH" --base main --state open --json url --jq '.[0].url')"
+          if [[ -n "$pr_url" ]]; then
+            echo "Updated $pr_url"
+          else
+            gh pr create \
+              --base main \
+              --head "$UPDATE_BRANCH" \
+              --title "chore: update weekly npm downloads" \
+              --body 'Updates `docs/src/content/npm-weekly-downloads.json` with npm’s latest seven-day package totals.'

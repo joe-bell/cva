@@ -1,0 +1,82 @@
+---
+import { getEntry } from "astro:content";
+import { Card } from "@astrojs/starlight/components";
+
+const snapshot = await getEntry("weeklyDownloads", "npm-weekly-downloads");
+if (snapshot === undefined)
+  throw new Error("Missing weekly npm download snapshot.");
+const stable = snapshot.data.packages["class-variance-authority"];
+const beta = snapshot.data.packages.cva;
+---
+
+<Card
+  title={`${snapshot.data.total.formattedLong} weekly downloads`}
+  icon="download"
+>
+  <details>
+    <summary class="cursor-pointer font-medium">Across all packages</summary>
+    <div class="overflow-x-auto">
+      <table class="w-full table-fixed border-collapse text-sm/6">
+        <caption class="sr-only">
+          Weekly npm downloads by package for the week ending {
+            snapshot.data.end.formatted
+          }
+        </caption>
+        <thead class="border-b border-gray-300 dark:border-gray-700">
+          <tr>
+            <th
+              scope="col"
+              class="w-1/2 py-2 pr-4 text-left font-semibold text-gray-950 dark:text-white"
+            >
+              Package
+            </th>
+            <th
+              scope="col"
+              class="py-2 text-right font-semibold text-gray-950 dark:text-white"
+            >
+              Downloads
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-gray-200 dark:border-gray-800">
+            <th
+              scope="row"
+              class="min-w-0 py-3 pr-4 text-left font-medium text-gray-950 dark:text-white"
+            >
+              <a
+                href="https://www.npmjs.com/package/class-variance-authority"
+                translate="no"
+                class="break-words text-inherit underline decoration-1 underline-offset-2 hover:decoration-dotted focus-visible:outline-2 focus-visible:outline-offset-2"
+                >class-variance-authority</a
+              >
+            </th>
+            <td
+              class="py-3 text-right text-gray-700 tabular-nums dark:text-gray-300"
+            >
+              {stable.formatted}
+            </td>
+          </tr>
+          <tr>
+            <th
+              scope="row"
+              class="min-w-0 py-3 pr-4 text-left font-medium text-gray-950 dark:text-white"
+            >
+              <a
+                href="https://www.npmjs.com/package/cva/v/beta"
+                translate="no"
+                class="text-inherit underline decoration-1 underline-offset-2 hover:decoration-dotted focus-visible:outline-2 focus-visible:outline-offset-2"
+                >cva@beta</a
+              >
+            </th>
+            <td
+              class="py-3 text-right text-gray-700 tabular-nums dark:text-gray-300"
+            >
+              {beta.formatted}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</Card>

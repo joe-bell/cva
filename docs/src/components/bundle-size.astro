@@ -1,21 +1,16 @@
 ---
 import { getEntry } from "astro:content";
 
-import {
-  formatDecimalBytes,
-  requiredBundleSizeEntry,
-  type BundleSizePackage,
-} from "../lib/bundle-size";
+import type { BundleSizePackage } from "../lib/bundle-size-sources";
 
 export interface Props {
   package: BundleSizePackage;
 }
 
 const { package: packageName } = Astro.props;
-const entry = requiredBundleSizeEntry(
-  await getEntry("bundleSizes", packageName),
-  packageName,
-);
+const entry = await getEntry("bundleSizes", packageName);
+if (entry === undefined)
+  throw new Error(`Missing ${packageName} bundle size report.`);
 ---
 
-<span>{formatDecimalBytes(entry.data.size)}</span>
+<span>{entry.data.formattedSize}</span>

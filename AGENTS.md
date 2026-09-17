@@ -170,6 +170,8 @@ Agent-specific notes:
 
 Durable, hard-won lessons that don't fit a section above. See [Keeping this guide current](#keeping-this-guide-current-self-improving) for what belongs here and how to write it. Newest first; prune anything that's become wrong or obsolete.
 
+- The weekly npm downloads workflow reuses `automation/weekly-npm-downloads`; merge `origin/main` into that branch before committing a new snapshot so an open automation PR does not drift behind `main`.
+
 - Inside `.sl-markdown-content`, Starlight's sibling selector adds top margin to block children after non-inline siblings. Components using grid/flex `gap-*` must zero affected child margins so the margin does not stack with the gap; see [`docs/src/components/stackblitz.astro`](./docs/src/components/stackblitz.astro).
 
 - `starlight-llms-txt` turns titled iframes into links in `llms-full.txt`, `llms-small.txt`, and custom-set outputs. Keep `customSelectors.all` in [`docs/astro.config.ts`](./docs/astro.config.ts) paired with iframe removal in [`docs/src/lib/html-to-markdown.ts`](./docs/src/lib/html-to-markdown.ts) so these outputs and Markdown mirrors omit embeds.
