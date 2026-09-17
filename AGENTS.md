@@ -164,6 +164,14 @@ Agent-specific notes:
 - **Formatting is part of the change, not a follow-up.** Before staging, run Prettier over the files you touched (`pnpm prettier --write <files>`) and stage the formatted result so it lands in the _same_ commit. Then confirm `git status` is clean. Never push a separate "prettier wrap"/formatting-only fixup commit to tidy up after yourself — that's noise, and it means the original commit was incomplete.
 - **Never hard-wrap Markdown prose.** In Markdown (`.md` / `.mdx`) only, write each paragraph as one unbroken line and let the editor soft-wrap it — don't insert manual newlines to keep lines short. Prettier defaults to `proseWrap: "preserve"`, so it won't reflow Markdown prose for you, and any hard wraps get committed verbatim as noisy diffs. Everywhere else — code comments and commit bodies — do hard-wrap, keeping lines within Prettier's `printWidth` (`80`, set in [`.prettierrc.json`](./.prettierrc.json)).
 - The `docs` site deploys via Cloudflare Workers Builds, and its build watch paths are configured in the Cloudflare dashboard UI (not `wrangler.jsonc`). See [Deployment](./docs/README.md#deployment) in the docs README before changing how docs builds are scoped.
+- **Docs preview URLs come from the Cloudflare Workers Builds check run.** Every push gets a `Workers Builds: cva` check whose summary contains two URLs: a branch alias (`https://<branch-slug>-cva.joebell.workers.dev`, updated on every push) and a commit-pinned URL (`https://<hash>-cva.joebell.workers.dev`). Cloudflare also edits a single PR comment with the same links, but only for the latest commit, so read the check run for the exact commit instead. When asked for a preview link, reply with the branch URL alone and no accompanying text; give the commit URL only when asked for it specifically. Retrieve both with:
+
+  ```sh
+  gh api repos/joe-bell/cva/commits/$(git rev-parse HEAD)/check-runs \
+    --jq '.check_runs[] | select(.name | test("Workers")) | .output.summary' \
+    | grep -oE 'https://[a-z0-9-]+\.joebell\.workers\.dev' | sort -u
+  ```
+
 - To verify an `examples/` change in a real StackBlitz WebContainer before merging, open it from GitHub against your branch: `https://stackblitz.com/github/joe-bell/cva/tree/<branch>/<dir>`. Branch names containing slashes (e.g. `claude/my-feature`) resolve fine — StackBlitz parses them correctly against the trailing path, so no slash-free branch is needed.
 
 ## Learnings
