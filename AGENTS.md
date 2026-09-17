@@ -170,6 +170,8 @@ Agent-specific notes:
 
 Durable, hard-won lessons that don't fit a section above. See [Keeping this guide current](#keeping-this-guide-current-self-improving) for what belongs here and how to write it. Newest first; prune anything that's become wrong or obsolete.
 
+- A Tailwind custom variant can nest a lower layer inside `utilities` (`utilities.base`), rather than target Tailwind's top-level `base` layer. Treat `base:` as defaults: ordinary matching state, responsive, and dark utilities still win through layer precedence, and class order does not merge them.
+- For a package-owned CSS asset, use tsdown's `copy` plus `exports.customExports` with `isPublish` so workspace consumers resolve `src/` and packed consumers resolve `dist/`; use a CSS `sideEffects` glob to preserve stylesheet imports without disabling JavaScript tree shaking. Keep the strict attw checks for JavaScript entries and exclude only the CSS entry, then verify a normal import from the packed package instead of adding a fake TypeScript declaration.
 - The weekly npm downloads workflow reuses `automation/weekly-npm-downloads`; merge `origin/main` into that branch before committing a new snapshot so an open automation PR does not drift behind `main`.
 
 - Inside `.sl-markdown-content`, Starlight's sibling selector adds top margin to block children after non-inline siblings. Components using grid/flex `gap-*` must zero affected child margins so the margin does not stack with the gap; see [`docs/src/components/stackblitz.astro`](./docs/src/components/stackblitz.astro).

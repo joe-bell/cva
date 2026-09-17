@@ -50,6 +50,11 @@ if [[ "$(node -p 'require.resolve("cva/package.json")')" != "$installed_dir/cva/
   exit 1
 fi
 
+if [[ "$(node -p 'require.resolve("cva/tailwindcss")')" != "$installed_dir/cva/dist/tailwindcss.css" ]]; then
+  echo "The consumer did not resolve cva/tailwindcss from the packed dist/ stylesheet." >&2
+  exit 1
+fi
+
 "$tsc_bin" esm.mts cjs.cts --ignoreConfig --strict --declaration --module nodenext --moduleResolution nodenext --typeRoots "$package_dir/node_modules/@types" --types node --outDir out
 node out/esm.mjs
 node out/cjs.cjs

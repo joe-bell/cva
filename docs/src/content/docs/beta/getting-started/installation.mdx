@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Install cva@beta, configure Tailwind CSS IntelliSense, and merge conflicting utility classes.
+description: Install cva@beta, configure Tailwind CSS IntelliSense, and handle utility style conflicts.
 ---
 
 import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
@@ -123,11 +123,52 @@ You can enable autocompletion inside `cva` using the steps below:
   </TabItem>
 </Tabs>
 
-## Merging classes
+## Handling class conflicts
 
-By default, `cva` uses [`clsx`](https://github.com/lukeed/clsx) for conditional class joining. It does not resolve conflicting Tailwind CSS utilities.
+By default, `cva` joins classes with [`clsx`](https://github.com/lukeed/clsx). It does not resolve conflicting Tailwind CSS utilities. Choose one of the approaches below:
 
-Both configurations accept conditional objects and arrays.
+### cva/tailwindcss
+
+`cva/tailwindcss` is a set of custom Tailwind CSS variants, for use with or without `cva`. Import it after Tailwind CSS:
+
+```css
+@import "tailwindcss";
+@import "cva/tailwindcss";
+```
+
+#### base:
+
+The `base:` variant marks a utility as a component default, so any ordinary utility overrides it through the CSS cascade instead of runtime class merging.
+
+Prefix your defaults with `base:` and write state styles as ordinary utilities:
+
+```ts
+import { cva } from "cva";
+
+export const button = cva({
+  base: [
+    "base:bg-blue-600 base:px-4 base:py-2 base:text-white",
+    "hover:bg-blue-700",
+  ],
+});
+
+button({ className: "bg-violet-600" });
+```
+
+In this example, `bg-violet-600` wins over `base:bg-blue-600`, and `hover:bg-blue-700` still applies on hover.
+
+`base:` utilities sit in a nested layer below ordinary utilities but above Tailwind's `base` and `components` layers. Inspired by [Diego Haz's `base:` idea](https://x.com/diegohaz/status/1897776774206853269) and [a related `:where()` example](https://x.com/acd02/status/1897943176863756335).
+
+#### Limitations
+
+`base:` makes defaults overridable. It does not merge classes, so keep these rules in mind:
+
+- **Conditional defaults lose too**: any ordinary `bg-*` utility beats `base:hover:bg-*`, `base:sm:bg-*`, and `base:dark:bg-*`, even while the condition matches. Write state styles without `base:`.
+- **Class order still doesn't matter**: two ordinary utilities that conflict, or two `base:` utilities that conflict, resolve by stylesheet order.
+- **Put `base:` before pseudo-element variants**: `base:before:bg-*` works, but `before:base:bg-*` compiles to an invalid selector and never applies.
+- **`!important` flips the layer order**: `base:bg-blue-600!` beats `bg-violet-600!`.
+
+If you'd rather not think about the cascade, [`cn`](#cn) and [`tailwind-merge`](#tailwind-merge) are more bulletproof: they merge classes at runtime, so the last conflicting class wins.
 
 ### cn
 

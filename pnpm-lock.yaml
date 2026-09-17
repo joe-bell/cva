@@ -617,6 +617,12 @@ importers:
       tailwind-merge:
         specifier: 3.6.0
         version: 3.6.0
+      tailwindcss:
+        specifier: ^4.3.0
+        version: 4.3.3
+      tailwindcss-v4:
+        specifier: npm:tailwindcss@4.0.0
+        version: tailwindcss@4.0.0
       tsdown:
         specifier: 0.22.4
         version: 0.22.4(@arethetypeswrong/core@0.18.2)(publint@0.3.21)(typescript@6.0.3)(unplugin-unused@0.5.7(esbuild@0.28.2)(rolldown@1.2.7)(vite@8.2.2(@types/node@24.13.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))(vue-tsc@3.2.8(typescript@6.0.3))
@@ -4863,6 +4869,9 @@ packages:
 
   tailwind-merge@3.6.0:
     resolution: {integrity: sha512-uxL7qAVQriqRQPAyK3pj66VqskWqoZ37PW94jwOTwNfq/z9oyu1V+eqrZqtR2+fCiXdYOZe/Modt8GtvqNzu+w==}
+
+  tailwindcss@4.0.0:
+    resolution: {integrity: sha512-ULRPI3A+e39T7pSaf1xoi58AqqJxVCLg8F/uM5A3FadUbnyDTgltVnXJvdkTjwCOGA6NazqHVcwPJC5h2vRYVQ==}
 
   tailwindcss@4.2.4:
     resolution: {integrity: sha512-HhKppgO81FQof5m6TEnuBWCZGgfRAWbaeOaGT00KOy/Pf/j6oUihdvBpA7ltCeAvZpFhW3j0PTclkxsd4IXYDA==}
@@ -10071,6 +10080,8 @@ snapshots:
       syncpack-windows-x64: 15.0.0
 
   tailwind-merge@3.6.0: {}
+
+  tailwindcss@4.0.0: {}
 
   tailwindcss@4.2.4: {}
 

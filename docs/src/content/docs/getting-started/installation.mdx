@@ -144,11 +144,50 @@ You can enable autocompletion inside `cva` using the steps below:
 
 ### Handling style conflicts
 
-Although `cva`'s API is designed to help you avoid styling conflicts, there's still a small margin of error.
+By default, `cva` joins class names but does not resolve conflicting Tailwind CSS utilities. Choose one of the approaches below:
 
-If you're keen to lift that burden altogether, check out the wonderful [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) package.
+#### CSS defaults with `base:`
 
-For bulletproof components, wrap your `cva` component with `twMerge`.
+This Tailwind CSS v4 recipe adds a `base:` variant that marks a utility as a component default, so any ordinary utility overrides it through the CSS cascade instead of runtime class merging. Add it after Tailwind's import:
+
+```css
+@import "tailwindcss";
+
+@custom-variant base {
+  @layer base {
+    :where(&) {
+      @slot;
+    }
+  }
+}
+```
+
+Prefix your defaults with `base:` and write state styles as ordinary utilities:
+
+```ts
+import { cva } from "class-variance-authority";
+
+const buttonVariants = cva(
+  "base:bg-blue-600 base:px-4 base:py-2 base:text-white hover:bg-blue-700",
+);
+
+buttonVariants({ className: "bg-violet-600" });
+```
+
+In this example, `bg-violet-600` wins over `base:bg-blue-600`, and `hover:bg-blue-700` still applies on hover.
+
+`base:` utilities sit in a nested layer below ordinary utilities but above Tailwind's `base` and `components` layers. Inspired by [Diego Haz's `base:` idea](https://x.com/diegohaz/status/1897776774206853269) and [a related `:where()` example](https://x.com/acd02/status/1897943176863756335).
+
+`base:` makes defaults overridable. It does not merge classes, so keep these rules in mind:
+
+- **Conditional defaults lose too**: any ordinary `bg-*` utility beats `base:hover:bg-*`, `base:sm:bg-*`, and `base:dark:bg-*`, even while the condition matches. Write state styles without `base:`.
+- **Class order still doesn't matter**: two ordinary utilities that conflict, or two `base:` utilities that conflict, resolve by stylesheet order.
+- **Put `base:` before pseudo-element variants**: `base:before:bg-*` works, but `before:base:bg-*` compiles to an invalid selector and never applies.
+- **`!important` flips the layer order**: `base:bg-blue-600!` beats `bg-violet-600!`.
+
+#### tailwind-merge
+
+If you'd rather not think about the cascade, [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) is more bulletproof: it merges classes at runtime, so the last conflicting class wins. Wrap your `cva` component with `twMerge`:
 
 <details>
 

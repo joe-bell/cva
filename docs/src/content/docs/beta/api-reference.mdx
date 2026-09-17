@@ -1,6 +1,6 @@
 ---
 title: API Reference
-description: API reference for cva, cva/config, and cva/tools.
+description: API reference for cva, cva/config, cva/tools, and cva/tailwindcss.
 ---
 
 ## `cva`
@@ -45,6 +45,16 @@ const className = cx(classes);
 ### Returns
 
 `string`
+
+## `cva/tailwindcss`
+
+Custom Tailwind CSS variants, for use with or without `cva`. Import it after Tailwind CSS to add the `base:` variant.
+
+### `base:`
+
+Marks a utility as a component default. Ordinary utilities override `base:` utilities through the CSS cascade, and `base:` utilities still override browser defaults and Tailwind's `base` and `components` layers.
+
+See [cva/tailwindcss](/beta/getting-started/installation#cvatailwindcss) for setup and limitations.
 
 ## `cva/tools`
 
@@ -107,7 +117,7 @@ export const { cva, cx } = defineConfig(options);
      - It owns the class name grammar: `cva` passes composed outputs, `base`, matched variant and compound-variant values, and `class`/`className` through verbatim, one argument each.
      - Custom callbacks must accept empty calls, variadic inputs, and composed component strings.
      - The authoring surface adopts its parameter type: `twMerge` rejects object syntax, while `clsx` keeps the full clsx-flavored `ClassValue` grammar.
-     - See [Merging classes](/beta/getting-started/installation#merging-classes) for `cn` and `tailwind-merge` examples.
+     - See [Handling class conflicts](/beta/getting-started/installation#handling-class-conflicts) for CSS defaults, `cn`, and `tailwind-merge` examples.
 
 ### Advanced concatenators
 
