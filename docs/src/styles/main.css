@@ -79,18 +79,23 @@ header.header {
 }
 
 /* Starlight's Tabs can't take a class, so target it with a plain selector.
- * On mobile, break the tab row out of the content padding using Starlight's
- * own padding variable (negative margin), then re-add the padding on the
- * `ul` (not the scroll container) so the trailing gutter survives at the
- * end of a scroll. The breakpoint matches Starlight's 50rem sidebar
- * collapse in PageFrame.astro. */
+ * On mobile, break the scroll container out of the content padding using
+ * Starlight's own padding variable, then size the tablist to its content and
+ * re-add that padding inside it, so both gutters scroll with the tabs and the
+ * last tab keeps its gutter at the end of a scroll. The tablist's own border
+ * is hidden so the underline only spans the tabs (each tab draws its own via
+ * box-shadow). The breakpoint matches Starlight's 50rem sidebar collapse in
+ * PageFrame.astro. */
 @media (max-width: 49.999rem) {
   :where(starlight-tabs) > .tablist-wrapper {
     margin-inline: calc(-1 * var(--sl-content-pad-x));
     scroll-padding-inline: var(--sl-content-pad-x);
   }
   :where(starlight-tabs) > .tablist-wrapper > [role="tablist"] {
+    width: max-content;
+    min-width: 100%;
     padding-inline: var(--sl-content-pad-x);
+    border-bottom-color: transparent;
   }
 }
 
