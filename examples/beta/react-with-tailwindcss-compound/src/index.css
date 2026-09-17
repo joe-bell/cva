@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+@theme {
+  /* Contrast shadow border: layered shadows with a negative spread, so they sit
+     under the surface's real 1px border instead of blurring out from behind it.
+     Paired with `bg-clip-padding`, the edge reads as a soft gradient that gets
+     darker towards the bottom, rather than a flat line fighting a grey halo. */
+  --shadow-contrast:
+    0 1px 0 -1px rgb(0 0 0 / 0.05), 0 1px 1px -1px rgb(0 0 0 / 0.05),
+    0 1px 2px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.06),
+    0 3px 6px -3px rgb(0 0 0 / 0.06);
+}
+
 @layer base {
   :where(html, body, #root) {
     width: 100%;
