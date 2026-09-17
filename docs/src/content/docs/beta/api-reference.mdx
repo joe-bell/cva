@@ -48,14 +48,13 @@ const className = cx(classes);
 
 ## `cva/tailwindcss`
 
-Defines the `base:` variant for Tailwind CSS v4. Import it in your stylesheet after Tailwind CSS:
+`cva/tailwindcss` helps you define component defaults that consumers can override with Tailwind CSS classes. It uses the CSS cascade instead of runtime class merging.
 
-```css
-@import "tailwindcss";
-@import "cva/tailwindcss";
-```
+### `base:`
 
-See [CSS defaults with `base:`](/beta/getting-started/installation#cvatailwindcss) for usage and cascade caveats.
+Marks a Tailwind CSS utility as a component default. Ordinary utilities take priority over `base:` utilities, while these defaults still override normal browser styles and Tailwind's `base` and `components` layers.
+
+See the [installation guide](/beta/getting-started/installation#cvatailwindcss) for setup, usage, and caveats.
 
 ## `cva/tools`
 

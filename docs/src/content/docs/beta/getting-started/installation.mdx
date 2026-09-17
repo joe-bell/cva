@@ -125,7 +125,7 @@ You can enable autocompletion inside `cva` using the steps below:
 
 ## Handling class conflicts
 
-Use these integrations to handle conflicting Tailwind CSS classes in your components.
+By default, `cva` joins classes with [`clsx`](https://github.com/lukeed/clsx). It does not resolve conflicting Tailwind CSS utilities.
 
 ### cva/tailwindcss
 
@@ -162,7 +162,7 @@ The variant was inspired by [Diego Haz's `base:` idea](https://x.com/diegohaz/st
 #### Caveats
 
 :::caution
-By default, `cva` joins classes with [`clsx`](https://github.com/lukeed/clsx). It does not resolve conflicting Tailwind CSS utilities. The `base:` variant makes defaults overridable through CSS, but it does not guarantee conflict-free styles.
+The `base:` variant makes defaults overridable through CSS, but it does not guarantee conflict-free styles.
 
 Use [`cn`](#cn) or [`tailwind-merge`](#tailwind-merge) when you need more control over class conflicts.
 :::
@@ -236,7 +236,7 @@ export const { cva, cx: cn } = defineConfig({ cx: twMerge });
 
 ### Use either configuration
 
-Both library configurations accept conditional objects and arrays. Use the configured functions throughout your project:
+Use the configured functions throughout your project:
 
 ```ts
 // components/button.ts
