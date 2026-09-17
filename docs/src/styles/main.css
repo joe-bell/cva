@@ -90,6 +90,11 @@ header.header {
   :where(starlight-tabs) > .tablist-wrapper {
     margin-inline: calc(-1 * var(--sl-content-pad-x));
     scroll-padding-inline: var(--sl-content-pad-x);
+    /* Overlay scrollbars sit at the inner bottom edge of the scroll
+     * container, over the underline. Give them room below it and offset
+     * that room so the panel spacing is unchanged. */
+    padding-bottom: 0.375rem;
+    margin-bottom: -0.375rem;
   }
   :where(starlight-tabs) > .tablist-wrapper > [role="tablist"] {
     width: max-content;
