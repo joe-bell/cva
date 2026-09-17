@@ -55,7 +55,7 @@ Defines the `base:` variant for Tailwind CSS v4. Import it in your stylesheet af
 @import "cva/tailwindcss";
 ```
 
-See [CSS defaults with `base:`](/beta/getting-started/installation#css-defaults-with-base) for usage and cascade caveats.
+See [CSS defaults with `base:`](/beta/getting-started/installation#cvatailwindcss) for usage and cascade caveats.
 
 ## `cva/tools`
 
@@ -118,7 +118,7 @@ export const { cva, cx } = defineConfig(options);
      - It owns the class name grammar: `cva` passes composed outputs, `base`, matched variant and compound-variant values, and `class`/`className` through verbatim, one argument each.
      - Custom callbacks must accept empty calls, variadic inputs, and composed component strings.
      - The authoring surface adopts its parameter type: `twMerge` rejects object syntax, while `clsx` keeps the full clsx-flavored `ClassValue` grammar.
-     - See [Handling style conflicts](/beta/getting-started/installation#handling-style-conflicts) for CSS defaults, `cn`, and `tailwind-merge` examples.
+     - See [Handling class conflicts](/beta/getting-started/installation#handling-class-conflicts) for CSS defaults, `cn`, and `tailwind-merge` examples.
 
 ### Advanced concatenators
 
