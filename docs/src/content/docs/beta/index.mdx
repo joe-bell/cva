@@ -20,15 +20,31 @@ import ProjectStats from "../../../components/project-stats.astro";
 <br />
 <br />
 
-`cva` is a tiny library for building type-safe, variant-driven class names with Tailwind CSS or any other styling approach.
+`cva` turns choices such as a button's intent and size into a class name string. Define the classes once, then pass the variants you need:
 
-CSS-in-TS libraries such as [Stitches](https://stitches.dev/docs/variants) and [Vanilla Extract](https://vanilla-extract.style/documentation/api/style-variants/) handle type-safe UI variants without you managing class names or stylesheet composition by hand.
+```ts
+import { cva } from "cva";
 
-CSS-in-TS isn't for everyone, though. You may need full control over your stylesheet output, use a framework such as Tailwind CSS, or prefer writing your own CSS.
+const button = cva({
+  base: "button",
+  variants: {
+    intent: { primary: "button--primary", secondary: "button--secondary" },
+    size: { small: "button--small", medium: "button--medium" },
+  },
+  defaultVariants: { intent: "primary", size: "medium" },
+});
 
-Creating variants with the "traditional" CSS approach can become an arduous task: manually matching classes to props, and manually adding types.
+button({ intent: "secondary", size: "small" });
+// => "button button--secondary button--small"
+```
 
-`cva` takes away those pain points, so you can focus on building your UI.
+TypeScript infers the available variants, so an unsupported value is a type error. Your CSS controls how those classes look: `cva` works with plain CSS, CSS Modules, Tailwind CSS, or another approach that uses class names.
+
+[Install `cva`](/beta/getting-started/installation), then learn about [variants and defaults](/beta/getting-started/variants). For conditional classes without variants, use the included [`cx` function](/beta/api-reference#cx).
+
+## Why cva?
+
+CSS-in-TS libraries such as [Stitches](https://stitches.dev/docs/variants) and [Vanilla Extract](https://vanilla-extract.style/documentation/api/style-variants/) also offer typed variants. If you prefer to manage your own stylesheets or use Tailwind CSS, `cva` gives you typed class names without generating CSS.
 
 ## Sponsors
 

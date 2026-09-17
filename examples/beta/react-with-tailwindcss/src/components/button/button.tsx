@@ -1,7 +1,7 @@
 import React from "react";
 import { cva, type VariantProps } from "cva";
 
-const button = cva({
+export const button = cva({
   base: "button",
   variants: {
     intent: {

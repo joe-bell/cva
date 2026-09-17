@@ -35,8 +35,11 @@ Concatenates class names (an alias of [`clsx`](https://github.com/lukeed/clsx); 
 ```ts
 import { cx } from "cva";
 
-const className = cx(classes);
+cx("button", ["rounded", false], { "button--active": true });
+// => "button rounded button--active"
 ```
+
+Use the included `cx` instead of adding `clsx` or `classnames` for conditional class names. It skips falsy inputs and flattens nested arrays. It does not remove duplicate classes or resolve conflicting CSS utilities; see [handling class conflicts](/beta/getting-started/installation#handling-class-conflicts).
 
 ### Parameters
 

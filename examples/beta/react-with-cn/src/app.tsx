@@ -1,10 +1,12 @@
 import React from "react";
 import { cn } from "./cva.config";
-import { Button } from "./components";
+import { getSchema } from "cva/tools";
+import { Button, button } from "./components";
 
-const intents = [undefined, "primary", "secondary"] as const;
-const sizes = [undefined, "medium", "small"] as const;
-const isDisabled = [false, true] as const;
+const schema = getSchema(button);
+const intents = [undefined, ...schema.intent.values];
+const sizes = [undefined, ...schema.size.values];
+const isDisabled = schema.disabled.values;
 
 function App() {
   return (
@@ -30,18 +32,14 @@ function App() {
           sizes.map((size, index) => (
             <tr key={`${disabled}-${size || "default"}`}>
               {index === 0 && (
-                <th scope="rowgroup" rowSpan={3}>
+                <th scope="rowgroup" rowSpan={sizes.length}>
                   {disabled ? "disabled" : "enabled"}
                 </th>
               )}
               <th scope="row">{size || "default"}</th>
               {intents.map((intent) => (
                 <td key={intent || "default"}>
-                  <Button
-                    {...(intent && { intent })}
-                    {...(size && { size })}
-                    {...(disabled && { disabled })}
-                  >
+                  <Button intent={intent} size={size} disabled={disabled}>
                     {intent || "default"} button
                   </Button>
                 </td>
@@ -53,7 +51,7 @@ function App() {
       <tfoot>
         <tr>
           <th scope="row">override</th>
-          <td colSpan={4}>
+          <td colSpan={intents.length + 1}>
             <Button className={cn("bg-red-500", { "text-white": true })}>
               conditional override
             </Button>

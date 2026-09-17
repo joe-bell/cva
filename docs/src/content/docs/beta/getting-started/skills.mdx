@@ -1,9 +1,27 @@
 ---
 title: Skills
-description: Use the cva-migrate Agent Skill to upgrade a project between cva versions.
+description: Use Agent Skills to build cva components and migrate between cva versions.
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Agent Skills give your coding agent guidance for component work and version upgrades.
+
+## `cva-best-practices`
+
+[`cva-best-practices`](https://github.com/joe-bell/cva/tree/main/skills/cva-best-practices) condenses these docs into guidance for typed variants, defaults, composition, class conflicts, and schema-driven galleries. It checks the installed package before applying beta APIs.
+
+Install it for component work:
+
+```sh
+npx skills add https://github.com/joe-bell/cva --skill cva-best-practices
+```
+
+Then give your agent a component task:
+
+> Use cva-best-practices to add size and intent variants to this button, keeping its native HTML props.
+
+The relevant guides remain the source of truth for each recommendation. Use the migration skill below when changing versions.
 
 ## `cva-migrate`
 

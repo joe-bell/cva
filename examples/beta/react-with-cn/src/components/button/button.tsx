@@ -2,7 +2,7 @@ import React from "react";
 import type { VariantProps } from "cva";
 import { cva } from "../../cva.config";
 
-const button = cva({
+export const button = cva({
   // Variant and `className` conflicts override base values.
   base: "font-semibold border rounded bg-gray-200 text-gray-800",
   variants: {

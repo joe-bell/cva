@@ -62,6 +62,12 @@ button({ intent: "secondary", size: "small" });
 // => "rounded border font-semibold border-gray-400 bg-white text-gray-800 hover:bg-gray-100 px-2 py-1 text-sm"
 ```
 
+## Default variants
+
+Put shared defaults in `defaultVariants` so every caller gets the same behavior. Omitting a prop, or passing `undefined`, uses its default. A React wrapper can forward optional variant props without repeating those defaults.
+
+To select no classes for a variant, declare an explicit option such as `unset: null`; see [disabling variants](#disabling-variants).
+
 ## Internal variants
 
 A variant name prefixed with `_` is treated as internal.

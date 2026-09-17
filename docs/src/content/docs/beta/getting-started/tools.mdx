@@ -59,3 +59,57 @@ const schema = getSchema(badge);
 Boolean and numeric variant keys come back as booleans and numbers, matching the props the component accepts rather than the object keys they were written as. [Internal variants](/beta/getting-started/variants#internal-variants) are omitted.
 
 For the full signature, see the [API reference](/beta/api-reference#getschema).
+
+## Generate a React variant gallery
+
+Use the `button` class function from the first example in a typed React component. The complete component keeps its class function exported so the gallery can read its schema:
+
+```tsx
+// components/button.tsx
+import type { ComponentProps } from "react";
+import { cva, type VariantProps } from "cva";
+
+export const button = cva({
+  base: "button",
+  variants: {
+    intent: { primary: "button--primary", secondary: "button--secondary" },
+    size: { small: "button--small", large: "button--large" },
+  },
+  defaultVariants: { intent: "primary", size: "small" },
+});
+
+type ButtonProps = ComponentProps<"button"> & VariantProps<typeof button>;
+
+export function Button({ intent, size, className, ...props }: ButtonProps) {
+  return <button {...props} className={button({ intent, size, className })} />;
+}
+```
+
+Pass `button`, the CVA class function, to `getSchema`. The React `Button` renders markup and is not a valid input. Read the schema outside the render function, then map its typed values into buttons:
+
+```tsx
+// button-gallery.tsx
+import { getSchema } from "cva/tools";
+import { Button, button } from "./components/button";
+
+const schema = getSchema(button);
+
+export function ButtonGallery() {
+  return (
+    <>
+      <Button>Default button</Button>
+      {schema.intent.values.flatMap((intent) =>
+        schema.size.values.map((size) => (
+          <Button key={`${intent}-${size}`} intent={intent} size={size}>
+            {intent} / {size}
+          </Button>
+        )),
+      )}
+    </>
+  );
+}
+```
+
+Adding an intent or size to `button` now adds it to the gallery without another list to update. The default button leaves both props unset, exercising `defaultVariants`. Use `schema.intent.defaultValue` when you need to label its selected intent.
+
+The [React examples](/beta/examples/react/tailwindcss) use this approach with default, size, intent, and disabled states. Keep gallery code in your documentation or stories if your application doesn't need to inspect variants at runtime.

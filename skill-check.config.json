@@ -1,4 +1,7 @@
 {
   "include": ["{.agents/skills,skills}/*/SKILL.md"],
-  "exclude": [".agents/skills/cva-migrate/**"]
+  "exclude": [
+    ".agents/skills/cva-migrate/**",
+    ".agents/skills/cva-best-practices/**"
+  ]
 }

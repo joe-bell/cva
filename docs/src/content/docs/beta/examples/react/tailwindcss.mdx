@@ -5,7 +5,7 @@ description: A cva button component built with React and Tailwind CSS, including
 
 import StackBlitz from "../../../../../components/stackblitz.astro";
 
-These examples build a React `button` component with `cva` and Tailwind CSS. They cover compound components and conflicting Tailwind classes.
+These examples build a React `button` component with `cva` and Tailwind CSS. They cover compound components and conflicting Tailwind classes. The button galleries derive their choices with [`getSchema`](/beta/getting-started/tools#generate-a-react-variant-gallery), so new variant values appear without updating a second list.
 
 ## Basic component
 
@@ -33,7 +33,7 @@ Both examples resolve conflicting Tailwind CSS classes and conditional inputs. S
 
 ### tailwind-merge
 
-[`clsx`](https://github.com/lukeed/clsx) with [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) preserves `cva`'s full `ClassValue` grammar while resolving Tailwind CSS conflicts.
+The `cx` included in `cva`, combined with [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) preserves `cva`'s full `ClassValue` grammar while resolving Tailwind CSS conflicts.
 
 <StackBlitz
   dir="examples/beta/react-with-tailwind-merge"

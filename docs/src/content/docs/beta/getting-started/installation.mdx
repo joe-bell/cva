@@ -43,6 +43,20 @@ import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
   </TabItem>
 </Tabs>
 
+## Join conditional classes
+
+`cva` includes `cx` for joining strings, arrays, and conditional objects. You don't need a separate `clsx` or `classnames` dependency for this:
+
+```ts
+import { cx } from "cva";
+
+const active = true;
+cx("button", ["rounded", { "button--active": active }]);
+// => "button rounded button--active"
+```
+
+`cx` joins class names; it doesn't resolve conflicting CSS rules. See the [`cx` reference](/beta/api-reference#cx) for its inputs and [handling class conflicts](#handling-class-conflicts) for Tailwind CSS options.
+
 ## Tailwind CSS
 
 If you're a Tailwind user, here are some additional (optional) steps to get the most out of `cva`:
@@ -196,20 +210,20 @@ export const { cva, cx: cn } = defineConfig({ cx: merge });
 
 ### tailwind-merge
 
-Install [`clsx`](https://github.com/lukeed/clsx) with [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) to preserve `cva`'s full `ClassValue` grammar while resolving Tailwind CSS conflicts:
+Install [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) and combine it with the `cx` already exported by `cva`. This preserves strings, arrays, and conditional objects while resolving Tailwind CSS conflicts:
 
 ```sh
-pnpm add clsx tailwind-merge
+pnpm add tailwind-merge
 ```
 
 ```ts
 // cva.config.ts
 import { defineConfig } from "cva/config";
-import { clsx } from "clsx";
+import { cx as joinClasses } from "cva";
 import { twMerge } from "tailwind-merge";
 
 export const { cva, cx: cn } = defineConfig({
-  cx: (...inputs) => twMerge(clsx(inputs)),
+  cx: (...inputs) => twMerge(joinClasses(...inputs)),
 });
 ```
 

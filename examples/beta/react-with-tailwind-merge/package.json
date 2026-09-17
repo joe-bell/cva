@@ -9,7 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "clsx": "^2.1.1",
     "cva": "beta",
     "react": "19.2.6",
     "react-dom": "19.2.6",

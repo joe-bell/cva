@@ -241,9 +241,6 @@ importers:
 
   examples/beta/react-with-tailwind-merge:
     dependencies:
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
       cva:
         specifier: workspace:*
         version: link:../../../packages/cva
