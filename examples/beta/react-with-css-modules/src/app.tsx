@@ -10,10 +10,11 @@ const isDisabled = schema.disabled.values;
 function App() {
   return (
     <table className="variant-table">
+      <caption>Button variants</caption>
       <thead>
         <tr>
-          <th></th>
-          <th></th>
+          <td></td>
+          <td></td>
           {intents.map((intent) => (
             <th key={intent || "default"} scope="col">
               {intent || "default"}
