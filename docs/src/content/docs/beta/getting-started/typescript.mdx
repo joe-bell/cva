@@ -7,7 +7,11 @@ description: Extract variant types with VariantProps and require specific varian
 
 `cva` offers the `VariantProps` helper to extract variant types.
 
-`VariantProps` contains the public variant props, not `class` or `className`. Combine it with native element props when wrapping a UI component. It omits variant names prefixed with `_`; see [Internal variants](/beta/getting-started/variants#internal-variants).
+:::tip[Keep component props inferred]
+Use `VariantProps` instead of repeating variant unions. Combine it with native element props when wrapping a UI component, and forward semantic attributes such as `disabled` to the element as well as the class function.
+:::
+
+`VariantProps` contains public variant props, not `class` or `className`. It omits variant names prefixed with `_`; see [Internal variants](/beta/getting-started/variants#internal-variants).
 
 ```ts
 // components/button.ts

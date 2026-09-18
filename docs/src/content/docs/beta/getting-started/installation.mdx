@@ -45,7 +45,9 @@ import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
 
 ## Join conditional classes
 
-`cva` includes `cx` for joining strings, arrays, and conditional objects. You don't need a separate `clsx` or `classnames` dependency for this:
+:::tip[Use the included cx]
+`cva` includes `cx` for joining strings, arrays, and conditional objects. You don't need a separate `clsx` or `classnames` dependency for this.
+:::
 
 ```ts
 import { cx } from "cva";
@@ -59,7 +61,9 @@ cx("button", ["rounded", { "button--active": active }]);
 
 ## Tailwind CSS
 
-Use complete class names in your variant definitions. Tailwind CSS scans source text and cannot detect interpolated names such as `bg-${tone}-500`. Map each value to a full class string instead:
+:::tip[Write complete Tailwind class names]
+Tailwind CSS scans source text and cannot detect interpolated names such as `bg-${tone}-500`. Map each variant value to a full class string instead.
+:::
 
 ```ts
 import { cva } from "cva";
@@ -156,6 +160,30 @@ You can enable autocompletion inside `cva` using the steps below:
 
 By default, `cva` joins classes with [`clsx`](https://github.com/lukeed/clsx). It does not resolve conflicting Tailwind CSS utilities. Choose one of the approaches below:
 
+### cn
+
+Install the [`cn`](https://www.npmjs.com/package/cn) package to join conditional classes and resolve Tailwind CSS conflicts in one function.
+
+The [shadcn CLI](https://ui.shadcn.com/docs/registry/github) installs `cva@beta` with `cn` and writes `cva.config.ts` to your project root:
+
+```sh
+pnpm dlx shadcn@latest add joe-bell/cva/cn
+```
+
+To set it up by hand instead, add `cn` and export the configured functions from `cva.config.ts`:
+
+```sh
+pnpm add cn
+```
+
+```ts
+// cva.config.ts
+import { defineConfig } from "cva/config";
+import { cn as merge } from "cn";
+
+export const { cva, cx: cn } = defineConfig({ cx: merge });
+```
+
 ### cva/tailwindcss
 
 `cva/tailwindcss` is a set of custom Tailwind CSS variants, for use with or without `cva`. Import it after Tailwind CSS:
@@ -169,7 +197,7 @@ By default, `cva` joins classes with [`clsx`](https://github.com/lukeed/clsx). I
 
 The `base:` variant marks a utility as a component default, so any ordinary utility overrides it through the CSS cascade instead of runtime class merging.
 
-Prefix your defaults with `base:` and write state styles as ordinary utilities:
+Prefix overridable component defaults with `base:`, including defaults selected by variants or compound variants. Write state styles as ordinary utilities:
 
 ```ts
 import { cva } from "cva";
@@ -197,31 +225,7 @@ In this example, `bg-violet-600` wins over `base:bg-blue-600`, and `hover:bg-blu
 - **Put `base:` before pseudo-element variants**: `base:before:bg-*` works, but `before:base:bg-*` compiles to an invalid selector and never applies.
 - **`!important` flips the layer order**: `base:bg-blue-600!` beats `bg-violet-600!`.
 
-If you'd rather not think about the cascade, [`cn`](#cn) and [`tailwind-merge`](#tailwind-merge) are more bulletproof: they merge classes at runtime, so the last conflicting class wins.
-
-### cn
-
-Install the [`cn`](https://www.npmjs.com/package/cn) package to join conditional classes and resolve Tailwind CSS conflicts in one function.
-
-The [shadcn CLI](https://ui.shadcn.com/docs/registry/github) installs `cva@beta` with `cn` and writes `cva.config.ts` to your project root:
-
-```sh
-pnpm dlx shadcn@latest add joe-bell/cva/cn
-```
-
-To set it up by hand instead, add `cn` and export the configured functions from `cva.config.ts`:
-
-```sh
-pnpm add cn
-```
-
-```ts
-// cva.config.ts
-import { defineConfig } from "cva/config";
-import { cn as merge } from "cn";
-
-export const { cva, cx: cn } = defineConfig({ cx: merge });
-```
+For runtime conflict resolution, [`cn`](#cn) and [`tailwind-merge`](#tailwind-merge) remove earlier conflicting utilities from the class string.
 
 ### tailwind-merge
 

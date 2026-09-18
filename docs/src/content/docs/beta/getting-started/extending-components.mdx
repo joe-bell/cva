@@ -18,4 +18,6 @@ button({ className: "m-4" });
 // => "font-semibold m-4"
 ```
 
+:::caution[Extra classes may not override]
 Extra classes are appended to the generated string. With the default `cx`, their position does not make them override conflicting CSS rules. For Tailwind CSS overrides, choose a [class conflict strategy](/beta/getting-started/installation#handling-class-conflicts).
+:::

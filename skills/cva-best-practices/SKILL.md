@@ -23,7 +23,7 @@ This guidance targets the `cva` 1.0 betas (verified against `cva@1.0.0-beta.12`)
 - Treat the configuration and referenced objects as immutable after creating a class function. Create another function if the configuration changes.
 - Prefer server-side rendering or static generation for static components when the framework permits it. Do not add client-side JavaScript solely to generate a static class string.
 
-See [Variants](https://cva.style/beta/getting-started/variants/) and the [API reference](https://cva.style/beta/api-reference/).
+See [Variants](https://cva.style/beta/getting-started/variants/), [Default variants](https://cva.style/beta/getting-started/variants/#default-variants), and the [`cva` API reference](https://cva.style/beta/api-reference/#cva).
 
 ## Keep props inferred
 
@@ -31,7 +31,7 @@ Use `VariantProps<typeof button>` rather than repeating variant unions. It conta
 
 For a React wrapper, combine variant types with native element props and forward `className` to the class function. If names overlap incompatibly, omit the overlapping native props before combining them. Forward semantic props such as `disabled` to the actual HTML element as well as the class function. Use TypeScript's `Required<Pick<...>>` and `Omit` when a public variant must be required.
 
-See [TypeScript](https://cva.style/beta/getting-started/typescript/) and the [React gallery](https://cva.style/beta/getting-started/tools/#generate-a-react-variant-gallery).
+See [Extracting variant types](https://cva.style/beta/getting-started/typescript/#extracting-variant-types) and the [React gallery](https://cva.style/beta/getting-started/tools/#generate-a-react-variant-gallery).
 
 ## Join classes without another dependency
 
@@ -42,7 +42,7 @@ For Tailwind CSS, write complete utility class strings in variant definitions. D
 Pass extra classes through the class function's `class` or `className` prop. Appending a utility does not guarantee a CSS override. For Tailwind CSS, follow the project's existing conflict strategy:
 
 - **`cn`**: `import { cn as merge } from "cn"`, then `defineConfig({ cx: merge })`.
-- **`cva/tailwindcss`**: import after Tailwind CSS and use `base:` for overridable defaults. Ordinary utilities override them through the cascade. Keep state styles ordinary; any ordinary utility also beats conditional `base:` defaults. Put `base:` before pseudo-element variants, and remember important declarations reverse layer priority.
+- **`cva/tailwindcss`**: import after Tailwind CSS and prefix overridable component defaults with `base:`, including defaults selected by variants or compound variants. Ordinary utilities override them through the cascade. Keep hover and disabled state styles ordinary; any ordinary utility also beats conditional `base:` defaults. Put `base:` before pseudo-element variants, and remember important declarations reverse layer priority.
 - **`tailwind-merge`**: combine its `twMerge` with the preset `cx` to preserve conditional objects. Bare `twMerge` has a narrower input grammar.
 
 For the last option:
@@ -59,7 +59,7 @@ export const { cva, cx: cn } = defineConfig({
 
 Import the configured functions throughout that project. Do not accidentally use the preset for components expected to merge conflicts. A custom concatenator owns the input grammar and must support empty calls, variadic inputs, and composed strings.
 
-See [Installation](https://cva.style/beta/getting-started/installation/) and [Extending Components](https://cva.style/beta/getting-started/extending-components/).
+See [Handling class conflicts](https://cva.style/beta/getting-started/installation/#handling-class-conflicts) and [Extending Components](https://cva.style/beta/getting-started/extending-components/).
 
 ## Compose classes and preserve semantics
 
