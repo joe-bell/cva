@@ -9,11 +9,7 @@ What's changed since `class-variance-authority@0.*`?
 
 ## Requirements
 
-TypeScript projects using `cva@beta` need TypeScript 6.0 or later. JavaScript usage is unaffected.
-
-The optional `cva/tailwindcss` stylesheet needs Tailwind CSS v4.
-
-`cva` publishes prereleases under the `beta` dist-tag and parks `latest` at `0.0.0`, so [install `cva@beta`](/beta/getting-started/installation), not `cva`.
+[Install `cva@beta`](/beta/getting-started/installation). TypeScript projects need TypeScript 6.0 or later; the optional `cva/tailwindcss` stylesheet needs Tailwind CSS v4.
 
 ## Features
 
@@ -27,35 +23,19 @@ Shout-out to GitHub for transferring `npm` ownership of `cva`!
 
 The `cva` package is a preset over the core: it wires `cva` and `cx` to `clsx`, like `class-variance-authority`. Roll your own `cva` and `cx` via the new [`defineConfig` API in `cva/config`](/beta/api-reference#cvaconfig), whose required `cx` option accepts [`cn`, `tailwind-merge`](/beta/getting-started/installation#handling-class-conflicts), [`clsx/lite`](/beta/api-reference#advanced-concatenators) for string-only authoring, or your own concatenator.
 
+#### shadcn
+
 The [shadcn CLI](https://ui.shadcn.com/docs/registry/github) [installs `cva@beta` with `cn`](/beta/getting-started/installation#cn) and writes `cva.config.ts` to your project root:
 
 ```sh
 pnpm dlx shadcn@latest add joe-bell/cva/cn
 ```
 
-### 3. CSS defaults with `cva/tailwindcss`
+#### `cva/tailwindcss`
 
 Import `cva/tailwindcss` in a Tailwind CSS v4 project and prefix component defaults with [`base:`](/beta/getting-started/installation#cvatailwindcss). Ordinary utilities override them through the CSS cascade, with no runtime class merging.
 
-### 4. `composes`
-
-Shallow merge one or more `cva` components into a single component via the new [`composes` property](/beta/getting-started/composing-components).
-
-This [replaces the `compose` function](#6-compose--composes) from earlier betas.
-
-### 5. `getSchema`
-
-Extract a plain-object schema (variant names, values and defaults) from a `cva` component via the new [`cva/tools`](/beta/getting-started/tools) entry point's `getSchema`. Use it to generate Storybook controls or any other UI that reads a component's variants.
-
-### 6. Internal variants
-
-A variant name prefixed with `_` is now treated as [internal](/beta/getting-started/variants#internal-variants). It stays off a wrapping component's public props because `VariantProps` and `getSchema` omit it, while the `cva` component still accepts it.
-
-:::caution[Breaking change]
-If a component already declared a variant with a leading underscore (`_state`, `_internal`, etc.), that variant now disappears from `VariantProps` and from `getSchema` results. The component still accepts it directly, but you'll need to rename it if you exposed it as a public prop.
-:::
-
-### 7. Faster component calls
+### 3. Performance
 
 Calling a `cva` component is up to 1000% faster than `0.7`. The runtime works out as much of the class list as it can when you create the component, then calls your concatenator once per call, instead of copying props and spreading arrays along the way:
 
@@ -68,7 +48,7 @@ The `cva` entry is now <BundleSize package="cva" /> (brotli), up from <BundleSiz
 
 Thanks to [@fveracoechea](https://github.com/fveracoechea) for inspiring this work! See [the pull request](https://github.com/joe-bell/cva/pull/419) for the full numbers.
 
-### 8. Faster type checking
+#### TypeScript
 
 The authoring types were reworked so TypeScript does less work to reach the same answers. Your inferred prop types, `getSchema` results and emitted declarations are identical. Measured with `tsc --extendedDiagnostics` against the `cva` build immediately before the change (the beta line after `1.0.0-beta.9`), so these percentages are relative to an earlier `cva` revision rather than to `class-variance-authority`:
 
@@ -77,13 +57,31 @@ The authoring types were reworked so TypeScript does less work to reach the same
 
 See [the pull request](https://github.com/joe-bell/cva/pull/420) for the full numbers.
 
-### 9. Tailwind CSS IntelliSense
+### 4. Internal variants
 
-The [editor setup](/beta/getting-started/installation#intellisense) now uses Tailwind's `classFunctions` setting instead of a hand-written `classRegex`, with recipes for Visual Studio Code, Zed, Neovim, and WebStorm. The setting lives in your editor config, so it works with `class-variance-authority` too.
+A variant name prefixed with `_` is now treated as [internal](/beta/getting-started/variants#internal-variants). It stays off a wrapping component's public props because `VariantProps` and `getSchema` omit it, while the `cva` component still accepts it.
 
-### 10. Agent Skills
+:::caution[Breaking change]
+If a component already declared a variant with a leading underscore (`_state`, `_internal`, etc.), that variant now disappears from `VariantProps` and from `getSchema` results. The component still accepts it directly, but you'll need to rename it if you exposed it as a public prop.
+:::
+
+### 5. `composes`
+
+Shallow merge one or more `cva` components into a single component via the new [`composes` property](/beta/getting-started/composing-components).
+
+This [replaces the `compose` function](#6-compose--composes) from earlier betas.
+
+### 6. `getSchema`
+
+Extract a plain-object schema (variant names, values and defaults) from a `cva` component via the new [`cva/tools`](/beta/getting-started/tools) entry point's `getSchema`. Use it to generate Storybook controls or any other UI that reads a component's variants.
+
+### 7. Agent Skills
 
 Two [Agent Skills](/beta/getting-started/skills) ship with the repository: `cva-best-practices` condenses these docs into guidance for component work, and `cva-migrate` upgrades a project between `cva` versions.
+
+### 8. Tailwind CSS IntelliSense
+
+The [editor setup](/beta/getting-started/installation#intellisense) now uses Tailwind's `classFunctions` setting instead of a hand-written `classRegex`, with recipes for Visual Studio Code, Zed, Neovim, and WebStorm. The setting lives in your editor config, so it works with `class-variance-authority` too.
 
 ## Deprecations and breaking changes
 
@@ -148,7 +146,7 @@ If you now pass a generic type parameter, TypeScript reports an error.
 
 ### 5. Configuration is read when you create the component
 
-`cva` used to re-read your config on every call, so mutating it afterwards quietly changed the output. It now reads `base`, `variants`, `compoundVariants`, `defaultVariants` and `composes` during creation. A call reads only the props you pass it, plus the `cx` from your `defineConfig` options, which stays live. That is where most of the [runtime speed improvement](#7-faster-component-calls) comes from.
+`cva` used to re-read your config on every call, so mutating it afterwards quietly changed the output. It now reads `base`, `variants`, `compoundVariants`, `defaultVariants` and `composes` during creation. A call reads only the props you pass it, plus the `cx` from your `defineConfig` options, which stays live. That is where most of the [runtime speed improvement](#3-performance) comes from.
 
 :::caution[Breaking change]
 Treat a config, and everything it references, as immutable once you've created the component. Mutating it afterwards is unsupported, and how much of the change shows up is undefined. Create a new component instead:
@@ -200,6 +198,6 @@ The `compose` method was deprecated in favor of the `composes` property inside `
 
 See [Composing Components](/beta/getting-started/composing-components) for more details and migration examples.
 
-## Migrate
+## Migrating to 1.0
 
 [Run the `cva-migrate` Agent Skill](/beta/getting-started/skills) to upgrade a project, whether it's on `class-variance-authority@0.x` or an earlier `cva` beta. It guides you through the changes your project needs.
