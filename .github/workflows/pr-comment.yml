@@ -32,12 +32,12 @@ name: pr-comment
 #      a fork from mirroring a victim PR's (public, content-addressed)
 #      head commit to pass the SHA check with fabricated data.
 #   4. Call `processBenchmarkPrComment` from
-#      .github/scripts/process-pr-comment.mjs (or `upsertPrComment` from
-#      pr-comment.mjs for a custom binding) with your own `sectionId` and `createIfMissing: false` (only the first/primary
+#      .github/scripts/process-pr-comment.ts (or `upsertPrComment` from
+#      pr-comment.ts for a custom binding) with your own `sectionId` and `createIfMissing: false` (only the first/primary
 #      producer should create the comment; every other producer waits for
 #      it via `retries`/`retryDelayMs` so producers never race to create
 #      duplicate comments).
-#   5. Add your section id to `SECTION_ORDER` in pr-comment.mjs to choose
+#   5. Add your section id to `SECTION_ORDER` in pr-comment.ts to choose
 #      where it appears in the comment — sections render in that declared
 #      order no matter which producer runs first, and reordering the list
 #      reorders existing comments on their next update.
@@ -106,7 +106,7 @@ jobs:
         with:
           script: |
             const { processBenchmarkPrComment } = await import(
-              "${{ github.workspace }}/.github/scripts/process-pr-comment.mjs"
+              "${{ github.workspace }}/.github/scripts/process-pr-comment.ts"
             );
 
             const result = await processBenchmarkPrComment({

@@ -7,7 +7,7 @@
     ".github/cloudflare/*",
     ".github/repository-settings/*",
     ".github/rulesets/*",
-    ".github/scripts/verify-cloudflare-build.mjs",
+    ".github/scripts/verify-cloudflare-build.ts",
     ".github/workflows/ci.yml",
     ".github/workflows/cloudflare-build.yml",
     "package.json",

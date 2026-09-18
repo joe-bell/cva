@@ -23,10 +23,13 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: .nvmrc
       - name: Verify Cloudflare build
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           GITHUB_TOKEN: ${{ github.token }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           REPOSITORY: ${{ github.repository }}
-        run: node .github/scripts/verify-cloudflare-build.mjs
+        run: node .github/scripts/verify-cloudflare-build.ts

@@ -5,7 +5,10 @@ import {
   CHECK_RUNS_PER_PAGE,
   CLOUDFLARE_APP_ID,
   CLOUDFLARE_APP_SLUG,
+  MAX_CANDIDATE_SHAS,
   MAX_CHECK_RUNS,
+  MAX_PATH_PATTERNS,
+  MAX_PATH_PATTERN_LENGTH,
   checkRunsUrl,
   cloudflareCheckOutcome,
   createRequestBudget,
@@ -15,6 +18,7 @@ import {
   isWatchedPath,
   listCloudflareCheckRuns,
   loadWatchPaths,
+  loadWatchPathsAtRevision,
   main,
   matchesCloudflarePath,
   parseCheckRunsPage,
@@ -26,7 +30,7 @@ import {
   verifyCloudflareBuild,
   waitForCloudflareCheck,
   watchedTreeFingerprint,
-} from "./verify-cloudflare-build.mjs";
+} from "./verify-cloudflare-build.ts";
 
 const SHAS = {
   base: "a".repeat(40),
@@ -42,7 +46,22 @@ const WATCH_PATHS = {
   exclude: ["docs/private/*"],
 };
 
-function tree(entries) {
+type TreeEntry = {
+  mode?: string;
+  type?: string;
+  object?: string;
+  path: string;
+};
+type GitFixtureOptions = {
+  trees: Record<string, string>;
+  mergeBase?: string;
+  ancestors?: string[];
+  watchPathsByRevision?: Record<string, unknown>;
+};
+type ExecImpl = NonNullable<Parameters<typeof watchedTreeFingerprint>[2]>;
+type VerifyOptions = Parameters<typeof verifyCloudflareBuild>[0];
+
+function tree(entries: TreeEntry[]) {
   return entries
     .map(
       ({ mode = "100644", type = "blob", object = "1".repeat(40), path }) =>
@@ -51,21 +70,31 @@ function tree(entries) {
     .join("");
 }
 
-function gitFixture({ trees, mergeBase = SHAS.merge, ancestors = [] }) {
-  const calls = [];
-  const execImpl = async (_command, args) => {
-    calls.push(args);
+function gitFixture({
+  trees,
+  mergeBase = SHAS.merge,
+  ancestors = [],
+  watchPathsByRevision = {},
+}: GitFixtureOptions) {
+  const calls: string[][] = [];
+  const execImpl: ExecImpl = async (_command, args) => {
+    calls.push([...args]);
     if (args[0] === "ls-tree") {
-      return { stdout: trees[args.at(-1)] ?? "" };
+      const revision = args.at(-1);
+      return { stdout: revision === undefined ? "" : (trees[revision] ?? "") };
     }
     if (args[0] === "merge-base") return { stdout: `${mergeBase}\n` };
     if (args[0] === "rev-list") return { stdout: ancestors.join("\n") };
+    if (args[0] === "show") {
+      const [revision] = args[1].split(":", 1);
+      return { stdout: JSON.stringify(watchPathsByRevision[revision]) };
+    }
     throw new Error(`Unexpected git command: ${args.join(" ")}`);
   };
   return { calls, execImpl };
 }
 
-function checkRun(overrides = {}) {
+function checkRun(overrides: Record<string, unknown> = {}) {
   return {
     app: { id: CLOUDFLARE_APP_ID, slug: CLOUDFLARE_APP_SLUG },
     completed_at: "2026-09-17T12:01:00.000Z",
@@ -79,17 +108,20 @@ function checkRun(overrides = {}) {
   };
 }
 
-function checkPage(checkRuns, totalCount = checkRuns.length) {
+function checkPage(checkRuns: unknown[], totalCount = checkRuns.length) {
   return { check_runs: checkRuns, total_count: totalCount };
 }
 
-function response(data, { ok = true, status = 200 } = {}) {
+function response(
+  data: unknown,
+  { ok = true, status = 200 }: { ok?: boolean; status?: unknown } = {},
+) {
   return { json: async () => data, ok, status };
 }
 
-function fetchFixture(pages) {
-  const calls = [];
-  const fetchImpl = async (url, options) => {
+function fetchFixture(pages: unknown[]) {
+  const calls: { options: RequestInit; url: URL }[] = [];
+  const fetchImpl = async (url: URL, options: RequestInit) => {
     calls.push({ options, url: new URL(url) });
     const page = pages.shift();
     if (page instanceof Error) throw page;
@@ -103,10 +135,30 @@ describe("watch paths", () => {
     expect(matchesCloudflarePath("docs/*", "docs/nested/file.mdx")).toBe(true);
     expect(matchesCloudflarePath("*.md", "docs/README.md")).toBe(true);
     expect(matchesCloudflarePath("*.md", "docs/README.mdx")).toBe(false);
+    expect(matchesCloudflarePath("docs/**", "docs/nested/file.mdx")).toBe(true);
+    expect(matchesCloudflarePath("docs/page.mdx**", "docs/page.mdx")).toBe(
+      true,
+    );
+    expect(matchesCloudflarePath("docs/*/file.*", "docs/a/file.mdx")).toBe(
+      true,
+    );
+    expect(matchesCloudflarePath("docs/*/file.*", "other/a/file.mdx")).toBe(
+      false,
+    );
+    expect(matchesCloudflarePath("*", "")).toBe(true);
     expect(matchesCloudflarePath(".node-version", ".node-version")).toBe(true);
     expect(isWatchedPath("docs/page.mdx", WATCH_PATHS)).toBe(true);
     expect(isWatchedPath("docs/private/notes.mdx", WATCH_PATHS)).toBe(false);
     expect(isWatchedPath("packages/cva/src/index.ts", WATCH_PATHS)).toBe(false);
+    expect(
+      matchesCloudflarePath(
+        `*${"a".repeat(MAX_PATH_PATTERN_LENGTH - 2)}b`,
+        `${"a".repeat(100_000)}c`,
+      ),
+    ).toBe(false);
+    expect(matchesCloudflarePath("*aa*", "aa")).toBe(true);
+    expect(matchesCloudflarePath("*aab*", "aaab")).toBe(true);
+    expect(matchesCloudflarePath("*aab*", "aaaa")).toBe(false);
   });
 
   it("validates the committed payload shape", async () => {
@@ -120,7 +172,7 @@ describe("watch paths", () => {
         ".github/cloudflare/*",
         ".github/repository-settings/*",
         ".github/rulesets/*",
-        ".github/scripts/verify-cloudflare-build.mjs",
+        ".github/scripts/verify-cloudflare-build.ts",
         ".github/workflows/ci.yml",
         ".github/workflows/cloudflare-build.yml",
         "package.json",
@@ -162,6 +214,20 @@ describe("watch paths", () => {
     expect(() => parseWatchPaths({ include: ["docs/*"], exclude: "" })).toThrow(
       /array/,
     );
+    expect(() =>
+      parseWatchPaths({
+        include: Array.from({ length: MAX_PATH_PATTERNS + 1 }, (_, index) =>
+          String(index),
+        ),
+        exclude: [],
+      }),
+    ).toThrow(/at most/);
+    expect(() =>
+      parseWatchPaths({
+        include: ["x".repeat(MAX_PATH_PATTERN_LENGTH + 1)],
+        exclude: [],
+      }),
+    ).toThrow(/invalid/);
     await expect(loadWatchPaths(async () => Buffer.from("{}"))).rejects.toThrow(
       /did not contain text/,
     );
@@ -264,7 +330,8 @@ describe("git ancestry", () => {
         watchPaths: WATCH_PATHS,
         execImpl: git.execImpl,
       }),
-    ).resolves.toEqual([SHAS.head, SHAS.previous, SHAS.merge]);
+    ).resolves.toEqual([SHAS.head, SHAS.merge]);
+    expect(MAX_CANDIDATE_SHAS).toBe(2);
   });
 
   it("fails closed for multiple merge bases or an incomplete ancestry walk", async () => {
@@ -443,63 +510,26 @@ describe("GitHub check-run API", () => {
     ).rejects.toThrow(/timed out/);
   });
 
-  it("paginates every latest check-run page and rejects truncated pages", async () => {
-    const first = Array.from({ length: CHECK_RUNS_PER_PAGE }, (_, index) => ({
-      id: index + 1,
-    }));
-    const second = [{ id: CHECK_RUNS_PER_PAGE + 1 }];
-    const fetched = fetchFixture([
-      checkPage(first, CHECK_RUNS_PER_PAGE + 1),
-      checkPage(second, CHECK_RUNS_PER_PAGE + 1),
-    ]);
-
+  it("accepts one complete page and rejects responses that require more", async () => {
+    const page = Array.from({ length: CHECK_RUNS_PER_PAGE }, () => ({}));
+    const complete = fetchFixture([checkPage(page)]);
     await expect(
       listCloudflareCheckRuns({
         repository: "joe-bell/cva",
         sha: SHAS.head,
         token: "test-token",
-        fetchImpl: fetched.fetchImpl,
+        fetchImpl: complete.fetchImpl,
       }),
-    ).resolves.toHaveLength(CHECK_RUNS_PER_PAGE + 1);
-    expect(
-      fetched.calls.map(({ url }) => url.searchParams.get("page")),
-    ).toEqual(["1", "2"]);
+    ).resolves.toHaveLength(CHECK_RUNS_PER_PAGE);
+    expect(complete.calls).toHaveLength(1);
 
-    const page = Array.from({ length: CHECK_RUNS_PER_PAGE }, () => ({}));
-    const incomplete = fetchFixture([
-      checkPage(page, CHECK_RUNS_PER_PAGE + 1),
-      checkPage([], CHECK_RUNS_PER_PAGE + 1),
-    ]);
+    const incomplete = fetchFixture([checkPage([], 1)]);
     await expect(
       listCloudflareCheckRuns({
         repository: "joe-bell/cva",
         sha: SHAS.head,
         token: "test-token",
         fetchImpl: incomplete.fetchImpl,
-      }),
-    ).rejects.toThrow(/incomplete/);
-    const changedCount = fetchFixture([
-      checkPage(page, CHECK_RUNS_PER_PAGE + 1),
-      checkPage([{}], CHECK_RUNS_PER_PAGE),
-    ]);
-    await expect(
-      listCloudflareCheckRuns({
-        repository: "joe-bell/cva",
-        sha: SHAS.head,
-        token: "test-token",
-        fetchImpl: changedCount.fetchImpl,
-      }),
-    ).rejects.toThrow(/incomplete/);
-    const excessivePage = fetchFixture([
-      checkPage(page, CHECK_RUNS_PER_PAGE + 1),
-      checkPage([{}, {}], CHECK_RUNS_PER_PAGE + 1),
-    ]);
-    await expect(
-      listCloudflareCheckRuns({
-        repository: "joe-bell/cva",
-        sha: SHAS.head,
-        token: "test-token",
-        fetchImpl: excessivePage.fetchImpl,
       }),
     ).rejects.toThrow(/incomplete/);
     const oversized = fetchFixture([checkPage([], MAX_CHECK_RUNS + 1)]);
@@ -672,7 +702,7 @@ describe("bounded check polling", () => {
 
   it("polls a pending result and stops at the deadline or poll cap", async () => {
     let now = 0;
-    const sleeps = [];
+    const sleeps: number[] = [];
     const results = [
       checkRun({ status: "queued", conclusion: null }),
       checkRun(),
@@ -684,7 +714,7 @@ describe("bounded check polling", () => {
         lookupCheck: async () => results.shift(),
         deadline: 100,
         clock: () => now,
-        sleepImpl: async (ms) => {
+        sleepImpl: async (ms: number) => {
           sleeps.push(ms);
           now += ms;
         },
@@ -754,7 +784,7 @@ describe("bounded check polling", () => {
 function changedVerificationFixture({
   ancestors = [SHAS.head],
   trees = {},
-} = {}) {
+}: { ancestors?: string[]; trees?: Record<string, string> } = {}) {
   return gitFixture({
     ancestors,
     trees: {
@@ -766,7 +796,11 @@ function changedVerificationFixture({
   });
 }
 
-function verificationOptions(git, fetchImpl, extra = {}) {
+function verificationOptions(
+  git: ReturnType<typeof gitFixture>,
+  fetchImpl: NonNullable<VerifyOptions["fetchImpl"]>,
+  extra: Partial<VerifyOptions> = {},
+): VerifyOptions {
   return {
     baseSha: SHAS.base,
     headSha: SHAS.head,
@@ -853,7 +887,7 @@ describe("Cloudflare gate", () => {
         verificationOptions(pendingGit, pendingFetch.fetchImpl, {
           clock: () => now,
           pollIntervalMs: 10,
-          sleepImpl: async (ms) => {
+          sleepImpl: async (ms: number) => {
             now += ms;
           },
         }),
@@ -893,7 +927,7 @@ describe("Cloudflare gate", () => {
         verificationOptions(git, fetched.fetchImpl, {
           clock: () => now,
           pollIntervalMs: 10,
-          sleepImpl: async (ms) => {
+          sleepImpl: async (ms: number) => {
             now += ms;
           },
         }),
@@ -916,7 +950,7 @@ describe("Cloudflare gate", () => {
           clock: () => now,
           gateTimeoutMs: 20,
           pollIntervalMs: 10,
-          sleepImpl: async (ms) => {
+          sleepImpl: async (ms: number) => {
             now += ms;
           },
         }),
@@ -924,23 +958,100 @@ describe("Cloudflare gate", () => {
     ).rejects.toThrow(/Timed out/);
   });
 
-  it("loads watch paths through its injected reader", async () => {
-    const identical = tree([{ object: "1".repeat(40), path: "docs/page.mdx" }]);
+  it("uses the union of immutable merge-base and head watch policies", async () => {
     const git = gitFixture({
+      ancestors: [SHAS.head],
       trees: {
-        [SHAS.base]: identical,
-        [SHAS.head]: identical,
-        [SHAS.merge]: identical,
+        [SHAS.head]: tree([
+          { object: "2".repeat(40), path: "docs/page.mdx" },
+          { object: "3".repeat(40), path: "packages/cva/src/index.ts" },
+        ]),
+        [SHAS.merge]: tree([
+          { object: "1".repeat(40), path: "docs/page.mdx" },
+          { object: "4".repeat(40), path: "packages/cva/src/index.ts" },
+        ]),
+      },
+      watchPathsByRevision: {
+        [SHAS.head]: { include: ["packages/*"], exclude: [] },
+        [SHAS.merge]: { include: ["docs/*"], exclude: [] },
       },
     });
+    const fetched = fetchFixture([checkPage([checkRun()])]);
     await expect(
       verifyCloudflareBuild(
-        verificationOptions(git, async () => response(checkPage([])), {
-          readFileImpl: async () => JSON.stringify(WATCH_PATHS),
+        verificationOptions(git, fetched.fetchImpl, {
           watchPaths: undefined,
         }),
       ),
-    ).resolves.toMatchObject({ state: "unchanged" });
+    ).resolves.toMatchObject({ candidateSha: SHAS.head });
+    expect(git.calls).toContainEqual([
+      "show",
+      `${SHAS.merge}:.github/cloudflare/docs-watch-paths.json`,
+    ]);
+    expect(git.calls).toContainEqual([
+      "show",
+      `${SHAS.head}:.github/cloudflare/docs-watch-paths.json`,
+    ]);
+    await expect(
+      loadWatchPathsAtRevision(SHAS.head, git.execImpl),
+    ).resolves.toEqual({ include: ["packages/*"], exclude: [] });
+  });
+
+  it("watches every path when the merge base predates the policy file", async () => {
+    const git = gitFixture({
+      ancestors: [SHAS.head],
+      trees: {
+        [SHAS.head]: tree([
+          { object: "2".repeat(40), path: "packages/cva/src/index.ts" },
+        ]),
+        [SHAS.merge]: tree([
+          { object: "1".repeat(40), path: "packages/cva/src/index.ts" },
+        ]),
+      },
+      watchPathsByRevision: {
+        [SHAS.head]: { include: ["docs/*"], exclude: [] },
+      },
+    });
+    const fetched = fetchFixture([checkPage([checkRun()])]);
+
+    await expect(
+      verifyCloudflareBuild(
+        verificationOptions(git, fetched.fetchImpl, {
+          watchPaths: undefined,
+        }),
+      ),
+    ).resolves.toMatchObject({ candidateSha: SHAS.head });
+    expect(fetched.calls).toHaveLength(1);
+  });
+
+  it("rejects an invalid merge-base policy instead of replacing it", async () => {
+    const git = gitFixture({
+      trees: {},
+      watchPathsByRevision: {
+        [SHAS.head]: WATCH_PATHS,
+        [SHAS.merge]: { include: [], exclude: [] },
+      },
+    });
+
+    await expect(
+      verifyCloudflareBuild(
+        verificationOptions(git, async () => response(checkPage([])), {
+          watchPaths: undefined,
+        }),
+      ),
+    ).rejects.toThrow(/non-empty/);
+  });
+
+  it("rejects an API budget that cannot cover candidates and polling", async () => {
+    const git = changedVerificationFixture();
+    await expect(
+      verifyCloudflareBuild(
+        verificationOptions(git, async () => response(checkPage([])), {
+          maxApiRequests: 1,
+          maxPollAttempts: 1,
+        }),
+      ),
+    ).rejects.toThrow(/reserve one request/);
   });
 
   it("fails closed when the injected clock is invalid", async () => {
@@ -1006,8 +1117,8 @@ describe("environment entrypoint", () => {
   it("prints the Cloudflare result when an exact check satisfies a changed tree", async () => {
     const git = changedVerificationFixture();
     const log = console.log;
-    const messages = [];
-    console.log = (message) => messages.push(message);
+    const messages: string[] = [];
+    console.log = (message?: unknown) => messages.push(String(message));
     try {
       await expect(
         main(

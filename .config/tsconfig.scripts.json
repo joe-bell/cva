@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2024", "DOM"],
+    "module": "ESNext",
+    "target": "ES2024",
+    "types": ["node", "vitest/globals"]
+  },
+  "include": [
+    "./lint-staged.config.ts",
+    "./tsdown.base.mts",
+    "./vitest.config.ts",
+    "../.github/scripts/*.ts"
+  ]
+}

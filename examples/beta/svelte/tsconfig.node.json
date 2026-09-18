@@ -4,5 +4,5 @@
     "module": "ESNext",
     "moduleResolution": "bundler"
   },
-  "include": ["vite.config.ts"]
+  "include": ["svelte.config.ts", "vite.config.ts"]
 }

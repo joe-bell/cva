@@ -11,8 +11,11 @@ export const CHECK_NAME = "Workers Builds: cva";
 export const CLOUDFLARE_APP_ID = 85455;
 export const CLOUDFLARE_APP_SLUG = "cloudflare-workers-and-pages";
 export const CHECK_RUNS_PER_PAGE = 100;
-export const MAX_CHECK_RUNS = 1000;
+export const MAX_CHECK_RUNS = CHECK_RUNS_PER_PAGE;
+export const MAX_CANDIDATE_SHAS = 2;
 export const MAX_API_REQUESTS = 50;
+export const MAX_PATH_PATTERNS = 100;
+export const MAX_PATH_PATTERN_LENGTH = 1024;
 export const REQUEST_TIMEOUT_MS = 5000;
 export const GATE_TIMEOUT_MS = 8 * 60 * 1000;
 export const POLL_INTERVAL_MS = 15_000;
@@ -21,6 +24,7 @@ export const WATCH_PATHS_URL = new URL(
   "../cloudflare/docs-watch-paths.json",
   import.meta.url,
 );
+export const WATCH_PATHS_GIT_PATH = ".github/cloudflare/docs-watch-paths.json";
 
 const SHA = /^[0-9a-f]{40}$/i;
 const REPOSITORY_SEGMENT = /^[A-Za-z0-9_.-]+$/;
@@ -46,11 +50,66 @@ const CHECK_CONCLUSIONS = new Set([
   "timed_out",
 ]);
 
-function isRecord(value) {
+export type WatchPaths = { include: string[]; exclude: string[] };
+type Clock = () => number;
+type ExecImpl = (
+  command: string,
+  args: readonly string[],
+  options: { encoding: "utf8"; maxBuffer: number },
+) => Promise<unknown>;
+type FetchImpl = (url: URL, init: RequestInit) => Promise<unknown>;
+type RequestBudget = { consume: () => void; readonly used: number };
+type AuthoritativeCheckRun = {
+  id: number;
+  status: string;
+  conclusion: unknown;
+};
+type CheckRunsPage = { total_count: number; check_runs: unknown[] };
+type ListCheckRunsOptions = {
+  repository: unknown;
+  sha: unknown;
+  token: unknown;
+  fetchImpl?: FetchImpl;
+  requestBudget?: RequestBudget;
+  requestTimeoutMs?: number;
+  deadline?: number;
+  clock?: Clock;
+};
+type WaitForCheckOptions = {
+  candidateSha: unknown;
+  initialCheck?: AuthoritativeCheckRun;
+  lookupCheck?: unknown;
+  deadline: number;
+  clock?: Clock;
+  sleepImpl?: (ms: number) => Promise<unknown>;
+  pollIntervalMs?: number;
+  maxPollAttempts?: number;
+};
+type VerifyCloudflareBuildOptions = {
+  baseSha: unknown;
+  headSha: unknown;
+  repository: unknown;
+  token: unknown;
+  watchPaths?: unknown;
+  execImpl?: ExecImpl;
+  fetchImpl?: FetchImpl;
+  clock?: Clock;
+  sleepImpl?: (ms: number) => Promise<unknown>;
+  gateTimeoutMs?: number;
+  pollIntervalMs?: number;
+  maxPollAttempts?: number;
+  maxApiRequests?: number;
+  requestTimeoutMs?: number;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function hasExactKeys(value, expected) {
+function hasExactKeys(
+  value: Record<string, unknown>,
+  expected: readonly string[],
+) {
   const keys = Object.keys(value).sort();
   return (
     keys.length === expected.length &&
@@ -58,21 +117,21 @@ function hasExactKeys(value, expected) {
   );
 }
 
-function assertSha(value, label) {
+function assertSha(value: unknown, label: string): string {
   if (typeof value !== "string" || !SHA.test(value)) {
     throw new Error(`${label} must be a 40-character Git SHA.`);
   }
   return value.toLowerCase();
 }
 
-function assertPositiveInteger(value, label) {
-  if (!Number.isSafeInteger(value) || value < 1) {
+function assertPositiveInteger(value: unknown, label: string): number {
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1) {
     throw new Error(`${label} must be a positive integer.`);
   }
   return value;
 }
 
-function assertDate(value, label) {
+function assertDate(value: unknown, label: string) {
   if (typeof value !== "string" || !ISO_TIMESTAMP.test(value)) {
     throw new Error(`${label} must be an ISO timestamp.`);
   }
@@ -83,24 +142,29 @@ function assertDate(value, label) {
   return timestamp;
 }
 
-function assertClock(clock) {
+function assertClock(clock: Clock) {
   const now = clock();
   if (!Number.isFinite(now)) throw new Error("Clock returned an invalid time.");
   return now;
 }
 
-function parsePathList(value, label, allowEmpty) {
-  if (!Array.isArray(value) || (!allowEmpty && value.length === 0)) {
+function parsePathList(value: unknown, label: string, allowEmpty: boolean) {
+  if (
+    !Array.isArray(value) ||
+    (!allowEmpty && value.length === 0) ||
+    value.length > MAX_PATH_PATTERNS
+  ) {
     throw new Error(
-      `${label} must be ${allowEmpty ? "an array" : "a non-empty array"}.`,
+      `${label} must be ${allowEmpty ? "an array" : "a non-empty array"} of at most ${MAX_PATH_PATTERNS} patterns.`,
     );
   }
 
-  const seen = new Set();
+  const seen = new Set<string>();
   return value.map((pattern) => {
     if (
       typeof pattern !== "string" ||
       pattern.length === 0 ||
+      pattern.length > MAX_PATH_PATTERN_LENGTH ||
       pattern.startsWith("/") ||
       pattern.includes("\0") ||
       pattern.split("/").includes("..") ||
@@ -115,7 +179,7 @@ function parsePathList(value, label, allowEmpty) {
   });
 }
 
-export function parseWatchPaths(value) {
+export function parseWatchPaths(value: unknown): WatchPaths {
   if (!isRecord(value) || !hasExactKeys(value, ["exclude", "include"])) {
     throw new Error(
       "Cloudflare watch paths must contain only include and exclude.",
@@ -129,7 +193,7 @@ export function parseWatchPaths(value) {
 }
 
 export async function loadWatchPaths(
-  readFileImpl = readFile,
+  readFileImpl: (url: URL, encoding: "utf8") => Promise<unknown> = readFile,
   watchPathsUrl = WATCH_PATHS_URL,
 ) {
   const source = await readFileImpl(watchPathsUrl, "utf8");
@@ -139,16 +203,68 @@ export async function loadWatchPaths(
   return parseWatchPaths(JSON.parse(source));
 }
 
-function escapeRegExp(value) {
-  return value.replace(/[|\\{}()[\]^$+?.]/g, "\\$&");
+function findLiteral(filePath: string, literal: string, startIndex: number) {
+  const prefixLengths: number[] = Array(literal.length).fill(0);
+  for (let index = 1, prefixLength = 0; index < literal.length; ) {
+    if (literal[index] === literal[prefixLength]) {
+      prefixLength += 1;
+      prefixLengths[index] = prefixLength;
+      index += 1;
+    } else if (prefixLength > 0) {
+      prefixLength = prefixLengths[prefixLength - 1];
+    } else {
+      index += 1;
+    }
+  }
+
+  for (
+    let pathIndex = startIndex, literalIndex = 0;
+    pathIndex < filePath.length;
+    pathIndex += 1
+  ) {
+    while (literalIndex > 0 && filePath[pathIndex] !== literal[literalIndex]) {
+      literalIndex = prefixLengths[literalIndex - 1];
+    }
+    if (filePath[pathIndex] === literal[literalIndex]) literalIndex += 1;
+    if (literalIndex === literal.length) {
+      return pathIndex - literal.length + 1;
+    }
+  }
+  return -1;
 }
 
-export function matchesCloudflarePath(pattern, filePath) {
-  const expression = pattern.split("*").map(escapeRegExp).join("[\\s\\S]*");
-  return new RegExp(`^${expression}$`).test(filePath);
+export function matchesCloudflarePath(pattern: string, filePath: string) {
+  if (!pattern.includes("*")) return pattern === filePath;
+
+  const segments = pattern.split("*").filter(Boolean);
+  const anchoredStart = !pattern.startsWith("*");
+  const anchoredEnd = !pattern.endsWith("*");
+  let segmentIndex = 0;
+  let pathIndex = 0;
+
+  if (anchoredStart) {
+    const first = segments[segmentIndex];
+    if (!filePath.startsWith(first)) return false;
+    pathIndex = first.length;
+    segmentIndex += 1;
+  }
+
+  const searchableSegments = segments.length - (anchoredEnd ? 1 : 0);
+  while (segmentIndex < searchableSegments) {
+    const segment = segments[segmentIndex];
+    const matchIndex = findLiteral(filePath, segment, pathIndex);
+    if (matchIndex === -1) return false;
+    pathIndex = matchIndex + segment.length;
+    segmentIndex += 1;
+  }
+
+  if (!anchoredEnd) return true;
+  const last = segments.at(-1)!;
+  const lastIndex = filePath.length - last.length;
+  return lastIndex >= pathIndex && filePath.endsWith(last);
 }
 
-export function isWatchedPath(filePath, watchPaths) {
+export function isWatchedPath(filePath: string, watchPaths: WatchPaths) {
   return (
     !watchPaths.exclude.some((pattern) =>
       matchesCloudflarePath(pattern, filePath),
@@ -159,7 +275,7 @@ export function isWatchedPath(filePath, watchPaths) {
   );
 }
 
-export function parseTreeEntries(output) {
+export function parseTreeEntries(output: unknown) {
   if (typeof output !== "string") {
     throw new Error("git ls-tree did not return text.");
   }
@@ -195,7 +311,10 @@ export function parseTreeEntries(output) {
     });
 }
 
-async function executeGit(args, execImpl = execFileAsync) {
+async function executeGit(
+  args: readonly string[],
+  execImpl: ExecImpl = execFileAsync,
+) {
   const result = await execImpl("git", args, {
     encoding: "utf8",
     maxBuffer: 32 * 1024 * 1024,
@@ -206,19 +325,54 @@ async function executeGit(args, execImpl = execFileAsync) {
   return result.stdout;
 }
 
+export async function loadWatchPathsAtRevision(
+  sha: unknown,
+  execImpl: ExecImpl = execFileAsync,
+) {
+  const commit = assertSha(sha, "Watch-path policy SHA");
+  const source = await executeGit(
+    ["show", `${commit}:${WATCH_PATHS_GIT_PATH}`],
+    execImpl,
+  );
+  return parseWatchPaths(JSON.parse(source));
+}
+
+async function loadMergeBaseWatchPaths(sha: unknown, execImpl: ExecImpl) {
+  const commit = assertSha(sha, "Merge-base watch-path policy SHA");
+  let source;
+  try {
+    source = await executeGit(
+      ["show", `${commit}:${WATCH_PATHS_GIT_PATH}`],
+      execImpl,
+    );
+  } catch {
+    return parseWatchPaths({ include: ["*"], exclude: [] });
+  }
+  return parseWatchPaths(JSON.parse(source));
+}
+
+function normalizeWatchPolicies(watchPaths: unknown): WatchPaths[] {
+  return (Array.isArray(watchPaths) ? watchPaths : [watchPaths]).map(
+    parseWatchPaths,
+  );
+}
+
 export async function watchedTreeFingerprint(
-  sha,
-  watchPaths,
-  execImpl = execFileAsync,
+  sha: unknown,
+  watchPaths: unknown,
+  execImpl: ExecImpl = execFileAsync,
 ) {
   const commit = assertSha(sha, "Tree SHA");
+  const policies = normalizeWatchPolicies(watchPaths);
   const output = await executeGit(
     ["ls-tree", "--full-tree", "-r", "-z", commit],
     execImpl,
   );
 
   return parseTreeEntries(output)
-    .filter((entry) => isWatchedPath(entry.path, watchPaths))
+    .filter((entry) =>
+      policies.some((policy) => isWatchedPath(entry.path, policy)),
+    )
     .map(
       (entry) => `${entry.mode} ${entry.type} ${entry.object}\t${entry.path}\0`,
     )
@@ -226,7 +380,7 @@ export async function watchedTreeFingerprint(
     .join("");
 }
 
-function parseShaLines(output, label, allowEmpty = false) {
+function parseShaLines(output: string, label: string, allowEmpty = false) {
   const values = output.trim() === "" ? [] : output.trim().split("\n");
   if (
     (!allowEmpty && values.length === 0) ||
@@ -238,9 +392,9 @@ function parseShaLines(output, label, allowEmpty = false) {
 }
 
 export async function findMergeBase(
-  baseSha,
-  headSha,
-  execImpl = execFileAsync,
+  baseSha: unknown,
+  headSha: unknown,
+  execImpl: ExecImpl = execFileAsync,
 ) {
   const base = assertSha(baseSha, "Base SHA");
   const head = assertSha(headSha, "Head SHA");
@@ -264,6 +418,12 @@ export async function findCandidateShas({
   headFingerprint,
   watchPaths,
   execImpl = execFileAsync,
+}: {
+  headSha: unknown;
+  mergeBaseSha: unknown;
+  headFingerprint: string;
+  watchPaths: unknown;
+  execImpl?: ExecImpl;
 }) {
   const head = assertSha(headSha, "Head SHA");
   const mergeBase = assertSha(mergeBaseSha, "Merge-base SHA");
@@ -277,18 +437,20 @@ export async function findCandidateShas({
     throw new Error("git rev-list did not start with the pull request head.");
   }
 
-  const candidates = [];
+  let oldestMatchingSha;
   for (const sha of [...ancestors, mergeBase]) {
     const fingerprint =
       sha === head
         ? headFingerprint
         : await watchedTreeFingerprint(sha, watchPaths, execImpl);
-    if (fingerprint === headFingerprint) candidates.push(sha);
+    if (fingerprint === headFingerprint) oldestMatchingSha = sha;
   }
-  return candidates;
+  return oldestMatchingSha === undefined || oldestMatchingSha === head
+    ? [head]
+    : [head, oldestMatchingSha].slice(0, MAX_CANDIDATE_SHAS);
 }
 
-export function parseRepository(value) {
+export function parseRepository(value: unknown) {
   if (typeof value !== "string") {
     throw new Error("Repository must be an owner/name pair.");
   }
@@ -303,7 +465,7 @@ export function parseRepository(value) {
   return { owner: parts[0], repo: parts[1] };
 }
 
-export function checkRunsUrl(repository, sha, page) {
+export function checkRunsUrl(repository: unknown, sha: unknown, page: unknown) {
   const { owner, repo } = parseRepository(repository);
   const candidate = assertSha(sha, "Check-run SHA");
   const pageNumber = assertPositiveInteger(page, "Check-run page");
@@ -340,12 +502,17 @@ export function createRequestBudget(maxRequests = MAX_API_REQUESTS) {
 }
 
 export async function fetchGitHubJson(
-  url,
+  url: unknown,
   {
     fetchImpl = globalThis.fetch,
     requestBudget = createRequestBudget(),
     requestTimeoutMs = REQUEST_TIMEOUT_MS,
     token,
+  }: {
+    fetchImpl?: FetchImpl;
+    requestBudget?: unknown;
+    requestTimeoutMs?: number;
+    token?: unknown;
   } = {},
 ) {
   if (!(url instanceof URL) || url.origin !== "https://api.github.com") {
@@ -365,8 +532,8 @@ export async function fetchGitHubJson(
 
   requestBudget.consume();
   const controller = new AbortController();
-  let timeoutId;
-  const timeout = new Promise((_, reject) => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
       controller.abort();
       reject(
@@ -407,9 +574,10 @@ export async function fetchGitHubJson(
   }
 }
 
-export function parseCheckRunsPage(value) {
+export function parseCheckRunsPage(value: unknown): CheckRunsPage {
   if (
     !isRecord(value) ||
+    typeof value.total_count !== "number" ||
     !Number.isSafeInteger(value.total_count) ||
     value.total_count < 0 ||
     !Array.isArray(value.check_runs) ||
@@ -417,10 +585,15 @@ export function parseCheckRunsPage(value) {
   ) {
     throw new Error("GitHub returned a malformed check-runs page.");
   }
-  return value;
+  return value as CheckRunsPage;
 }
 
-function requestTimeoutForDeadline(requestTimeoutMs, deadline, clock, sha) {
+function requestTimeoutForDeadline(
+  requestTimeoutMs: number,
+  deadline: number | undefined,
+  clock: Clock,
+  sha: string,
+) {
   if (deadline === undefined) return requestTimeoutMs;
 
   const remaining = deadline - assertClock(clock);
@@ -439,9 +612,9 @@ export async function listCloudflareCheckRuns({
   requestTimeoutMs = REQUEST_TIMEOUT_MS,
   deadline,
   clock = Date.now,
-}) {
+}: ListCheckRunsOptions) {
   const candidate = assertSha(sha, "Check-run SHA");
-  const requestPage = async (page) =>
+  const requestPage = async (page: number) =>
     parseCheckRunsPage(
       await fetchGitHubJson(checkRunsUrl(repository, candidate, page), {
         fetchImpl,
@@ -461,28 +634,16 @@ export async function listCloudflareCheckRuns({
     throw new Error("GitHub check-runs response may be truncated.");
   }
 
-  const pageCount = Math.ceil(firstPage.total_count / CHECK_RUNS_PER_PAGE);
-  const checkRuns = [...firstPage.check_runs];
-  for (let page = 2; page <= pageCount; page++) {
-    const nextPage = await requestPage(page);
-    if (
-      nextPage.total_count !== firstPage.total_count ||
-      nextPage.check_runs.length === 0
-    ) {
-      throw new Error(
-        "GitHub returned an incomplete check-runs page sequence.",
-      );
-    }
-    checkRuns.push(...nextPage.check_runs);
-  }
-
-  if (checkRuns.length !== firstPage.total_count) {
+  if (firstPage.check_runs.length !== firstPage.total_count) {
     throw new Error("GitHub returned an incomplete check-runs response.");
   }
-  return checkRuns;
+  return firstPage.check_runs;
 }
 
-function parseAuthoritativeCheckRun(value, candidateSha) {
+function parseAuthoritativeCheckRun(
+  value: unknown,
+  candidateSha: string,
+): AuthoritativeCheckRun | undefined {
   if (!isRecord(value) || typeof value.name !== "string") {
     throw new Error("GitHub returned a malformed check run.");
   }
@@ -530,7 +691,7 @@ function parseAuthoritativeCheckRun(value, candidateSha) {
   };
 }
 
-export function selectLatestCloudflareCheck(checkRuns, sha) {
+export function selectLatestCloudflareCheck(checkRuns: unknown, sha: unknown) {
   if (!Array.isArray(checkRuns)) {
     throw new Error("Cloudflare check runs must be an array.");
   }
@@ -552,7 +713,7 @@ export async function latestCloudflareCheck({
   requestTimeoutMs,
   deadline,
   clock,
-}) {
+}: ListCheckRunsOptions) {
   const checkRuns = await listCloudflareCheckRuns({
     repository,
     sha,
@@ -566,12 +727,12 @@ export async function latestCloudflareCheck({
   return selectLatestCloudflareCheck(checkRuns, sha);
 }
 
-export function cloudflareCheckOutcome(checkRun) {
+export function cloudflareCheckOutcome(checkRun: AuthoritativeCheckRun) {
   if (checkRun.status !== "completed") return "pending";
   return checkRun.conclusion === "success" ? "success" : "failure";
 }
 
-function timeoutError(candidateSha) {
+function timeoutError(candidateSha: string) {
   return new Error(
     `Timed out waiting for ${CHECK_NAME} from ${CLOUDFLARE_APP_SLUG} on ${candidateSha}. Rerun this check after Cloudflare reports the build.`,
   );
@@ -583,10 +744,10 @@ export async function waitForCloudflareCheck({
   lookupCheck,
   deadline,
   clock = Date.now,
-  sleepImpl = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  sleepImpl = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)),
   pollIntervalMs = POLL_INTERVAL_MS,
   maxPollAttempts = MAX_POLL_ATTEMPTS,
-}) {
+}: WaitForCheckOptions) {
   const candidate = assertSha(candidateSha, "Candidate SHA");
   const interval = assertPositiveInteger(pollIntervalMs, "Poll interval");
   const maximum = assertPositiveInteger(
@@ -596,6 +757,9 @@ export async function waitForCloudflareCheck({
   if (typeof lookupCheck !== "function") {
     throw new Error("Cloudflare gate requires a check-run lookup function.");
   }
+  const lookup = lookupCheck as () => Promise<
+    AuthoritativeCheckRun | undefined
+  >;
   if (!Number.isFinite(deadline)) {
     throw new Error("Cloudflare gate deadline must be a finite timestamp.");
   }
@@ -624,7 +788,7 @@ export async function waitForCloudflareCheck({
 
     await sleepImpl(Math.min(interval, remaining));
     attempts += 1;
-    checkRun = await lookupCheck();
+    checkRun = await lookup();
   }
 }
 
@@ -636,7 +800,6 @@ export async function verifyCloudflareBuild({
   watchPaths,
   execImpl = execFileAsync,
   fetchImpl = globalThis.fetch,
-  readFileImpl = readFile,
   clock = Date.now,
   sleepImpl,
   gateTimeoutMs = GATE_TIMEOUT_MS,
@@ -644,18 +807,28 @@ export async function verifyCloudflareBuild({
   maxPollAttempts = MAX_POLL_ATTEMPTS,
   maxApiRequests = MAX_API_REQUESTS,
   requestTimeoutMs = REQUEST_TIMEOUT_MS,
-}) {
+}: VerifyCloudflareBuildOptions) {
   const base = assertSha(baseSha, "Base SHA");
   const head = assertSha(headSha, "Head SHA");
   parseRepository(repository);
   const timeoutMs = assertPositiveInteger(gateTimeoutMs, "Gate timeout");
+  const maximumPollAttempts = assertPositiveInteger(
+    maxPollAttempts,
+    "Maximum poll attempts",
+  );
+  const maximumApiRequests = assertPositiveInteger(
+    maxApiRequests,
+    "Maximum API requests",
+  );
   const deadline = assertClock(clock) + timeoutMs;
+  const mergeBase = await findMergeBase(base, head, execImpl);
   const configuredWatchPaths =
     watchPaths === undefined
-      ? await loadWatchPaths(readFileImpl)
-      : parseWatchPaths(watchPaths);
-
-  const mergeBase = await findMergeBase(base, head, execImpl);
+      ? await Promise.all([
+          loadMergeBaseWatchPaths(mergeBase, execImpl),
+          loadWatchPathsAtRevision(head, execImpl),
+        ])
+      : [parseWatchPaths(watchPaths)];
   const mergeBaseFingerprint = await watchedTreeFingerprint(
     mergeBase,
     configuredWatchPaths,
@@ -667,7 +840,7 @@ export async function verifyCloudflareBuild({
     execImpl,
   );
   if (mergeBaseFingerprint === headFingerprint) {
-    return { candidateSha: head, state: "unchanged" };
+    return { candidateSha: head, state: "unchanged" as const };
   }
 
   const candidates = await findCandidateShas({
@@ -678,8 +851,14 @@ export async function verifyCloudflareBuild({
     execImpl,
   });
 
-  const requestBudget = createRequestBudget(maxApiRequests);
-  const lookup = (candidateSha) =>
+  if (candidates.length + maximumPollAttempts > maximumApiRequests) {
+    throw new Error(
+      "Cloudflare gate API limit must reserve one request per candidate and poll attempt.",
+    );
+  }
+
+  const requestBudget = createRequestBudget(maximumApiRequests);
+  const lookup = (candidateSha: string) =>
     latestCloudflareCheck({
       repository,
       sha: candidateSha,
@@ -702,7 +881,7 @@ export async function verifyCloudflareBuild({
         clock,
         sleepImpl,
         pollIntervalMs,
-        maxPollAttempts,
+        maxPollAttempts: maximumPollAttempts,
       });
     }
   }
@@ -715,11 +894,13 @@ export async function verifyCloudflareBuild({
     clock,
     sleepImpl,
     pollIntervalMs,
-    maxPollAttempts,
+    maxPollAttempts: maximumPollAttempts,
   });
 }
 
-export function readGateEnvironment(environment = process.env) {
+export function readGateEnvironment(
+  environment: NodeJS.ProcessEnv = process.env,
+) {
   return {
     baseSha: environment.BASE_SHA,
     headSha: environment.HEAD_SHA,
@@ -728,13 +909,16 @@ export function readGateEnvironment(environment = process.env) {
   };
 }
 
-export async function main(environment = process.env, dependencies = {}) {
+export async function main(
+  environment: NodeJS.ProcessEnv = process.env,
+  dependencies: Partial<VerifyCloudflareBuildOptions> = {},
+) {
   const result = await verifyCloudflareBuild({
     ...readGateEnvironment(environment),
     ...dependencies,
   });
   console.log(
-    result.state === "unchanged"
+    "state" in result
       ? `Cloudflare gate passed: watched files match the merge base; no Cloudflare check is needed for ${result.candidateSha}.`
       : `Cloudflare gate passed with ${CHECK_NAME} for ${result.candidateSha}.`,
   );
@@ -753,7 +937,7 @@ if (isMainModule()) {
   try {
     await main();
   } catch (error) {
-    console.error(error.message);
+    console.error(error instanceof Error ? error.message : String(error));
     process.exitCode = 1;
   }
 }

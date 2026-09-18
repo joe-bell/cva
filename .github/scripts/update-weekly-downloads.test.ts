@@ -9,9 +9,12 @@ import {
   parseWeeklyDownloadsSnapshot,
   serializeWeeklyDownloads,
   updateWeeklyDownloads,
-} from "./update-weekly-downloads.mjs";
+} from "./update-weekly-downloads.ts";
 
-function reports(stable = {}, beta = {}) {
+function reports(
+  stable: Record<string, unknown> = {},
+  beta: Record<string, unknown> = {},
+) {
   return {
     "class-variance-authority": {
       downloads: 45_324_438,
@@ -30,7 +33,10 @@ function reports(stable = {}, beta = {}) {
   };
 }
 
-function response(data, { ok = true, status = 200 } = {}) {
+function response(
+  data: unknown,
+  { ok = true, status = 200 }: { ok?: boolean; status?: number } = {},
+) {
   return { ok, status, json: async () => data };
 }
 
@@ -141,7 +147,7 @@ describe("assertPlausibleWeeklyDownloads", () => {
     ).not.toThrow();
   });
 
-  it.each(["class-variance-authority", "cva"])(
+  it.each(["class-variance-authority", "cva"] as const)(
     "rejects an unusually low %s count",
     (packageName) => {
       const previous = {
@@ -197,6 +203,7 @@ describe("fetchWeeklyDownloads", () => {
       }),
     ],
     ["a network failure", async () => Promise.reject(new Error("offline"))],
+    ["an invalid transport response", async () => ({})],
     ["an invalid response", async () => response({})],
   ])("fails on %s", async (_label, fetchImpl) => {
     await expect(fetchWeeklyDownloads(fetchImpl)).rejects.toThrow();
@@ -205,8 +212,8 @@ describe("fetchWeeklyDownloads", () => {
   it("uses one timeout for the request and JSON body", async () => {
     vi.useFakeTimers();
 
-    let signal;
-    let resolveJson;
+    let signal: AbortSignal | null | undefined;
+    let resolveJson: ((value: unknown) => void) | undefined;
     const json = vi.fn(
       () =>
         new Promise((resolve) => {
@@ -214,8 +221,8 @@ describe("fetchWeeklyDownloads", () => {
         }),
     );
     const fetchImpl = vi.fn(
-      (_input, init) =>
-        new Promise((resolve) => {
+      (_input: string, init: RequestInit) =>
+        new Promise<unknown>((resolve) => {
           signal = init.signal;
           setTimeout(() => resolve({ ok: true, status: 200, json }), 9_000);
         }),
@@ -231,9 +238,9 @@ describe("fetchWeeklyDownloads", () => {
     await vi.advanceTimersByTimeAsync(1_000);
     await rejection;
 
-    expect(signal.aborted).toBe(true);
+    expect(signal?.aborted).toBe(true);
     expect(vi.getTimerCount()).toBe(0);
-    resolveJson(reports());
+    resolveJson?.(reports());
     await Promise.resolve();
   });
 });

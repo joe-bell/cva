@@ -44,7 +44,7 @@ Cloudflare Workers Builds watch paths are trigger settings, not `wrangler.jsonc`
 - `packages/class-variance-authority/*`
 - `.config/*`
 - `.github/cloudflare/*`, `.github/repository-settings/*`, `.github/rulesets/*`
-- `.github/scripts/verify-cloudflare-build.mjs`, `.github/workflows/ci.yml`, `.github/workflows/cloudflare-build.yml`
+- `.github/scripts/verify-cloudflare-build.ts`, `.github/workflows/ci.yml`, `.github/workflows/cloudflare-build.yml`
 - `package.json`, `tsconfig.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.prettierrc.json`
 - `.node-version`, `.nvmrc`
 

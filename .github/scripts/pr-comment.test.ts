@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  type PrCommentGithub,
   assertCommentBodySize,
   findStickyComment,
   MAX_COMMENT_CHARS,
@@ -8,16 +9,31 @@ import {
   STICKY_MARKER,
   upsertPrComment,
   upsertSection,
-} from "./pr-comment.mjs";
+} from "./pr-comment.ts";
 
-function fakeGithub(comments) {
+type Comment = {
+  id: number;
+  body?: string | null;
+  user?: { type?: string } | null;
+};
+type IssueMethods = PrCommentGithub["rest"]["issues"];
+
+function fakeGithub(comments: Comment[]) {
   return {
-    paginate: vi.fn(async () => comments),
+    paginate: vi.fn(
+      async (_method: unknown, _params: Record<string, unknown>) => comments,
+    ),
     rest: {
       issues: {
         listComments: vi.fn(),
-        updateComment: vi.fn(async () => ({})),
-        createComment: vi.fn(async () => ({ data: { id: 999 } })),
+        updateComment: vi.fn(
+          async (_params: Parameters<IssueMethods["updateComment"]>[0]) => ({}),
+        ),
+        createComment: vi.fn(
+          async (_params: Parameters<IssueMethods["createComment"]>[0]) => ({
+            data: { id: 999 },
+          }),
+        ),
       },
     },
   };
@@ -188,12 +204,14 @@ describe("findStickyComment", () => {
   it("retries until the comment appears, without sleeping past the first success", async () => {
     let calls = 0;
     const github = {
-      paginate: vi.fn(async () => {
-        calls += 1;
-        return calls < 3
-          ? []
-          : [{ id: 7, user: { type: "Bot" }, body: STICKY_MARKER }];
-      }),
+      paginate: vi.fn(
+        async (_method: unknown, _params: Record<string, unknown>) => {
+          calls += 1;
+          return calls < 3
+            ? []
+            : [{ id: 7, user: { type: "Bot" }, body: STICKY_MARKER }];
+        },
+      ),
       rest: { issues: { listComments: vi.fn() } },
     };
     const found = await findStickyComment({
@@ -250,7 +268,7 @@ describe("upsertPrComment", () => {
     });
     expect(result.action).toBe("created");
     expect(github.rest.issues.createComment).toHaveBeenCalledOnce();
-    const body = github.rest.issues.createComment.mock.calls[0][0].body;
+    const body = github.rest.issues.createComment.mock.calls[0]![0].body;
     expect(body).toContain(STICKY_MARKER);
     expect(body).toContain("## Benchmarks");
   });
@@ -289,7 +307,7 @@ describe("upsertPrComment", () => {
     });
     expect(result.action).toBe("updated");
     expect(github.rest.issues.createComment).not.toHaveBeenCalled();
-    const body = github.rest.issues.updateComment.mock.calls[0][0].body;
+    const body = github.rest.issues.updateComment.mock.calls[0]![0].body;
     expect(body).toContain("old benchmark content");
     expect(body).toContain("## Coverage");
   });
@@ -298,15 +316,25 @@ describe("upsertPrComment", () => {
     let calls = 0;
     const sticky = { id: 5, user: { type: "Bot" }, body: STICKY_MARKER };
     const github = {
-      paginate: vi.fn(async () => {
-        calls += 1;
-        return calls < 2 ? [] : [sticky];
-      }),
+      paginate: vi.fn(
+        async (_method: unknown, _params: Record<string, unknown>) => {
+          calls += 1;
+          return calls < 2 ? [] : [sticky];
+        },
+      ),
       rest: {
         issues: {
           listComments: vi.fn(),
-          updateComment: vi.fn(async () => ({})),
-          createComment: vi.fn(async () => ({ data: { id: 999 } })),
+          updateComment: vi.fn(
+            async (
+              _params: Parameters<IssueMethods["updateComment"]>[0],
+            ) => ({}),
+          ),
+          createComment: vi.fn(
+            async (_params: Parameters<IssueMethods["createComment"]>[0]) => ({
+              data: { id: 999 },
+            }),
+          ),
         },
       },
     };

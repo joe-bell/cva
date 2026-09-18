@@ -9,17 +9,50 @@ export const WEEKLY_DOWNLOADS_OUTPUT_URL = new URL(
   import.meta.url,
 );
 
-const PACKAGES = ["class-variance-authority", "cva"];
+const PACKAGES = ["class-variance-authority", "cva"] as const;
 const REPORT_KEYS = ["downloads", "end", "package", "start"];
 const SNAPSHOT_KEYS = ["end", "packages", "start"];
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const MILLISECONDS_PER_DAY = 86_400_000;
 
-function isRecord(value) {
+type PackageName = (typeof PACKAGES)[number];
+
+export type WeeklyDownloadsSnapshot = {
+  start: string;
+  end: string;
+  packages: Record<PackageName, number>;
+};
+
+type DownloadReport = {
+  downloads: number;
+  end: string;
+  package: PackageName;
+  start: string;
+};
+
+type FetchImpl = (input: string, init: RequestInit) => Promise<unknown>;
+type ReadFileImpl = (url: URL, encoding: "utf8") => Promise<string>;
+type WriteFileImpl = (
+  url: URL,
+  content: string,
+  encoding: "utf8",
+) => Promise<unknown>;
+
+type UpdateWeeklyDownloadsOptions = {
+  fetchImpl?: FetchImpl;
+  outputUrl?: URL;
+  readFileImpl?: ReadFileImpl;
+  writeFileImpl?: WriteFileImpl;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function hasExactKeys(value, expected) {
+function hasExactKeys(
+  value: Record<string, unknown>,
+  expected: readonly string[],
+) {
   const keys = Object.keys(value).sort();
   return (
     keys.length === expected.length &&
@@ -27,21 +60,21 @@ function hasExactKeys(value, expected) {
   );
 }
 
-function isCalendarDate(value) {
+function isCalendarDate(value: unknown): value is string {
   if (typeof value !== "string" || !ISO_DATE.test(value)) return false;
 
   const date = new Date(`${value}T00:00:00.000Z`);
   return date.toISOString().slice(0, 10) === value;
 }
 
-function parseDownloadCount(value, packageName) {
-  if (!Number.isSafeInteger(value) || value < 0) {
+function parseDownloadCount(value: unknown, packageName: PackageName): number {
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) {
     throw new Error(`Invalid npm download count for ${packageName}.`);
   }
   return value;
 }
 
-function parseReport(value, packageName) {
+function parseReport(value: unknown, packageName: PackageName): DownloadReport {
   if (!isRecord(value) || !hasExactKeys(value, REPORT_KEYS)) {
     throw new Error(`Invalid npm download report for ${packageName}.`);
   }
@@ -50,11 +83,20 @@ function parseReport(value, packageName) {
       `npm returned the wrong package identity for ${packageName}.`,
     );
   }
-  parseDownloadCount(value.downloads, packageName);
-  return value;
+  if (typeof value.start !== "string" || typeof value.end !== "string") {
+    throw new Error(`Invalid npm download report for ${packageName}.`);
+  }
+  return {
+    downloads: parseDownloadCount(value.downloads, packageName),
+    end: value.end,
+    package: packageName,
+    start: value.start,
+  };
 }
 
-export function parseWeeklyDownloadsSnapshot(value) {
+export function parseWeeklyDownloadsSnapshot(
+  value: unknown,
+): WeeklyDownloadsSnapshot {
   if (!isRecord(value) || !hasExactKeys(value, SNAPSHOT_KEYS)) {
     throw new Error("Invalid weekly npm download snapshot.");
   }
@@ -92,7 +134,9 @@ export function parseWeeklyDownloadsSnapshot(value) {
   };
 }
 
-export function parseWeeklyDownloadsResponse(value) {
+export function parseWeeklyDownloadsResponse(
+  value: unknown,
+): WeeklyDownloadsSnapshot {
   if (!isRecord(value) || !hasExactKeys(value, [...PACKAGES].sort())) {
     throw new Error("Invalid npm weekly downloads response.");
   }
@@ -114,7 +158,10 @@ export function parseWeeklyDownloadsResponse(value) {
   });
 }
 
-export function assertPlausibleWeeklyDownloads(snapshot, previousSnapshot) {
+export function assertPlausibleWeeklyDownloads(
+  snapshot: WeeklyDownloadsSnapshot,
+  previousSnapshot: WeeklyDownloadsSnapshot,
+) {
   if (Date.parse(snapshot.end) < Date.parse(previousSnapshot.end)) {
     throw new Error(
       "Weekly npm download snapshot is older than the current snapshot.",
@@ -133,12 +180,12 @@ export function assertPlausibleWeeklyDownloads(snapshot, previousSnapshot) {
 }
 
 export async function fetchWeeklyDownloads(
-  fetchImpl = globalThis.fetch,
+  fetchImpl: FetchImpl = globalThis.fetch,
   timeoutMs = WEEKLY_DOWNLOADS_TIMEOUT_MS,
 ) {
   const controller = new AbortController();
-  let timeoutId;
-  const timeout = new Promise((_, reject) => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
       reject(
         new Error(
@@ -158,6 +205,14 @@ export async function fetchWeeklyDownloads(
       timeout,
     ]);
 
+    if (
+      !isRecord(response) ||
+      typeof response.ok !== "boolean" ||
+      typeof response.status !== "number" ||
+      typeof response.json !== "function"
+    ) {
+      throw new Error("Invalid npm weekly downloads response.");
+    }
     if (!response.ok) {
       throw new Error(
         `Weekly npm download request failed with HTTP ${response.status}.`,
@@ -172,11 +227,11 @@ export async function fetchWeeklyDownloads(
   }
 }
 
-export function serializeWeeklyDownloads(snapshot) {
+export function serializeWeeklyDownloads(snapshot: WeeklyDownloadsSnapshot) {
   return `${JSON.stringify(snapshot, null, 2)}\n`;
 }
 
-function isMissingFile(error) {
+function isMissingFile(error: unknown) {
   return isRecord(error) && error.code === "ENOENT";
 }
 
@@ -185,10 +240,10 @@ export async function updateWeeklyDownloads({
   outputUrl = WEEKLY_DOWNLOADS_OUTPUT_URL,
   readFileImpl = readFile,
   writeFileImpl = writeFile,
-} = {}) {
+}: UpdateWeeklyDownloadsOptions = {}) {
   const snapshot = await fetchWeeklyDownloads(fetchImpl);
   const content = serializeWeeklyDownloads(snapshot);
-  let current;
+  let current: string | undefined;
 
   try {
     current = await readFileImpl(outputUrl, "utf8");

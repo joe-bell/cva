@@ -27,8 +27,58 @@ export const MAX_COMMENT_CHARS = 65536;
 
 const SAFE_SECTION_ID = /^[a-z0-9-]+$/;
 
+type RepoContext = { repo: { owner: string; repo: string } };
+
+export type PrCommentGithub = {
+  paginate: (
+    method: unknown,
+    params: Record<string, unknown>,
+  ) => Promise<GithubComment[]>;
+  rest: {
+    issues: {
+      listComments: unknown;
+      updateComment: (params: {
+        owner: string;
+        repo: string;
+        comment_id: number;
+        body: string;
+      }) => Promise<unknown>;
+      createComment: (params: {
+        owner: string;
+        repo: string;
+        issue_number: number;
+        body: string;
+      }) => Promise<{ data: { id: number } }>;
+    };
+  };
+};
+
+type GithubComment = {
+  id: number;
+  body?: string | null;
+  user?: { type?: string } | null;
+};
+
+type FindStickyCommentOptions = {
+  github: Pick<PrCommentGithub, "paginate"> & {
+    rest: { issues: Pick<PrCommentGithub["rest"]["issues"], "listComments"> };
+  };
+  context: RepoContext;
+  issueNumber: number;
+  retries?: number;
+  retryDelayMs?: number;
+};
+
+type UpsertPrCommentOptions = Omit<FindStickyCommentOptions, "github"> & {
+  github: PrCommentGithub;
+  sectionId: string;
+  sectionContent: string;
+  createIfMissing?: boolean;
+  order?: readonly string[];
+};
+
 /** Fails before hitting the API when a rendered section would exceed GitHub's limit. */
-export function assertCommentBodySize(body) {
+export function assertCommentBodySize(body: unknown): string {
   if (typeof body !== "string" || body.length > MAX_COMMENT_CHARS) {
     throw new Error(
       `comment body exceeds GitHub's ${MAX_COMMENT_CHARS}-character limit (${typeof body === "string" ? body.length : "non-string"} characters)`,
@@ -37,16 +87,15 @@ export function assertCommentBodySize(body) {
   return body;
 }
 
-function assertSectionId(id) {
+function assertSectionId(id: unknown): asserts id is string {
   if (typeof id !== "string" || !SAFE_SECTION_ID.test(id)) {
     throw new Error(
       `invalid section id ${JSON.stringify(id)} — must match ${SAFE_SECTION_ID}`,
     );
   }
-  return id;
 }
 
-function sectionMarkers(id) {
+function sectionMarkers(id: string) {
   return {
     start: `<!-- cva:section:${id}:start -->`,
     end: `<!-- cva:section:${id}:end -->`,
@@ -54,8 +103,9 @@ function sectionMarkers(id) {
 }
 
 /** Wraps already-rendered, trusted markdown in this section's placeholders. */
-export function sectionBlock(id, content) {
-  const { start, end } = sectionMarkers(assertSectionId(id));
+export function sectionBlock(id: unknown, content: string) {
+  assertSectionId(id);
+  const { start, end } = sectionMarkers(id);
   // A literal section marker inside `content` would truncate this (or
   // another) section on the next parse-and-reassemble pass. The benchmark
   // producer can't hit this (compare.ts escapes every `<` in untrusted
@@ -73,7 +123,7 @@ const SECTION_PATTERN =
   /<!-- cva:section:([a-z0-9-]+):start -->\n?([\s\S]*?)\n?<!-- cva:section:\1:end -->/g;
 
 /** Extracts `[{ id, content }]` from a comment body in appearance order. */
-function parseSections(body) {
+function parseSections(body: string) {
   return Array.from(body.matchAll(SECTION_PATTERN), (match) => ({
     id: match[1],
     content: match[2],
@@ -92,13 +142,18 @@ function parseSections(body) {
  * must already be trusted-rendered markdown by the time it reaches this
  * function).
  */
-export function upsertSection(body, id, content, order = SECTION_ORDER) {
+export function upsertSection(
+  body: string,
+  id: unknown,
+  content: string,
+  order: readonly string[] = SECTION_ORDER,
+) {
   assertSectionId(id);
 
   const sections = parseSections(body).filter((section) => section.id !== id);
   sections.push({ id, content: content.trim() });
 
-  const rank = (sectionId) => {
+  const rank = (sectionId: string) => {
     const index = order.indexOf(sectionId);
     return index === -1 ? order.length : index;
   };
@@ -111,7 +166,7 @@ export function upsertSection(body, id, content, order = SECTION_ORDER) {
   ].join("\n\n");
 }
 
-function sleep(ms) {
+function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
@@ -127,7 +182,7 @@ export async function findStickyComment({
   issueNumber,
   retries = 0,
   retryDelayMs = 5000,
-}) {
+}: FindStickyCommentOptions) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     const comments = await github.paginate(github.rest.issues.listComments, {
       ...context.repo,
@@ -163,7 +218,7 @@ export async function upsertPrComment({
   retries = 0,
   retryDelayMs = 5000,
   order = SECTION_ORDER,
-}) {
+}: UpsertPrCommentOptions) {
   const existing = await findStickyComment({
     github,
     context,

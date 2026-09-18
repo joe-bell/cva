@@ -60,9 +60,9 @@ Run these from the repository root after reviewing the merged artifacts. The com
 
 ## Gate trust boundary
 
-`cloudflare-build.yml` intentionally uses ordinary `pull_request`, read-only permissions, a SHA-pinned full-history checkout, and no dependency installation. It is an operational gate, not a tamper-resistant boundary: a contributor can change the workflow, script, or watched-path policy in the same PR. Matching the GitHub Actions app authenticates the check producer, not the PR-controlled workflow content. Review `.github/workflows/cloudflare-build.yml`, `.github/scripts/verify-cloudflare-build.mjs`, and `.github/cloudflare/docs-watch-paths.json` as security-sensitive files. Do not replace this with `pull_request_target`.
+`cloudflare-build.yml` intentionally uses ordinary `pull_request`, read-only permissions, a SHA-pinned full-history checkout, and no dependency installation. It is an operational gate, not a tamper-resistant boundary: a contributor can change the workflow or script in the same PR. Matching the GitHub Actions app authenticates the check producer, not the PR-controlled workflow content. Review `.github/workflows/cloudflare-build.yml` and `.github/scripts/verify-cloudflare-build.ts` as security-sensitive files. Do not replace this with `pull_request_target`.
 
-The gate first compares the PR head's complete watched Git tree with its merge base, including path names, deletions, modes, and symlink targets. A successful ancestor check proves only the matching watched head inputs, not the synthetic merge result. If polling times out, rerun the job after Cloudflare reports the build.
+The gate reads the watch-path file from both immutable Git revisions and treats a path as watched when either the merge-base policy or the PR-head policy watches it. This prevents a PR from hiding its changes by narrowing the policy. It then compares the complete watched Git trees, including path names, deletions, modes, and symlink targets. Check reuse is bounded to the head and the oldest matching ancestor, and each lookup accepts at most one API page so the request budget always reserves every poll attempt. A successful ancestor check proves only the matching watched head inputs, not the synthetic merge result. If polling times out, rerun the job after Cloudflare reports the build.
 
 ## Dependabot and repository security
 

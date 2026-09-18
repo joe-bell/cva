@@ -1,9 +1,10 @@
 import { dirname } from "node:path";
+import type { Configuration } from "lint-staged";
 
-/** @type {import("lint-staged").Configuration} */
 export default {
-  "*.{astro,js,jsx,svelte,ts,tsx,vue}": (filenames) => [
+  "*.{astro,cts,js,jsx,mts,svelte,ts,tsx,vue}": (filenames) => [
     "pnpm run --filter '!.' --parallel check",
+    "pnpm check:scripts",
     `pnpm prettier --write ${filenames.map((f) => `'${f}'`).join(" ")}`,
   ],
   "package.json": () => "pnpm syncpack:lint",
@@ -14,8 +15,8 @@ export default {
     filenames.map(
       (filename) => `pnpm --dir '${dirname(filename)}' exec wrangler types`,
     ),
-  "!(*.{astro,js,jsx,svelte,ts,tsx,vue})": (filenames) =>
+  "!(*.{astro,cts,js,jsx,mts,svelte,ts,tsx,vue})": (filenames) =>
     `pnpm prettier --write ${filenames
       .map((filename) => `'${filename}'`)
       .join(" ")}`,
-};
+} satisfies Configuration;

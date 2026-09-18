@@ -11,29 +11,55 @@ import {
   parseArtifactPrNumber,
   processBenchmarkPrComment,
   readArtifactMeta,
-} from "./process-pr-comment.mjs";
-import { STICKY_MARKER } from "./pr-comment.mjs";
+} from "./process-pr-comment.ts";
+import { STICKY_MARKER } from "./pr-comment.ts";
 
-function fakeGithub({ pull, comments = [] } = {}) {
+type ProcessOptions = Parameters<typeof processBenchmarkPrComment>[0];
+type Github = ProcessOptions["github"];
+type Pull = Awaited<ReturnType<Github["rest"]["pulls"]["get"]>>["data"];
+type Comments = Awaited<ReturnType<Github["paginate"]>>;
+type Artifact = Pick<ProcessOptions, "metaPath" | "sectionContentPath">;
+
+function fakeGithub({
+  pull,
+  comments = [],
+}: { pull?: Pull; comments?: Comments } = {}) {
   return {
-    paginate: vi.fn(async () => comments),
+    paginate: vi.fn(
+      async (_method: unknown, _params: Record<string, unknown>) => comments,
+    ),
     rest: {
       pulls: {
-        get: vi.fn(async () => ({ data: pull })),
+        get: vi.fn(
+          async (_params: Parameters<Github["rest"]["pulls"]["get"]>[0]) => ({
+            data: pull as Pull,
+          }),
+        ),
       },
       issues: {
         listComments: vi.fn(),
-        updateComment: vi.fn(async () => ({})),
-        createComment: vi.fn(async () => ({ data: { id: 999 } })),
+        updateComment: vi.fn(
+          async (
+            _params: Parameters<Github["rest"]["issues"]["updateComment"]>[0],
+          ) => ({}),
+        ),
+        createComment: vi.fn(
+          async (
+            _params: Parameters<Github["rest"]["issues"]["createComment"]>[0],
+          ) => ({ data: { id: 999 } }),
+        ),
       },
     },
   };
 }
 
 const context = { repo: { owner: "joe-bell", repo: "cva" } };
-const tempDirs = [];
+const tempDirs: string[] = [];
 
-function writeArtifactDir({ meta, section = "## Benchmarks\n\ntable" } = {}) {
+function writeArtifactDir({
+  meta,
+  section = "## Benchmarks\n\ntable",
+}: { meta?: unknown; section?: string } = {}) {
   const dir = mkdtempSync(path.join(tmpdir(), "cva-process-pr-comment-"));
   tempDirs.push(dir);
   writeFileSync(
@@ -80,6 +106,12 @@ describe("readArtifactMeta", () => {
       `{"pr":1,"padding":"${"x".repeat(MAX_META_BYTES)}"}`,
     );
     expect(() => readArtifactMeta(metaPath)).toThrow(/64 KiB cap/);
+  });
+
+  it("rejects metadata that is not an object", () => {
+    const { metaPath } = writeArtifactDir();
+    writeFileSync(metaPath, "null");
+    expect(() => readArtifactMeta(metaPath)).toThrow(/invalid benchmark/);
   });
 });
 
@@ -145,11 +177,15 @@ describe("processBenchmarkPrComment", () => {
     head: { sha: "abc123", repo: { full_name: "joe-bell/cva" } },
   };
 
-  function expectedBody(content) {
+  function expectedBody(content: string) {
     return `${STICKY_MARKER}\n\n<!-- cva:section:benchmark:start -->\n${content}\n<!-- cva:section:benchmark:end -->`;
   }
 
-  async function processComment(github, artifact, options = {}) {
+  async function processComment(
+    github: Github,
+    artifact: Artifact,
+    options: Partial<ProcessOptions> = {},
+  ) {
     return processBenchmarkPrComment({
       github,
       context,
@@ -161,7 +197,7 @@ describe("processBenchmarkPrComment", () => {
     });
   }
 
-  function expectNoCommentApiCalls(github) {
+  function expectNoCommentApiCalls(github: Github) {
     expect(github.paginate).not.toHaveBeenCalled();
     expect(github.rest.issues.createComment).not.toHaveBeenCalled();
     expect(github.rest.issues.updateComment).not.toHaveBeenCalled();
