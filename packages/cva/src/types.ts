@@ -25,8 +25,6 @@
 
 import type { CVAComponentShape, ClassValue } from "./config.js";
 
-// Blocks inference from a site that merely checks a type parameter.
-type Uninferred<T> = [T][T extends any ? 0 : never];
 export type StringToBoolean<T> = T extends "true" | "false" ? boolean : T;
 
 // A variant name prefixed with `_` is internal: the component still accepts
@@ -81,7 +79,7 @@ export type CVAComponentConfig<
   // guards.
   //
   // Gate on `keyof Merged` to preserve literal defaults, and wrap in
-  // `Uninferred` to prevent reverse inference from authored values.
+  // `NoInfer` to prevent reverse inference from authored values.
   Merged = Variants,
 > = Config & {
   composes?: ComposedSingle | readonly [...ComposedList];
@@ -98,6 +96,6 @@ export type CVAComponentConfig<
   ([keyof Merged] extends [never]
     ? { compoundVariants?: never; defaultVariants?: never }
     : {
-        compoundVariants?: CVACompoundVariants<Uninferred<Merged>, T>;
-        defaultVariants?: CVAVariantSchema<Uninferred<Merged>>;
+        compoundVariants?: CVACompoundVariants<NoInfer<Merged>, T>;
+        defaultVariants?: CVAVariantSchema<NoInfer<Merged>>;
       });

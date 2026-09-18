@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "typescript": "6.0.3",
+  "tailwindMerge": "3.6.0",
+  "fixtures": {
+    "composed": 3945,
+    "direct-interface": 589,
+    "get-schema": 1240,
+    "plain": 635,
+    "twmerge": 704
+  }
+}
