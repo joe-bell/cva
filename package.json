@@ -11,7 +11,7 @@
     "build": "pnpm run --filter './packages/**' build",
     "build:examples": "pnpm --filter './examples/**' --parallel build",
     "bundlesize": "pnpm run --filter './packages/**' --parallel bundlesize",
-    "check": "pnpm run check:packages && pnpm run check:scripts",
+    "check": "pnpm run '/^check:(packages|scripts)$/'",
     "check:packages": "pnpm run --filter './packages/**' --parallel check",
     "check:scripts": "tsc --project .config/tsconfig.scripts.json --noEmit",
     "dev": "vitest --config .config/vitest.config.ts",

@@ -2,11 +2,13 @@
 
 These files are reviewable request bodies and desired Cloudflare state. They do not change GitHub or Cloudflare by being merged.
 
-`default-branch.json` is an active branch-ruleset request body. It requires `benchmark`, `build`, `bundlesize`, `check`, `cloudflare/gate`, `prettier`, `syncpack`, and `test`, all from the GitHub Actions app (`15368`). `skills` remains intentionally outside the required-check list. `cloudflare/gate` is the read-only gate job, not Cloudflare's external `Workers Builds: cva` check. The gate validates that external check by its exact name, Cloudflare app ID (`85455`), and app slug (`cloudflare-workers-and-pages`).
+`default-branch.json` is an active branch-ruleset request body. It requires `benchmark`, `build`, `bundlesize`, `check`, `cloudflare/gate`, `prettier`, `syncpack`, and `test`, all from the GitHub Actions app (`15368`). `skills` is not required. `cloudflare/gate` is the read-only gate job, not Cloudflare's external `Workers Builds: cva` check. The gate validates that external check by its exact name, Cloudflare app ID (`85455`), and app slug (`cloudflare-workers-and-pages`).
 
 The ruleset allows squash merges only, requires linear history, and prevents deletion and force-pushes. It asks for zero approvals so auto-merge can wait for checks rather than an approval. Joe's `pull_request` bypass (`7349341`) applies to every rule in this ruleset: a manual administrator merge can bypass all of them. It is not a review-only exemption, and it does not guarantee that auto-merge can bypass another active rule or classic protection.
 
-The artifact sets `strict_required_status_checks_policy` to `false`. It deliberately does not claim to preserve unknown classic-protection details such as stale-review dismissal, code-owner review, last-push approval, conversation resolution, admin enforcement, or signature rules. The owner must inspect and decide those settings before publishing.
+Only people with write permission can enable auto-merge. GitHub [disables auto-merge](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/automatically-merging-a-pull-request) if someone without write permission pushes another commit to the head branch or changes the base branch.
+
+The artifact sets `strict_required_status_checks_policy` to `false`. It does not preserve unknown classic-protection details such as stale-review dismissal, code-owner review, last-push approval, conversation resolution, admin enforcement, or signature rules. The owner must inspect and decide those settings before publishing.
 
 ## Owner migration
 
@@ -47,7 +49,7 @@ Run these from the repository root after reviewing the merged artifacts. The com
    gh api --method GET -H 'X-GitHub-Api-Version: 2026-03-10' repos/joe-bell/cva/rules/branches/main > /tmp/cva-jb-410/effective-rules.json
    ```
 
-   Inspect the effective rules and a fresh PR's check sources. Only then retire the specific classic branch protection that the saved snapshot covers. The owner must perform that final deletion deliberately.
+   Inspect the effective rules and a fresh PR's check sources. Only then retire the specific classic branch protection that the saved snapshot covers. The owner must perform that final deletion as a separate action.
 
    If rollback is needed, only the repository owner may delete the newly created ruleset. This mutates GitHub; do not run it here, from CI, or from an agent.
 
@@ -60,13 +62,13 @@ Run these from the repository root after reviewing the merged artifacts. The com
 
 ## Gate trust boundary
 
-`cloudflare-build.yml` intentionally uses ordinary `pull_request`, read-only permissions, a SHA-pinned full-history checkout, and no dependency installation. It is an operational gate, not a tamper-resistant boundary: a contributor can change the workflow or script in the same PR. Matching the GitHub Actions app authenticates the check producer, not the PR-controlled workflow content. Review `.github/workflows/cloudflare-build.yml` and `.github/scripts/verify-cloudflare-build.ts` as security-sensitive files. Do not replace this with `pull_request_target`.
+`cloudflare-build.yml` uses ordinary `pull_request`, read-only permissions, a SHA-pinned full-history checkout, and no dependency installation. It is an operational gate, not a tamper-resistant boundary: a contributor can change the workflow or script in the same PR. Matching the GitHub Actions app authenticates the check producer, not the PR-controlled workflow content. Review `.github/workflows/cloudflare-build.yml` and `.github/scripts/verify-cloudflare-build.ts` as security-sensitive files. Do not replace this with `pull_request_target`.
 
 The gate reads the watch-path file from both immutable Git revisions and treats a path as watched when either the merge-base policy or the PR-head policy watches it. This prevents a PR from hiding its changes by narrowing the policy. It then compares the complete watched Git trees, including path names, deletions, modes, and symlink targets. Check reuse is bounded to the head and the oldest matching ancestor, and each lookup accepts at most one API page so the request budget always reserves every poll attempt. A successful ancestor check proves only the matching watched head inputs, not the synthetic merge result. If polling times out, rerun the job after Cloudflare reports the build.
 
 ## Dependabot and repository security
 
-Keep the existing GitHub Actions updater in `.github/dependabot.yml`. npm updates are deliberately deferred: GitHub's documented Dependabot support stops at pnpm 10, while this workspace pins pnpm `11.0.9`. Do not downgrade pnpm or rewrite the lockfile to fit Dependabot. Reassess upstream support before adding an npm updater.
+Keep the existing GitHub Actions updater in `.github/dependabot.yml`. npm updates are deferred because GitHub's documented Dependabot support stops at pnpm 10, while this workspace pins pnpm `11.0.9`. Do not downgrade pnpm or rewrite the lockfile to fit Dependabot. Reassess upstream support before adding an npm updater.
 
 The owner must verify repository security settings separately because this task does not change them. Check that the dependency graph ingests the pnpm lockfile, Dependabot alerts and security updates are enabled, alert notification delivery reaches the intended account, and an alert for transitive `postcss` would be visible and actionable. These read-only checks provide useful evidence where access permits:
 

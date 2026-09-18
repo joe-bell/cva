@@ -18,12 +18,9 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      # Keep this job present on every PR and push: the ruleset requires its
-      # context, but baseline installation and benchmarking only matter when a
-      # `packages/**` path changed. The `if` condition preserves the
-      # `git diff --quiet` exit code under Actions' `bash -e`: 0 is unchanged,
-      # 1 is a real diff; any other result fails rather than skipping a
-      # benchmark.
+      # The ruleset requires this job on every run, but the benchmark work is
+      # needed only for `packages/**` changes. Treat exit 1 as a diff and fail
+      # on every other `git diff` error.
       - name: Check package changes
         id: packages
         env:
