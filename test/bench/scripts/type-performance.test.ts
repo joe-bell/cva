@@ -18,6 +18,7 @@ import {
   main,
   parseArgs,
   parseInstantiations,
+  SCHEMA_VERSION,
   update,
   type Baseline,
   type FixtureCompileResult,
@@ -131,10 +132,26 @@ describe("diffFixtureSets", () => {
 });
 
 describe("checkVersions", () => {
-  const baseline = { typescript: "6.0.3", tailwindMerge: "3.6.0" };
+  const baseline = {
+    schemaVersion: SCHEMA_VERSION,
+    typescript: "6.0.3",
+    tailwindMerge: "3.6.0",
+  };
+  const installed = { typescript: "6.0.3", tailwindMerge: "3.6.0" };
 
-  it("returns no problems when both versions match", () => {
-    expect(checkVersions(baseline, baseline)).toEqual([]);
+  it("returns no problems when everything matches", () => {
+    expect(checkVersions(baseline, installed)).toEqual([]);
+  });
+
+  it("flags a schema version mismatch", () => {
+    const problems = checkVersions(
+      { ...baseline, schemaVersion: SCHEMA_VERSION + 1 },
+      installed,
+    );
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain(
+      `Baseline schema version mismatch: the file records schema ${SCHEMA_VERSION + 1}, this script expects ${SCHEMA_VERSION}`,
+    );
   });
 
   it("flags a TypeScript version mismatch", () => {
@@ -159,12 +176,12 @@ describe("checkVersions", () => {
     );
   });
 
-  it("flags both mismatches together", () => {
-    const problems = checkVersions(baseline, {
-      typescript: "6.1.0",
-      tailwindMerge: "3.7.0",
-    });
-    expect(problems).toHaveLength(2);
+  it("flags every mismatch together", () => {
+    const problems = checkVersions(
+      { ...baseline, schemaVersion: SCHEMA_VERSION + 1 },
+      { typescript: "6.1.0", tailwindMerge: "3.7.0" },
+    );
+    expect(problems).toHaveLength(3);
   });
 });
 
@@ -186,31 +203,76 @@ describe("compileFixture", () => {
       fixture: "plain",
       instantiations: 662,
       diagnostics: 0,
+      processFailed: false,
       stdout: extendedDiagnostics(662),
     });
+    // Exact argv, not a subset: losing e.g. --noEmit would write .mjs/.d.mts
+    // files beside the fixtures with no test noticing.
     expect(execImpl).toHaveBeenCalledWith(
       "/tsc",
-      expect.arrayContaining([
+      [
         "--ignoreConfig",
+        "--noEmit",
+        "--skipLibCheck",
         "--strict",
+        "--target",
+        "es2019",
+        "--lib",
+        "es2019",
+        "--module",
+        "nodenext",
+        "--moduleResolution",
+        "nodenext",
+        "--extendedDiagnostics",
         "--typeRoots",
         "/types",
         "--types",
         "node",
         "/fixtures/plain.mts",
-      ]),
+      ],
       { cwd: "/pkg", encoding: "utf8" },
     );
   });
 
-  it("recovers a broken fixture's stdout from a thrown error", () => {
+  it("recovers a broken fixture's stdout from a thrown error and marks it process-failed", () => {
     const execImpl = vi.fn(() => {
       throw { stdout: diagnosticOutput(1), status: 2 };
     }) as unknown as typeof execFileSync;
 
     const result = compileFixture("broken", { ...options, execImpl });
+    expect(result.processFailed).toBe(true);
     expect(result.diagnostics).toBe(1);
     expect(result.instantiations).toBeUndefined();
+  });
+
+  it("treats a non-zero exit with an otherwise well-formed count as a process failure", () => {
+    // The gate this pins: a launcher that fails (crash, kill signal, bad
+    // exit) after tsc has already written a clean-looking report must not
+    // be indistinguishable from success just because stdout happens to
+    // parse. See check()/update()'s processFailed handling.
+    const execImpl = vi.fn(() => {
+      throw { stdout: extendedDiagnostics(635), stderr: "", status: 1 };
+    }) as unknown as typeof execFileSync;
+
+    const result = compileFixture("plain", { ...options, execImpl });
+    expect(result.processFailed).toBe(true);
+    expect(result.diagnostics).toBe(0);
+    expect(result.instantiations).toBe(635);
+  });
+
+  it("keeps stderr in the recovered output alongside stdout", () => {
+    const execImpl = vi.fn(() => {
+      throw {
+        stdout: extendedDiagnostics(635),
+        stderr: "tsc: internal error: out of memory",
+        status: 1,
+      };
+    }) as unknown as typeof execFileSync;
+
+    const result = compileFixture("plain", { ...options, execImpl });
+    expect(result.processFailed).toBe(true);
+    expect(result.stdout).toContain("Instantiations:               635");
+    expect(result.stdout).toContain("tsc: internal error: out of memory");
   });
 
   it("falls back to the error message when the thrown error has no stdout", () => {
@@ -219,6 +281,7 @@ describe("compileFixture", () => {
     }) as unknown as typeof execFileSync;
 
     const result = compileFixture("missing-binary", { ...options, execImpl });
+    expect(result.processFailed).toBe(true);
     expect(result.stdout).toBe("spawn tsc ENOENT");
     expect(result.instantiations).toBeUndefined();
     expect(result.diagnostics).toBe(0);
@@ -230,6 +293,7 @@ describe("compileFixture", () => {
     }) as unknown as typeof execFileSync;
 
     const result = compileFixture("unknown-failure", { ...options, execImpl });
+    expect(result.processFailed).toBe(true);
     expect(result.stdout).toBe("");
     expect(result.instantiations).toBeUndefined();
     expect(result.diagnostics).toBe(0);
@@ -243,6 +307,7 @@ function fakeCompile(
     fixture,
     instantiations: 100,
     diagnostics: 0,
+    processFailed: false,
     stdout: "",
     ...results[fixture],
   }));
@@ -292,6 +357,16 @@ describe("check", () => {
     const problems = check(["a", "b"], baseline, compile);
     expect(problems).toHaveLength(1);
     expect(problems[0]).toContain('Fixture "a" produced 1 tsc diagnostic(s)');
+  });
+
+  it("fails a fixture whose tsc process failed, even though its output parses cleanly", () => {
+    const compile = fakeCompile({
+      a: { instantiations: 100, diagnostics: 0, processFailed: true },
+      b: { instantiations: 200 },
+    });
+    const problems = check(["a", "b"], baseline, compile);
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain("tsc process exited non-zero");
   });
 
   it("fails a fixture whose instantiation count could not be parsed", () => {
@@ -352,6 +427,15 @@ describe("update", () => {
     expect(problems[0]).toContain("refusing to bake a broken count");
   });
 
+  it("refuses to bake in a fixture whose tsc process failed", () => {
+    const compile = fakeCompile({
+      a: { instantiations: 100, diagnostics: 0, processFailed: true },
+    });
+    const { baseline, problems } = update(["a"], compile, installed);
+    expect(baseline.fixtures).toEqual({});
+    expect(problems[0]).toContain("tsc process exited non-zero");
+  });
+
   it("refuses to bake in a fixture with no parseable instantiation count", () => {
     const compile = fakeCompile({
       a: { instantiations: undefined, stdout: "unexpected output" },
@@ -377,11 +461,13 @@ function fakeFileSystem({
   typescriptVersion = "6.0.3",
   tailwindMergeVersion = "3.6.0",
   baseline = BASELINE,
+  fixtureFiles = ["plain.mts"],
 }: {
   distMissing?: boolean;
   typescriptVersion?: string;
   tailwindMergeVersion?: string;
   baseline?: Baseline;
+  fixtureFiles?: string[];
 } = {}) {
   const existsImpl = vi.fn(
     (target: string) => !(distMissing && target.endsWith("dist/index.mjs")),
@@ -402,9 +488,9 @@ function fakeFileSystem({
 
   const writeFileImpl = vi.fn() as unknown as typeof writeFileSync;
 
-  const readdirImpl = vi.fn(() => [
-    "plain.mts",
-  ]) as unknown as typeof readdirSync;
+  const readdirImpl = vi.fn(
+    () => fixtureFiles,
+  ) as unknown as typeof readdirSync;
 
   return { existsImpl, readFileImpl, writeFileImpl, readdirImpl };
 }
@@ -428,6 +514,19 @@ describe("main", () => {
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining("run `pnpm --filter cva build` first"),
     );
+    errorSpy.mockRestore();
+  });
+
+  it("fails on an empty fixture set instead of vacuously passing", () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const fs = fakeFileSystem({ fixtureFiles: [] });
+    const execImpl = vi.fn() as unknown as typeof execFileSync;
+    const exitCode = main({ argv: ["--check"], ...fs, execImpl });
+    expect(exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("no .mts fixtures found"),
+    );
+    expect(execImpl).not.toHaveBeenCalled();
     errorSpy.mockRestore();
   });
 

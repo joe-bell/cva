@@ -3,10 +3,10 @@
   "typescript": "6.0.3",
   "tailwindMerge": "3.6.0",
   "fixtures": {
-    "composed": 3945,
+    "composed": 5522,
     "direct-interface": 589,
     "get-schema": 1240,
-    "plain": 635,
+    "plain": 2202,
     "twmerge": 704
   }
 }
