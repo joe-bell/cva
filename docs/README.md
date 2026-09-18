@@ -37,7 +37,7 @@ The Worker is intentionally small: it serves built assets and negotiates between
 
 The checked-in [wrangler.jsonc](./wrangler.jsonc) is the source configuration. Astro writes the deployable configuration to `dist/client/wrangler.json`; the `workerConfig` build integration validates and completes that generated file after the adapter finishes. Do not edit the generated file by hand.
 
-Cloudflare Workers Builds watch paths are configured in the Cloudflare dashboard under **Settings → Build → Build watch paths**, not in `wrangler.jsonc`. They are repository-root-relative.
+Cloudflare Workers Builds watch paths are trigger settings, not `wrangler.jsonc` fields. They can be managed through the Cloudflare Builds API or the dashboard under **Settings → Build → Build watch paths**, and they are repository-root-relative.
 
 - `docs/*`
 - `packages/cva/*`
@@ -48,7 +48,7 @@ Cloudflare Workers Builds watch paths are configured in the Cloudflare dashboard
 - `package.json`, `tsconfig.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.prettierrc.json`
 - `.node-version`, `.nvmrc`
 
-The desired dashboard payload lives in [`.github/cloudflare/docs-watch-paths.json`](../.github/cloudflare/docs-watch-paths.json). It does not update Cloudflare by itself. The configured paths must remain a superset of every docs-build input. Policy, gate, and configuration paths are included deliberately so their changes force a real Cloudflare build instead of reusing an older matching result. Before making the `cloudflare-build` GitHub check required, the owner must copy it to both the production and preview build settings and complete the fork rollout preflight below.
+The desired path payload lives in [`.github/cloudflare/docs-watch-paths.json`](../.github/cloudflare/docs-watch-paths.json). It does not update Cloudflare by itself. Follow the owner-run [Cloudflare MCP sync checklist](../.github/cloudflare/README.md#sync-with-the-cloudflare-mcp) to discover, update, and verify both live triggers without storing Cloudflare credentials or identifiers in the repository. The configured paths must remain a superset of every docs-build input. Policy, gate, and configuration paths are included deliberately so their changes force a real Cloudflare build instead of reusing an older matching result. Complete that sync and the fork rollout preflight below before making the `cloudflare-build` GitHub check required.
 
 Cloudflare `*` matches across `/`, so `docs/*` includes nested documentation files. Excludes are evaluated before includes. Cloudflare [bypasses path matching for empty and large pushes](https://developers.cloudflare.com/workers/ci-cd/builds/build-watch-paths/), so the GitHub gate uses a stricter merge-base watched-tree comparison rather than claiming to reproduce every push-event decision.
 
