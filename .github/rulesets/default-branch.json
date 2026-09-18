@@ -12,7 +12,7 @@
     {
       "actor_id": 7349341,
       "actor_type": "User",
-      "bypass_mode": "pull_request"
+      "bypass_mode": "always"
     }
   ],
   "rules": [
@@ -74,7 +74,7 @@
             "integration_id": 15368
           }
         ],
-        "strict_required_status_checks_policy": false
+        "strict_required_status_checks_policy": true
       }
     }
   ]
