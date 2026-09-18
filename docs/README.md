@@ -48,17 +48,17 @@ Cloudflare Workers Builds watch paths are trigger settings, not `wrangler.jsonc`
 - `package.json`, `tsconfig.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.prettierrc.json`
 - `.node-version`, `.nvmrc`
 
-The desired path payload lives in [`.github/cloudflare/docs-watch-paths.json`](../.github/cloudflare/docs-watch-paths.json). It does not update Cloudflare by itself. Follow the owner-run [Cloudflare MCP sync checklist](../.github/cloudflare/README.md#sync-with-the-cloudflare-mcp) to discover, update, and verify both live triggers without storing Cloudflare credentials or identifiers in the repository. The configured paths must remain a superset of every docs-build input. Policy, gate, and configuration paths are included deliberately so their changes force a real Cloudflare build instead of reusing an older matching result. Complete that sync, the fork rollout preflight below, and the [default-branch administration checks](../.github/rulesets/README.md#owner-migration) before making the `cloudflare-build` GitHub check required.
+The desired path payload lives in [`.github/cloudflare/docs-watch-paths.json`](../.github/cloudflare/docs-watch-paths.json). It does not update Cloudflare by itself. Follow the owner-run [Cloudflare MCP sync checklist](../.github/cloudflare/README.md#sync-with-the-cloudflare-mcp) to discover, update, and verify both live triggers without storing Cloudflare credentials or identifiers in the repository. The configured paths must remain a superset of every docs-build input. Policy, gate, and configuration paths are included deliberately so their changes force a real Cloudflare build instead of reusing an older matching result. Complete that sync, the fork rollout preflight below, and the [default-branch administration checks](../.github/rulesets/README.md#owner-migration) before making the `cloudflare/gate` GitHub check required.
 
 Cloudflare `*` matches across `/`, so `docs/*` includes nested documentation files. Excludes are evaluated before includes. Cloudflare [bypasses path matching for empty and large pushes](https://developers.cloudflare.com/workers/ci-cd/builds/build-watch-paths/), so the GitHub gate uses a stricter merge-base watched-tree comparison rather than claiming to reproduce every push-event decision.
 
-The `cloudflare-build` workflow is an operational check, not a trusted-workflow boundary. It has read-only permissions and no dependency installation, but an ordinary pull request can modify its workflow, script, or watched-path policy. Review those files carefully and do not change it to `pull_request_target`.
+The `cloudflare/gate` job is an operational check, not a trusted-workflow boundary. It has read-only permissions and no dependency installation, but an ordinary pull request can modify its workflow, script, or watched-path policy. Review those files carefully and do not change it to `pull_request_target`.
 
 The workflow accepts a successful `Workers Builds: cva` check only from the expected Cloudflare GitHub App and only when its watched tree matches the current PR head. If Cloudflare has not reported a result before the bounded deadline, rerun the job after the build finishes.
 
 For a representative contributor-fork PR, rollout accepts either of two outcomes:
 
 - Cloudflare emits the expected `Workers Builds: cva` check and the read-only GitHub Actions job can read it after any required fork-workflow approval.
-- Cloudflare does not post that check for the fork head. The gate then fails closed: a watched fork PR cannot satisfy the required `cloudflare-build` context or auto-merge, so the owner must explicitly accept manual ruleset bypass after review.
+- Cloudflare does not post that check for the fork head. The gate then fails closed: a watched fork PR cannot satisfy the required `cloudflare/gate` context or auto-merge, so the owner must explicitly accept manual ruleset bypass after review.
 
 Do not make the gate required until the owner has verified and accepted one of these outcomes.

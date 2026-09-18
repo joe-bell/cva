@@ -1,4 +1,4 @@
-name: cloudflare-build
+name: cloudflare
 
 on:
   pull_request:
@@ -13,7 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  cloudflare-build:
+  gate:
+    name: cloudflare/gate
     if: github.event.pull_request.base.ref == github.event.repository.default_branch
     runs-on: ubuntu-latest
     timeout-minutes: 10
