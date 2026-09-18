@@ -9,7 +9,9 @@ What's changed since `class-variance-authority@0.*`?
 
 ## Requirements
 
-[Install `cva@beta`](/beta/getting-started/installation). TypeScript projects need TypeScript 6.0 or later; the optional `cva/tailwindcss` stylesheet needs Tailwind CSS v4.
+- [Install `cva@beta`](/beta/getting-started/installation).
+- TypeScript 6.0 or later for TypeScript projects.
+- Tailwind CSS v4 for the optional `cva/tailwindcss` stylesheet.
 
 ## Features
 
@@ -23,9 +25,9 @@ Shout-out to GitHub for transferring `npm` ownership of `cva`!
 
 The `cva` package is a preset over the core: it wires `cva` and `cx` to `clsx`, like `class-variance-authority`. Roll your own `cva` and `cx` via the new [`defineConfig` API in `cva/config`](/beta/api-reference#cvaconfig), whose required `cx` option accepts [`cn`, `tailwind-merge`](/beta/getting-started/installation#handling-class-conflicts), [`clsx/lite`](/beta/api-reference#advanced-concatenators) for string-only authoring, or your own concatenator.
 
-#### shadcn
+#### `shadcn`
 
-The [shadcn CLI](https://ui.shadcn.com/docs/registry/github) [installs `cva@beta` with `cn`](/beta/getting-started/installation#cn) and writes `cva.config.ts` to your project root:
+The [`shadcn` CLI](https://ui.shadcn.com/docs/registry/github) [installs `cva@beta` with `cn`](/beta/getting-started/installation#cn) and writes `cva.config.ts` to your project root:
 
 ```sh
 pnpm dlx shadcn@latest add joe-bell/cva/cn
@@ -37,14 +39,14 @@ Import `cva/tailwindcss` in a Tailwind CSS v4 project and prefix component defau
 
 ### 3. Performance
 
-Calling a `cva` component is up to 1000% faster than `0.7`. The runtime works out as much of the class list as it can when you create the component, then calls your concatenator once per call, instead of copying props and spreading arrays along the way:
+Calling a `cva` component is up to **1000%** faster than `0.7`. The runtime works out as much of the class list as it can when you create the component, then calls your concatenator once per call, instead of copying props and spreading arrays along the way:
 
-- Components with variants and compound variants: 300% to 550% faster per call.
-- Matching a dozen compound variants: 700% to 1000% faster.
-- One component called with 24 different prop shapes: 400% faster.
-- Components with only a `base`: 50% faster.
+- Components with variants and compound variants: **300% to 550%** faster per call.
+- Matching a dozen compound variants: **700% to 1000%** faster.
+- One component called with 24 different prop shapes: **400%** faster.
+- Components with only a `base`: **50%** faster.
 
-The `cva` entry is now <BundleSize package="cva" /> (brotli), up from <BundleSize package="class-variance-authority" /> for `class-variance-authority`. The precomputed tables, `composes`, and the configurable concatenator account for the difference. Both figures are measured from the current build.
+The `cva` entry is **<BundleSize package="cva" />** (brotli), measured from the current build.
 
 Thanks to [@fveracoechea](https://github.com/fveracoechea) for inspiring this work! See [the pull request](https://github.com/joe-bell/cva/pull/419) for the full numbers.
 
@@ -52,8 +54,8 @@ Thanks to [@fveracoechea](https://github.com/fveracoechea) for inspiring this wo
 
 The authoring types were reworked so TypeScript does less work to reach the same answers. Your inferred prop types, `getSchema` results and emitted declarations are identical. Measured with `tsc --extendedDiagnostics` against the `cva` build immediately before the change (the beta line after `1.0.0-beta.9`), so these percentages are relative to an earlier `cva` revision rather than to `class-variance-authority`:
 
-- A project with 200 components type-checks about 10% faster, with 26% fewer type instantiations.
-- Composed components: 16% fewer instantiations. Components with a `getSchema` call: 24% fewer.
+- A project with 200 components type-checks about **10%** faster, with **26%** fewer type instantiations.
+- Composed components: **16%** fewer instantiations. Components with a `getSchema` call: **24%** fewer.
 
 See [the pull request](https://github.com/joe-bell/cva/pull/420) for the full numbers.
 
