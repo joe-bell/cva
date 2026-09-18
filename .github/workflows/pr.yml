@@ -1,4 +1,4 @@
-name: pr-comment
+name: pr
 
 # Generic sticky-PR-comment infrastructure: any CI producer can contribute a
 # named "section" to one shared comment per PR without clobbering other
@@ -45,7 +45,7 @@ on:
     paths:
       - .github/scripts/pr-comment.ts
       - .github/scripts/process-pr-comment.ts
-      - .github/workflows/pr-comment.yml
+      - .github/workflows/pr.yml
   workflow_run:
     workflows: [ci]
     types: [completed]
@@ -147,6 +147,7 @@ jobs:
             assert.match(createdBody, /Benchmark smoke test/);
 
   comment:
+    name: comment
     # Intentionally not gated on `conclusion == 'success'`: an unrelated ci
     # job failing (prettier, syncpack, ...) must not silently suppress a
     # section that did produce valid data. Each section gates on its own

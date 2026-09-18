@@ -2,7 +2,7 @@
  * Generic sticky-PR-comment infrastructure: any CI producer can contribute
  * a named "section" to one shared comment per PR without clobbering other
  * sections. This is what makes it reusable beyond the benchmark workflow —
- * see .github/workflows/pr-comment.yml's header for the extension contract.
+ * see .github/workflows/pr.yml's header for the extension contract.
  *
  * Deliberately dependency-free (no octokit import): the `github` and
  * `context` objects are passed in by the caller (actions/github-script

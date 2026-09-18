@@ -58,7 +58,7 @@
             "integration_id": 15368
           },
           {
-            "context": "cloudflare/gate",
+            "context": "gate",
             "integration_id": 15368
           },
           {

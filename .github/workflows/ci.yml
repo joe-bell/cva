@@ -87,7 +87,7 @@ jobs:
           BENCH_BASELINES_DIR: ${{ runner.temp }}/bench-baselines
         run: pnpm bench
       # PR code has already run in this job, so do not write a summary from
-      # this runner. The separate pr-comment workflow uses a fresh runner and
+      # this runner. The separate `pr` workflow uses a fresh runner and
       # trusted main-branch code to post the benchmark table for every PR.
       - name: Job summary
         if: github.event_name == 'push' && steps.packages.outputs.changed == 'true'

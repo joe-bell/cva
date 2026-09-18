@@ -3,7 +3,7 @@
  * Validates `meta.json`, cross-checks the producing workflow run against the
  * live PR head, then upserts a rendered section via pr-comment.ts.
  *
- * Extracted from pr-comment.yml so the validation logic is unit-testable;
+ * Extracted from pr.yml so the validation logic is unit-testable;
  * the workflow only downloads artifacts, renders markdown, and invokes this.
  */
 import { readFileSync, statSync } from "node:fs";

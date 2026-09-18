@@ -2,7 +2,7 @@
 
 These files are reviewable request bodies and desired Cloudflare state. They do not change GitHub or Cloudflare by being merged.
 
-`default-branch.json` is an active branch-ruleset request body. It requires `benchmark`, `build`, `bundlesize`, `check`, `cloudflare/gate`, `prettier`, `syncpack`, and `test`, all from the GitHub Actions app (`15368`). `skills` is not required. `cloudflare/gate` is the read-only gate job, not Cloudflare's external `Workers Builds: cva` check. The gate validates that external check by its exact name, Cloudflare app ID (`85455`), and app slug (`cloudflare-workers-and-pages`).
+`default-branch.json` is an active branch-ruleset request body. It requires `benchmark`, `build`, `bundlesize`, `check`, `gate`, `prettier`, `syncpack`, and `test`, all from the GitHub Actions app (`15368`). `skills` is not required. GitHub displays the read-only `gate` job as `cloudflare / gate`; the ruleset API stores only its `gate` check-run context. This is not Cloudflare's external `Workers Builds: cva` check. The gate validates that external check by its exact name, Cloudflare app ID (`85455`), and app slug (`cloudflare-workers-and-pages`).
 
 The ruleset allows squash merges only, requires linear history, and prevents deletion and force-pushes. It asks for zero approvals so auto-merge can wait for checks rather than an approval. Joe's `pull_request` bypass (`7349341`) applies to every rule in this ruleset: a manual administrator merge can bypass all of them. It is not a review-only exemption, and it does not guarantee that auto-merge can bypass another active rule or classic protection.
 
@@ -28,13 +28,13 @@ Run these from the repository root after reviewing the merged artifacts. The com
 
 2. Align both Workers Builds triggers with `.github/cloudflare/docs-watch-paths.json` by following the owner-run [Cloudflare MCP sync checklist](../cloudflare/README.md#sync-with-the-cloudflare-mcp). The file is desired state only, not a Cloudflare API request. The checklist discovers the live trigger UUIDs, maps `include` and `exclude` to Cloudflare's API fields, patches only after explicit owner approval, and verifies both triggers afterward. Cloudflare `*` matches across `/`, evaluates excludes before includes, and [bypasses path matching for empty and large pushes](https://developers.cloudflare.com/workers/ci-cd/builds/build-watch-paths/).
 
-3. Prove the live integration on an in-repository PR before requiring the gate. Test a watched docs change, a `packages/**` change, and an unrelated un-watched change. A watched change must produce `Workers Builds: cva` from the expected Cloudflare app and a successful `cloudflare/gate` job. The un-watched change should let the gate pass from the equal watched-tree comparison. A package change must also run the benchmark work; an un-watched PR still receives a successful, inexpensive `benchmark` context.
+3. Prove the live integration on an in-repository PR before requiring the gate. Test a watched docs change, a `packages/**` change, and an unrelated un-watched change. A watched change must produce `Workers Builds: cva` from the expected Cloudflare app and a successful `cloudflare / gate` job. The un-watched change should let the gate pass from the equal watched-tree comparison. A package change must also run the benchmark work; an un-watched PR still receives a successful, inexpensive `benchmark` context.
 
 4. Test a representative contributor-fork PR and accept one of these outcomes before publishing the ruleset:
    - Cloudflare emits the expected `Workers Builds: cva` check and the read-only GitHub Actions job can read it after any required fork-workflow approval.
-   - Cloudflare does not post that check for the fork head. The gate then fails closed: a watched fork PR cannot satisfy the required `cloudflare/gate` context or auto-merge, so the owner must explicitly accept manual ruleset bypass after review.
+   - Cloudflare does not post that check for the fork head. The gate then fails closed: a watched fork PR cannot satisfy the required `gate` context or auto-merge, so the owner must explicitly accept manual ruleset bypass after review.
 
-   The required `cloudflare/gate` context remains in place in either case. If neither behavior is acceptable or reliable, fix the Cloudflare or fork configuration before rollout; the gate never silently passes a missing fork build.
+   The required `gate` context remains in place in either case. If neither behavior is acceptable or reliable, fix the Cloudflare or fork configuration before rollout; the gate never silently passes a missing fork build.
 
 5. Enable auto-merge after the checks above are proven. This command mutates repository settings.
 
@@ -62,7 +62,7 @@ Run these from the repository root after reviewing the merged artifacts. The com
 
 ## Gate trust boundary
 
-`cloudflare-build.yml` uses ordinary `pull_request`, read-only permissions, a SHA-pinned full-history checkout, and no dependency installation. It is an operational gate, not a tamper-resistant boundary: a contributor can change the workflow or script in the same PR. Matching the GitHub Actions app authenticates the check producer, not the PR-controlled workflow content. Review `.github/workflows/cloudflare-build.yml` and `.github/scripts/verify-cloudflare-build.ts` as security-sensitive files. Do not replace this with `pull_request_target`.
+`cloudflare.yml` uses ordinary `pull_request`, read-only permissions, a SHA-pinned full-history checkout, and no dependency installation. It is an operational gate, not a tamper-resistant boundary: a contributor can change the workflow or script in the same PR. Matching the GitHub Actions app authenticates the check producer, not the PR-controlled workflow content. Review `.github/workflows/cloudflare.yml` and `.github/scripts/verify-cloudflare-build.ts` as security-sensitive files. Do not replace this with `pull_request_target`.
 
 The gate reads the watch-path file from both immutable Git revisions and treats a path as watched when either the merge-base policy or the PR-head policy watches it. This prevents a PR from hiding its changes by narrowing the policy. It then compares the complete watched Git trees, including path names, deletions, modes, and symlink targets. Check reuse is bounded to the head and the oldest matching ancestor within a 100-commit ancestry walk; longer histories disable ancestor reuse and check only the current head. Each lookup accepts at most one API page so the request budget always reserves every poll attempt. A successful ancestor check proves only the matching watched head inputs, not the synthetic merge result. If polling times out, rerun the job after Cloudflare reports the build.
 

@@ -175,7 +175,7 @@ describe("watch paths", () => {
         ".github/rulesets/*",
         ".github/scripts/verify-cloudflare-build.ts",
         ".github/workflows/ci.yml",
-        ".github/workflows/cloudflare-build.yml",
+        ".github/workflows/cloudflare.yml",
         "package.json",
         "tsconfig.json",
         "pnpm-lock.yaml",
