@@ -4,9 +4,10 @@ import type { Configuration } from "lint-staged";
 export default {
   "*.{astro,cts,js,jsx,mts,svelte,ts,tsx,vue}": (filenames) => [
     "pnpm run --filter '!.' --parallel check",
-    "pnpm check:scripts",
     `pnpm prettier --write ${filenames.map((f) => `'${f}'`).join(" ")}`,
   ],
+  "{.config/*.{mts,ts},.config/tsconfig.*.json,.github/scripts/*.ts}": () =>
+    "pnpm check:scripts",
   "package.json": () => "pnpm syncpack:lint",
   // One pattern avoids parallel lint runs when a change touches multiple inputs.
   "{.agents/skills/**,skills/**,skill-check.config.json}": () =>
