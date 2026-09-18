@@ -98,10 +98,9 @@ export async function run({
   }
 
   const selected = await prompt({
-    message: "Choose an example to run",
+    message: "Choose an example to run: ",
     options: examples.map((example) => ({
       label: example.label,
-      hint: example.path,
       value: example.path,
     })),
     input,
