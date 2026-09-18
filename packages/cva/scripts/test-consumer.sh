@@ -41,7 +41,10 @@ tar -xzf "$tarball" -C "$installed_dir/cva" --strip-components=1
 # root, so a declaration that names clsx's types fails as it would under pnpm.
 ln -s "$package_dir/node_modules/clsx" "$installed_dir/clsx"
 ln -s .pnpm/cva/node_modules/cva "$consumer_dir/node_modules/cva"
-cp "$fixture_dir"/{esm.mts,cjs.cts,downstream.mts,downstream.cts} "$consumer_dir"
+# tailwind-merge is the consumer's own dependency here (not cva's), so it's
+# symlinked at the consumer root rather than beside the installed cva.
+ln -s "$package_dir/node_modules/tailwind-merge" "$consumer_dir/node_modules/tailwind-merge"
+cp "$fixture_dir"/{esm.mts,cjs.cts,downstream.mts,downstream.cts,exact-optional.mts,exact-optional.cts} "$consumer_dir"
 
 cd "$consumer_dir"
 
@@ -59,6 +62,13 @@ fi
 node out/esm.mjs
 node out/cjs.cjs
 "$tsc_bin" downstream.mts downstream.cts --ignoreConfig --strict --noEmit --module nodenext --moduleResolution nodenext
+# A second, stricter compile: exactOptionalPropertyTypes disables the
+# implicit `undefined` widening plain --strict gives every optional
+# property, which changes accept/reject behaviour for `class`/`className`
+# (see exact-optional.mts's comment). Keep --typeRoots/--types node so this
+# lane resolves the same @types/node as the others (AGENTS.md's "pin every
+# compiler flag explicitly" note applies here too).
+"$tsc_bin" exact-optional.mts exact-optional.cts --ignoreConfig --strict --exactOptionalPropertyTypes --noEmit --module nodenext --moduleResolution nodenext --typeRoots "$package_dir/node_modules/@types" --types node
 
 node --input-type=module --eval '
 try {
