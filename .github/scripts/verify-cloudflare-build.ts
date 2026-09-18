@@ -13,6 +13,7 @@ export const CLOUDFLARE_APP_SLUG = "cloudflare-workers-and-pages";
 export const CHECK_RUNS_PER_PAGE = 100;
 export const MAX_CHECK_RUNS = CHECK_RUNS_PER_PAGE;
 export const MAX_CANDIDATE_SHAS = 2;
+export const MAX_ANCESTRY_COMMITS = 100;
 export const MAX_API_REQUESTS = 50;
 export const MAX_PATH_PATTERNS = 100;
 export const MAX_PATH_PATTERN_LENGTH = 1024;
@@ -428,7 +429,13 @@ export async function findCandidateShas({
   const head = assertSha(headSha, "Head SHA");
   const mergeBase = assertSha(mergeBaseSha, "Merge-base SHA");
   const output = await executeGit(
-    ["rev-list", "--topo-order", "--ancestry-path", `${mergeBase}..${head}`],
+    [
+      "rev-list",
+      "--topo-order",
+      "--ancestry-path",
+      `--max-count=${MAX_ANCESTRY_COMMITS + 1}`,
+      `${mergeBase}..${head}`,
+    ],
     execImpl,
   );
   const ancestors = parseShaLines(output, "git rev-list", true);
@@ -436,6 +443,8 @@ export async function findCandidateShas({
   if (head !== mergeBase && ancestors[0] !== head) {
     throw new Error("git rev-list did not start with the pull request head.");
   }
+
+  if (ancestors.length > MAX_ANCESTRY_COMMITS) return [head];
 
   let oldestMatchingSha;
   for (const sha of [...ancestors, mergeBase]) {

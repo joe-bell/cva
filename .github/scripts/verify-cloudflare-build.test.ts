@@ -5,6 +5,7 @@ import {
   CHECK_RUNS_PER_PAGE,
   CLOUDFLARE_APP_ID,
   CLOUDFLARE_APP_SLUG,
+  MAX_ANCESTRY_COMMITS,
   MAX_CANDIDATE_SHAS,
   MAX_CHECK_RUNS,
   MAX_PATH_PATTERNS,
@@ -332,6 +333,33 @@ describe("git ancestry", () => {
       }),
     ).resolves.toEqual([SHAS.head, SHAS.merge]);
     expect(MAX_CANDIDATE_SHAS).toBe(2);
+    expect(git.calls.find(([command]) => command === "rev-list")).toEqual([
+      "rev-list",
+      "--topo-order",
+      "--ancestry-path",
+      `--max-count=${MAX_ANCESTRY_COMMITS + 1}`,
+      `${SHAS.merge}..${SHAS.head}`,
+    ]);
+  });
+
+  it("uses only the head when the ancestry walk exceeds its cap", async () => {
+    const ancestors = Array.from(
+      { length: MAX_ANCESTRY_COMMITS + 1 },
+      (_, index) =>
+        index === 0 ? SHAS.head : index.toString(16).padStart(40, "0"),
+    );
+    const git = gitFixture({ ancestors, trees: {} });
+
+    await expect(
+      findCandidateShas({
+        headSha: SHAS.head,
+        mergeBaseSha: SHAS.merge,
+        headFingerprint: "current",
+        watchPaths: WATCH_PATHS,
+        execImpl: git.execImpl,
+      }),
+    ).resolves.toEqual([SHAS.head]);
+    expect(git.calls).toHaveLength(1);
   });
 
   it("fails closed for multiple merge bases or an incomplete ancestry walk", async () => {
