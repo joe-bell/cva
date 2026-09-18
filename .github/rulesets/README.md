@@ -4,11 +4,11 @@ These files are reviewable request bodies and desired Cloudflare state. They do 
 
 `default-branch.json` is an active branch-ruleset request body. It requires `benchmark`, `build`, `bundlesize`, `check`, `gate`, `prettier`, `syncpack`, and `test`, all from the GitHub Actions app (`15368`). `skills` is not required. GitHub displays the read-only `gate` job as `cloudflare / gate`; the ruleset API stores only its `gate` check-run context. This is not Cloudflare's external `Workers Builds: cva` check. The gate validates that external check by its exact name, Cloudflare app ID (`85455`), and app slug (`cloudflare-workers-and-pages`).
 
-The ruleset allows squash merges only, requires linear history, and prevents deletion and force-pushes. It asks for zero approvals so auto-merge can wait for checks rather than an approval. Joe's `pull_request` bypass (`7349341`) applies to every rule in this ruleset: a manual administrator merge can bypass all of them. It is not a review-only exemption, and it does not guarantee that auto-merge can bypass another active rule or classic protection.
+The ruleset allows squash merges only, requires linear history and the latest default-branch code, and prevents deletion and force-pushes. It asks for zero approvals and does not require conversation resolution, so auto-merge waits for checks rather than review activity. Joe's `always` bypass (`7349341`) applies to every rule. GitHub cannot combine a PR-only bypass with direct force-push access because the pull-request rule would still block the push. The broader bypass preserves the classic rule's administrator behavior and means Joe must choose explicitly when bypassing checks, deletion protection, or the pull-request requirement.
 
 Only people with write permission can enable auto-merge. GitHub [disables auto-merge](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/automatically-merging-a-pull-request) if someone without write permission pushes another commit to the head branch or changes the base branch.
 
-The artifact sets `strict_required_status_checks_policy` to `false`. It does not preserve unknown classic-protection details such as stale-review dismissal, code-owner review, last-push approval, conversation resolution, admin enforcement, or signature rules. The owner must inspect and decide those settings before publishing.
+The main artifact sets `strict_required_status_checks_policy` to `true`. It intentionally replaces the classic rule's one approval, stale-review dismissal, and conversation-resolution requirements with check-only merging. Code-owner review, last-push approval, and commit signatures remain disabled.
 
 ## Owner migration
 
