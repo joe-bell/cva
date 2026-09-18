@@ -32,7 +32,7 @@ jobs:
       - name: Update snapshot
         run: |
           node --input-type=module --eval '
-            const { updateWeeklyDownloads } = await import("./.github/scripts/update-weekly-downloads.mjs");
+            const { updateWeeklyDownloads } = await import("./.github/scripts/update-weekly-downloads.ts");
             const result = await updateWeeklyDownloads();
             console.log(result.changed ? "Updated weekly npm downloads." : "Weekly npm downloads are unchanged.");
           '

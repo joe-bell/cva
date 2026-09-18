@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
       include: [
         "packages/*/src/**/*.ts",
         "test/bench/scripts/**/*.ts",
-        ".github/scripts/**/*.mjs",
+        ".github/scripts/**/*.ts",
         "docs/src/lib/**/*.ts",
         "docs/src/scripts/**/*.ts",
         "docs/src/worker/**/*.ts",
@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => ({
       exclude: [
         "**/coverage/**",
         // Vitest excludes test files by default; explicit for clarity.
-        "**/*.test.{ts,mjs}",
+        "**/*.test.ts",
         // Benchmark definitions only run under `vitest bench` (serial mode,
         // against built dists) and measure timing, not correctness; their
         // orchestration logic lives in harness.ts, which is tested.
@@ -36,7 +36,7 @@ export default defineConfig(({ mode }) => ({
         // `?.`/`??` half-branch proves untestable, prefer lowering these
         // globs' `branches` over adding v8-ignore comments.
         "test/bench/scripts/**/*.ts": { 100: true },
-        ".github/scripts/**/*.mjs": { 100: true },
+        ".github/scripts/**/*.ts": { 100: true },
         "docs/src/lib/**/*.ts": { 100: true },
         "docs/src/scripts/**/*.ts": { 100: true },
         "docs/src/worker/**/*.ts": { 100: true },

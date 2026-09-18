@@ -1,47 +1,79 @@
 /**
  * Trusted glue between an untrusted CI artifact and the sticky PR comment.
  * Validates `meta.json`, cross-checks the producing workflow run against the
- * live PR head, then upserts a rendered section via pr-comment.mjs.
+ * live PR head, then upserts a rendered section via pr-comment.ts.
  *
- * Extracted from pr-comment.yml so the validation logic is unit-testable;
+ * Extracted from pr.yml so the validation logic is unit-testable;
  * the workflow only downloads artifacts, renders markdown, and invokes this.
  */
 import { readFileSync, statSync } from "node:fs";
 
-import { upsertPrComment } from "./pr-comment.mjs";
+import { type PrCommentGithub, upsertPrComment } from "./pr-comment.ts";
 
 export const MAX_META_BYTES = 64 * 1024;
 
-/** @typedef {{ number: number }} WorkflowRunPull */
+type WorkflowRunPull = { number: number };
+type Pull = {
+  head: { sha: string; repo?: { full_name?: string } | null };
+};
+type ProcessGithub = PrCommentGithub & {
+  rest: {
+    pulls: {
+      get: (params: {
+        owner: string;
+        repo: string;
+        pull_number: number;
+      }) => Promise<{ data: Pull }>;
+    };
+  };
+};
+type ProcessBenchmarkPrCommentOptions = {
+  github: ProcessGithub;
+  context: { repo: { owner: string; repo: string } };
+  metaPath: string;
+  sectionContentPath: string;
+  headSha: string;
+  headRepo: string;
+  workflowRunPulls?: WorkflowRunPull[];
+  sectionId?: string;
+  createIfMissing?: boolean;
+};
 
-/**
- * @param {unknown} value
- * @returns {number}
- */
-export function parseArtifactPrNumber(value) {
-  if (!Number.isInteger(value) || value < 1 || value > 1_000_000_000) {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isHttpError(error: unknown): error is { status: number } {
+  return isRecord(error) && typeof error.status === "number";
+}
+
+export function parseArtifactPrNumber(value: unknown): number {
+  if (
+    typeof value !== "number" ||
+    !Number.isInteger(value) ||
+    value < 1 ||
+    value > 1_000_000_000
+  ) {
     throw new Error(`invalid PR number in benchmark artifact: ${value}`);
   }
   return value;
 }
 
-/**
- * @param {string} metaPath
- * @returns {{ pr: number }}
- */
-export function readArtifactMeta(metaPath) {
+export function readArtifactMeta(metaPath: string): { pr: number } {
   if (statSync(metaPath).size > MAX_META_BYTES) {
     throw new Error("benchmark artifact meta.json exceeds the 64 KiB cap");
   }
-  const meta = JSON.parse(readFileSync(metaPath, "utf8"));
+  const meta: unknown = JSON.parse(readFileSync(metaPath, "utf8"));
+  if (!isRecord(meta)) {
+    throw new Error("invalid benchmark artifact metadata");
+  }
   return { pr: parseArtifactPrNumber(meta.pr) };
 }
 
-/**
- * @param {number} pr
- * @param {WorkflowRunPull[]} workflowRunPulls
- */
-export function assertPrBoundToWorkflowRun(pr, workflowRunPulls) {
+export function assertPrBoundToWorkflowRun(
+  pr: number,
+  workflowRunPulls: WorkflowRunPull[],
+) {
   // GitHub omits fork PRs from this array; rely on the head SHA/repo checks
   // when it is empty.
   if (
@@ -54,16 +86,17 @@ export function assertPrBoundToWorkflowRun(pr, workflowRunPulls) {
   }
 }
 
-/**
- * @param {{
- *   pull: { head: { sha: string; repo?: { full_name?: string } | null } };
- *   headSha: string;
- *   headRepo: string;
- *   pr: number;
- * }} input
- * @returns {"mismatch-sha" | "mismatch-repo" | "ok"}
- */
-export function checkPullHeadBinding({ pull, headSha, headRepo, pr }) {
+export function checkPullHeadBinding({
+  pull,
+  headSha,
+  headRepo,
+  pr,
+}: {
+  pull: Pull;
+  headSha: string;
+  headRepo: string;
+  pr: number;
+}) {
   if (pull.head.sha !== headSha) {
     console.log(
       `head SHA mismatch for PR #${pr} (artifact run vs. current head) — skipping, a newer run will comment instead`,
@@ -81,18 +114,6 @@ export function checkPullHeadBinding({ pull, headSha, headRepo, pr }) {
 
 /**
  * Validates an untrusted benchmark artifact and upserts its rendered section.
- *
- * @param {{
- *   github: import("@octokit/rest").Octokit;
- *   context: { repo: { owner: string; repo: string } };
- *   metaPath: string;
- *   sectionContentPath: string;
- *   headSha: string;
- *   headRepo: string;
- *   workflowRunPulls?: WorkflowRunPull[];
- *   sectionId?: string;
- *   createIfMissing?: boolean;
- * }} options
  */
 export async function processBenchmarkPrComment({
   github,
@@ -104,7 +125,7 @@ export async function processBenchmarkPrComment({
   workflowRunPulls = [],
   sectionId = "benchmark",
   createIfMissing = true,
-}) {
+}: ProcessBenchmarkPrCommentOptions) {
   const { pr } = readArtifactMeta(metaPath);
   assertPrBoundToWorkflowRun(pr, workflowRunPulls);
 
@@ -115,7 +136,7 @@ export async function processBenchmarkPrComment({
       pull_number: pr,
     }));
   } catch (error) {
-    if (error.status === 404) {
+    if (isHttpError(error) && error.status === 404) {
       console.log(`PR #${pr} no longer exists — skipping`);
       return { action: "skipped-pr-missing", pr };
     }

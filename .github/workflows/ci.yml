@@ -18,27 +18,88 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      # The ruleset requires this job on every run, but the benchmark work is
+      # needed only for `packages/**` changes. Treat exit 1 as a diff and fail
+      # on every other `git diff` error.
+      - name: Check package changes
+        id: packages
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_SHA: ${{ github.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          case "$EVENT_NAME" in
+            pull_request)
+              base_sha="$PR_BASE_SHA"
+              head_sha="$PR_HEAD_SHA"
+              range_kind="pull request"
+              ;;
+            push)
+              base_sha="$BASE_SHA"
+              head_sha="$HEAD_SHA"
+              range_kind="push"
+              ;;
+            *)
+              echo "Unexpected event for benchmark path detection: $EVENT_NAME" >&2
+              exit 1
+              ;;
+          esac
+
+          if [[ ! "$head_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Expected a full head SHA for $range_kind benchmark path detection." >&2
+            exit 1
+          fi
+          if [[ "$EVENT_NAME" == "push" && "$base_sha" =~ ^0{40}$ ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [[ ! "$base_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Expected a full base SHA for $range_kind benchmark path detection." >&2
+            exit 1
+          fi
+
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            range="$base_sha...$head_sha"
+          else
+            range="$base_sha..$head_sha"
+          fi
+          if git diff --quiet "$range" -- 'packages/**'; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            status=$?
+            if [[ "$status" -eq 1 ]]; then
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+            else
+              exit "$status"
+            fi
+          fi
       - uses: ./.github/actions/install
+        if: steps.packages.outputs.changed == 'true'
       - name: Install published baselines
+        if: steps.packages.outputs.changed == 'true'
         run: pnpm bench:baselines --out "$RUNNER_TEMP/bench-baselines"
       - name: Run benchmarks
+        if: steps.packages.outputs.changed == 'true'
         env:
           BENCH_BASELINES_DIR: ${{ runner.temp }}/bench-baselines
         run: pnpm bench
       # PR code has already run in this job, so do not write a summary from
-      # this runner. The separate pr-comment workflow uses a fresh runner and
+      # this runner. The separate `pr` workflow uses a fresh runner and
       # trusted main-branch code to post the benchmark table for every PR.
       - name: Job summary
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && steps.packages.outputs.changed == 'true'
         run: pnpm bench:compare >> "$GITHUB_STEP_SUMMARY"
       - name: Record PR number
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.packages.outputs.changed == 'true'
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           printf '{ "pr": %d }\n' "$PR_NUMBER" > test/bench/.output/meta.json
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.packages.outputs.changed == 'true'
         with:
           name: benchmark-results
           path: test/bench/.output/
