@@ -56,9 +56,4 @@ The `cloudflare / gate` job is an operational check, not a trusted-workflow boun
 
 The workflow accepts a successful `Workers Builds: cva` check only from the expected Cloudflare GitHub App and only when its watched tree matches the current PR head. If Cloudflare has not reported a result before the bounded deadline, rerun the job after the build finishes.
 
-For a representative contributor-fork PR, rollout accepts either of two outcomes:
-
-- Cloudflare emits the expected `Workers Builds: cva` check and the read-only GitHub Actions job can read it after any required fork-workflow approval.
-- Cloudflare does not post that check for the fork head. The gate then fails closed: a watched fork PR cannot satisfy the required `gate` context or auto-merge, so the owner must explicitly accept manual ruleset bypass after review.
-
-Do not make the gate required until the owner has verified and accepted one of these outcomes.
+Cloudflare does not report Workers Builds checks for watched pull requests from forks, as verified in [PR #438](https://github.com/joe-bell/cva/pull/438). The gate fails those immediately instead of consuming its normal polling window; an owner must review the change and use the ruleset bypass to merge it. Unwatched fork pull requests still pass the gate without a Cloudflare build.

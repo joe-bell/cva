@@ -27,6 +27,7 @@ import {
   parseTreeEntries,
   parseWatchPaths,
   readGateEnvironment,
+  repositoriesMatch,
   selectLatestCloudflareCheck,
   verifyCloudflareBuild,
   waitForCloudflareCheck,
@@ -832,6 +833,7 @@ function verificationOptions(
   return {
     baseSha: SHAS.base,
     headSha: SHAS.head,
+    headRepository: "joe-bell/cva",
     repository: "joe-bell/cva",
     token: "test-token",
     watchPaths: WATCH_PATHS,
@@ -986,6 +988,51 @@ describe("Cloudflare gate", () => {
     ).rejects.toThrow(/Timed out/);
   });
 
+  it("fails immediately when a watched change comes from a fork", async () => {
+    const git = changedVerificationFixture();
+    let fetches = 0;
+
+    await expect(
+      verifyCloudflareBuild(
+        verificationOptions(
+          git,
+          async () => {
+            fetches += 1;
+            return response(checkPage([]));
+          },
+          { headRepository: "contributor/cva" },
+        ),
+      ),
+    ).rejects.toThrow(/watched cross-repository pull requests/);
+    expect(fetches).toBe(0);
+    expect(git.calls.some(([command]) => command === "rev-list")).toBe(false);
+  });
+
+  it("passes an unwatched fork change without an API call", async () => {
+    const unchanged = tree([{ path: "docs/page.mdx" }]);
+    const git = gitFixture({
+      trees: {
+        [SHAS.head]: unchanged,
+        [SHAS.merge]: unchanged,
+      },
+    });
+    let fetches = 0;
+
+    await expect(
+      verifyCloudflareBuild(
+        verificationOptions(
+          git,
+          async () => {
+            fetches += 1;
+            return response(checkPage([]));
+          },
+          { headRepository: "contributor/cva" },
+        ),
+      ),
+    ).resolves.toEqual({ candidateSha: SHAS.head, state: "unchanged" });
+    expect(fetches).toBe(0);
+  });
+
   it("uses the union of immutable merge-base and head watch policies", async () => {
     const git = gitFixture({
       ancestors: [SHAS.head],
@@ -1100,11 +1147,13 @@ describe("environment entrypoint", () => {
       readGateEnvironment({
         BASE_SHA: SHAS.base,
         GITHUB_TOKEN: "test-token",
+        HEAD_REPOSITORY: "Joe-Bell/CVA",
         HEAD_SHA: SHAS.head,
         REPOSITORY: "joe-bell/cva",
       }),
     ).toEqual({
       baseSha: SHAS.base,
+      headRepository: "Joe-Bell/CVA",
       headSha: SHAS.head,
       repository: "joe-bell/cva",
       token: "test-token",
@@ -1113,6 +1162,8 @@ describe("environment entrypoint", () => {
       owner: "joe-bell",
       repo: "cva",
     });
+    expect(repositoriesMatch("Joe-Bell/CVA", "joe-bell/cva")).toBe(true);
+    expect(repositoriesMatch("contributor/cva", "joe-bell/cva")).toBe(false);
     expect(() => parseRepository("joe-bell/cva/extra")).toThrow(/owner\/name/);
 
     const identical = tree([{ object: "1".repeat(40), path: "docs/page.mdx" }]);
@@ -1131,6 +1182,7 @@ describe("environment entrypoint", () => {
           {
             BASE_SHA: SHAS.base,
             GITHUB_TOKEN: "test-token",
+            HEAD_REPOSITORY: "joe-bell/cva",
             HEAD_SHA: SHAS.head,
             REPOSITORY: "joe-bell/cva",
           },
@@ -1153,6 +1205,7 @@ describe("environment entrypoint", () => {
           {
             BASE_SHA: SHAS.base,
             GITHUB_TOKEN: "test-token",
+            HEAD_REPOSITORY: "joe-bell/cva",
             HEAD_SHA: SHAS.head,
             REPOSITORY: "joe-bell/cva",
           },

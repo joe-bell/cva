@@ -30,11 +30,7 @@ Run these from the repository root after reviewing the merged artifacts. The com
 
 3. Prove the live integration on an in-repository PR before requiring the gate. Test a watched docs change, a `packages/**` change, and an unrelated un-watched change. A watched change must produce `Workers Builds: cva` from the expected Cloudflare app and a successful `cloudflare / gate` job. The un-watched change should let the gate pass from the equal watched-tree comparison. A package change must also run the benchmark work; an un-watched PR still receives a successful, inexpensive `benchmark` context.
 
-4. Test a representative contributor-fork PR and accept one of these outcomes before publishing the ruleset:
-   - Cloudflare emits the expected `Workers Builds: cva` check and the read-only GitHub Actions job can read it after any required fork-workflow approval.
-   - Cloudflare does not post that check for the fork head. The gate then fails closed: a watched fork PR cannot satisfy the required `gate` context or auto-merge, so the owner must explicitly accept manual ruleset bypass after review.
-
-   The required `gate` context remains in place in either case. If neither behavior is acceptable or reliable, fix the Cloudflare or fork configuration before rollout; the gate never silently passes a missing fork build.
+4. The watched contributor-fork behavior was verified in [PR #438](https://github.com/joe-bell/cva/pull/438): Cloudflare does not post `Workers Builds: cva` for the fork head after GitHub Actions approval. The gate fails watched cross-repository PRs immediately, so they cannot satisfy the required `gate` context or auto-merge; the owner must review and use the ruleset bypass. Unwatched fork PRs still pass without a Cloudflare build. Keep this accepted fail-closed behavior in place unless Cloudflare begins reporting authoritative fork checks.
 
 5. Enable auto-merge after the checks above are proven. This command mutates repository settings.
 
