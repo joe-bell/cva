@@ -77,7 +77,7 @@ Map the result to the work required. Each row lists exactly what that version ne
 
 `getSchema` did not exist before `beta.5`, so a project on `beta.0` to `beta.4` has nothing to move for it. TypeScript 6 became the floor in `beta.9`, and internal `_`-prefixed variants landed in `beta.8`, so neither applies to a project already on or past those.
 
-If the project is on `class-variance-authority@0.x` rather than a `cva` beta, this is the wrong guide: follow [What's New](https://cva.style/beta/getting-started/whats-new/) instead, then come back here.
+If the project is on `class-variance-authority@0.x` rather than a `cva` beta, this is the wrong guide: the router's `class-variance-authority@0.x` row selects [`references/class-variance-authority-0.x.md`](../class-variance-authority-0.x.md) instead, and it targets the current curated destination rather than `beta.11`.
 
 Release notes exist on GitHub from [`v1.0.0-beta.2`](https://github.com/joe-bell/cva/releases/tag/v1.0.0-beta.2) onward. `beta.0` and `beta.1` were published to npm only, with no GitHub release; do not cite release notes for them.
 
