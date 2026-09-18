@@ -25,9 +25,11 @@
     "prettier": "prettier --config .prettierrc.json --ignore-unknown --no-error-on-unmatched-pattern",
     "syncpack:fix": "syncpack fix",
     "syncpack:lint": "syncpack lint",
-    "test": "vitest --config .config/vitest.config.ts run --coverage"
+    "test": "vitest --config .config/vitest.config.ts run --coverage",
+    "test:conductor": "vitest run --config .config/vitest.config.ts .conductor/scripts/examples.test.mjs"
   },
   "devDependencies": {
+    "@clack/prompts": "1.7.0",
     "@types/node": "24.13.2",
     "@vitest/coverage-v8": "4.1.5",
     "if-env": "1.0.4",

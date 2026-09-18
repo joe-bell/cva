@@ -15,6 +15,9 @@ importers:
 
   .:
     devDependencies:
+      '@clack/prompts':
+        specifier: 1.7.0
+        version: 1.7.0
       '@types/node':
         specifier: 24.13.2
         version: 24.13.2

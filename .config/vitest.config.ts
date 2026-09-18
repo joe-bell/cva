@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => ({
         "packages/*/src/**/*.ts",
         "test/bench/scripts/**/*.ts",
         ".github/scripts/**/*.ts",
+        ".conductor/scripts/**/*.mjs",
         "docs/src/lib/**/*.ts",
         "docs/src/scripts/**/*.ts",
         "docs/src/worker/**/*.ts",
@@ -37,6 +38,7 @@ export default defineConfig(({ mode }) => ({
         // globs' `branches` over adding v8-ignore comments.
         "test/bench/scripts/**/*.ts": { 100: true },
         ".github/scripts/**/*.ts": { 100: true },
+        ".conductor/scripts/**/*.mjs": { 100: true },
         "docs/src/lib/**/*.ts": { 100: true },
         "docs/src/scripts/**/*.ts": { 100: true },
         "docs/src/worker/**/*.ts": { 100: true },
