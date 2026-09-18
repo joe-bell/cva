@@ -89,6 +89,7 @@ type WaitForCheckOptions = {
 type VerifyCloudflareBuildOptions = {
   baseSha: unknown;
   headSha: unknown;
+  headRepository: unknown;
   repository: unknown;
   token: unknown;
   watchPaths?: unknown;
@@ -474,6 +475,15 @@ export function parseRepository(value: unknown) {
   return { owner: parts[0], repo: parts[1] };
 }
 
+export function repositoriesMatch(left: unknown, right: unknown) {
+  const first = parseRepository(left);
+  const second = parseRepository(right);
+  return (
+    first.owner.toLowerCase() === second.owner.toLowerCase() &&
+    first.repo.toLowerCase() === second.repo.toLowerCase()
+  );
+}
+
 export function checkRunsUrl(repository: unknown, sha: unknown, page: unknown) {
   const { owner, repo } = parseRepository(repository);
   const candidate = assertSha(sha, "Check-run SHA");
@@ -804,6 +814,7 @@ export async function waitForCloudflareCheck({
 export async function verifyCloudflareBuild({
   baseSha,
   headSha,
+  headRepository,
   repository,
   token,
   watchPaths,
@@ -819,7 +830,7 @@ export async function verifyCloudflareBuild({
 }: VerifyCloudflareBuildOptions) {
   const base = assertSha(baseSha, "Base SHA");
   const head = assertSha(headSha, "Head SHA");
-  parseRepository(repository);
+  const crossRepository = !repositoriesMatch(repository, headRepository);
   const timeoutMs = assertPositiveInteger(gateTimeoutMs, "Gate timeout");
   const maximumPollAttempts = assertPositiveInteger(
     maxPollAttempts,
@@ -850,6 +861,12 @@ export async function verifyCloudflareBuild({
   );
   if (mergeBaseFingerprint === headFingerprint) {
     return { candidateSha: head, state: "unchanged" as const };
+  }
+
+  if (crossRepository) {
+    throw new Error(
+      "Cloudflare does not report Workers Builds checks for watched cross-repository pull requests; an owner must review the changes and use the ruleset bypass.",
+    );
   }
 
   const candidates = await findCandidateShas({
@@ -912,6 +929,7 @@ export function readGateEnvironment(
 ) {
   return {
     baseSha: environment.BASE_SHA,
+    headRepository: environment.HEAD_REPOSITORY,
     headSha: environment.HEAD_SHA,
     repository: environment.REPOSITORY,
     token: environment.GITHUB_TOKEN,
