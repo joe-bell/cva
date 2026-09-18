@@ -11,7 +11,7 @@
     "build": "pnpm run --filter './packages/**' build",
     "build:examples": "pnpm --filter './examples/**' --parallel build",
     "bundlesize": "pnpm run --filter './packages/**' --parallel bundlesize",
-    "check": "pnpm run check:packages && pnpm run check:conductor",
+    "check": "pnpm --filter root --parallel run '/^check:/'",
     "check:conductor": "tsc --project .config/tsconfig.conductor.json --noEmit",
     "check:packages": "pnpm run --filter './packages/**' --parallel check",
     "check:scripts": "tsc --project .config/tsconfig.scripts.json --noEmit",
@@ -26,8 +26,7 @@
     "prettier": "prettier --config .prettierrc.json --ignore-unknown --no-error-on-unmatched-pattern",
     "syncpack:fix": "syncpack fix",
     "syncpack:lint": "syncpack lint",
-    "test": "vitest --config .config/vitest.config.ts run --coverage",
-    "test:conductor": "vitest run --config .config/vitest.config.ts .conductor/scripts/"
+    "test": "vitest --config .config/vitest.config.ts run --coverage"
   },
   "devDependencies": {
     "@clack/prompts": "1.7.0",

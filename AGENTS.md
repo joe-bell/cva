@@ -180,6 +180,8 @@ Agent-specific notes:
 
 ## Learnings
 
+- Keep `--filter root` in the parallel `check:*` runner. pnpm's `--parallel` runs workspace scripts recursively and otherwise skips the root package, silently omitting its checks.
+
 Durable, hard-won lessons that don't fit a section above. See [Keeping this guide current](#keeping-this-guide-current-self-improving) for what belongs here and how to write it. Newest first; prune anything that's become wrong or obsolete.
 
 - `cloudflare / gate` passes without Cloudflare only when the PR head watched Git tree matches its merge base. When that watched tree has changed, same-repository PRs require a successful `Workers Builds: cva` check on the current head or an ancestor with the identical watched tree. Ancestor reuse scans at most 100 commits; longer histories check only the current head. Cloudflare does not report Workers Builds checks for watched cross-repository PRs, so the gate fails those immediately and requires an owner review plus ruleset bypass. An absent, pending, malformed, or failed result blocks until a rerun. It does not prove a synthetic merge result and remains an ordinary PR-controlled workflow, so review its workflow, script, and desired watch-path JSON as security-sensitive and never switch it to `pull_request_target`.
