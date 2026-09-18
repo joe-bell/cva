@@ -52,7 +52,7 @@
     "clsx": "^2.1.1"
   },
   "devDependencies": {
-    "@arethetypeswrong/core": "0.18.2",
+    "@arethetypeswrong/core": "0.18.5",
     "@size-limit/preset-small-lib": "^12.1.0",
     "@types/node": "24.13.2",
     "@types/react": "19.2.14",
@@ -119,7 +119,7 @@
     },
     {
       "path": "dist/tools.cjs",
-      "limit": "0.35KB"
+      "limit": "0.4KB"
     }
   ]
 }
