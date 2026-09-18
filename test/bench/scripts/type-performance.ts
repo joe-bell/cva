@@ -16,11 +16,20 @@
  *   (`pnpm bench:types`) after an authoring-type change and review the
  *   direction of the diff.
  *
- * Every compiler flag that affects instantiation counts is pinned
- * explicitly on the command line (`--types`, `--lib`, `--target`,
- * `--module`, `--moduleResolution`, `--strict`, `--skipLibCheck`), and the
- * installed TypeScript and `tailwind-merge` versions are recorded in the
- * baseline and checked on every run, because both change what gets counted.
+ * Every compiler flag that can change what tsc counts is pinned explicitly
+ * on the command line (`--lib`, `--target`, `--module`,
+ * `--moduleResolution`, `--strict`, `--skipLibCheck`). `--typeRoots`/
+ * `--types node` are pinned the same defensive way, even though today's
+ * fixtures import no `node:` modules and measure identically with both
+ * flags omitted (verified by hand) — keep them anyway, since a future
+ * fixture importing `node:` would otherwise silently depend on whichever
+ * `@types/*` packages happen to be installed. The installed TypeScript and
+ * `tailwind-merge` versions are recorded in the baseline and checked on
+ * every run, because both change what gets counted. `clsx` is
+ * deliberately not recorded: none of the built declarations a fixture can
+ * import (`dist/index.d.mts`, `dist/config.d.mts`, `dist/tools.d.mts`)
+ * name a clsx type, so deleting `clsx` from `node_modules` entirely and
+ * recompiling every fixture reproduces identical counts.
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -70,6 +79,13 @@ export interface FixtureCompileResult {
   fixture: string;
   instantiations: number | undefined;
   diagnostics: number;
+  // True whenever the tsc process itself exited non-zero (crash, killed by
+  // signal, or genuine diagnostics). Checked ahead of — and independently
+  // of — the parsed `diagnostics`/`instantiations` fields below: stdout
+  // from a failed process can still contain a well-formed `Instantiations:`
+  // line with no `error TS` substring (e.g. a launcher that fails after
+  // tsc has already printed its report), which would otherwise pass.
+  processFailed: boolean;
   stdout: string;
 }
 
@@ -127,10 +143,15 @@ export function diffFixtureSets(
 }
 
 export function checkVersions(
-  baseline: Pick<Baseline, "typescript" | "tailwindMerge">,
+  baseline: Pick<Baseline, "schemaVersion" | "typescript" | "tailwindMerge">,
   installed: { typescript: string; tailwindMerge: string },
 ): string[] {
   const problems: string[] = [];
+  if (baseline.schemaVersion !== SCHEMA_VERSION) {
+    problems.push(
+      `Baseline schema version mismatch: the file records schema ${baseline.schemaVersion}, this script expects ${SCHEMA_VERSION}. Run \`pnpm bench:types\` to rewrite it.`,
+    );
+  }
   if (baseline.typescript !== installed.typescript) {
     problems.push(
       `TypeScript version mismatch: baseline recorded ${baseline.typescript}, installed is ${installed.typescript}. Re-baseline for TypeScript ${installed.typescript} with \`pnpm bench:types\` after confirming the new counts are intended.`,
@@ -170,20 +191,30 @@ export function compileFixture(
   ];
 
   let stdout: string;
+  let processFailed = false;
   try {
     stdout = options.execImpl(options.tscBin, args, {
       cwd: options.packageDir,
       encoding: "utf8",
     });
   } catch (error) {
-    const failure = error as { stdout?: string; message?: string };
-    stdout = failure.stdout ?? failure.message ?? "";
+    processFailed = true;
+    const failure = error as {
+      stdout?: string;
+      stderr?: string;
+      message?: string;
+    };
+    stdout =
+      [failure.stdout, failure.stderr].filter(Boolean).join("\n") ||
+      failure.message ||
+      "";
   }
 
   return {
     fixture,
     instantiations: parseInstantiations(stdout),
     diagnostics: countDiagnostics(stdout),
+    processFailed,
     stdout,
   };
 }
@@ -217,6 +248,12 @@ export function check(
     if (!(name in baseline.fixtures)) continue; // already reported above
 
     const result = compile(name);
+    if (result.processFailed) {
+      problems.push(
+        `Fixture "${name}"'s tsc process exited non-zero, so its output can't be trusted even where it happens to contain a well-formed instantiation count:\n${result.stdout}`,
+      );
+      continue;
+    }
     if (result.diagnostics > 0) {
       problems.push(
         `Fixture "${name}" produced ${result.diagnostics} tsc diagnostic(s), which would otherwise silently pass with a lower (broken) instantiation count:\n${result.stdout}`,
@@ -252,6 +289,12 @@ export function update(
 
   for (const name of fixtureNames) {
     const result = compile(name);
+    if (result.processFailed) {
+      problems.push(
+        `Fixture "${name}"'s tsc process exited non-zero; refusing to bake its output into the baseline even where it happens to contain a well-formed instantiation count:\n${result.stdout}`,
+      );
+      continue;
+    }
     if (result.diagnostics > 0) {
       problems.push(
         `Fixture "${name}" produced ${result.diagnostics} tsc diagnostic(s); refusing to bake a broken count into the baseline:\n${result.stdout}`,
@@ -328,6 +371,12 @@ export function main({
     };
 
     const fixtureNames = listFixtures(fixturesDir, readdirImpl);
+    if (fixtureNames.length === 0) {
+      console.error(
+        `type-performance: no .mts fixtures found under ${fixturesDir}.`,
+      );
+      return 1;
+    }
     const compile = (fixture: string) =>
       compileFixture(fixture, {
         fixturesDir,

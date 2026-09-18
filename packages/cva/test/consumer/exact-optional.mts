@@ -15,7 +15,7 @@ export const withUndefinedClass = button({ class: undefined });
 // admits an explicit `undefined` because the optional modifier widens it —
 // `exactOptionalPropertyTypes` disables that widening, so this is rejected
 // here even though it compiles fine under plain `--strict`.
-// @ts-expect-error: `className` and `class` can't both be provided.
+// @ts-expect-error: TS2345, `undefined` is not assignable to `never` here.
 export const withUndefinedClassName = button({
   class: "x",
   className: undefined,
