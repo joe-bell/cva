@@ -1,13 +1,13 @@
 ---
 name: cva-migrate
-description: Migrate a project between cva versions, routing to a curated per-release guide when one exists and researching the release history when it does not. Use when changing the cva version in a project, when a build breaks after a cva upgrade with errors about missing exports such as compose, hooks, defineConfig or getSchema, or when asked to move cva imports onto a newer entry point.
+description: Migrate a project between cva versions, routing to a curated per-release guide when one exists and researching the release history when it does not. Use when changing the cva version in a project, when replacing class-variance-authority with cva, when a build breaks after a cva upgrade with errors about missing exports such as compose, hooks, defineConfig or getSchema, or when asked to move cva imports onto a newer entry point.
 metadata:
   source: hand-maintained for the joe-bell/cva repository
 ---
 
 # Migrate a `cva` project between versions
 
-This skill is a router. It identifies the source and destination versions, then loads at most one curated guide. Today, the `cva@1.0.0-beta.11` and `cva@1.0.0-beta.12` routes are curated. Research every other route, including downgrades, in Step 3. Never load unrelated references because their instructions may not apply.
+This skill is a router. It identifies the source and destination versions, then loads at most one curated guide. Today, the `cva@1.0.0-beta.11` and `cva@1.0.0-beta.12` routes are curated, plus the route from `class-variance-authority@0.6.0` through `0.7.1` to `cva@1.0.0-beta.12`. Research every other route, including downgrades, in Step 3. Never load unrelated references because their instructions may not apply.
 
 `cva@beta` is not covered by semver and changes without warning. Treat every route below as version-to-version migration guidance, not a semver contract.
 
@@ -30,12 +30,15 @@ Do not read the version with `node -p "require('cva/package.json').version"`. `c
 
 If the output is ambiguous, find the resolved `cva` entry in the project's lockfile. Registry metadata cannot tell you what this project installed.
 
+The source is the package the code being migrated actually imports. If its imports point at `class-variance-authority`, check that package with the same commands, substituting its name for `cva`; the resolved `class-variance-authority` version is the source, even when another dependency or a partly migrated sibling package already pulls a `cva` beta into the tree.
+
 ## Step 2: load the curated guide for that route
 
-| From                                           | To                  | Guide                                                                          |
-| ---------------------------------------------- | ------------------- | ------------------------------------------------------------------------------ |
-| `cva@1.0.0-beta.0` through `cva@1.0.0-beta.10` | `cva@1.0.0-beta.11` | [`references/beta/cva-1.0.0-beta.11.md`](references/beta/cva-1.0.0-beta.11.md) |
-| `cva@1.0.0-beta.0` through `cva@1.0.0-beta.11` | `cva@1.0.0-beta.12` | [`references/beta/cva-1.0.0-beta.12.md`](references/beta/cva-1.0.0-beta.12.md) |
+| From                                             | To                  | Guide                                                                                      |
+| ------------------------------------------------ | ------------------- | ------------------------------------------------------------------------------------------ |
+| `cva@1.0.0-beta.0` through `cva@1.0.0-beta.10`   | `cva@1.0.0-beta.11` | [`references/beta/cva-1.0.0-beta.11.md`](references/beta/cva-1.0.0-beta.11.md)             |
+| `cva@1.0.0-beta.0` through `cva@1.0.0-beta.11`   | `cva@1.0.0-beta.12` | [`references/beta/cva-1.0.0-beta.12.md`](references/beta/cva-1.0.0-beta.12.md)             |
+| `class-variance-authority@0.6.0` through `0.7.1` | `cva@1.0.0-beta.12` | [`references/class-variance-authority-0.x.md`](references/class-variance-authority-0.x.md) |
 
 A row matches only when the installed version falls inside its `From` range and the requested destination equals its `To`. For example, `cva@0.0.0` to `cva@1.0.0-beta.11` does not match because `0.0.0` is outside the supported source range.
 
@@ -56,10 +59,10 @@ Gather evidence in this order:
 
 Apply only the changes that evidence supports. If a release is unavailable, a gap remains unexplained, or a behavior change cannot be confirmed from source or artifacts, **stop and name the missing evidence**.
 
-Two packages share this repository and release independently. `cva` is the beta line; `class-variance-authority` is the stable `0.x` package in maintenance mode, with its own tags and its own `latest` dist-tag. Do not read one package's releases as evidence about the other. Moving from `class-variance-authority@0.x` to `cva@1.0` is a different job with its own documentation: send the user to [What's New](https://cva.style/beta/getting-started/whats-new/).
+Two packages share this repository and release independently. `cva` is the beta line; `class-variance-authority` is the stable `0.x` package in maintenance mode, with its own tags and its own `latest` dist-tag. Do not read one package's releases as evidence about the other. Moving from `class-variance-authority` to a `cva` release other than the curated destination is uncurated too: research it from the `class-variance-authority@0.x` guide's change list, the [What's New](https://cva.style/beta/getting-started/whats-new/) page, and the `cva` releases between the curated destination and the requested one. A source below `class-variance-authority@0.6.0` is uncurated as well: compare its tagged source with `0.7.1` before applying that guide, because `0.5.x` and earlier used a hand-rolled `cx` instead of `clsx`, `0.3.x` and earlier had no array compound selectors, and `0.2.3` and earlier did not map a `0` prop to its variant key (`false` was already mapped; `booleanToString` became `falsyToString` in `0.2.4`).
 
 ## Curating a new route
 
-Curate a route **before** its release is tagged and cut, in the same change as the work that needs it. Add the guide under `references/`, add its row to the table above, and land both with the implementation, so the tag already carries guidance that matches the code. Prerelease guides live in `references/beta/cva-<version>.md`; `references/` itself is reserved for stable-version guides. A release that ships first and documents later leaves every upgrader on the uncurated path.
+Curate a route **before** its release is tagged and cut, in the same change as the work that needs it. Add the guide under `references/`, add its row to the table above, and land both with the implementation, so the tag already carries guidance that matches the code. Prerelease guides live in `references/beta/cva-<version>.md`; `references/` itself is reserved for stable-version guides, including the guide from the stable `class-variance-authority@0.x` package, whose destination row moves forward with each `cva` release that the guide is re-verified against. A release that ships first and documents later leaves every upgrader on the uncurated path.
 
 Keep every earlier `From` version the new guide still serves: a project on an old prerelease is still a project the next release has to migrate. Only remove a row when it is wrong, never because a newer version exists.

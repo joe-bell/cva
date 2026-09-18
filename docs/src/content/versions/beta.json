@@ -5,7 +5,11 @@
     {
       "label": "Getting Started",
       "items": [
-        { "label": "What's New?", "link": "/getting-started/whats-new" },
+        {
+          "label": "What's New?",
+          "link": "/getting-started/whats-new",
+          "badge": { "text": "1.0", "variant": "note" }
+        },
         { "label": "Installation", "link": "/getting-started/installation" },
         { "label": "Variants", "link": "/getting-started/variants" },
         {
