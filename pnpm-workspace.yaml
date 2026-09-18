@@ -2,9 +2,17 @@ overrides:
   "class-variance-authority": "workspace:*"
   "cva": "workspace:*"
   # Keep bundle measurements stable when unrelated tooling updates esbuild.
-  "@size-limit/esbuild>esbuild": "0.28.0"
+  # GHSA-g7r4-m6w7-qqqr is fixed in 0.28.1; hold the pin at that patch.
+  "@size-limit/esbuild>esbuild": "0.28.1"
   "mdast-util-directive>mdast-util-to-markdown": "2.1.2"
   "vite": "^8.1.0"
+  # Security advisories in transitive development dependencies. Drop each entry
+  # once every dependent resolves a patched version on its own.
+  "brace-expansion@^5.0.0": "^5.0.12" # GHSA-mh99-v99m-4gvg, GHSA-rgw5-rvv9-x895
+  "devalue": "^5.9.2" # GHSA-9rgm-9g3h-6x36
+  "nanoid@^5.0.0": "^5.1.16" # GHSA-28wg-ghj8-5hjv
+  "sharp": "^0.35.4" # GHSA-rgj7-g3m4-5g8c
+  "yaml@^2.0.0": "^2.8.3" # GHSA-48c2-rrv3-qjmp
 
 minimumReleaseAge: 4320
 
