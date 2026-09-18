@@ -11,7 +11,8 @@
     "build": "pnpm run --filter './packages/**' build",
     "build:examples": "pnpm --filter './examples/**' --parallel build",
     "bundlesize": "pnpm run --filter './packages/**' --parallel bundlesize",
-    "check": "pnpm run '/^check:.*/'",
+    "check": "pnpm run check:packages && pnpm run check:conductor",
+    "check:conductor": "tsc --project .config/tsconfig.conductor.json --noEmit",
     "check:packages": "pnpm run --filter './packages/**' --parallel check",
     "check:scripts": "tsc --project .config/tsconfig.scripts.json --noEmit",
     "dev": "vitest --config .config/vitest.config.ts",
@@ -26,7 +27,7 @@
     "syncpack:fix": "syncpack fix",
     "syncpack:lint": "syncpack lint",
     "test": "vitest --config .config/vitest.config.ts run --coverage",
-    "test:conductor": "vitest run --config .config/vitest.config.ts .conductor/scripts/examples.test.mjs"
+    "test:conductor": "vitest run --config .config/vitest.config.ts .conductor/scripts/"
   },
   "devDependencies": {
     "@clack/prompts": "1.7.0",

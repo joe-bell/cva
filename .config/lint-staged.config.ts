@@ -8,6 +8,8 @@ export default {
   ],
   "{.config/*.{mts,ts},.config/tsconfig.*.json,.github/scripts/*.ts}": () =>
     "pnpm check:scripts",
+  "{.conductor/scripts/*.ts,.config/tsconfig.conductor.json}": () =>
+    "pnpm check:conductor",
   "package.json": () => "pnpm syncpack:lint",
   // One pattern avoids parallel lint runs when a change touches multiple inputs.
   "{.agents/skills/**,skills/**,skill-check.config.json}": () =>

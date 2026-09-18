@@ -71,6 +71,7 @@ Run these from the repo root:
 - `pnpm syncpack:lint` – checks dependency-version consistency (`pnpm syncpack:fix` to fix)
 - `pnpm lint:skills` – validates the agent skills in `.agents/skills` and `skills` (`skill-check`, strict mode)
 - `pnpm lint-staged` – runs the pre-commit checks against currently staged files (exactly what the pre-commit hook runs)
+- `pnpm check:conductor` – typechecks the Conductor launchers and their tests
 - `pnpm test:conductor` – checks Conductor's example discovery, command arguments, cancellation, and terminal handoff
 
 To scope a package script, use a pnpm filter with one it defines, e.g. `pnpm --filter cva check`. `cva` has no `test` script, so `pnpm --filter cva test` succeeds without running tests. To run its runtime tests, use `pnpm exec vitest run --config .config/vitest.config.ts packages/cva`; this scoped command does not collect coverage. Run `pnpm test` for the full coverage gate and `pnpm check` separately for compile-time type assertions.

@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2024"],
+    "module": "ESNext",
+    "target": "ES2024",
+    "types": ["node"],
+    "erasableSyntaxOnly": true
+  },
+  "include": ["../.conductor/scripts/*.ts"]
+}

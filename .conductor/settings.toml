@@ -8,12 +8,12 @@ setup = "bash .conductor/scripts/setup.sh"
 run_mode = "concurrent"
 
 [scripts.run.docs]
-command = "sh .conductor/scripts/run.sh sh .conductor/scripts/docs.sh"
+command = "sh .conductor/scripts/run.sh node .conductor/scripts/docs.ts"
 default = true
 icon = "book-open"
 
 [scripts.run.examples]
-command = "sh .conductor/scripts/run.sh node .conductor/scripts/examples.mjs"
+command = "sh .conductor/scripts/run.sh node .conductor/scripts/examples.ts"
 icon = "app-window"
 
 [scripts.run.dev]

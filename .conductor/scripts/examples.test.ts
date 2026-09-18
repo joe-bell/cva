@@ -1,19 +1,19 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { test } from "vitest";
+import { test, vi } from "vitest";
 import {
   createDevCommand,
   discoverExamples,
   getExamplePort,
   run,
   restoreTerminal,
-} from "./examples.mjs";
+} from "./examples.ts";
 
-async function withFixture(callback) {
+async function withFixture(callback: (rootPath: string) => Promise<void>) {
   const rootPath = await mkdtemp(join(tmpdir(), "cva-conductor-examples-"));
   try {
     for (const [version, name] of [
@@ -81,7 +81,7 @@ test("cancelling leaves the server unstarted", async () => {
     let execCalls = 0;
     const code = await run({
       rootPath,
-      input: { isTTY: true, resume() {} },
+      terminal: { isTTY: true },
       prompt: async () => "cancelled",
       isCancelled: (value) => value === "cancelled",
       execve: () => {
@@ -95,10 +95,10 @@ test("cancelling leaves the server unstarted", async () => {
 
 test("restores terminal state before replacing itself with the server", async () => {
   await withFixture(async (rootPath) => {
-    const events = [];
-    const input = {
+    const events: unknown[][] = [];
+    const terminal = {
       isTTY: true,
-      setRawMode(value) {
+      setRawMode(value: boolean) {
         events.push(["rawMode", value]);
       },
       resume() {
@@ -108,7 +108,7 @@ test("restores terminal state before replacing itself with the server", async ()
     const code = await run({
       rootPath,
       env: { CONDUCTOR_IS_LOCAL: "1", CONDUCTOR_PORT: "5000" },
-      input,
+      terminal,
       prompt: async ({ options }) => options[0].value,
       execve: (...args) => events.push(["execve", ...args]),
     });
@@ -171,17 +171,24 @@ test("rejects missing, malformed and out-of-range local ports", () => {
 
 test("does not launch without examples or an interactive terminal", async () => {
   await withFixture(async (rootPath) => {
-    assert.equal(await run({ rootPath, input: { isTTY: false } }), 1);
+    assert.equal(await run({ rootPath, terminal: { isTTY: false } }), 1);
     await rm(join(rootPath, "examples"), { recursive: true });
     assert.equal(await run({ rootPath }), 1);
   });
-  // Defaults locate the repository from this module, independently of cwd.
-  assert.equal(await run(), 1);
+  const error = vi.spyOn(console, "error").mockImplementation(() => {});
+  try {
+    assert.equal(await run(), 1);
+    assert.deepEqual(error.mock.calls, [
+      ["Examples selection requires a TTY."],
+    ]);
+  } finally {
+    error.mockRestore();
+  }
 });
 
 test("rejects invalid selection and unsupported Node before launching", async () => {
   await withFixture(async (rootPath) => {
-    const options = { rootPath, input: { isTTY: true } };
+    const options = { rootPath, terminal: { isTTY: true } };
     assert.equal(await run({ ...options, prompt: async () => "missing" }), 1);
     await assert.rejects(
       run({
@@ -192,15 +199,56 @@ test("rejects invalid selection and unsupported Node before launching", async ()
       /Node 24/,
     );
   });
-  restoreTerminal({ isTTY: false });
 });
 
 test("CLI locates examples outside the repo cwd and exits without a terminal", () => {
   const result = spawnSync(
     process.execPath,
-    [fileURLToPath(new URL("./examples.mjs", import.meta.url))],
+    [fileURLToPath(new URL("./examples.ts", import.meta.url))],
     { cwd: tmpdir(), encoding: "utf8" },
   );
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Examples selection requires a TTY/);
+});
+
+test("terminal restoration tolerates non-TTY input", () => {
+  assert.doesNotThrow(() => restoreTerminal({ isTTY: false }));
+});
+
+test("ignores manifests without an object containing a string dev script", async () => {
+  await withFixture(async (rootPath) => {
+    for (const manifest of [
+      null,
+      1,
+      [],
+      { scripts: null },
+      { scripts: 1 },
+      { scripts: {} },
+      { scripts: { dev: 1 } },
+    ]) {
+      await writeFile(
+        join(rootPath, "examples/beta/astro-example/package.json"),
+        JSON.stringify(manifest),
+      );
+      assert.equal((await discoverExamples(rootPath)).length, 1);
+    }
+  });
+});
+
+test("CLI follows symlinked paths without module-type warnings", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "cva-picker-symlink-"));
+  try {
+    const launcher = join(directory, "examples.ts");
+    await symlink(
+      fileURLToPath(new URL("./examples.ts", import.meta.url)),
+      launcher,
+    );
+    const result = spawnSync(process.execPath, [launcher], {
+      encoding: "utf8",
+    });
+    assert.equal(result.status, 1);
+    assert.equal(result.stderr.trim(), "Examples selection requires a TTY.");
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });

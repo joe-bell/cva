@@ -1,23 +1,36 @@
 #!/usr/bin/env node
 
+import { realpathSync } from "node:fs";
+import { getLocalPort } from "./ports.ts";
 import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { join, resolve } from "node:path";
-import { isCancel, select } from "@clack/prompts";
+import { join } from "node:path";
+import { isCancel, select, type SelectOptions } from "@clack/prompts";
 
 const EXAMPLE_VERSIONS = ["beta", "latest"];
 const CLOUD_PORT = 4322;
 
-export async function discoverExamples(rootPath, fs = { readdir, readFile }) {
-  const examples = [];
+interface Example {
+  label: string;
+  path: string;
+  version: string;
+}
+
+interface TerminalInput {
+  isTTY?: boolean;
+  setRawMode?: (mode: boolean) => unknown;
+}
+
+export async function discoverExamples(rootPath: string) {
+  const examples: Example[] = [];
 
   for (const version of EXAMPLE_VERSIONS) {
     const versionPath = join(rootPath, "examples", version);
     let entries;
     try {
-      entries = await fs.readdir(versionPath, { withFileTypes: true });
+      entries = await readdir(versionPath, { withFileTypes: true });
     } catch (error) {
-      if (error.code === "ENOENT") continue;
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") continue;
       throw error;
     }
 
@@ -25,15 +38,24 @@ export async function discoverExamples(rootPath, fs = { readdir, readFile }) {
       if (!entry.isDirectory()) continue;
 
       const packagePath = join(versionPath, entry.name, "package.json");
-      let packageJson;
+      let packageJson: unknown;
       try {
-        packageJson = JSON.parse(await fs.readFile(packagePath, "utf8"));
+        packageJson = JSON.parse(await readFile(packagePath, "utf8"));
       } catch (error) {
-        if (error.code === "ENOENT") continue;
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") continue;
         throw error;
       }
 
-      if (typeof packageJson.scripts?.dev !== "string") continue;
+      if (
+        typeof packageJson !== "object" ||
+        packageJson === null ||
+        !("scripts" in packageJson) ||
+        typeof packageJson.scripts !== "object" ||
+        packageJson.scripts === null ||
+        !("dev" in packageJson.scripts) ||
+        typeof packageJson.scripts.dev !== "string"
+      )
+        continue;
 
       examples.push({
         label: `${version}: ${entry.name}`,
@@ -46,53 +68,55 @@ export async function discoverExamples(rootPath, fs = { readdir, readFile }) {
   return examples.sort((a, b) => a.label.localeCompare(b.label));
 }
 
-function parsePort(value, name) {
-  const port = Number(value);
-  if (
-    !/^\d+$/.test(value) ||
-    !Number.isInteger(port) ||
-    port < 1 ||
-    port > 65534
-  ) {
-    throw new Error(`${name} must be an allocated TCP port`);
-  }
-  return port;
-}
-
-export function getExamplePort(env) {
+export function getExamplePort(env: NodeJS.ProcessEnv) {
   if (env.CONDUCTOR_IS_LOCAL === "0") return CLOUD_PORT;
-  return parsePort(env.CONDUCTOR_PORT, "CONDUCTOR_PORT") + 1;
+  return getLocalPort(env.CONDUCTOR_PORT) + 1;
 }
 
-export function createDevCommand(example, env, rootPath) {
+export function createDevCommand(
+  example: { path: string },
+  env: NodeJS.ProcessEnv,
+  rootPath: string,
+) {
   const command = ["pnpm", "--dir", rootPath, "--filter", example.path, "dev"];
   if (env.CONDUCTOR_IS_LOCAL === "0") command.push("--host", "0.0.0.0");
   command.push("--port", String(getExamplePort(env)));
   return command;
 }
 
-export function restoreTerminal(input) {
-  if (input.isTTY && typeof input.setRawMode === "function") {
-    input.setRawMode(false);
+export function restoreTerminal(terminal: TerminalInput) {
+  if (terminal.isTTY && typeof terminal.setRawMode === "function") {
+    terminal.setRawMode(false);
   }
+}
+
+interface RunOptions {
+  rootPath?: string;
+  env?: NodeJS.ProcessEnv;
+  terminal?: TerminalInput;
+  prompt?: (options: SelectOptions<string>) => Promise<string | symbol>;
+  isCancelled?: (value: unknown) => boolean;
+  // Null models a runtime without execve in the compatibility test.
+  execve?:
+    | ((file: string, args: string[], env: NodeJS.ProcessEnv) => void)
+    | null;
 }
 
 export async function run({
   rootPath = fileURLToPath(new URL("../../", import.meta.url)),
   env = process.env,
-  input = process.stdin,
-  output = process.stdout,
+  terminal = process.stdin,
   prompt = select,
   isCancelled = isCancel,
   execve = process.execve,
-} = {}) {
+}: RunOptions = {}) {
   const examples = await discoverExamples(rootPath);
   if (examples.length === 0) {
     console.error("No examples with a dev script were found.");
     return 1;
   }
 
-  if (!input.isTTY) {
+  if (!terminal.isTTY) {
     console.error("Examples selection requires a TTY.");
     return 1;
   }
@@ -103,29 +127,27 @@ export async function run({
       label: example.label,
       value: example.path,
     })),
-    input,
-    output,
   });
 
   if (isCancelled(selected)) {
-    restoreTerminal(input);
+    restoreTerminal(terminal);
     return 130;
   }
 
   const example = examples.find(({ path }) => path === selected);
   if (!example) {
-    restoreTerminal(input);
+    restoreTerminal(terminal);
     console.error("The selected example is no longer available.");
     return 1;
   }
 
   if (typeof execve !== "function") {
-    restoreTerminal(input);
+    restoreTerminal(terminal);
     throw new Error("Node 24 or newer is required to run an example");
   }
 
   const command = createDevCommand(example, env, rootPath);
-  restoreTerminal(input);
+  restoreTerminal(terminal);
   // Replacing the selector keeps the dev server in Conductor's process group.
   execve(
     "/bin/sh",
@@ -137,9 +159,9 @@ export async function run({
 
 /* v8 ignore start -- process entrypoint; subprocess and PTY checks exercise
    this block, but subprocess coverage is not collected. */
-const isMainModule = process.argv[1]
-  ? resolve(fileURLToPath(import.meta.url)) === resolve(process.argv[1])
-  : false;
+const isMainModule =
+  process.argv[1] !== undefined &&
+  realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
 
 if (isMainModule) {
   run()
