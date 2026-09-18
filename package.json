@@ -11,7 +11,7 @@
     "build": "pnpm run --filter './packages/**' build",
     "build:examples": "pnpm --filter './examples/**' --parallel build",
     "bundlesize": "pnpm run --filter './packages/**' --parallel bundlesize",
-    "check": "pnpm run '/^check:.*/'",
+    "check": "pnpm --filter root --parallel run '/^check:/'",
     "check:packages": "pnpm run --filter './packages/**' --parallel check",
     "check:scripts": "tsc --project .config/tsconfig.scripts.json --noEmit",
     "dev": "vitest --config .config/vitest.config.ts",
@@ -28,6 +28,7 @@
     "test": "vitest --config .config/vitest.config.ts run --coverage"
   },
   "devDependencies": {
+    "@clack/prompts": "1.7.0",
     "@types/node": "24.13.2",
     "@vitest/coverage-v8": "4.1.5",
     "if-env": "1.0.4",

@@ -1,17 +1,16 @@
 import React from "react";
-import type { VariantProps } from "cva";
-import { cva } from "../../cva.config";
+import { cva, type VariantProps } from "cva";
 
 export const button = cva({
-  base: "font-semibold border rounded",
+  base: "base:font-semibold base:border base:rounded",
   variants: {
     intent: {
-      primary: "bg-blue-500 text-white border-transparent",
-      secondary: "bg-white text-gray-800 border-gray-400",
+      primary: "base:bg-blue-500 base:text-white base:border-transparent",
+      secondary: "base:bg-white base:text-gray-800 base:border-gray-400",
     },
     size: {
-      small: "py-1 px-2 text-sm",
-      medium: "py-2 px-4 text-base",
+      small: "base:py-1 base:px-2 base:text-sm",
+      medium: "base:py-2 base:px-4 base:text-base",
     },
     disabled: {
       false: null,
@@ -29,7 +28,7 @@ export const button = cva({
       disabled: false,
       class: "hover:bg-gray-100",
     },
-    { intent: "primary", size: "medium", class: "uppercase" },
+    { intent: "primary", size: "medium", class: "base:uppercase" },
   ],
 });
 

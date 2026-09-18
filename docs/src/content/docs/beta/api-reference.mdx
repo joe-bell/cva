@@ -13,7 +13,11 @@ import { cva } from "cva";
 const component = cva(options);
 ```
 
-`cva` reads `options` during creation. Treat it, and everything it references, as immutable afterwards: to change a component's configuration, create a new component. A call reads only the props you pass it, plus the `cx` you gave [`defineConfig`](#defineconfig), which stays live. Getters with side effects, and changing the props object while the call is running, are unsupported.
+:::caution[Treat component configuration as immutable]
+`cva` reads `options` during creation. Treat it, and everything it references, as immutable afterwards. To change a component's configuration, create a new component.
+:::
+
+A call reads only the props you pass it, plus the `cx` you gave [`defineConfig`](#defineconfig), which stays live. Getters with side effects, and changing the props object while the call is running, are unsupported.
 
 ### Parameters
 
@@ -35,12 +39,18 @@ Concatenates class names (an alias of [`clsx`](https://github.com/lukeed/clsx); 
 ```ts
 import { cx } from "cva";
 
-const className = cx(classes);
+cx("button", "rounded");
 ```
+
+:::tip[Use cx for conditional class names]
+Use the included `cx` instead of adding `clsx` or `classnames` for conditional class names.
+:::
+
+See the [`clsx` documentation](https://github.com/lukeed/clsx#usage) for examples of strings, arrays, and conditional objects. If you configure a different concatenator, follow its documentation for supported inputs; see [handling class conflicts](/beta/getting-started/installation#handling-class-conflicts) for the Tailwind CSS options.
 
 ### Parameters
 
-- `classes`: zero or more class values. The preset accepts [`clsx` values](https://github.com/lukeed/clsx#input); `cva/config` uses the configured concatenator's grammar
+- Zero or more class values. The preset accepts [`clsx` values](https://github.com/lukeed/clsx#input); `cva/config` uses the configured concatenator's grammar
 
 ### Returns
 

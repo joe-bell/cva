@@ -1,4 +1,5 @@
 import React from "react";
+import { cx } from "cva";
 import { getSchema } from "cva/tools";
 import { Button, button } from "./components";
 
@@ -7,9 +8,14 @@ const intents = [undefined, ...schema.intent.values];
 const sizes = [undefined, ...schema.size.values];
 const isDisabled = schema.disabled.values;
 
-function App() {
+export function ButtonGallery() {
   return (
-    <table className="variant-table">
+    <table
+      className={cx(
+        "relative h-max w-max self-center justify-self-center",
+        "[&_:where(th,td)]:p-2",
+      )}
+    >
       <caption>Button variants</caption>
       <thead>
         <tr>
@@ -46,5 +52,3 @@ function App() {
     </table>
   );
 }
-
-export default App;

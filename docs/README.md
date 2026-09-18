@@ -40,6 +40,7 @@ The checked-in [wrangler.jsonc](./wrangler.jsonc) is the source configuration. A
 Cloudflare Workers Builds watch paths are trigger settings, not `wrangler.jsonc` fields. They can be managed through the Cloudflare Builds API or the dashboard under **Settings → Build → Build watch paths**, and they are repository-root-relative.
 
 - `docs/*`
+- `examples/beta/react-with-tailwindcss/*`: the Tools page imports its button and gallery source from this example.
 - `packages/cva/*`
 - `packages/class-variance-authority/*`
 - `.config/*`

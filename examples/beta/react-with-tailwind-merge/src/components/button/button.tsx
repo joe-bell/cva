@@ -2,13 +2,12 @@ import React from "react";
 import type { VariantProps } from "cva";
 import { cva } from "../../cva.config";
 
-const button = cva({
-  // Variant and `className` conflicts override base values.
-  base: "font-semibold border rounded bg-gray-200 text-gray-800",
+export const button = cva({
+  base: "font-semibold border rounded",
   variants: {
     intent: {
       primary: "bg-blue-500 text-white border-transparent",
-      secondary: "bg-white border-gray-400",
+      secondary: "bg-white text-gray-800 border-gray-400",
     },
     size: {
       small: "py-1 px-2 text-sm",
@@ -32,11 +31,6 @@ const button = cva({
     },
     { intent: "primary", size: "medium", class: "uppercase" },
   ],
-  defaultVariants: {
-    disabled: false,
-    intent: "primary",
-    size: "medium",
-  },
 });
 
 export interface ButtonProps
@@ -46,14 +40,14 @@ export interface ButtonProps
 
 export const Button: React.FC<ButtonProps> = ({
   className,
-  intent,
-  size,
-  disabled,
+  intent = "primary",
+  size = "medium",
+  disabled = false,
   ...props
 }) => (
   <button
     className={button({ intent, size, disabled, className })}
-    disabled={disabled || undefined}
+    disabled={disabled}
     {...props}
   />
 );

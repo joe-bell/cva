@@ -4,12 +4,14 @@
     "lib": ["ES2024", "DOM"],
     "module": "ESNext",
     "target": "ES2024",
-    "types": ["node", "vitest/globals"]
+    "types": ["node", "vitest/globals"],
+    "erasableSyntaxOnly": true
   },
   "include": [
     "./lint-staged.config.ts",
     "./tsdown.base.mts",
     "./vitest.config.ts",
-    "../.github/scripts/*.ts"
+    "../.github/scripts/*.ts",
+    "../.conductor/scripts/*.ts"
   ]
 }

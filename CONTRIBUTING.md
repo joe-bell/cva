@@ -74,6 +74,8 @@ Run these from the repo root:
 
 To scope a package script, use a pnpm filter with one it defines, e.g. `pnpm --filter cva check`. `cva` has no `test` script, so `pnpm --filter cva test` succeeds without running tests. To run its runtime tests, use `pnpm exec vitest run --config .config/vitest.config.ts packages/cva`; this scoped command does not collect coverage. Run `pnpm test` for the full coverage gate and `pnpm check` separately for compile-time type assertions.
 
+Conductor's Docs run entry uses the allocated `CONDUCTOR_PORT` locally and port `4321` in cloud workspaces. Its Examples entry discovers packages with a `dev` script under `examples/beta` and `examples/latest`. Use the arrow keys and Enter to start an example on the next local port or cloud port `4322`; Ctrl-C cancels the prompt. Stop and restart Examples to choose another example. Example `dev` scripts must forward `--port` and `--host` to their server. Open the URL printed by the selected server.
+
 CI gates on `build`, `bundlesize`, `check`, `prettier`, `skills`, `syncpack`, and `test`, so run the matching scripts locally before opening a PR. CI also runs an informational `benchmark` job, which posts its results as a PR comment.
 
 ### Build & publish (`packages/*`)

@@ -1,8 +1,8 @@
 import React from "react";
 import { cva, type VariantProps } from "cva";
 
-const button = cva({
-  base: "button",
+export const button = cva({
+  base: "font-semibold border rounded",
   variants: {
     intent: {
       primary: "bg-blue-500 text-white border-transparent",
@@ -30,11 +30,6 @@ const button = cva({
     },
     { intent: "primary", size: "medium", class: "uppercase" },
   ],
-  defaultVariants: {
-    disabled: false,
-    intent: "primary",
-    size: "medium",
-  },
 });
 
 export interface ButtonProps
@@ -44,14 +39,14 @@ export interface ButtonProps
 
 export const Button: React.FC<ButtonProps> = ({
   className,
-  intent,
-  size,
-  disabled,
+  intent = "primary",
+  size = "medium",
+  disabled = false,
   ...props
 }) => (
   <button
     className={button({ intent, size, disabled, className })}
-    disabled={disabled || undefined}
+    disabled={disabled}
     {...props}
   />
 );

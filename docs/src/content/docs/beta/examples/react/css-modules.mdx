@@ -5,7 +5,9 @@ description: A cva button component styled with CSS Modules in React.
 
 import StackBlitz from "../../../../../components/stackblitz.astro";
 
-This example builds a `button` component with `cva`, styled with CSS Modules, in a React project.
+This example builds a `button` component with `cva`, styled with CSS Modules, in a React project. The button gallery in `src/app.tsx` reads the component schema with [`getSchema`](/beta/getting-started/tools#generate-a-react-variant-gallery), so new variant values appear without updating a second list.
+
+This example declares `defaultVariants` on the class function, so `getSchema` exposes each variant's `defaultValue`. See [Default variants](/beta/getting-started/variants#default-variants) for when to use class-function defaults or framework prop defaults.
 
 <StackBlitz
   dir="examples/beta/react-with-css-modules"

@@ -168,6 +168,7 @@ describe("watch paths", () => {
       exclude: [],
       include: [
         "docs/*",
+        "examples/beta/react-with-tailwindcss/*",
         "packages/cva/*",
         "packages/class-variance-authority/*",
         ".config/*",

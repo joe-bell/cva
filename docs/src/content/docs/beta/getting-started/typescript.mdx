@@ -7,19 +7,27 @@ description: Extract variant types with VariantProps and require specific varian
 
 `cva` offers the `VariantProps` helper to extract variant types.
 
-`VariantProps` omits variant names prefixed with `_`; see [Internal variants](/beta/getting-started/variants#internal-variants).
+:::tip[Keep component props inferred]
+Use `VariantProps` instead of repeating variant unions. Combine it with native element props when wrapping a UI component, and forward semantic attributes such as `disabled` to the element as well as the class function.
+:::
+
+`VariantProps` contains public variant props, not `class` or `className`. It omits variant names prefixed with `_`; see [Internal variants](/beta/getting-started/variants#internal-variants).
 
 ```ts
 // components/button.ts
-import type { VariantProps } from "cva";
-import { cva, cx } from "cva";
+import { cva, type VariantProps } from "cva";
 
-/**
- * Button
- */
+export const button = cva({
+  base: "button",
+  variants: {
+    intent: { primary: "button--primary", secondary: "button--secondary" },
+  },
+});
+
 export type ButtonProps = VariantProps<typeof button>;
-export const button = cva(/* … */);
 ```
+
+For a React component that combines these variants with native button props, see [generating a React variant gallery](/beta/getting-started/tools#generate-a-react-variant-gallery).
 
 ## Required variants
 

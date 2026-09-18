@@ -3,6 +3,11 @@ title: Tools
 description: Read a component's variant names, values, and defaults with getSchema from cva/tools.
 ---
 
+import { Code } from "@astrojs/starlight/components";
+
+import buttonSource from "../../../../../../examples/beta/react-with-tailwindcss/src/components/button/button.tsx?raw";
+import gallerySource from "../../../../../../examples/beta/react-with-tailwindcss/src/button-gallery.tsx?raw";
+
 The `cva/tools` entry point holds the helpers that read a component's variants back out at runtime. It's a separate entry point, so an ESM bundler drops it from a build that never imports it.
 
 ## `getSchema`
@@ -59,3 +64,29 @@ const schema = getSchema(badge);
 Boolean and numeric variant keys come back as booleans and numbers, matching the props the component accepts rather than the object keys they were written as. [Internal variants](/beta/getting-started/variants#internal-variants) are omitted.
 
 For the full signature, see the [API reference](/beta/api-reference#getschema).
+
+## Generate a React variant gallery
+
+The runnable [React with Tailwind CSS example](/beta/examples/react/tailwindcss#basic-component) exports its `button` class function separately from its React wrapper. The wrapper supplies `intent`, `size`, and `disabled` defaults so styling and native attributes use the same values:
+
+<Code
+  code={buttonSource}
+  lang="tsx"
+  title="examples/beta/react-with-tailwindcss/src/components/button/button.tsx"
+/>
+
+Pass `button`, the `cva` class function, to `getSchema`. The React `Button` renders markup and is not a valid input. Read the schema outside the render function, then map its typed values into buttons:
+
+<Code
+  code={gallerySource}
+  lang="tsx"
+  title="examples/beta/react-with-tailwindcss/src/button-gallery.tsx"
+/>
+
+Adding an intent or size to `button` now adds it to the gallery without another list to update. The default cells leave those props unset, exercising the React wrapper's prop defaults, while each row passes `disabled` explicitly. `getSchema` cannot discover wrapper defaults, so use `defaultVariants` when the class function itself should expose a `defaultValue`.
+
+The [React examples](/beta/examples/react/tailwindcss) use this approach with default, size, intent, and disabled states.
+
+:::tip[Keep schema inspection in stories]
+Read a schema outside rendering and derive layout counts from its `values` arrays. Keep this inspection in stories or documentation when the application does not need it at runtime.
+:::

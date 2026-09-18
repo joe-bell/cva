@@ -5,37 +5,53 @@ description: A cva button component built with React and Tailwind CSS, including
 
 import StackBlitz from "../../../../../components/stackblitz.astro";
 
-These examples build a React `button` component with `cva` and Tailwind CSS. They cover compound components and conflicting Tailwind classes.
+The four button examples build the same React `button` component with `cva` and Tailwind CSS. Each gallery reads the component schema with [`getSchema`](/beta/getting-started/tools#generate-a-react-variant-gallery), so new variant values appear without updating a second list. The wrapper supplies defaults for the rendered button and forwards semantic `disabled` attributes. The compound example below is a separate component set.
 
 ## Basic component
+
+The default `cva` preset joins classes with `cx`. It keeps every matching utility in the output, so conflicting Tailwind classes remain for the stylesheet to resolve.
 
 <StackBlitz
   dir="examples/beta/react-with-tailwindcss"
   file="src/components/button/button.tsx"
 />
 
+## Handling class conflicts
+
+The optional strategies below use the same variants, defaults, and gallery as the basic example. See [Handling class conflicts](/beta/getting-started/installation#handling-class-conflicts) for setup details.
+
+### cn
+
+[`cn`](https://www.npmjs.com/package/cn) joins conditional classes and resolves Tailwind CSS conflicts at runtime. The configured `cx` preserves conditional inputs while the merge removes conflicting utilities.
+
+<StackBlitz
+  dir="examples/beta/react-with-cn"
+  file="src/components/button/button.tsx"
+/>
+
+### cva/tailwindcss
+
+[`cva/tailwindcss`](/beta/getting-started/installation#cvatailwindcss) marks component defaults with `base:`. Ordinary utilities override those defaults through the CSS cascade, while hover and disabled state styles stay ordinary utilities.
+
+<StackBlitz
+  dir="examples/beta/react-with-cva-tailwindcss"
+  file="src/components/button/button.tsx"
+/>
+
+### tailwind-merge
+
+Combine the `cx` included in `cva` with [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) to preserve `cva`'s full `ClassValue` grammar while resolving Tailwind CSS conflicts at runtime.
+
+<StackBlitz
+  dir="examples/beta/react-with-tailwind-merge"
+  file="src/components/button/button.tsx"
+/>
+
 ## Compound components
+
+The compound example uses CSS relationships to coordinate a set of components. It stays separate from the four equivalent button examples above.
 
 <StackBlitz
   dir="examples/beta/react-with-tailwindcss-compound"
   file="src/components/nav/nav.tsx"
-/>
-
-## Handling class conflicts
-
-Both examples resolve conflicting Tailwind CSS classes and conditional inputs. See [Handling class conflicts](/beta/getting-started/installation#handling-class-conflicts) for the configurations.
-
-### cn
-
-[`cn`](https://www.npmjs.com/package/cn) joins conditional classes and resolves Tailwind CSS conflicts in one function.
-
-<StackBlitz dir="examples/beta/react-with-cn" file="src/cva.config.ts" />
-
-### tailwind-merge
-
-[`clsx`](https://github.com/lukeed/clsx) with [`tailwind-merge`](https://github.com/dcastil/tailwind-merge) preserves `cva`'s full `ClassValue` grammar while resolving Tailwind CSS conflicts.
-
-<StackBlitz
-  dir="examples/beta/react-with-tailwind-merge"
-  file="src/cva.config.ts"
 />

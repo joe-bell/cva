@@ -1,5 +1,5 @@
 {
-  "name": "example-beta-react-with-tailwind-merge",
+  "name": "example-beta-react-with-cva-tailwindcss",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,8 +11,7 @@
   "dependencies": {
     "cva": "beta",
     "react": "19.2.6",
-    "react-dom": "19.2.6",
-    "tailwind-merge": "3.6.0"
+    "react-dom": "19.2.6"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.4",

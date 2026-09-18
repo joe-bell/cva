@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "cva";
 
 import styles from "./button.module.css";
 
-const button = cva({
+export const button = cva({
   base: styles.base,
   variants: {
     intent: {
