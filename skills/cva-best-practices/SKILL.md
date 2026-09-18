@@ -18,7 +18,7 @@ This guidance targets the `cva` 1.0 betas (verified against `cva@1.0.0-beta.12`)
 ## Define variants once
 
 - Define a class function outside the component render body. Put invariant classes in `base`, independent choices in `variants`, and combinations in `compoundVariants`.
-- Put shared defaults in `defaultVariants`. Omitted props and `undefined` use those defaults; forward optional props from wrappers rather than duplicating defaults there.
+- Prefer framework prop defaults in React, Svelte, or Vue wrappers so the same value reaches styling and markup. `defaultVariants` only supplies defaults inside the class function; it cannot set an element's attributes. Use it when the class function should supply defaults to its callers. Omitted props and `undefined` use those defaults. Avoid duplicating defaults in both places, and remember `getSchema` cannot read framework prop defaults.
 - To select no classes for a variant, declare a named option such as `unset: null`, then pass `"unset"`. Do not assume passing `null` disables a beta variant.
 - Treat the configuration and referenced objects as immutable after creating a class function. Create another function if the configuration changes.
 - Prefer server-side rendering or static generation for static components when the framework permits it. Do not add client-side JavaScript solely to generate a static class string.

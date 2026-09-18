@@ -35,11 +35,10 @@ Concatenates class names (an alias of [`clsx`](https://github.com/lukeed/clsx); 
 ```ts
 import { cx } from "cva";
 
-cx("button", ["rounded", false], { "button--active": true });
-// => "button rounded button--active"
+cx("button", "rounded");
 ```
 
-Use the included `cx` instead of adding `clsx` or `classnames` for conditional class names. It skips falsy inputs and flattens nested arrays. It does not remove duplicate classes or resolve conflicting CSS utilities; see [handling class conflicts](/beta/getting-started/installation#handling-class-conflicts).
+Use the included `cx` instead of adding `clsx` or `classnames` for conditional class names. See the [`clsx` documentation](https://github.com/lukeed/clsx#usage) for examples of strings, arrays, and conditional objects. If you configure a different concatenator, follow its documentation for supported inputs; see [handling class conflicts](/beta/getting-started/installation#handling-class-conflicts) for the Tailwind CSS options.
 
 ### Parameters
 
