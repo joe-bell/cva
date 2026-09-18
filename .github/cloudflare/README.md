@@ -14,3 +14,7 @@ This is an owner-run mutation. An agent may perform the discovery and comparison
 6. Repeat the trigger `GET` and verify both live triggers match the committed arrays exactly. Do not publish the GitHub ruleset until this comparison passes.
 
 The dashboard under **Settings → Build → Build watch paths** remains the fallback when the Cloudflare MCP is unavailable. The authenticated MCP connection must have `Workers CI Write`; keep its account ID, discovered trigger UUIDs, and API token out of this repository. See Cloudflare's [Update a build trigger](https://developers.cloudflare.com/api/resources/workers_builds/subresources/triggers/methods/update/) reference.
+
+## Remove this compatibility layer when native configuration catches up
+
+Wrangler does not currently expose Workers Builds trigger watch paths in `wrangler.jsonc`; its `build.watch_dir` setting controls local custom-build watching instead. When Workers Builds can consume `path_includes` and `path_excludes` from the checked-in Wrangler configuration, migrate the desired state there and remove this JSON and MCP sync workflow. Keep `cloudflare/gate` until skipped builds produce a stable required check or GitHub can require the Cloudflare check conditionally. Once both conditions are met, remove the gate workflow, script/tests, ruleset context, and related guidance together.
