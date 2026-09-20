@@ -1,8 +1,4 @@
-/**
- * Fixture for `test/bench/scripts/type-performance.ts`. Exercises
- * `interface X extends VariantProps<typeof y>`, matching the pattern pinned
- * at `packages/cva/test/consumer/esm.mts`.
- */
+// A consumer interface extending inferred variant props.
 import { cva, type VariantProps } from "../../dist/index.mjs";
 
 const badge = cva({

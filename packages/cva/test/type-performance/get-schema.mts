@@ -1,7 +1,4 @@
-/**
- * Fixture for `test/bench/scripts/type-performance.ts`. Exercises
- * `getSchema(component)` reading a defaulted key from `cva/tools`.
- */
+// Schema inference preserves the literal default.
 import { cva } from "../../dist/index.mjs";
 import { getSchema } from "../../dist/tools.mjs";
 

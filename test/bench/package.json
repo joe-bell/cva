@@ -7,8 +7,7 @@
     "compare": "node scripts/compare.ts",
     "preview": "node scripts/preview.ts",
     "report": "node scripts/report.ts",
-    "type-performance": "node scripts/type-performance.ts --check",
-    "type-performance:update": "node scripts/type-performance.ts --update"
+    "type-performance": "pnpm --filter cva build && node scripts/type-performance.ts"
   },
   "dependencies": {
     "class-variance-authority": "workspace:*",

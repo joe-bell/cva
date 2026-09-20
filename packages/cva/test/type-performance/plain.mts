@@ -1,12 +1,4 @@
-/**
- * Fixture for `test/bench/scripts/type-performance.ts`. Compiled in
- * isolation against the built `packages/cva/dist` declarations — see
- * AGENTS.md's "Performance-sensitive" learnings for why. Exercises literal
- * `defaultVariants` and `VariantProps` on a plain (non-composed,
- * non-configured) component, plus `compoundVariants` with both a scalar
- * selector and an array-valued selector — `CVACompoundVariantSchema`'s
- * two-arm mapped type (`packages/cva/src/types.ts`).
- */
+// Literal defaults and scalar/array compound selectors.
 import { cva, type VariantProps } from "../../dist/index.mjs";
 
 const button = cva({
