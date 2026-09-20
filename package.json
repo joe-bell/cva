@@ -8,7 +8,6 @@
     "bench:check": "pnpm run --filter bench check",
     "bench:compare": "pnpm run --filter bench compare",
     "bench:preview": "pnpm run --filter bench preview",
-    "bench:types": "pnpm run --filter bench type-performance",
     "build": "pnpm run --filter './packages/**' build",
     "build:examples": "pnpm --filter './examples/**' --parallel build",
     "bundlesize": "pnpm run --filter './packages/**' --parallel bundlesize",

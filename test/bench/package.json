@@ -6,8 +6,7 @@
     "check": "tsc --project tsconfig.json --noEmit",
     "compare": "node scripts/compare.ts",
     "preview": "node scripts/preview.ts",
-    "report": "node scripts/report.ts",
-    "type-performance": "pnpm --filter cva build && node scripts/type-performance.ts"
+    "report": "node scripts/report.ts"
   },
   "dependencies": {
     "class-variance-authority": "workspace:*",

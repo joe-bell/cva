@@ -66,7 +66,6 @@ Run these from the repo root:
 - `pnpm bench` – builds the packages, then runs the `vitest bench` performance scenarios against each built package (add `BENCH_BASELINES_DIR=<dir>` after running `pnpm bench:baselines --out <dir>` to also benchmark published npm baselines alongside your local changes)
 - `pnpm bench:compare` – renders a markdown comparison table from the `test/bench/.output/benchmark-*.json` files produced by `pnpm bench`
 - `pnpm bench:preview` – one command that installs the npm baselines, runs `pnpm bench` against them, and writes the rendered comparison table to `test/bench/.output/preview.md` (see Benchmarks below)
-- `pnpm bench:types` – rebuilds `cva` and prints the TypeScript version and instantiation counts for four consumer fixtures against its built declarations. Run before and after authoring-type changes with the same compiler and fixtures, and include the counts in the PR. This is a manual measurement, with no committed baseline or CI gate
 - `pnpm bench:check` – type checks the `test/bench/` scripts
 - `pnpm prettier --check .` – checks formatting (`--write` to fix)
 - `pnpm syncpack:lint` – checks dependency-version consistency (`pnpm syncpack:fix` to fix)
