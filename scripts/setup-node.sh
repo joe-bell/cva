@@ -2,8 +2,8 @@
 # Put the repo's pinned Node (.node-version) and corepack-managed pnpm on PATH.
 #
 # Source (don't execute) from non-interactive entry points that need
-# node/pnpm but don't load nvm from an interactive shell profile — git hooks,
-# Conductor, and other agent shells:
+# node/pnpm but don't load nvm from an interactive shell profile — git hooks
+# and agent shells:
 #
 #   . "$(git rev-parse --show-toplevel)/scripts/setup-node.sh"
 #
