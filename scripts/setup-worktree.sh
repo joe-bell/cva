@@ -1,25 +1,20 @@
 #!/bin/sh
-# Link env files from the primary checkout into a linked worktree. Conductor
-# exposes the primary path directly; plain git worktrees derive it from Git.
+# Link env files from the primary checkout into a linked worktree, deriving
+# the primary checkout's path from Git.
 set -e
 
 resolve_dir() {
   (CDPATH= cd -P "$1" && pwd)
 }
 
-if [ -n "${CONDUCTOR_ROOT_PATH:-}" ]; then
-  PRIMARY=$CONDUCTOR_ROOT_PATH
-  TARGET=${CONDUCTOR_WORKSPACE_PATH:-$(git rev-parse --show-toplevel 2>/dev/null || printf '%s\n' "$PWD")}
-else
-  git_dir=$(git rev-parse --git-dir)
-  case $git_dir in
-    */worktrees/*) ;;
-    *) exit 0 ;;
-  esac
+git_dir=$(git rev-parse --git-dir)
+case $git_dir in
+  */worktrees/*) ;;
+  *) exit 0 ;;
+esac
 
-  PRIMARY=$(dirname "$(resolve_dir "$(git rev-parse --git-common-dir)")")
-  TARGET=$(git rev-parse --show-toplevel)
-fi
+PRIMARY=$(dirname "$(resolve_dir "$(git rev-parse --git-common-dir)")")
+TARGET=$(git rev-parse --show-toplevel)
 
 if [ "$(resolve_dir "$PRIMARY")" = "$(resolve_dir "$TARGET")" ]; then
   exit 0
