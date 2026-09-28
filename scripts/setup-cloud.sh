@@ -7,12 +7,11 @@
 # and, where supported, for later shells), enables pnpm via corepack, and
 # installs dependencies.
 #
-# Consumers (thin wrappers that own the "am I in the cloud?" guard):
+# Consumer (a thin wrapper that owns the "am I in the cloud?" guard):
 #   - .claude/hooks/session-start.sh — Claude Code on the web (SessionStart)
-#   - .conductor/scripts/setup.sh    — Conductor Cloud (scripts.setup)
 set -euo pipefail
 
-cd "${CLAUDE_PROJECT_DIR:-${CONDUCTOR_WORKSPACE_PATH:-.}}"
+cd "${CLAUDE_PROJECT_DIR:-.}"
 
 # A file-exists-and-executable-bit check isn't enough: a stale or
 # foreign-architecture binary (e.g. leftover debris, or a dir shared across
@@ -84,26 +83,11 @@ if node_dir_is_usable "$node_dir"; then
   fi
 fi
 
-# Also symlink provisioned tools into the conventional user bin directory, so
-# *fresh* cloud agent shells (which won't inherit this process's PATH/env)
-# find them after this script exits — this is what makes Conductor Cloud
-# work, since it has no CLAUDE_ENV_FILE-style PATH persistence.
-local_bin="$HOME/.local/bin"
-mkdir -p "$local_bin"
-if node_dir_is_usable "$node_dir"; then
-  ln -sf "$node_dir/bin/node" "$local_bin/node" || true
-  # npm/npx ship with Node itself (not corepack) — link them so workflows that
-  # invoke npx directly resolve under the pinned Node in a fresh shell.
-  for npm_tool in npm npx; do
-    [ -x "$node_dir/bin/$npm_tool" ] && ln -sf "$node_dir/bin/$npm_tool" "$local_bin/$npm_tool" || true
-  done
-fi
-
 # If the platform already ships the pinned major, provisioning is unnecessary,
-# but the platform wrapper must remain to install dependencies (see AGENTS.md).
+# but the wrapper must remain to install dependencies (see AGENTS.md).
 if [ "$current_major" = "$required_major" ]; then
   echo "Node v$current_major already matches the repo pin with no provisioning needed."
-  echo "Keep the platform wrapper for dependency installation; once both platforms ship Node $required_major, remove only the provisioning logic from setup-cloud.sh — see AGENTS.md."
+  echo "Keep the wrapper for dependency installation; once the platform ships Node $required_major, remove only the provisioning logic from setup-cloud.sh — see AGENTS.md."
 fi
 
 echo "Using $(node -v) at $(command -v node)"
@@ -121,12 +105,6 @@ echo "Using $(node -v) at $(command -v node)"
 # corepack enable is idempotent and ~50ms — run it before the fast path so a
 # session never skips the install gate while pnpm itself is unresolvable.
 corepack enable >/dev/null 2>&1 || true
-for tool in corepack pnpm pnpx; do
-  tool_path="$(command -v "$tool" 2>/dev/null || true)"
-  if [ -n "$tool_path" ]; then
-    ln -sf "$(realpath "$tool_path")" "$local_bin/$tool" || true
-  fi
-done
 
 # SessionStart also fires on resume/clear/compact; skip the install when the
 # lockfile hasn't changed since the last successful one in this container.

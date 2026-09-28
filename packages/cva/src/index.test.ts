@@ -735,7 +735,7 @@ describe("the `cva` entry point's surface", () => {
 describe("exported types", () => {
   test("portability types stay exported", () => {
     // Each name below must be reachable through the `CVA.` namespace
-    // import, or this fails to compile. See AGENTS.md Learnings.
+    // import, or this fails to compile. See this package's AGENTS.md.
     expectTypeOf<CVA.CVAComponentShape>().toEqualTypeOf<
       CVA.CVAComponent<any, any, any>
     >();
