@@ -12,6 +12,7 @@ overrides:
   "devalue": "^5.9.2" # GHSA-9rgm-9g3h-6x36
   "nanoid@^5.0.0": "^5.1.16" # GHSA-28wg-ghj8-5hjv
   "sharp": "^0.35.4" # GHSA-rgj7-g3m4-5g8c
+  "undici@^7.0.0": "^7.29.1" # GHSA-rfgv-xxqx-mfg5, GHSA-w293-vg96-wgc3
   "yaml@^2.0.0": "^2.8.3" # GHSA-48c2-rrv3-qjmp
 
 minimumReleaseAge: 4320
