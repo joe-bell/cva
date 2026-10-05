@@ -17,11 +17,11 @@ Run these from the repository root after reviewing the merged artifacts. The com
 1. Snapshot the current GitHub state before changing anything.
 
    ```sh
-   mkdir -p /tmp/cva-jb-410
-   gh api --method GET -H 'X-GitHub-Api-Version: 2026-03-10' repos/joe-bell/cva > /tmp/cva-jb-410/repository.json
-   gh api --method GET -H 'X-GitHub-Api-Version: 2026-03-10' repos/joe-bell/cva/branches/main/protection > /tmp/cva-jb-410/classic-protection.json
-   gh api --paginate --slurp -H 'X-GitHub-Api-Version: 2026-03-10' 'repos/joe-bell/cva/rulesets?per_page=100' > /tmp/cva-jb-410/ruleset-pages.json
-   jq 'add' /tmp/cva-jb-410/ruleset-pages.json > /tmp/cva-jb-410/rulesets.json
+   mkdir -p /tmp/cva-default-branch
+   gh api --method GET -H 'X-GitHub-Api-Version: 2026-03-10' repos/joe-bell/cva > /tmp/cva-default-branch/repository.json
+   gh api --method GET -H 'X-GitHub-Api-Version: 2026-03-10' repos/joe-bell/cva/branches/main/protection > /tmp/cva-default-branch/classic-protection.json
+   gh api --paginate --slurp -H 'X-GitHub-Api-Version: 2026-03-10' 'repos/joe-bell/cva/rulesets?per_page=100' > /tmp/cva-default-branch/ruleset-pages.json
+   jq 'add' /tmp/cva-default-branch/ruleset-pages.json > /tmp/cva-default-branch/rulesets.json
    ```
 
    Compare the snapshots with the request body and revise the body if the existing protection has requirements this artifact does not yet represent. Keep the snapshots for rollback. Do not retire classic protection first.
@@ -41,8 +41,8 @@ Run these from the repository root after reviewing the merged artifacts. The com
 6. Publish the active ruleset only after the Cloudflare paths and fork behavior are verified. This command mutates repository rules.
 
    ```sh
-   gh api --method POST -H 'X-GitHub-Api-Version: 2026-03-10' repos/joe-bell/cva/rulesets --input .github/rulesets/default-branch.json > /tmp/cva-jb-410/new-ruleset.json
-   gh api --method GET -H 'X-GitHub-Api-Version: 2026-03-10' repos/joe-bell/cva/rules/branches/main > /tmp/cva-jb-410/effective-rules.json
+   gh api --method POST -H 'X-GitHub-Api-Version: 2026-03-10' repos/joe-bell/cva/rulesets --input .github/rulesets/default-branch.json > /tmp/cva-default-branch/new-ruleset.json
+   gh api --method GET -H 'X-GitHub-Api-Version: 2026-03-10' repos/joe-bell/cva/rules/branches/main > /tmp/cva-default-branch/effective-rules.json
    ```
 
    Inspect the effective rules and a fresh PR's check sources. Only then retire the specific classic branch protection that the saved snapshot covers. The owner must perform that final deletion as a separate action.
@@ -50,7 +50,7 @@ Run these from the repository root after reviewing the merged artifacts. The com
    If rollback is needed, only the repository owner may delete the newly created ruleset. This mutates GitHub; do not run it here, from CI, or from an agent.
 
    ```sh
-   RULESET_ID="$(jq -r '.id' /tmp/cva-jb-410/new-ruleset.json)"
+   RULESET_ID="$(jq -r '.id' /tmp/cva-default-branch/new-ruleset.json)"
    gh api --method DELETE -H 'X-GitHub-Api-Version: 2026-03-10' "repos/joe-bell/cva/rulesets/$RULESET_ID"
    ```
 
@@ -69,13 +69,13 @@ Keep the existing GitHub Actions updater in `.github/dependabot.yml`. npm update
 The owner must verify repository security settings separately because this task does not change them. Check that the dependency graph ingests the pnpm lockfile, Dependabot alerts and security updates are enabled, alert notification delivery reaches the intended account, and an alert for transitive `postcss` would be visible and actionable. These read-only checks provide useful evidence where access permits:
 
 ```sh
-gh api --method GET -H 'X-GitHub-Api-Version: 2026-03-10' repos/joe-bell/cva/dependency-graph/sbom/generate-report > /tmp/cva-jb-410/sbom-request.json
-SBOM_ENDPOINT="$(jq -er '.sbom_url | sub("^https://api[.]github[.]com/"; "")' /tmp/cva-jb-410/sbom-request.json)"
-gh api --method GET -H 'X-GitHub-Api-Version: 2026-03-10' "$SBOM_ENDPOINT" > /tmp/cva-jb-410/sbom.json
-gh api --paginate --slurp -H 'X-GitHub-Api-Version: 2026-03-10' 'repos/joe-bell/cva/dependabot/alerts?state=open&per_page=100' > /tmp/cva-jb-410/dependabot-alert-pages.json
-jq 'add' /tmp/cva-jb-410/dependabot-alert-pages.json > /tmp/cva-jb-410/dependabot-alerts.json
+gh api --method GET -H 'X-GitHub-Api-Version: 2026-03-10' repos/joe-bell/cva/dependency-graph/sbom/generate-report > /tmp/cva-default-branch/sbom-request.json
+SBOM_ENDPOINT="$(jq -er '.sbom_url | sub("^https://api[.]github[.]com/"; "")' /tmp/cva-default-branch/sbom-request.json)"
+gh api --method GET -H 'X-GitHub-Api-Version: 2026-03-10' "$SBOM_ENDPOINT" > /tmp/cva-default-branch/sbom.json
+gh api --paginate --slurp -H 'X-GitHub-Api-Version: 2026-03-10' 'repos/joe-bell/cva/dependabot/alerts?state=open&per_page=100' > /tmp/cva-default-branch/dependabot-alert-pages.json
+jq 'add' /tmp/cva-default-branch/dependabot-alert-pages.json > /tmp/cva-default-branch/dependabot-alerts.json
 gh api --include --method GET -H 'X-GitHub-Api-Version: 2026-03-10' repos/joe-bell/cva/automated-security-fixes
-jq '.[] | select(.dependency.package.name == "postcss")' /tmp/cva-jb-410/dependabot-alerts.json
+jq '.[] | select(.dependency.package.name == "postcss")' /tmp/cva-default-branch/dependabot-alerts.json
 ```
 
 The [asynchronous SBOM API](https://docs.github.com/en/rest/dependency-graph/sboms) returns immediately after requesting generation. If the fetch command writes an empty file because GitHub responds with `202 Accepted`, wait briefly and rerun only that fetch command; a ready report redirects to the generated SPDX JSON download.
