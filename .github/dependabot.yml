@@ -1,9 +1,25 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/actions/*"
+    # Monthly on the 22nd, as one grouped pull request, so CI runs once for
+    # every action bump. Security updates are unaffected: each advisory still
+    # opens its own pull request straight away. `cooldown` skips releases
+    # younger than seven days, and `rebase-strategy: disabled` stops a rebase
+    # (and a full CI run) after every merge to main; branches need not be up to
+    # date to merge, and `@dependabot rebase` handles a conflict.
     schedule:
-      interval: "weekly"
+      interval: "cron"
+      cronjob: "0 9 22 * *"
+    cooldown:
+      default-days: 7
+    rebase-strategy: "disabled"
+    groups:
+      github-actions:
+        applies-to: "version-updates"
+        patterns: ["*"]
     # SHA-pinned actions (see ci.yml, .github/actions/install, and the two
     # benchmark workflows) don't update themselves — Dependabot opens a PR
     # bumping the pin whenever an action publishes a new version, so pins

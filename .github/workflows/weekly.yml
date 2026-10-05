@@ -23,7 +23,7 @@ jobs:
       UPDATE_BRANCH: automation/weekly-npm-downloads
       SNAPSHOT_PATH: docs/src/content/npm-weekly-downloads.json
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -96,3 +96,4 @@ jobs:
               --head "$UPDATE_BRANCH" \
               --title "chore: update weekly npm downloads" \
               --body 'Updates `docs/src/content/npm-weekly-downloads.json` with npm’s latest seven-day package totals.'
+          fi
