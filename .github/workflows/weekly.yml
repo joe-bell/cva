@@ -7,8 +7,9 @@ on:
 
 # Pushes and pull requests made with `GITHUB_TOKEN` leave the pull request's
 # `pull_request` workflows waiting for maintainer approval, so the required
-# checks never report on their own. A GitHub App installation token pushes
-# and opens the pull request instead, and `GITHUB_TOKEN` stays read-only.
+# checks never report on their own. A fine-grained personal access token
+# (`AUTOMATION_TOKEN`) pushes and opens the pull request instead, and
+# `GITHUB_TOKEN` stays read-only.
 permissions:
   contents: read
 
@@ -50,30 +51,17 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Create app token
-        if: steps.snapshot.outputs.changed == 'true'
-        id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          client-id: ${{ vars.AUTOMATION_APP_CLIENT_ID }}
-          private-key: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}
-          permission-contents: write
-          permission-pull-requests: write
-
       - name: Commit and push snapshot
         if: steps.snapshot.outputs.changed == 'true'
         env:
-          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ secrets.AUTOMATION_TOKEN }}
         shell: bash
         run: |
           snapshot="$RUNNER_TEMP/npm-weekly-downloads.json"
           cp "$SNAPSHOT_PATH" "$snapshot"
           git restore -- "$SNAPSHOT_PATH"
-          bot="$APP_SLUG[bot]"
-          bot_id="$(gh api "/users/$bot" --jq .id)"
-          git config user.name "$bot"
-          git config user.email "$bot_id+$bot@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           gh auth setup-git
           if [[ "$(git rev-parse --is-shallow-repository)" == true ]]; then
             git fetch --unshallow --no-tags origin
@@ -100,7 +88,7 @@ jobs:
       - name: Open or update pull request
         if: steps.snapshot.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ secrets.AUTOMATION_TOKEN }}
         shell: bash
         run: |
           pr_url="$(gh pr list --head "$UPDATE_BRANCH" --base main --state open --json url --jq '.[0].url')"
