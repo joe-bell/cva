@@ -5,9 +5,13 @@ on:
   schedule:
     - cron: "17 3 * * 1"
 
+# Pushes and pull requests made with `GITHUB_TOKEN` leave the pull request's
+# `pull_request` workflows waiting for maintainer approval, so the required
+# checks never report on their own. A fine-grained personal access token
+# (`AUTOMATION_TOKEN`) pushes and opens the pull request instead, and
+# `GITHUB_TOKEN` stays read-only.
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 concurrency:
   group: update-weekly-npm-downloads
@@ -50,7 +54,7 @@ jobs:
       - name: Commit and push snapshot
         if: steps.snapshot.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.AUTOMATION_TOKEN }}
         shell: bash
         run: |
           snapshot="$RUNNER_TEMP/npm-weekly-downloads.json"
@@ -84,7 +88,7 @@ jobs:
       - name: Open or update pull request
         if: steps.snapshot.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.AUTOMATION_TOKEN }}
         shell: bash
         run: |
           pr_url="$(gh pr list --head "$UPDATE_BRANCH" --base main --state open --json url --jq '.[0].url')"

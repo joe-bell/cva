@@ -21,7 +21,7 @@ The generator removes stale `docs/.generated/bundle-sizes.json`. It runs each pa
 
 The generator does not compile packages. Root install/prepare provides `dist`. After editing package source, run `pnpm build` or `pnpm --filter <package> build` before direct docs measurement.
 
-The homepage reads weekly npm totals from [`src/content/npm-weekly-downloads.json`](./src/content/npm-weekly-downloads.json). The `weekly / npm-downloads` workflow fetches and validates npm's latest seven-day totals each Monday, then opens or updates a pull request containing the snapshot. Documentation builds read only the checked-in file and never depend on npm's API.
+The homepage reads weekly npm totals from [`src/content/npm-weekly-downloads.json`](./src/content/npm-weekly-downloads.json). The `weekly / npm-downloads` workflow fetches and validates npm's latest seven-day totals each Monday, then opens or updates a pull request containing the snapshot. It pushes and opens that pull request with the `AUTOMATION_TOKEN` Actions secret, a fine-grained personal access token limited to this repository with Contents and Pull requests read/write, so the pull request's required checks run without a maintainer approving them. Renew the token before it expires, or the weekly run fails. Documentation builds read only the checked-in file and never depend on npm's API.
 
 ## Markdown mirrors
 
