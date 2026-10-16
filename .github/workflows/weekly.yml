@@ -9,7 +9,9 @@ on:
 # `pull_request` workflows waiting for maintainer approval, so the required
 # checks never report on their own. A fine-grained personal access token
 # (`WEEKLY_AUTOMATION_TOKEN`) pushes and opens the pull request instead, and
-# `GITHUB_TOKEN` stays read-only.
+# `GITHUB_TOKEN` stays read-only. The token lives in the `weekly-automation`
+# environment, which only `main` may deploy to, so a run dispatched from
+# another branch cannot read it.
 permissions:
   contents: read
 
@@ -21,6 +23,7 @@ jobs:
   npm-downloads:
     name: npm-downloads
     if: github.repository == 'joe-bell/cva'
+    environment: weekly-automation
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
