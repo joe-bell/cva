@@ -63,30 +63,39 @@ jobs:
           snapshot="$RUNNER_TEMP/npm-weekly-downloads.json"
           cp "$SNAPSHOT_PATH" "$snapshot"
           git restore -- "$SNAPSHOT_PATH"
+          # `pnpm install` above points `core.hooksPath` at `.github/hooks`.
+          # Drop it so no repository hook runs while the token is exposed.
+          git config --unset-all core.hooksPath || true
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           gh auth setup-git
-          if [[ "$(git rev-parse --is-shallow-repository)" == true ]]; then
-            git fetch --unshallow --no-tags origin
-          fi
-          git fetch --no-tags origin main:refs/remotes/origin/main
 
-          if git ls-remote --exit-code --heads origin "$UPDATE_BRANCH" >/dev/null; then
-            git fetch --no-tags origin "$UPDATE_BRANCH:refs/remotes/origin/$UPDATE_BRANCH"
-            git switch --create "$UPDATE_BRANCH" --track "origin/$UPDATE_BRANCH"
-            git merge --no-commit --no-ff origin/main
-          else
-            git switch --create "$UPDATE_BRANCH" origin/main
-          fi
-
+          # Rebuild the update branch from `main` on every run instead of
+          # merging `main` into it: the branch is never checked out, so its
+          # contents never run here, and the only new commit is the snapshot,
+          # so the push never carries workflow-file changes that the token
+          # has no permission to write.
+          git fetch --no-tags --depth=1 origin main:refs/remotes/origin/main
+          git switch --create "$UPDATE_BRANCH" origin/main
           cp "$snapshot" "$SNAPSHOT_PATH"
           git add "$SNAPSHOT_PATH"
-          if git diff --cached --quiet && ! git rev-parse --quiet --verify MERGE_HEAD >/dev/null; then
+          if git diff --cached --quiet; then
             exit 0
           fi
-
           git commit -m "chore: update weekly npm downloads"
-          git push --set-upstream origin "$UPDATE_BRANCH"
+
+          remote_sha=""
+          if git ls-remote --exit-code --heads origin "$UPDATE_BRANCH" >/dev/null; then
+            git fetch --no-tags --depth=1 origin \
+              "refs/heads/$UPDATE_BRANCH:refs/remotes/origin/$UPDATE_BRANCH"
+            remote_sha="$(git rev-parse "origin/$UPDATE_BRANCH")"
+            if git diff --quiet "origin/$UPDATE_BRANCH" HEAD; then
+              exit 0
+            fi
+          fi
+          git push \
+            --force-with-lease="refs/heads/$UPDATE_BRANCH:$remote_sha" \
+            origin "HEAD:refs/heads/$UPDATE_BRANCH"
 
       - name: Open or update pull request
         if: steps.snapshot.outputs.changed == 'true'
