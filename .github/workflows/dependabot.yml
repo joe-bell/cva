@@ -1,0 +1,118 @@
+name: dependabot
+
+# Dependabot's npm support stops at pnpm 10 and this workspace pins pnpm 11
+# (see REVIEW.md), so its npm pull requests (security updates, since
+# dependabot.yml configures no npm version updates) can arrive half done:
+#
+# - an update for one workspace package, such as `/docs`, changes only that
+#   `package.json` and leaves `pnpm-lock.yaml` stale, so every
+#   `pnpm install --frozen-lockfile` fails; and
+# - an update reaches some workspace packages but not others that pin the same
+#   dependency, so `syncpack lint` fails.
+#
+# This job finishes the update on the Dependabot branch: syncpack aligns the
+# workspace versions, pnpm regenerates the lockfile, and one commit is pushed.
+# It executes no dependency code: syncpack is the version pinned on the base
+# branch, installed outside the checkout from the public registry with scripts
+# disabled, and pnpm only resolves metadata (`--lockfile-only`,
+# `--ignore-scripts`, `--ignore-pnpmfile`). `GITHUB_TOKEN` is handed to the push
+# step alone.
+#
+# A push made with `GITHUB_TOKEN` leaves the pull request's `pull_request`
+# workflows at `action_required` (see weekly.yml), so approve the runs on the
+# repaired pull request to get its required checks.
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependabot-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    name: sync
+    # Only Dependabot's own pushes to its own npm branches in this repository.
+    # Maintainer pushes, this job's push (actor `github-actions[bot]`), and fork
+    # pull requests skip the job, so it never loops.
+    if: >-
+      github.actor == 'dependabot[bot]' &&
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'dependabot/npm_and_yarn/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          run_install: false
+
+      # No dependency cache: this job holds a write token.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Install syncpack from the base branch
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        shell: bash
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          version="$(git show "$BASE_SHA:package.json" | jq -r '.devDependencies.syncpack')"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Expected an exact syncpack version on the base branch, got '$version'." >&2
+            exit 1
+          fi
+          # Outside the checkout, so the pull request's `.npmrc` and workspace
+          # settings do not apply.
+          tools="$RUNNER_TEMP/syncpack"
+          mkdir -p "$tools"
+          cd "$tools"
+          npm install --prefix "$tools" --no-save --no-package-lock \
+            --ignore-scripts --no-audit --no-fund \
+            --registry=https://registry.npmjs.org/ "syncpack@$version"
+          echo "$tools/node_modules/.bin" >> "$GITHUB_PATH"
+
+      - name: Align workspace versions
+        run: syncpack fix
+
+      # `minimumReleaseAge` in pnpm-workspace.yaml rejects a release younger
+      # than its window; rerun the job once the fixed version is old enough.
+      - name: Update lockfile
+        shell: bash
+        run: |
+          corepack enable
+          flags=(--lockfile-only --ignore-scripts --ignore-pnpmfile --no-frozen-lockfile)
+          # Retry serially once: pnpm's metadata cache can race on a re-resolve
+          # (`ERR_PNPM_MISSING_TIME`, see AGENTS.md).
+          pnpm install "${flags[@]}" || pnpm install "${flags[@]}" --network-concurrency 1
+
+      - name: Commit and push
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "Dependabot's update is already complete."
+            exit 0
+          fi
+          git diff --stat
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -c core.hooksPath=/dev/null commit --all \
+            -m "chore(deps): sync the lockfile and workspace versions"
+          gh auth setup-git
+          # A plain push only fast-forwards. If Dependabot pushed again since
+          # this run started, it fails and the newer run repairs that head.
+          git -c core.hooksPath=/dev/null push origin "HEAD:refs/heads/$HEAD_REF"
