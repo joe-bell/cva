@@ -1,8 +1,8 @@
 {
-  "start": "2026-10-06",
-  "end": "2026-10-12",
+  "start": "2026-10-23",
+  "end": "2026-10-29",
   "packages": {
-    "class-variance-authority": 65216847,
-    "cva": 2161319
+    "class-variance-authority": 77578100,
+    "cva": 2950915
   }
 }
