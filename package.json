@@ -92,16 +92,6 @@
         "pinVersion": "beta"
       },
       {
-        "label": "Examples allow Node >=22 — StackBlitz WebContainers run an older, fixed Node",
-        "packages": [
-          "example-*"
-        ],
-        "dependencyTypes": [
-          "nodeEngine"
-        ],
-        "pinVersion": ">=22"
-      },
-      {
         "label": "Snap `engines.node` and `packageManager` to the root package",
         "dependencyTypes": [
           "nodeEngine",
