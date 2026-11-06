@@ -34,7 +34,7 @@ This is a [pnpm](https://pnpm.io) workspace (Node `24`, see
 [`.node-version`](./.node-version), with [`.nvmrc`](./.nvmrc) as a symlink for nvm compatibility). pnpm is enforced via `only-allow` — don't use npm or
 yarn.
 
-The dev/CI toolchain pins `engines.node` to the [`.node-version`](./.node-version) version (`.node-version` is canonical and read by fnm, mise, actions/setup-node; `.nvmrc` is a symlink kept for nvm users since nvm has declined to support `.node-version` directly). The `examples/` use a permissive range because they run on StackBlitz WebContainers, which ship an older, fixed Node, and the published library packages omit `engines.node` so they don't constrain consumers. Before changing any `engines.node` field, read the [Node.js versions](./CONTRIBUTING.md#nodejs-versions) section of [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+The dev/CI toolchain pins `engines.node` to the [`.node-version`](./.node-version) version (`.node-version` is canonical and read by fnm, mise, actions/setup-node; `.nvmrc` is a symlink kept for nvm users since nvm has declined to support `.node-version` directly). The `examples/` follow the same pin, and run on StackBlitz WebContainers, so check WebContainers support a new Node version before bumping it. The published library packages omit `engines.node` so they don't constrain consumers. Before changing any `engines.node` field, read the [Node.js versions](./CONTRIBUTING.md#nodejs-versions) section of [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
 | Path                                | What it is                                                                                                                                                                     |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -176,7 +176,7 @@ Agent-specific notes:
     | grep -oE 'https://[a-z0-9-]+\.joebell\.workers\.dev' | sort -u
   ```
 
-- To verify an `examples/` change in a real StackBlitz WebContainer before merging, open it from GitHub against your branch: `https://stackblitz.com/github/joe-bell/cva/tree/<branch>/<dir>`. Branch names containing slashes (e.g. `claude/my-feature`) resolve fine — StackBlitz parses them correctly against the trailing path, so no slash-free branch is needed.
+- To verify an `examples/` change in a real StackBlitz WebContainer before merging, open it from GitHub against your branch: `https://stackblitz.com/github/joe-bell/cva/tree/<branch>/<dir>`. Branch names containing slashes (e.g. `claude/my-feature`) resolve fine — StackBlitz parses them correctly against the trailing path, so no slash-free branch is needed. When driving StackBlitz from a headless browser, open one project at a time: several opened at once all stall on "Cloning repo from GitHub". Check the runtime with `node -v` in the project's terminal, since StackBlitz picks it from `engines.node`.
 
 ## Learnings
 
