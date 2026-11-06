@@ -176,7 +176,7 @@ Agent-specific notes:
     | grep -oE 'https://[a-z0-9-]+\.joebell\.workers\.dev' | sort -u
   ```
 
-- To verify an `examples/` change in a real StackBlitz WebContainer before merging, open it from GitHub against your branch: `https://stackblitz.com/github/joe-bell/cva/tree/<branch>/<dir>`. Branch names containing slashes (e.g. `claude/my-feature`) resolve fine — StackBlitz parses them correctly against the trailing path, so no slash-free branch is needed.
+- To verify an `examples/` change in a real StackBlitz WebContainer before merging, open it from GitHub against your branch: `https://stackblitz.com/github/joe-bell/cva/tree/<branch>/<dir>`. Branch names containing slashes (e.g. `claude/my-feature`) resolve fine — StackBlitz parses them correctly against the trailing path, so no slash-free branch is needed. When driving StackBlitz from a headless browser, open one project at a time: several opened at once all stall on "Cloning repo from GitHub". Check the runtime with `node -v` in the project's terminal, since StackBlitz picks it from `engines.node`.
 
 ## Learnings
 
