@@ -1,21 +1,19 @@
 #!/bin/bash
-# SessionStart hook: local sessions link env files from the primary checkout.
-# Remote containers lack the pinned Node (.nvmrc), so the shared cloud setup
-# script provisions it, persists PATH via CLAUDE_ENV_FILE, and installs deps.
+# .claude/hooks/session-start.sh: Claude Code SessionStart hook.
 set -euo pipefail
 
-# Never run under GitHub Actions. claude-code-action restores `.claude/` from
-# the base branch, so this file is trusted — but `scripts/` is NOT on that
-# restore list, and on a pull request the working tree sits at the PR head.
-# Exec'ing scripts/ from here would run a contributor's shell with the job's
-# write-capable token, on nothing more than a maintainer typing `@claude`.
-# The workflow provisions its own toolchain, so there is nothing to do here.
-if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
-  exit 0
-fi
+# Never under GitHub Actions: claude-code-action restores .claude/ from the
+# base branch, but not .agents/ or scripts/, so on a pull request this would
+# run the PR head's scripts with the job's token. The workflow provisions its
+# own toolchain, so there is nothing to do here.
+[ "${GITHUB_ACTIONS:-}" = "true" ] && exit 0
 
+# Local sessions link env files from the primary checkout; Node comes from
+# nvm/fnm there.
 if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   "${CLAUDE_PROJECT_DIR:-.}/scripts/setup-worktree.sh"
   exit 0
 fi
-exec "${CLAUDE_PROJECT_DIR:-.}/scripts/setup-cloud.sh"
+
+# bash, not the file mode: a checkout without +x still works.
+exec bash "${CLAUDE_PROJECT_DIR:-.}/.agents/setup.sh"

@@ -7,7 +7,7 @@
 #
 #   . "$(git rev-parse --show-toplevel)/scripts/setup-node.sh"
 #
-# Prefer the exact runtime provisioned by setup-cloud.sh. Otherwise use fnm,
+# Prefer the runtime provisioned by .agents/setup.sh. Otherwise use fnm,
 # falling back to nvm; machines on a system node remain unaffected.
 
 # Resolve the repo root so `nvm use` reads the right .node-version regardless of CWD.
