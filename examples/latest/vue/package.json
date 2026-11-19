@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "class-variance-authority": "latest",
-    "vue": "^3.5.34"
+    "vue": "^3.5.44"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.6",

@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@types/node": "24.13.2",
-    "@vitest/coverage-v8": "4.1.5",
+    "@vitest/coverage-v8": "4.1.12",
     "lint-staged": "17.0.3",
     "prettier": "3.8.3",
     "prettier-plugin-astro": "0.14.1",
@@ -39,7 +39,7 @@
     "syncpack": "15.0.0",
     "tsdown": "0.22.4",
     "typescript": "6.0.3",
-    "vitest": "4.1.11"
+    "vitest": "4.1.12"
   },
   "packageManager": "pnpm@11.0.9",
   "engines": {
