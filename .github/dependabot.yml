@@ -9,7 +9,8 @@ updates:
     # opens its own pull request straight away. `cooldown` skips releases
     # younger than seven days, and `rebase-strategy: disabled` stops a rebase
     # (and a full CI run) after every merge to main; branches need not be up to
-    # date to merge, and `@dependabot rebase` handles a conflict.
+    # date to merge, and `@dependabot recreate` handles a conflict
+    # (`@dependabot rebase` did nothing on 2026-11-18).
     schedule:
       interval: "cron"
       cronjob: "0 9 22 * *"
