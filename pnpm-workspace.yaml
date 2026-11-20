@@ -11,6 +11,7 @@ overrides:
   "devalue": "^5.9.2" # GHSA-9rgm-9g3h-6x36
   "fast-uri@^3.0.0": "^3.1.9" # GHSA advisories fixed in 3.1.9 (ajv)
   "http-cache-semantics@^4.0.0": "^4.3.0" # GHSA-ch52-4w7c-c8xp
+  "skill-check>minimatch": "^11.0.1" # GHSA-g3hv-75wg-m249
   "nanoid@^5.0.0": "^5.1.16" # GHSA-28wg-ghj8-5hjv
   "postcss-selector-parser@^6.0.0": "^6.1.5" # fixed in 6.1.5 (postcss-nested)
   "sharp": "^0.35.5" # GHSA-rgj7-g3m4-5g8c, GHSA-wq5f-xc86-pv6w
