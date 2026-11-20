@@ -9,7 +9,6 @@ overrides:
   cva: workspace:*
   '@size-limit/esbuild>esbuild': 0.28.1
   mdast-util-directive>mdast-util-to-markdown: 2.1.2
-  postcss@^8.0.0: 8.5.32
   brace-expansion@^5.0.0: ^5.0.12
   devalue: ^5.9.2
   fast-uri@^3.0.0: ^3.1.9
@@ -3860,7 +3859,7 @@ packages:
     resolution: {integrity: sha512-HQbt28KulC5AJzG+cZtj9kvKB93CFCdLvog1WFLf1D+xmMvPGlBstkpTEZfK5+AN9hfJocyBFCNiqyS48bpgzQ==}
     engines: {node: '>=12.0'}
     peerDependencies:
-      postcss: 8.5.32
+      postcss: ^8.2.14
 
   postcss-selector-parser@6.1.6:
     resolution: {integrity: sha512-BK87/Qgti3DIcgS2PaCVoteFIkjIFvCJBizZDIVSjdlFNg4Jv+SRqbN2JONb/qQUH4ZFqfXYF+izg15W2HVRvA==}
