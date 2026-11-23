@@ -96,7 +96,7 @@ jobs:
       - name: Drop the repo git-hooks path for this job
         shell: bash
         run: git config --unset-all core.hooksPath || true
-      - uses: anthropics/claude-code-action@4fa93a88de49bbef68b10eb15aabedf28ca0e1ed # v1.0.271
+      - uses: anthropics/claude-code-action@f3b070c88125d33dbae5653df5f143101d4ea9dc # v1.0.276
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The job-level `actions: read` above governs the workflow token. The
@@ -120,3 +120,8 @@ jobs:
           # rather than "address their feedback". Widen this list if that
           # becomes the common case — it is a usability dial, not a lock.
           include_comments_by_actor: joe-bell,claude[bot]
+          # From v1.0.273 the action starts sessions in auto mode, where a
+          # safety review can approve tool calls no allow rule covers, including
+          # Bash. Pin the earlier mode so the tool limits described at the top
+          # of this file still hold.
+          claude_args: --permission-mode acceptEdits
